@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Beschriftungstool</title>
+    <style>
+        :root {
+            --primary: #0056b3;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --dark: #343a40;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --bg: #f4f4f9;
+            --preview-border: #000000;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* WICHTIG: Erzwingt den Druck von Hintergrundfarben in allen Browsern */
+        body { 
+            margin: 0; padding: 0; background-color: var(--bg); display: flex; flex-direction: column; height: 100vh; overflow: hidden; 
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact; 
+        }
+
+        /* Toolbar */
+        .toolbar { background: var(--dark); padding: 10px 20px; color: white; display: flex; gap: 10px; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 100; flex-shrink: 0; flex-wrap: wrap;}
+        .toolbar button { background: var(--gray); color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .toolbar button:hover { filter: brightness(1.1); }
+        .toolbar button.btn-success { background: var(--success); }
+        .toolbar button.btn-info { background: var(--info); }
+        .toolbar button.btn-danger { background: var(--danger); }
+        .toolbar-title { font-weight: bold; margin-right: auto; font-size: 18px; }
+
+        /* Main Layout */
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        
+        /* Editor Sidebar */
+        .editor-area { width: 45%; background: white; border-right: 1px solid #ddd; overflow-y: auto; padding: 20px; }
+        
+        /* Preview Area */
+        .preview-area { width: 55%; background: var(--bg); padding: 20px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
+
+        /* Cards & Panels (Editor) */
+        .panel-card { border: 1px solid var(--primary); border-radius: 8px; margin-bottom: 20px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .panel-header { background: #e9f2fb; padding: 10px 15px; border-bottom: 1px solid var(--primary); display: flex; justify-content: space-between; align-items: center; border-radius: 8px 8px 0 0; flex-wrap: wrap; gap: 10px;}
+        
+        .panel-header-inputs { display: flex; gap: 5px; flex: 1; min-width: 250px; }
+        .panel-header-inputs input { font-weight: bold; font-size: 13px; border: 1px solid #ccc; padding: 6px; border-radius: 4px; width: 33.3%; }
+        .panel-header-inputs input::placeholder { font-weight: normal; color: #999; }
+
+        .panel-header-actions { display: flex; gap: 5px; }
+        
+        .panel-body { padding: 15px; }
+        
+        .label-item { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 6px; background: #fafafa; position: relative; transition: all 0.2s ease;}
+        .label-item:hover { border-color: var(--info); box-shadow: 0 0 5px rgba(23,162,184,0.3); }
+        .label-main-row { display: flex; gap: 8px; align-items: center; }
+        .label-main-row input[type="text"] { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .label-main-row select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 14px;}
+        .label-main-row select.symbol-select { width: 60px; font-size: 16px; }
+        
+        /* Settings Toggles */
+        .settings-row { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; flex-wrap: wrap; gap: 15px; align-items: center; font-size: 13px; }
+        .settings-row.active { display: flex; }
+        .icon-btn { background: none; border: none; cursor: pointer; font-size: 18px; padding: 5px; color: var(--gray); border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;}
+        .icon-btn:hover { background: #eee; color: var(--dark); }
+        .icon-btn.delete { color: var(--danger); }
+        .icon-btn.duplicate { color: var(--success); }
+        
+        .form-group { display: flex; align-items: center; gap: 5px; }
+        .form-group input[type="number"], .form-group select, .form-group input[type="text"] { padding: 4px; border: 1px solid #ccc; border-radius: 4px; }
+        .form-group input[type="number"] { width: 60px; }
+
+        /* Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal { background: white; padding: 25px; border-radius: 8px; width: 550px; max-width: 90%; box-shadow: 0 5px 15px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto;}
+        .modal h3 { margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid var(--primary); padding-bottom: 5px;}
+        .modal-footer { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #eee; padding-top: 15px;}
+        .modal-footer button { padding: 8px 15px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold;}
+        .btn-cancel { background: #ddd; }
+        .btn-cancel:hover { background: #ccc; }
+        .btn-confirm { background: var(--primary); color: white; }
+        .btn-confirm:hover { background: #004494; }
+
+        /* Vorschau Styles */
+        .preview-wrapper { 
+            background: white; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 8px; width: 100%; min-height: 50vh; 
+            display: flex; flex-direction: column; align-items: center; 
+        }
+
+        /* Intelligentes Grid Layout (Platzsparend) */
+        .preview-wrapper.layout-grid {
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            align-content: flex-start;
+        }
+
+        /* Schnittabstand zwischen den Panels */
+        .preview-wrapper.with-gap {
+            gap: 5mm;
+        }
+        
+        /* Das Panel rahmt oben und links ein. Die exakte Breite wird via JS inline gesetzt. */
+        .preview-panel { 
+            box-sizing: content-box; /* Garantiert, dass die Millimetermaße im Inneren zu 100% exakt bleiben */
+            border-top: 1px solid var(--preview-border);
+            border-left: 1px solid var(--preview-border); 
+            margin-bottom: 0px; 
+            page-break-inside: avoid; 
+        }
+        
+        /* Überlappen der PANELS wenn KEINE Lücke aktiv ist */
+        .preview-wrapper:not(.layout-grid):not(.with-gap) .preview-panel + .preview-panel { 
+            margin-top: -1px; 
+        }
+        .preview-wrapper.layout-grid:not(.with-gap) .preview-panel {
+            margin-left: -1px;
+            margin-top: -1px;
+        }
+
+        /* Verhindert das Abschneiden der äußeren Rahmen bei Ansicht auf dem Bildschirm */
+        .preview-wrapper.layout-grid:not(.with-gap) {
+            padding-top: 21px; 
+            padding-left: 21px;
+        }
+        
+        /* Header Zeile: Rahmen rechts und unten um das Gitter nahtlos zu schließen */
+        .preview-panel-bar { 
+            font-weight: bold; 
+            display: flex; justify-content: space-between; align-items: center; 
+            box-sizing: border-box;
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 0 5px; 
+            border-right: 1px solid var(--preview-border);
+            border-bottom: 1px solid var(--preview-border);
+        }
+        
+        .preview-panel-bar > div { flex: 1; overflow: hidden; text-overflow: clip; }
+        
+        .preview-grid { display: grid; gap: 0; }
+        
+        /* Die Labels: Haben Rahmen rechts und unten. So entsteht ein perfektes 1px Netz! */
+        .preview-label { 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-right: 1px solid var(--preview-border);
+            border-bottom: 1px solid var(--preview-border); 
+            box-sizing: border-box; 
+            overflow: hidden; 
+            padding: 0 1px; /* Minimales Padding für maximalen Platz */
+        }
+        
+        .preview-label-text { 
+            flex: 1; 
+            text-align: center; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: clip; /* Verhindert das "..." Abschneiden, nutzt den Platz bis zum Rahmen */
+            line-height: 0.95; 
+        }
+
+        /* Print Settings */
+        @media print {
+            body { display: block; overflow: visible; background: white; }
+            .toolbar, .editor-area, .modal-overlay { display: none !important; }
+            .main-container { display: block; }
+            .preview-area { width: 100%; padding: 0; display: flex; flex-direction: column; align-items: center; background: white; }
+            .preview-wrapper { box-shadow: none; padding: 0; border: none; margin: 0; width: 100%; }
+            
+            .preview-wrapper.layout-grid {
+                justify-content: flex-start;
+            }
+
+            .preview-wrapper.layout-grid:not(.with-gap) {
+                padding-top: 1px !important;
+                padding-left: 1px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <div class="toolbar-title">Universal Beschriftungstool</div>
+        <button class="btn-success" onclick="app.addPanel()">+ Neues Panel</button>
+        <button class="btn-info" onclick="document.getElementById('generatorModal').style.display = 'flex'">🔢 Auto-Nr</button>
+        <button onclick="document.getElementById('configModal').style.display = 'flex'">⚙️ Layout</button>
+        <button onclick="app.saveData()">💾 Speichern</button>
+        <button onclick="document.getElementById('fileInput').click()">📂 Öffnen</button>
+        <input type="file" id="fileInput" style="display: none" accept=".json" onchange="app.loadData(event)">
+        <button onclick="window.print()">🖨️ Drucken</button>
+        <button class="btn-danger" onclick="app.resetAll()">⚠️ Alles Löschen</button>
+    </div>
+
+    <div class="main-container">
+        <div class="editor-area" id="editorArea"></div>
+        <div class="preview-area">
+            <div class="preview-wrapper layout-grid with-gap" id="previewArea"></div>
+        </div>
+    </div>
+
+    <!-- Modal: Layout & Globale Einstellungen -->
+    <div class="modal-overlay" id="configModal">
+        <div class="modal">
+            <h3>Globale Layout Einstellungen</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f9f9f9; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                <div class="form-group"><label>Breite (mm):</label><input type="number" id="cfgWidth" onchange="app.updateConfig()"></div>
+                <div class="form-group"><label>Höhe (mm):</label><input type="number" id="cfgHeight" onchange="app.updateConfig()"></div>
+                <div class="form-group"><label>Spalten:</label><input type="number" id="cfgCols" onchange="app.updateConfig()"></div>
+                <div class="form-group"><label>Global Rahmenfarbe:</label><select id="cfgBorderColor" onchange="app.updateConfig()"></select></div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <h4 style="grid-column: span 2; margin: 0 0 -5px 0;">Zusatzzeile (Kopf/Fuß)</h4>
+                <div class="form-group"><label>Textgröße:</label><input type="number" id="cfgHeaderFontSize" onchange="app.updateConfig()"></div>
+                <div class="form-group"><label>Position:</label>
+                    <select id="cfgTitlePosition" onchange="app.updateConfig()">
+                        <option value="top">Oben</option>
+                        <option value="bottom">Unten</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Textfarbe:</label><select id="cfgHeaderTextColor" onchange="app.updateConfig()"></select></div>
+                <div class="form-group"><label>Hintergrund:</label><select id="cfgHeaderBgColor" onchange="app.updateConfig()"></select></div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <h4 style="grid-column: span 2; margin: 0 0 -5px 0;">Tasten / Labels</h4>
+                <div class="form-group"><label>Standard Textgröße:</label><input type="number" id="cfgFontSize" onchange="app.updateConfig()"></div>
+                <div class="form-group"><label>Global Textfarbe:</label><select id="cfgTextColor" onchange="app.updateConfig()"></select></div>
+                <div class="form-group"><label>Global Hintergrund:</label><select id="cfgBgColor" onchange="app.updateConfig()"></select></div>
+                <div class="form-group" style="grid-column: span 2; display: flex; gap: 20px;">
+                    <label><input type="checkbox" id="cfgBold" onchange="app.updateConfig()"> Alles Fett</label>
+                    <label><input type="checkbox" id="cfgUnderline" onchange="app.updateConfig()"> Alles Unterstrichen</label>
+                </div>
+            </div>
+
+            <!-- Druck & Platzsparende Optionen -->
+            <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;">
+                <h4 style="margin: 0 0 -5px 0; color: var(--primary);">Druck- & Anzeige-Optimierung</h4>
+                <div class="form-group" style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <label style="cursor: pointer; font-weight: bold; color: var(--success); font-size: 14px;">
+                        <input type="checkbox" id="cfgLayoutMode" onchange="app.updateConfig()"> 🖨️ Platzsparend (Nebeneinander reihen)
+                    </label>
+                    <label style="cursor: pointer; font-size: 14px;">
+                        <input type="checkbox" id="cfgPrintGap" onchange="app.updateConfig()"> ✂️ Schnittabstand einfügen (5mm)
+                    </label>
+                </div>
+                <small style="color: #666; margin-top: -10px;">Füllt das A4-Blatt optimal aus, anstatt alles in einer Endlos-Spalte nach unten zu drucken.</small>
+            </div>
+
+	    <div class="modal-footer">
+                <button class="btn-cancel" onclick="document.getElementById('configModal').style.display = 'none'">Schließen</button>
+                <button class="btn-confirm" onclick="app.applyGlobalSettings()">Einstellungen auf Alle anwenden</button>
+            </div>
+
+            <div style="margin-top: 20px; padding: 15px; background-color: #e9ecef; border-left: 4px solid var(--primary); border-radius: 4px; font-size: 13.5px; color: #495057;">
+                <strong style="display: block; margin-bottom: 8px; color: var(--dark);">💡 Standardwerte (Monteur-Hilfe):</strong>
+                <ul style="margin: 0; padding-left: 20px; line-height: 1.5;">
+		    <li><strong>Universaltaster:</strong> Breite 35, Höhe 5, Spalten max. 7</li>
+
+		    <li style="list-style: none; height: 10px;">&nbsp;</li>
+
+                    <li><strong>Universal R und M 4/5/6 Fach:</strong> Breite 21, Höhe 5, Spalten 4,5 oder 6</li>
+                    <li><strong>Global 4/5:</strong> Breite , Höhe , Spalten 3 oder 4</li>
+
+		    <li style="list-style: none; height: 10px;">&nbsp;</li>
+
+		    <li><strong>E- Due 1- Fach:</strong> Breite , Höhe , Spalten 1</li>
+		    <li><strong>E- Due 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
+
+		    <li style="list-style: none; height: 10px;">&nbsp;</li>
+
+		    <li><strong>BR- Kanal 1- Fach:</strong> Breite , Höhe , Spalten 1</li>
+		    <li><strong>BR- Kanal 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
+
+		    <li style="list-style: none; height: 10px;">&nbsp;</li>
+
+                    <li><strong>FLF 1- Fach:</strong> Breite , Höhe , Spalten 1</li>
+		    <li><strong>FLF 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
+
+		    <li style="list-style: none; height: 10px;">&nbsp;</li>
+
+		    <li><strong>VS83:</strong> Breite , Höhe , Spalten 10</li>
+		    <li><strong>Plika TK75:</strong> Breite , Höhe , Spalten </li>
+                </ul>
+            </div>
+
+            
+        </div>
+    </div>
+
+    <!-- Modal: Generator -->
+    <div class="modal-overlay" id="generatorModal">
+        <div class="modal" style="width: 500px;">
+            <h3>Smarter Nummern-Generator</h3>
+            
+            <div style="margin-bottom: 15px; padding: 12px; background: #fdfdfd; border: 1px solid #ddd; border-radius: 6px;">
+                <h4 style="margin: 0 0 10px 0; font-size: 13.5px; color: var(--primary);">1. Panel Überschrift (Mitte)</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start;">
+                    <div class="form-group" style="flex-direction: column; align-items: flex-start;">
+                        <label>Name (z.B. UWP):</label>
+                        <input type="text" id="genPanelName" value="" placeholder="Leer lassen = Kein Text" style="width: 100%;">
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 22px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label style="font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                <input type="checkbox" id="genPanelAutoNum"> Fortlaufend (+ Nr.)
+                            </label>
+                            <div class="form-group" style="margin: 0;">
+                                <label style="font-size: 13px;">Start:</label>
+                                <input type="number" id="genPanelStartNum" value="1" style="width: 50px; padding: 2px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px; padding: 12px; background: #fdfdfd; border: 1px solid #ddd; border-radius: 6px;">
+                <h4 style="margin: 0 0 10px 0; font-size: 13.5px; color: var(--primary);">2. Tasten / Ports</h4>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group" style="flex-direction: column; align-items: flex-start;"><label>Präfix (z.B. Port):</label><input type="text" id="genPrefix" style="width: 100%;"></div>
+                        <div class="form-group" style="flex-direction: column; align-items: flex-start;"><label>Suffix (z.B. A):</label><input type="text" id="genSuffix" style="width: 100%;"></div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group" style="flex-direction: column; align-items: flex-start;" title="Rückwärts geht auch (z.B. Start 20, Ende 1)"><label>Startnummer:</label><input type="number" id="genStart" value="1" style="width: 100%;"></div>
+                        <div class="form-group" style="flex-direction: column; align-items: flex-start;"><label>Endnummer:</label><input type="number" id="genEnd" value="20" style="width: 100%;"></div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group" style="flex-direction: column; align-items: flex-start;" title="2 = 01, 3 = 001"><label>Ziffern (Führende Nullen):</label><input type="number" id="genDigits" value="2" style="width: 100%;"></div>
+                        <div class="form-group" style="flex-direction: column; align-items: flex-start;"><label>Tasten/Ports pro Panel:</label><input type="number" id="genPerPanel" value="6" style="width: 100%;"></div>
+                    </div>
+                    
+                    <label style="font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px; margin-top: 5px; color: var(--success); font-weight: bold;" title="Füllt das letzte Panel mit Leer-Tasten auf, damit der Papierstreifen die korrekte volle Breite hat.">
+                        <input type="checkbox" id="genFillEmpty" checked> Letztes Panel mit leeren Tasten auffüllen
+                    </label>
+                </div>
+            </div>
+
+            <div style="padding: 12px; background: #e9f2fb; border: 1px solid #b8daff; border-radius: 6px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: bold; cursor: pointer; font-size: 13.5px; color: #004085;">
+                    <input type="checkbox" id="genHeaderRange" style="width: 18px; height: 18px;">
+                    Patchpanel-Modus (Auto Links Start-Nr, Rechts End-Nr)
+                </label>
+                
+                <div style="margin-top: 10px; margin-left: 26px; display: flex; align-items: center; gap: 10px;">
+                    <label style="font-size: 13px; color: #004085;">Zeile anhängen:</label>
+                    <select id="genBarPosition" style="padding: 4px; border-radius: 4px; border: 1px solid #ccc; font-size: 13px;">
+                        <option value="top">Oben (Über den Ports)</option>
+                        <option value="bottom">Unten (Unter den Ports)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="document.getElementById('generatorModal').style.display = 'none'">Abbrechen</button>
+                <button class="btn-confirm" onclick="app.runGenerator()">Generieren</button>
+            </div>
+        </div>
+    </div>
+
+    <template id="presetOptions">
+        <option value="">📋 Vorlage...</option>
+        <option value="store">▲ | Store | ▼</option>
+        <option value="licht_plus">➕ | Licht | ➖</option>
+        <option value="licht_io">I | Licht | o</option>
+    </template>
+
+    <script>
+        const SYMBOLS = ["--", "▲", "▼", "◀", "▶", "💡", "🔆", "🔅", "⏻", "🔌", "🔋", "☀️", "🎬", "🌙", "🔔", "🔒", "🔓", "🎵", "➕", "➖", "I", "O", "o"];
+        
+        const COLORS = [
+            { name: "Weiss", hex: "#ffffff" },
+            { name: "Schwarz", hex: "#000000" },
+            { name: "Grau", hex: "#999999" },
+            { name: "Hellgrau", hex: "#dddddd" },
+            { name: "Rot", hex: "#ff0000" },
+            { name: "Blau", hex: "#0000ff" },
+            { name: "Hellblau", hex: "#cce5ff" },
+            { name: "Orange", hex: "#ffa500" },
+            { name: "Gelb", hex: "#ffff00" },
+            { name: "Grün", hex: "#00ff00" },
+            { name: "Rosa", hex: "#ff69b4" },
+            { name: "Violett", hex: "#8a2be2" }
+        ];
+
+        function getColorOptions(selectedHex) {
+            const hex = selectedHex ? selectedHex.toLowerCase() : '#ffffff';
+            return COLORS.map(c => `<option value="${c.hex}" ${c.hex === hex ? 'selected' : ''}>${c.name}</option>`).join('');
+        }
+
+        const app = {
+            config: {
+                width: 35, height: 5, columns: 7, fontSize: 12, headerFontSize: 16, 
+                textColorHex: '#000000', backgroundColorHex: '#ffffff', borderColorHex: '#000000',
+                headerTextColorHex: '#000000', headerBackgroundColorHex: '#ffffff', titlePosition: 'top',
+                isBold: false, isUnderline: false,
+                layoutMode: 'grid', // 'grid' (platzsparend) oder 'column' (stapel)
+                printGap: true      // Schnittabstand aktiv
+            },
+            groups: [],
+            
+            init() {
+                document.getElementById('cfgWidth').value = this.config.width;
+                document.getElementById('cfgHeight').value = this.config.height;
+                document.getElementById('cfgCols').value = this.config.columns;
+                document.getElementById('cfgFontSize').value = this.config.fontSize;
+                document.getElementById('cfgHeaderFontSize').value = this.config.headerFontSize;
+                
+                document.getElementById('cfgTextColor').innerHTML = getColorOptions(this.config.textColorHex);
+                document.getElementById('cfgBgColor').innerHTML = getColorOptions(this.config.backgroundColorHex);
+                document.getElementById('cfgBorderColor').innerHTML = getColorOptions(this.config.borderColorHex || '#000000');
+                
+                document.getElementById('cfgHeaderTextColor').innerHTML = getColorOptions(this.config.headerTextColorHex || '#000000');
+                document.getElementById('cfgHeaderBgColor').innerHTML = getColorOptions(this.config.headerBackgroundColorHex || '#ffffff');
+                document.getElementById('cfgTitlePosition').value = this.config.titlePosition || 'top';
+                
+                document.getElementById('cfgBold').checked = !!this.config.isBold;
+                document.getElementById('cfgUnderline').checked = !!this.config.isUnderline;
+                
+                document.getElementById('cfgLayoutMode').checked = this.config.layoutMode === 'grid';
+                document.getElementById('cfgPrintGap').checked = this.config.printGap !== false;
+
+                if(this.groups.length === 0) this.addPanel();
+                this.render();
+            },
+
+            updateConfig() {
+                this.config.width = parseInt(document.getElementById('cfgWidth').value) || 40;
+                this.config.height = parseInt(document.getElementById('cfgHeight').value) || 15;
+                this.config.columns = parseInt(document.getElementById('cfgCols').value) || 3;
+                this.config.fontSize = parseInt(document.getElementById('cfgFontSize').value) || 12;
+                this.config.headerFontSize = parseInt(document.getElementById('cfgHeaderFontSize').value) || 16;
+                this.config.textColorHex = document.getElementById('cfgTextColor').value;
+                this.config.backgroundColorHex = document.getElementById('cfgBgColor').value;
+                this.config.borderColorHex = document.getElementById('cfgBorderColor').value;
+                
+                this.config.headerTextColorHex = document.getElementById('cfgHeaderTextColor').value;
+                this.config.headerBackgroundColorHex = document.getElementById('cfgHeaderBgColor').value;
+                this.config.titlePosition = document.getElementById('cfgTitlePosition').value;
+                
+                this.config.isBold = document.getElementById('cfgBold').checked;
+                this.config.isUnderline = document.getElementById('cfgUnderline').checked;
+                
+                this.config.layoutMode = document.getElementById('cfgLayoutMode').checked ? 'grid' : 'column';
+                this.config.printGap = document.getElementById('cfgPrintGap').checked;
+
+                this.render();
+            },
+
+            applyGlobalSettings() {
+                this.groups.forEach(g => {
+                    g.textColorHex = this.config.textColorHex;
+                    g.backgroundColorHex = this.config.backgroundColorHex;
+                    g.borderColorHex = this.config.borderColorHex;
+                    
+                    g.headerTextColorHex = this.config.headerTextColorHex;
+                    g.headerBackgroundColorHex = this.config.headerBackgroundColorHex;
+                    g.titlePosition = this.config.titlePosition;
+                    
+                    g.fontSize = this.config.fontSize;
+                    g.headerFontSize = this.config.headerFontSize;
+                    g.labels.forEach(l => {
+                        l.textColorHex = this.config.textColorHex;
+                        l.backgroundColorHex = this.config.backgroundColorHex;
+                        if(this.config.isBold !== undefined) l.isBold = this.config.isBold;
+                        if(this.config.isUnderline !== undefined) l.isUnderline = this.config.isUnderline;
+                    });
+                });
+                document.getElementById('configModal').style.display = 'none';
+                this.render();
+            },
+
+            addPanel() {
+                this.groups.push({
+                    id: Date.now(),
+                    headerLeft: '',
+                    headerCenter: `Panel ${this.groups.length + 1}`,
+                    headerRight: '',
+                    textColorHex: this.config.textColorHex,
+                    backgroundColorHex: this.config.backgroundColorHex,
+                    borderColorHex: this.config.borderColorHex,
+                    headerTextColorHex: this.config.headerTextColorHex || '#000000',
+                    headerBackgroundColorHex: this.config.headerBackgroundColorHex || '#ffffff',
+                    titlePosition: this.config.titlePosition || 'top',
+                    fontSize: '', 
+                    headerFontSize: '',
+                    labels: [this.createLabel()]
+                });
+                this.render();
+            },
+
+            removePanel(groupId) {
+                if(confirm("Panel wirklich löschen?")) {
+                    this.groups = this.groups.filter(g => g.id !== groupId);
+                    this.render();
+                }
+            },
+
+            addLabel(groupId) {
+                const group = this.groups.find(g => g.id === groupId);
+                if(group) {
+                    const lbl = this.createLabel();
+                    lbl.textColorHex = group.textColorHex;
+                    lbl.backgroundColorHex = group.backgroundColorHex;
+                    group.labels.push(lbl);
+                    this.render();
+                }
+            },
+
+            duplicateLabel(groupId, labelId) {
+                const group = this.groups.find(g => g.id === groupId);
+                if(group) {
+                    const originalLabel = group.labels.find(l => l.id === labelId);
+                    if(originalLabel) {
+                        const newLabel = JSON.parse(JSON.stringify(originalLabel));
+                        newLabel.id = Date.now() + Math.random(); 
+                        
+                        const index = group.labels.indexOf(originalLabel);
+                        group.labels.splice(index + 1, 0, newLabel);
+                        this.render();
+                    }
+                }
+            },
+
+            removeLabel(groupId, labelId) {
+                const group = this.groups.find(g => g.id === groupId);
+                if(group) {
+                    group.labels = group.labels.filter(l => l.id !== labelId);
+                    this.render();
+                }
+            },
+
+            createLabel() {
+                return {
+                    id: Date.now() + Math.random(), text: '', symbolL: '--', symbolR: '--',
+                    isBold: this.config.isBold || false, 
+                    isUnderline: this.config.isUnderline || false,
+                    textColorHex: this.config.textColorHex, 
+                    backgroundColorHex: this.config.backgroundColorHex,
+                    customFontSize: '' 
+                };
+            },
+
+            applyPreset(groupId, labelId, presetType) {
+                const group = this.groups.find(g => g.id === groupId);
+                const label = group.labels.find(l => l.id === labelId);
+                if(!label || !presetType) return;
+                
+                if (presetType === "store") { label.symbolL = "▲"; label.text = "Store"; label.symbolR = "▼"; }
+                else if (presetType === "licht_plus") { label.symbolL = "➕"; label.text = "Licht"; label.symbolR = "➖"; }
+                else if (presetType === "licht_io") { label.symbolL = "I"; label.text = "Licht"; label.symbolR = "o"; }
+                
+                this.render();
+            },
+
+            runGenerator() {
+                // Panel Einstellungen
+                const panelNameStr = document.getElementById('genPanelName').value;
+                const doPanelAutoNum = document.getElementById('genPanelAutoNum').checked;
+                const panelStartInput = parseInt(document.getElementById('genPanelStartNum').value);
+                
+                // Label Einstellungen
+                const prefix = document.getElementById('genPrefix').value;
+                const suffix = document.getElementById('genSuffix').value;
+                const start = parseInt(document.getElementById('genStart').value);
+                const end = parseInt(document.getElementById('genEnd').value);
+                const digits = parseInt(document.getElementById('genDigits').value);
+                const perPanel = parseInt(document.getElementById('genPerPanel').value);
+                const doFillEmpty = document.getElementById('genFillEmpty').checked;
+                
+                // Modus
+                const doPatchPanelMode = document.getElementById('genHeaderRange').checked;
+                const barPosition = document.getElementById('genBarPosition').value;
+
+                if (this.groups.length === 1 && this.groups[0].labels.length === 1 && !this.groups[0].labels[0].text) {
+                    this.groups = [];
+                }
+
+                // Richtung und Gesamtanzahl berechnen
+                const step = start <= end ? 1 : -1;
+                const totalItems = Math.abs(end - start) + 1;
+
+                let currentGroup = null;
+                let count = 0;
+                let panelStartNum = start;
+                let panelCounter = isNaN(panelStartInput) ? 1 : panelStartInput;
+                let currentNum = start;
+
+                for (let i = 0; i < totalItems; i++) {
+                    if (!currentGroup || count >= perPanel) {
+                        panelStartNum = currentNum;
+                        
+                        // Panel Name Logik
+                        let pCenter = panelNameStr;
+                        if(doPanelAutoNum && pCenter.trim() !== '') pCenter += ' ' + panelCounter;
+                        else if(doPanelAutoNum && pCenter.trim() === '') pCenter = String(panelCounter);
+                        
+                        currentGroup = {
+                            id: Date.now() + i,
+                            headerLeft: '',
+                            headerCenter: pCenter,
+                            headerRight: '',
+                            textColorHex: this.config.textColorHex,
+                            backgroundColorHex: this.config.backgroundColorHex,
+                            borderColorHex: this.config.borderColorHex,
+                            headerTextColorHex: this.config.headerTextColorHex || '#000000',
+                            headerBackgroundColorHex: this.config.headerBackgroundColorHex || '#ffffff',
+                            titlePosition: barPosition,
+                            fontSize: '', 
+                            headerFontSize: '',
+                            labels: []
+                        };
+                        this.groups.push(currentGroup);
+                        panelCounter++;
+                        count = 0;
+                    }
+
+                    const numStr = String(currentNum).padStart(digits, '0');
+                    const lbl = this.createLabel();
+                    lbl.text = prefix + numStr + suffix;
+                    currentGroup.labels.push(lbl);
+                    count++;
+
+                    if (count === perPanel || i === totalItems - 1) {
+                        if (doPatchPanelMode) {
+                            const startStr = String(panelStartNum).padStart(digits, '0');
+                            const endStr = String(currentNum).padStart(digits, '0');
+                            currentGroup.headerLeft = prefix + startStr + suffix;
+                            currentGroup.headerRight = prefix + endStr + suffix;
+                        }
+                    }
+                    
+                    currentNum += step;
+                }
+                
+                // Letztes Panel mit leeren Tasten auffüllen, falls aktiviert
+                if (doFillEmpty && currentGroup && count > 0 && count < perPanel) {
+                    const needed = perPanel - count;
+                    for(let j=0; j<needed; j++) {
+                        const emptyLbl = this.createLabel();
+                        emptyLbl.text = ''; // Komplett leer
+                        currentGroup.labels.push(emptyLbl);
+                    }
+                }
+
+                document.getElementById('generatorModal').style.display = 'none';
+                this.render();
+            },
+
+            toggleSettings(id) {
+                const el = document.getElementById('settings-' + id);
+                el.classList.toggle('active');
+            },
+
+            updateData(type, groupId, labelId, field, value) {
+                const group = this.groups.find(g => g.id === groupId);
+                if (!group) return;
+                
+                if (type === 'group') {
+                    group[field] = value;
+                    if (['textColorHex', 'backgroundColorHex', 'isBold', 'isUnderline'].includes(field)) {
+                        group.labels.forEach(l => {
+                            if (field === 'isBold') l.isBold = value;
+                            else if (field === 'isUnderline') l.isUnderline = value;
+                            else l[field] = value;
+                        });
+                        this.render(); 
+                        return;
+                    }
+                    if (['headerTextColorHex', 'headerBackgroundColorHex', 'headerFontSize', 'borderColorHex', 'headerLeft', 'headerCenter', 'headerRight', 'titlePosition'].includes(field)) {
+                        this.renderPreview();
+                        return;
+                    }
+                } else if (type === 'label') {
+                    const label = group.labels.find(l => l.id === labelId);
+                    if (label) label[field] = value;
+                }
+                this.renderPreview(); 
+            },
+
+            saveData() {
+                const data = { config: this.config, groups: this.groups };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "layout.json";
+                a.click();
+            },
+
+            loadData(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.config) {
+                            this.config = Object.assign(this.config, data.config);
+                            if (!this.config.headerFontSize) this.config.headerFontSize = 16;
+                            if (!this.config.borderColorHex) this.config.borderColorHex = '#000000';
+                            if (!this.config.headerTextColorHex) this.config.headerTextColorHex = '#000000';
+                            if (!this.config.headerBackgroundColorHex) this.config.headerBackgroundColorHex = '#ffffff';
+                            if (!this.config.titlePosition) this.config.titlePosition = 'top';
+                            if (!this.config.layoutMode) this.config.layoutMode = 'grid';
+                            if (this.config.printGap === undefined) this.config.printGap = true;
+                        }
+                        if (data.groups) {
+                            data.groups.forEach(g => {
+                                g.textColorHex = (g.textColorHex || '#000').toLowerCase();
+                                g.backgroundColorHex = (g.backgroundColorHex || '#fff').toLowerCase();
+                                g.headerTextColorHex = (g.headerTextColorHex || '#000').toLowerCase();
+                                g.headerBackgroundColorHex = (g.headerBackgroundColorHex || '#fff').toLowerCase();
+                                g.titlePosition = g.titlePosition || 'top';
+                                
+                                g.headerCenter = g.headerCenter !== undefined ? g.headerCenter : (g.header || '');
+                                g.headerLeft = g.headerLeft || '';
+                                g.headerRight = g.headerRight || '';
+                                
+                                g.labels.forEach(l => {
+                                    l.textColorHex = (l.textColorHex || '#000').toLowerCase();
+                                    l.backgroundColorHex = (l.backgroundColorHex || '#fff').toLowerCase();
+                                });
+                            });
+                            this.groups = data.groups;
+                        }
+                        this.init();
+                    } catch (err) {
+                        alert("Fehler beim Laden der Datei.");
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            },
+
+            resetAll() {
+                if(confirm("Alles löschen und neu beginnen?")) {
+                    this.groups = [];
+                    this.addPanel();
+                }
+            },
+
+            render() {
+                this.renderEditor();
+                this.renderPreview();
+            },
+
+            renderEditor() {
+                const editor = document.getElementById('editorArea');
+                editor.innerHTML = '';
+                
+                this.groups.forEach(group => {
+                    const isBottom = group.titlePosition === 'bottom';
+                    const html = `
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <div class="panel-header-inputs">
+                                    <input type="text" placeholder="Links (z.B. 01)" value="${group.headerLeft || ''}" oninput="app.updateData('group', ${group.id}, null, 'headerLeft', this.value)">
+                                    <input type="text" placeholder="Mitte" value="${group.headerCenter !== undefined ? group.headerCenter : ''}" oninput="app.updateData('group', ${group.id}, null, 'headerCenter', this.value)">
+                                    <input type="text" placeholder="Rechts (z.B. 10)" value="${group.headerRight || ''}" oninput="app.updateData('group', ${group.id}, null, 'headerRight', this.value)">
+                                </div>
+                                <div class="panel-header-actions">
+                                    <button class="icon-btn" onclick="app.toggleSettings('group-${group.id}')" title="Panel Einstellungen">⚙️</button>
+                                    <button class="icon-btn" onclick="app.addLabel(${group.id})" title="Label hinzufügen">➕</button>
+                                    <button class="icon-btn delete" onclick="app.removePanel(${group.id})" title="Panel löschen">🗑️</button>
+                                </div>
+                            </div>
+                            
+                            <div class="panel-body" style="padding-top: 0;">
+                                <div class="settings-row" id="settings-group-${group.id}" style="background: #f9f9f9; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+                                    
+                                    <div style="width: 100%; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px; font-weight: bold; font-size: 12px; color: var(--primary);">ZUSATZZEILE (KOPF/FUß)</div>
+                                    <div class="form-group">
+                                        <label>Position:</label>
+                                        <select onchange="app.updateData('group', ${group.id}, null, 'titlePosition', this.value)">
+                                            <option value="top" ${!isBottom ? 'selected' : ''}>Oben</option>
+                                            <option value="bottom" ${isBottom ? 'selected' : ''}>Unten</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Farbe:</label>
+                                        <select onchange="app.updateData('group', ${group.id}, null, 'headerTextColorHex', this.value)">
+                                            ${getColorOptions(group.headerTextColorHex || this.config.headerTextColorHex || '#000000')}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>HG:</label>
+                                        <select onchange="app.updateData('group', ${group.id}, null, 'headerBackgroundColorHex', this.value)">
+                                            ${getColorOptions(group.headerBackgroundColorHex || this.config.headerBackgroundColorHex || '#ffffff')}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Schriftgröße:</label>
+                                        <input type="number" placeholder="Global" value="${group.headerFontSize || ''}" oninput="app.updateData('group', ${group.id}, null, 'headerFontSize', this.value)" style="width: 55px;">
+                                    </div>
+
+                                    <div style="width: 100%; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px; margin-top: 5px; font-weight: bold; font-size: 12px; color: var(--primary);">TASTEN (PANEL STANDARD)</div>
+                                    <div class="form-group">
+                                        <label>Text Farbe:</label>
+                                        <select onchange="app.updateData('group', ${group.id}, null, 'textColorHex', this.value)">
+                                            ${getColorOptions(group.textColorHex)}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Hintergrund:</label>
+                                        <select onchange="app.updateData('group', ${group.id}, null, 'backgroundColorHex', this.value)">
+                                            ${getColorOptions(group.backgroundColorHex)}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Rahmen:</label>
+                                        <select onchange="app.updateData('group', ${group.id}, null, 'borderColorHex', this.value)">
+                                            ${getColorOptions(group.borderColorHex || this.config.borderColorHex)}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Schriftgröße:</label>
+                                        <input type="number" placeholder="Global" value="${group.fontSize || ''}" oninput="app.updateData('group', ${group.id}, null, 'fontSize', this.value)" style="width: 55px;">
+                                    </div>
+                                    <div class="form-group" style="flex-basis: 100%; display: flex; gap: 15px;">
+                                        <label><input type="checkbox" onchange="app.updateData('group', ${group.id}, null, 'isBold', this.checked)"> Tasten Fett (Alle)</label>
+                                        <label><input type="checkbox" onchange="app.updateData('group', ${group.id}, null, 'isUnderline', this.checked)"> Tasten Unterstrichen (Alle)</label>
+                                    </div>
+                                </div>
+                                
+                                ${group.labels.map(label => `
+                                    <div class="label-item">
+                                        <div class="label-main-row">
+                                            <select class="symbol-select" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolL', this.value)">
+                                                ${SYMBOLS.map(s => `<option value="${s}" ${s === label.symbolL ? 'selected' : ''}>${s}</option>`).join('')}
+                                            </select>
+                                            
+                                            <input type="text" placeholder="Text..." value="${label.text}" oninput="app.updateData('label', ${group.id}, ${label.id}, 'text', this.value)">
+                                            
+                                            <select class="symbol-select" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolR', this.value)">
+                                                ${SYMBOLS.map(s => `<option value="${s}" ${s === label.symbolR ? 'selected' : ''}>${s}</option>`).join('')}
+                                            </select>
+                                            
+                                            <button class="icon-btn" onclick="app.toggleSettings('label-${label.id}')" title="Etiketten Einstellungen">⚙️</button>
+                                            <button class="icon-btn duplicate" onclick="app.duplicateLabel(${group.id}, ${label.id})" title="Label duplizieren">📑</button>
+                                            <button class="icon-btn delete" onclick="app.removeLabel(${group.id}, ${label.id})" title="Löschen">❌</button>
+                                        </div>
+
+                                        <div class="settings-row" id="settings-label-${label.id}">
+                                            <label><input type="checkbox" ${label.isBold ? 'checked' : ''} onchange="app.updateData('label', ${group.id}, ${label.id}, 'isBold', this.checked)"> Fett</label>
+                                            <label><input type="checkbox" ${label.isUnderline ? 'checked' : ''} onchange="app.updateData('label', ${group.id}, ${label.id}, 'isUnderline', this.checked)"> Unterstrichen</label>
+                                            <div class="form-group" title="Wenn leer, wird Panel/Global Größe genutzt"><label>Größe:</label><input type="number" placeholder="Auto" value="${label.customFontSize || ''}" oninput="app.updateData('label', ${group.id}, ${label.id}, 'customFontSize', this.value)"></div>
+                                            <div class="form-group">
+                                                <label>Text:</label>
+                                                <select onchange="app.updateData('label', ${group.id}, ${label.id}, 'textColorHex', this.value)">
+                                                    ${getColorOptions(label.textColorHex)}
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>HG:</label>
+                                                <select onchange="app.updateData('label', ${group.id}, ${label.id}, 'backgroundColorHex', this.value)">
+                                                    ${getColorOptions(label.backgroundColorHex)}
+                                                </select>
+                                            </div>
+                                            
+                                            <select onchange="app.applyPreset(${group.id}, ${label.id}, this.value); this.value=''">
+                                                ${document.getElementById('presetOptions').innerHTML}
+                                            </select>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                    editor.insertAdjacentHTML('beforeend', html);
+                });
+            },
+
+            renderPreview() {
+                const preview = document.getElementById('previewArea');
+                preview.innerHTML = '';
+                
+                // Neue Layout-Klassen anwenden
+                preview.className = 'preview-wrapper';
+                if (this.config.layoutMode === 'grid') {
+                    preview.classList.add('layout-grid');
+                }
+                if (this.config.printGap) {
+                    preview.classList.add('with-gap');
+                }
+
+                const { width, height, columns, fontSize, headerFontSize, borderColorHex } = this.config;
+
+                this.groups.forEach(group => {
+                    const pBorderCol = group.borderColorHex || borderColorHex || '#000000';
+                    const pHeadSize = group.headerFontSize || headerFontSize;
+                    const pFontSize = group.fontSize || fontSize;
+                    
+                    const hL = group.headerLeft || '';
+                    const hC = group.headerCenter !== undefined ? group.headerCenter : '';
+                    const hR = group.headerRight || '';
+
+                    // HIER IST DER FIX: Dem Panel wird zwingend EXAKT die physikalische Breite vorgegeben,
+                    // die aus Spaltenanzahl * Spaltenbreite resultiert. Dadurch kann die Überschrift 
+                    // nicht mehr das Tastenraster überragen und nichts wird mehr links/rechts weggedrückt!
+                    let groupHtml = `<div class="preview-panel" style="--preview-border: ${pBorderCol}; width: ${columns * width}mm;">`;
+                    
+                    let barHtml = '';
+                    if (hL.trim() !== "" || hC.trim() !== "" || hR.trim() !== "") {
+                        const hTextColor = group.headerTextColorHex || this.config.headerTextColorHex || '#000000';
+                        const hBgColor = group.headerBackgroundColorHex || this.config.headerBackgroundColorHex || '#ffffff';
+                        
+                        let innerColumns = '';
+                        if (hL.trim() === "" && hR.trim() === "") {
+                            innerColumns = `<div style="text-align: center;">${hC}</div>`;
+                        } else {
+                            innerColumns = `
+                                <div style="text-align: left;">${hL}</div>
+                                <div style="text-align: center;">${hC}</div>
+                                <div style="text-align: right;">${hR}</div>
+                            `;
+                        }
+                        
+                        // Das extra CSS für die Linie der Kopfzeile wird nun universell durch .preview-panel-bar gelöst (rechts + unten)
+                        barHtml = `
+                            <div class="preview-panel-bar" style="height: ${height}mm; background-color: ${hBgColor}; color: ${hTextColor}; font-size: ${pHeadSize}px;">
+                                ${innerColumns}
+                            </div>
+                        `;
+                    }
+                    
+                    if (group.titlePosition !== 'bottom') {
+                        groupHtml += barHtml;
+                    }
+                    
+                    // Perfektes, sauberes Raster ohne Margin-Hacks
+                    groupHtml += `<div class="preview-grid" style="grid-template-columns: repeat(${columns}, ${width}mm);">`;
+
+                    group.labels.forEach(label => {
+                        const styleFontW = label.isBold ? 'bold' : 'normal';
+                        const styleTextD = label.isUnderline ? 'underline' : 'none';
+                        const actFontSize = label.customFontSize ? label.customFontSize : pFontSize;
+                        
+                        const symLeftHTML = label.symbolL !== '--' ? `<span style="padding-right: 2px; text-align: center; flex-shrink: 0; line-height: 0.95;">${label.symbolL}</span>` : '';
+                        const symRightHTML = label.symbolR !== '--' ? `<span style="padding-left: 2px; text-align: center; flex-shrink: 0; line-height: 0.95;">${label.symbolR}</span>` : '';
+                        
+                        groupHtml += `
+                            <div class="preview-label" style="
+                                width: ${width}mm; 
+                                height: ${height}mm; 
+                                background-color: ${label.backgroundColorHex}; 
+                                color: ${label.textColorHex}; 
+                                font-size: ${actFontSize}px;">
+                                
+                                ${symLeftHTML}
+                                <span class="preview-label-text" style="font-weight: ${styleFontW}; text-decoration: ${styleTextD};">${label.text}</span>
+                                ${symRightHTML}
+                            </div>
+                        `;
+                    });
+
+                    groupHtml += `</div>`;
+                    
+                    if (group.titlePosition === 'bottom') {
+                        groupHtml += barHtml;
+                    }
+                    
+                    groupHtml += `</div>`;
+                    preview.insertAdjacentHTML('beforeend', groupHtml);
+                });
+            }
+        };
+
+        window.onload = () => app.init();
+    </script>
+</body>
+</html>F
