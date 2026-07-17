@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netz-Planer Pro v4</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { user-select: none; }
+        
+        /* Container für das "Blatt" im Browser */
+        #page-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px;
+            overflow: auto;
+            background-color: #f1f5f9;
+            height: 100vh;
+        }
+
+        /* Blatt-Styling */
+        #canvas-container {
+            background-color: white;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            flex-shrink: 0;
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+
+        /* Formate (Querformat Standard für Pläne) */
+        .page-a4 { width: 1122px; height: 794px; }
+        .page-a3 { width: 1587px; height: 1122px; }
+
+        #canvas {
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 30px 30px;
+            cursor: crosshair;
+            width: 100%;
+            height: 100%;
+        }
+
+        .device-node {
+            transition: transform 0.1s ease-out, box-shadow 0.2s;
+            touch-action: none;
+            z-index: 60;
+        }
+        .device-node:active { cursor: grabbing; }
+        
+        /* Linien Interaktion */
+        .edge-hitbox {
+            cursor: pointer;
+            pointer-events: stroke !important;
+            fill: none;
+            stroke: transparent;
+            stroke-width: 20;
+            z-index: 40;
+        }
+        .edge-visible {
+            fill: none;
+            pointer-events: none;
+            z-index: 35;
+        }
+        .edge-label {
+            font-size: 9px;
+            font-weight: 800;
+            fill: #1e293b;
+            pointer-events: none;
+            paint-order: stroke;
+            stroke: #ffffff;
+            stroke-width: 3px;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        #modal, #master-modal {
+            display: none;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+        }
+
+        /* Druck-spezifische Stile zur Fehlerbehebung der Scrollbalken */
+        @media print {
+            @page { margin: 0; }
+            .page-a4 { size: A4 landscape; width: 297mm; height: 210mm; }
+            .page-a3 { size: A3 landscape; width: 420mm; height: 297mm; }
+
+            aside, .no-print {
+                display: none !important;
+            }
+            body, html {
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important; /* Verhindert Scrollbalken im Druck */
+                height: 100%;
+                width: 100%;
+            }
+            #page-wrapper {
+                padding: 0 !important;
+                display: block !important;
+                height: 100% !important;
+                width: 100% !important;
+                overflow: hidden !important; /* Verhindert Scrollbalken im Druck */
+                background: none !important;
+            }
+            #canvas-container {
+                box-shadow: none !important;
+                margin: 0 !important;
+                border: none !important;
+                left: 0 !important;
+                top: 0 !important;
+            }
+            #canvas {
+                background-image: none !important;
+            }
+            .print-details-label {
+                display: block !important;
+            }
+            #print-legend {
+                background: white !important;
+                border: 1px solid #cbd5e1 !important;
+                opacity: 1 !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 h-screen flex overflow-hidden font-sans">
+
+    <!-- Sidebar -->
+    <aside class="w-72 bg-white border-r border-slate-200 p-6 flex flex-col gap-6 shadow-sm z-20 overflow-y-auto no-print">
+        <div>
+            <h1 class="text-xl font-black text-blue-700 leading-none">Netz-Planer</h1>
+            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-1">Professional Pro Edition</p>
+        </div>
+
+        <div>
+            <h2 class="text-xs font-bold text-slate-500 uppercase mb-3 text-blue-600">Papierformat</h2>
+            <select id="select-page-size" class="w-full px-4 py-2 rounded-xl border border-slate-200 bg-slate-50 font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                <option value="a4">DIN A4 (Querformat)</option>
+                <option value="a3">DIN A3 (Querformat)</option>
+            </select>
+        </div>
+
+        <div>
+            <h2 class="text-xs font-bold text-slate-500 uppercase mb-3 text-blue-600">Sicherheit</h2>
+            <button id="btn-master-setup" class="flex items-center gap-3 w-full px-4 py-2 rounded-xl border border-blue-100 bg-blue-50 text-blue-700 font-bold hover:bg-blue-100 transition-all text-xs">
+                <span>🔐</span>
+                <span id="master-status-text">Master-Passwort festlegen</span>
+            </button>
+        </div>
+
+        <div>
+            <h2 class="text-xs font-bold text-slate-500 uppercase mb-3 text-slate-600">Druck-Optionen</h2>
+            <label class="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl cursor-pointer hover:bg-slate-100 transition-all active:scale-95">
+                <input type="checkbox" id="check-print-passwords" class="w-4 h-4 text-blue-600 rounded">
+                <span class="text-xs font-bold text-slate-700">Details drucken</span>
+            </label>
+            <button id="btn-print" class="mt-2 flex items-center justify-center gap-3 w-full px-4 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
+                <span>🖨️</span>
+                <span class="text-sm">Plan drucken</span>
+            </button>
+        </div>
+
+        <!-- Linien-Einstellungen Panel -->
+        <div id="edge-settings-panel" class="hidden space-y-3 bg-blue-50 p-4 rounded-2xl border border-blue-100 shadow-sm animate-in fade-in zoom-in duration-200">
+            <h2 class="text-[10px] font-black text-blue-600 uppercase tracking-widest px-1">Leitung konfigurieren</h2>
+            
+            <label class="flex items-center gap-2 cursor-pointer p-1.5 bg-white rounded-lg border border-blue-100 shadow-sm">
+                <input type="checkbox" id="edge-is-wlan" class="w-4 h-4 text-blue-600 rounded">
+                <span class="text-xs font-bold text-slate-700">WLAN (gestrichelt)</span>
+            </label>
+
+            <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1 block mb-1">Kabel-Info (Typ / Länge)</label>
+                <input type="text" id="edge-info-input" placeholder="z.B. CAT 7, 10m" class="w-full px-2 py-1.5 bg-white border border-blue-100 rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="space-y-1">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Kategorie / Farbe</span>
+                <div id="color-presets" class="grid grid-cols-1 gap-1"></div>
+            </div>
+        </div>
+
+        <div>
+            <h2 class="text-xs font-bold text-slate-500 uppercase mb-3">Komponenten</h2>
+            <div id="device-palette" class="grid grid-cols-2 gap-2"></div>
+        </div>
+
+        <div class="mt-auto space-y-2">
+            <h2 class="text-xs font-bold text-slate-500 uppercase mb-3 text-blue-600 font-black">Planung</h2>
+            <button id="btn-connect" class="flex items-center gap-3 w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold hover:bg-slate-50 transition-all">
+                <span class="text-lg">🔗</span>
+                <span class="text-sm">Kabel verbinden</span>
+            </button>
+            
+            <div class="grid grid-cols-2 gap-2">
+                <button id="btn-delete" class="flex items-center justify-center gap-2 py-3 rounded-xl border border-red-100 bg-white text-red-500 font-bold hover:bg-red-50 transition-all opacity-50 cursor-not-allowed" title="Selektiertes Objekt löschen">
+                    <span class="text-lg">🗑️</span>
+                </button>
+                <button id="btn-new" class="flex items-center justify-center gap-2 py-3 rounded-xl border border-slate-200 bg-white text-slate-400 font-bold hover:text-blue-600 transition-all" title="Neu">
+                    <span class="text-lg">📄</span>
+                </button>
+            </div>
+
+            <hr class="border-slate-100 my-2">
+
+            <div class="grid grid-cols-2 gap-2">
+                <input type="file" id="file-input" class="hidden" accept=".json">
+                <button id="btn-import" class="flex items-center justify-center gap-2 py-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold hover:bg-slate-50 transition-all text-xs">📂 Laden</button>
+                <button id="btn-export" class="flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700 transition-all shadow-md text-xs">💾 Export</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Canvas Viewport -->
+    <main id="page-wrapper" class="flex-1">
+        <div id="canvas-container" class="page-a4">
+            <div id="canvas" onclick="deselectAll()"></div>
+            <svg id="svg-lines" class="absolute inset-0 w-full h-full pointer-events-none" style="z-index: 40;"></svg>
+
+            <!-- Legende unten rechts -->
+            <div id="print-legend" class="absolute bottom-6 right-6 p-4 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl shadow-xl z-[70] pointer-events-none min-w-[160px]">
+                <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-100 pb-1">Legende</h3>
+                <div id="legend-items" class="space-y-2"></div>
+                <div class="mt-3 pt-2 border-t border-slate-100 flex items-center gap-3">
+                    <div class="w-6 h-[2px] border-b-2 border-dashed border-slate-400"></div>
+                    <span class="text-[9px] font-bold text-slate-600 uppercase">WLAN / Funk</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div id="master-modal" class="fixed inset-0 z-[110] flex items-center justify-center p-4">
+        <div class="bg-white rounded-[32px] shadow-2xl w-full max-sm overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 class="font-black text-slate-800 uppercase tracking-tight">Master-Passwort</h3>
+                <button onclick="closeMasterModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div id="old-pass-container" style="display:none;">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1 px-1">Aktuelles Passwort</label>
+                    <input id="old-master-pass" type="password" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-red-400">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1 px-1">Neues Passwort</label>
+                    <input id="setup-master-pass" type="password" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button onclick="saveMasterPassword()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase hover:bg-blue-700 transition-all shadow-lg">Bestätigen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Geräte Modal -->
+    <div id="modal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div class="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">Konfiguration</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
+            </div>
+            <div class="p-8 space-y-4 max-h-[70vh] overflow-y-auto">
+                <input type="hidden" id="edit-id">
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="text-[10px] font-black uppercase text-slate-400 px-1">Bezeichnung</label><input id="edit-label" type="text" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-blue-500"></div>
+                    <div><label class="text-[10px] font-black uppercase text-slate-400 px-1">Gerätetyp</label><input id="edit-model" type="text" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-blue-500"></div>
+                </div>
+                <div><label class="text-[10px] font-black uppercase text-slate-400 px-1">Einbauort</label><input id="edit-location" type="text" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:ring-2 focus:ring-blue-500"></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="text-[10px] font-black uppercase text-slate-400 px-1">IP-Adresse</label><input id="edit-ip" type="text" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none"></div>
+                    <div><label class="text-[10px] font-black uppercase text-slate-400 px-1">Ports</label><input id="edit-ports" type="text" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none"></div>
+                </div>
+                <div class="bg-blue-50 p-6 rounded-3xl space-y-3">
+                    <div class="flex justify-between items-center"><h4 class="text-[10px] font-black text-blue-600 uppercase">Login-Daten</h4><button id="btn-reveal-pass" onclick="revealPassword()" class="text-[10px] font-bold text-blue-500 hover:underline">Anzeigen</button></div>
+                    <input id="edit-user" type="text" placeholder="User" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-lg text-sm font-bold outline-none">
+                    <input id="edit-pass" type="password" placeholder="Passwort" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-lg text-sm font-bold outline-none">
+                </div>
+                <button onclick="saveDetails()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase hover:bg-blue-700 transition-all shadow-xl shadow-blue-200">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const canvasContainer = document.getElementById('canvas-container');
+        const svgLines = document.getElementById('svg-lines');
+        const palette = document.getElementById('device-palette');
+        const btnConnect = document.getElementById('btn-connect');
+        const btnDelete = document.getElementById('btn-delete');
+        const btnNew = document.getElementById('btn-new');
+        const btnImport = document.getElementById('btn-import');
+        const btnPrint = document.getElementById('btn-print');
+        const fileInput = document.getElementById('file-input');
+        const btnMasterSetup = document.getElementById('btn-master-setup');
+        const masterStatusText = document.getElementById('master-status-text');
+        const checkPrintPasswords = document.getElementById('check-print-passwords');
+        const selectPageSize = document.getElementById('select-page-size');
+        const edgeSettingsPanel = document.getElementById('edge-settings-panel');
+        const edgeIsWlan = document.getElementById('edge-is-wlan');
+        const edgeInfoInput = document.getElementById('edge-info-input');
+        const colorPresets = document.getElementById('color-presets');
+        const legendItems = document.getElementById('legend-items');
+        
+        // --- ICONS ---
+        const SVGS = {
+            router: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="14" width="20" height="8" rx="2"/><path d="M6 14v-4m4 4v-4m4 4v-4m4 4v-4M2 18h20M12 10V2M8 6l4-4 4 4"/></svg>',
+            switch: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h.01m3.99 0h.01m3.99 0h.01m3.99 0h.01M6 9h.01m3.99 0h.01m3.99 0h.01m3.99 0h.01"/></svg>',
+            ap: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg>',
+            patchpanel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="1"/><path d="M6 9h.01M9 9h.01M12 9h.01M15 9h.01M18 9h.01M6 12h.01M9 12h.01M12 12h.01M15 12h.01M18 12h.01M6 15h.01M9 15h.01M12 15h.01M15 15h.01M18 15h.01"/></svg>',
+            dose: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="8" rx="1"/><path d="M8 11h2v2H8zM14 11h2v2h-2zM5 12h14"/></svg>',
+            server: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>',
+            pc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+            ups: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M9 7h6m-6 4h6m-3 4v4m-2 0h4"/></svg>',
+            nas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="12" x2="2" y2="12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>',
+            knx: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9zM9 1h6M9 23h6M1 9v6M23 9v6"/></svg>',
+            loxone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+            camera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+        };
+
+        const CATEGORIES = [
+            { color: '#3b82f6', label: 'Netzwerk / LAN' },
+            { color: '#64748b', label: 'Patchkabel' },
+            { color: '#22c55e', label: 'PoE / IP-Gerät' },
+            { color: '#ef4444', label: 'Alarm / Security' },
+            { color: '#a855f7', label: 'Smart Home / KNX' }
+        ];
+
+        const DEVICE_TYPES = [
+            { type: 'router', icon: SVGS.router, label: 'Router' },
+            { type: 'switch', icon: SVGS.switch, label: 'Switch' },
+            { type: 'ap', icon: SVGS.ap, label: 'Access Point' },
+            { type: 'patchpanel', icon: SVGS.patchpanel, label: 'Patchpanel' },
+            { type: 'dose', icon: SVGS.dose, label: 'Netzwerkdose' },
+            { type: 'server', icon: SVGS.server, label: 'Server' },
+            { type: 'pc', icon: SVGS.pc, label: 'PC / Laptop' },
+            { type: 'camera', icon: SVGS.camera, label: 'IP-Kamera' },
+            { type: 'nas', icon: SVGS.nas, label: 'NAS' },
+            { type: 'ups', icon: SVGS.ups, label: 'USV' },
+            { type: 'knx', icon: SVGS.knx, label: 'KNX Server' },
+            { type: 'loxone', icon: SVGS.loxone, label: 'Loxone MS' }
+        ];
+
+        let state = {
+            nodes: [], edges: [], selectedId: null, selectedEdgeId: null,
+            isConnecting: false, connSourceId: null, dragTargetId: null,
+            masterPassword: "", printPasswords: false, pageSize: 'a4'
+        };
+
+        const GRID_SIZE = 30;
+
+        function cryptText(t, k) { if (!t || !k) return t; let r = ""; for (let i = 0; i < t.length; i++) r += String.fromCharCode(t.charCodeAt(i) ^ k.charCodeAt(i % k.length)); return btoa(r); }
+        function decryptText(c, k) { if (!c || !k) return c; try { let d = atob(c), r = ""; for (let i = 0; i < d.length; i++) r += String.fromCharCode(d.charCodeAt(i) ^ k.charCodeAt(i % k.length)); return r; } catch(e) { return c; } }
+
+        function init() {
+            // Palette befüllen
+            DEVICE_TYPES.forEach(d => {
+                const btn = document.createElement('button');
+                btn.className = "flex flex-col items-center justify-center p-3 border border-slate-100 rounded-2xl hover:bg-blue-50 transition-all bg-slate-50/50 group active:scale-95";
+                btn.innerHTML = `<div class="w-8 h-8 mb-1.5 text-slate-400 group-hover:text-blue-600">${d.icon}</div><span class="text-[9px] font-bold text-slate-600 leading-tight">${d.label}</span>`;
+                btn.onclick = (e) => { e.stopPropagation(); addNode(d.type); };
+                palette.appendChild(btn);
+            });
+
+            // Farbkacheln & Legende befüllen
+            CATEGORIES.forEach(p => {
+                const btn = document.createElement('button');
+                btn.className = "flex items-center gap-2 w-full p-2 bg-white border border-slate-100 rounded-lg hover:border-blue-300 transition-all group shadow-sm";
+                btn.innerHTML = `<div class="w-4 h-4 rounded-full flex-shrink-0" style="background: ${p.color}"></div><span class="text-[10px] font-bold text-slate-600 group-hover:text-blue-600 text-left">${p.label}</span>`;
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (state.selectedEdgeId) {
+                        const edge = state.edges.find(ed => ed.id === state.selectedEdgeId);
+                        if (edge) { edge.color = p.color; render(); save(); }
+                    }
+                };
+                colorPresets.appendChild(btn);
+
+                const legItem = document.createElement('div');
+                legItem.className = "flex items-center gap-3";
+                legItem.innerHTML = `<div class="w-3 h-3 rounded-full flex-shrink-0" style="background: ${p.color}"></div><span class="text-[9px] font-bold text-slate-600 uppercase">${p.label}</span>`;
+                legendItems.appendChild(legItem);
+            });
+
+            // Papierformat Wechsler
+            selectPageSize.onchange = (e) => {
+                state.pageSize = e.target.value;
+                canvasContainer.className = state.pageSize === 'a4' ? 'page-a4' : 'page-a3';
+                save();
+            };
+
+            const saved = localStorage.getItem('netplan_native_v4');
+            if(saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    state.masterPassword = (data.masterPassword && data.masterPassword !== "null") ? atob(data.masterPassword) : "";
+                    state.edges = (data.edges || []).map(e => ({...e, type: e.type || 'cable', color: e.color || '#3b82f6', info: e.info || ''}));
+                    state.pageSize = data.pageSize || 'a4';
+                    selectPageSize.value = state.pageSize;
+                    canvasContainer.className = state.pageSize === 'a4' ? 'page-a4' : 'page-a3';
+                    state.nodes = (data.nodes || []).map(n => {
+                        if (n.pass && state.masterPassword) n.pass = decryptText(n.pass, state.masterPassword);
+                        return n;
+                    });
+                } catch(e) {}
+            }
+
+            updateMasterUI();
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+            btnConnect.onclick = (e) => { e.stopPropagation(); toggleConnectMode(); };
+            btnDelete.onclick = (e) => { e.stopPropagation(); deleteSelected(); };
+            document.getElementById('btn-new').onclick = (e) => { e.stopPropagation(); resetPlan(); };
+            btnImport.onclick = () => document.getElementById('file-input').click();
+            document.getElementById('file-input').onchange = importData;
+            document.getElementById('btn-export').onclick = (e) => { e.stopPropagation(); exportData(); };
+            btnMasterSetup.onclick = (e) => { e.stopPropagation(); openMasterModal(); };
+            btnPrint.onclick = (e) => { e.stopPropagation(); window.print(); };
+            
+            checkPrintPasswords.onchange = (e) => {
+                if (e.target.checked && state.masterPassword) {
+                    if (prompt("Master-Passwort zur Bestätigung:") !== state.masterPassword) {
+                        alert("Falsch!"); e.target.checked = false; return;
+                    }
+                }
+                state.printPasswords = e.target.checked;
+                render();
+            };
+
+            edgeIsWlan.onchange = (e) => {
+                if (state.selectedEdgeId) {
+                    const edge = state.edges.find(ed => ed.id === state.selectedEdgeId);
+                    if (edge) { edge.type = e.target.checked ? 'wlan' : 'cable'; render(); save(); }
+                }
+            };
+
+            edgeInfoInput.oninput = (e) => {
+                if (state.selectedEdgeId) {
+                    const edge = state.edges.find(ed => ed.id === state.selectedEdgeId);
+                    if (edge) { edge.info = e.target.value; render(); save(); }
+                }
+            };
+
+            render();
+        }
+
+        function addNode(type) {
+            const conf = DEVICE_TYPES.find(d => d.type === type);
+            const newNode = { id: 'node_' + Date.now(), type, x: 210, y: 210, label: conf.label + ' ' + (state.nodes.length + 1), ip: '', ports: '', user: '', pass: '', location: '', model: '' };
+            state.nodes.push(newNode); state.selectedId = newNode.id; state.selectedEdgeId = null; render(); save();
+        }
+
+        function getOrthogonalPath(from, to) {
+            const midX = (from.x + to.x) / 2;
+            return `M ${from.x} ${from.y} L ${midX} ${from.y} L ${midX} ${to.y} L ${to.x} ${to.y}`;
+        }
+
+        function render() {
+            canvas.innerHTML = '';
+            svgLines.innerHTML = '';
+
+            state.edges.forEach(edge => {
+                const from = state.nodes.find(n => n.id === edge.from), to = state.nodes.find(n => n.id === edge.to);
+                if(from && to) {
+                    const isEdgeSelected = state.selectedEdgeId === edge.id;
+                    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    const pathString = getOrthogonalPath(from, to);
+
+                    const hitbox = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    hitbox.setAttribute('d', pathString);
+                    hitbox.setAttribute('class', 'edge-hitbox no-print');
+                    hitbox.style.pointerEvents = 'stroke';
+                    hitbox.onclick = (e) => { 
+                        e.stopPropagation(); 
+                        state.selectedId = null; state.selectedEdgeId = edge.id; render(); 
+                    };
+                    
+                    const visible = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    visible.setAttribute('d', pathString);
+                    visible.setAttribute('stroke', isEdgeSelected ? '#ef4444' : (edge.color || '#3b82f6'));
+                    visible.setAttribute('stroke-width', isEdgeSelected ? '6' : '3');
+                    visible.setAttribute('stroke-linecap', 'round');
+                    visible.setAttribute('stroke-linejoin', 'round');
+                    if(edge.type === 'wlan') visible.setAttribute('stroke-dasharray', '8,6');
+                    visible.setAttribute('class', 'edge-visible');
+                    
+                    group.appendChild(hitbox); 
+                    group.appendChild(visible);
+
+                    if (edge.info) {
+                        const midX = (from.x + to.x) / 2, midY = (from.y + to.y) / 2;
+                        const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        txt.setAttribute('x', midX); txt.setAttribute('y', midY - 5);
+                        txt.setAttribute('text-anchor', 'middle');
+                        txt.setAttribute('class', 'edge-label');
+                        txt.textContent = edge.info;
+                        group.appendChild(txt);
+                    }
+                    svgLines.appendChild(group);
+                }
+            });
+
+            state.nodes.forEach(node => {
+                const conf = DEVICE_TYPES.find(d => d.type === node.type);
+                const el = document.createElement('div');
+                el.className = `device-node absolute flex flex-col items-center`;
+                el.style.left = node.x + 'px'; el.style.top = node.y + 'px';
+                el.style.transform = 'translate(-50%, -50%)';
+                const isSelected = state.selectedId === node.id;
+                el.innerHTML = `
+                    <div class="relative p-4 rounded-3xl shadow-xl bg-white ${isSelected ? 'ring-4 ring-blue-500 scale-105' : ''} ${state.connSourceId === node.id ? 'ring-4 ring-orange-500 animate-pulse' : ''}">
+                        <div class="w-10 h-10 ${isSelected ? 'text-blue-600' : 'text-slate-700'}">${conf.icon}</div>
+                        ${isSelected ? `<button id="gear-${node.id}" class="absolute -top-3 -right-3 bg-slate-800 text-white p-2 rounded-full text-[10px] border-2 border-white no-print hover:bg-blue-600 transition-colors">⚙️</button>` : ''}
+                    </div>
+                    <div class="mt-2 flex flex-col items-center text-center">
+                        <span class="text-[10px] font-black bg-slate-800 text-white px-2 py-0.5 rounded-full whitespace-nowrap">${node.label}</span>
+                        ${node.ip ? `<span class="text-[8px] font-mono font-bold text-blue-600 bg-white px-1 mt-1 border rounded leading-tight">${node.ip}</span>` : ''}
+                        ${node.location ? `<span class="text-[7px] font-bold text-slate-500 bg-white px-1 mt-0.5 border rounded uppercase leading-tight shadow-sm">${node.location}</span>` : ''}
+                        ${state.printPasswords ? `<div class="hidden print-details-label mt-1 text-[7px] font-bold text-slate-700 bg-white px-1 border rounded shadow-sm text-left leading-tight min-w-[80px]">
+                            ${node.model ? `<div class="border-b pb-0.5 mb-0.5 text-blue-600">Typ: ${node.model}</div>` : ''}
+                            ${node.user ? `<div class="border-b pb-0.5 mb-0.5 text-slate-500">${node.user}</div>` : ''}
+                            ${node.pass ? `<div class="text-red-600">PW: ${node.pass}</div>` : ''}
+                        </div>` : ''}
+                    </div>`;
+                if (isSelected) {
+                    const gearBtn = el.querySelector(`#gear-${node.id}`);
+                    gearBtn.onmousedown = (e) => e.stopPropagation();
+                    gearBtn.onclick = (e) => { e.stopPropagation(); openModal(node.id); };
+                }
+                el.onmousedown = (e) => {
+                    e.stopPropagation();
+                    if(state.isConnecting) handleConnectClick(node.id);
+                    else { state.dragTargetId = node.id; state.selectedId = node.id; state.selectedEdgeId = null; render(); }
+                };
+                canvas.appendChild(el);
+            });
+
+            const anySelected = state.selectedId || state.selectedEdgeId;
+            btnDelete.style.opacity = anySelected ? '1' : '0.5';
+            btnDelete.style.cursor = anySelected ? 'pointer' : 'not-allowed';
+            if (state.selectedEdgeId) {
+                const edge = state.edges.find(ed => ed.id === state.selectedEdgeId);
+                if (edge) { edgeSettingsPanel.classList.remove('hidden'); edgeIsWlan.checked = (edge.type === 'wlan'); edgeInfoInput.value = edge.info || ''; }
+            } else { edgeSettingsPanel.classList.add('hidden'); }
+        }
+
+        function handleMouseMove(e) {
+            const rect = canvas.getBoundingClientRect();
+            if(state.dragTargetId) {
+                const node = state.nodes.find(n => n.id === state.dragTargetId);
+                if(node) { 
+                    node.x = Math.round((e.clientX - rect.left) / (GRID_SIZE / 2)) * (GRID_SIZE / 2);
+                    node.y = Math.round((e.clientY - rect.top) / (GRID_SIZE / 2)) * (GRID_SIZE / 2);
+                    updateGraphics(); 
+                }
+            }
+        }
+
+        function updateGraphics() {
+            const lines = svgLines.querySelectorAll('.edge-visible'), hitboxes = svgLines.querySelectorAll('.edge-hitbox'), labels = svgLines.querySelectorAll('.edge-label');
+            let idx = 0;
+            state.edges.forEach(edge => {
+                const from = state.nodes.find(n => n.id === edge.from), to = state.nodes.find(n => n.id === edge.to);
+                if(from && to && lines[idx]) { 
+                    const pathString = getOrthogonalPath(from, to);
+                    [lines[idx], hitboxes[idx]].forEach(l => l.setAttribute('d', pathString)); 
+                    if (labels[idx]) { labels[idx].setAttribute('x', (from.x + to.x) / 2); labels[idx].setAttribute('y', (from.y + to.y) / 2 - 5); }
+                    idx++; 
+                }
+            });
+            const els = canvas.querySelectorAll('.device-node');
+            state.nodes.forEach((n, i) => { if(els[i]) { els[i].style.left = n.x + 'px'; els[i].style.top = n.y + 'px'; } });
+        }
+
+        function handleMouseUp() { state.dragTargetId = null; save(); }
+        function toggleConnectMode() { state.isConnecting = !state.isConnecting; state.connSourceId = null; render(); }
+        function handleConnectClick(id) {
+            if(!state.connSourceId) state.connSourceId = id;
+            else if(state.connSourceId !== id) {
+                state.edges.push({ id: 'edge_'+Date.now(), from: state.connSourceId, to: id, type: 'cable', color: '#3b82f6', info: '' });
+                state.connSourceId = null; state.isConnecting = false;
+            }
+            render(); save();
+        }
+
+        function deleteSelected() {
+            if(state.selectedId) { state.nodes = state.nodes.filter(n => n.id !== state.selectedId); state.edges = state.edges.filter(e => e.from !== state.selectedId && e.to !== state.selectedId); state.selectedId = null; } 
+            else if (state.selectedEdgeId) { state.edges = state.edges.filter(e => e.id !== state.selectedEdgeId); state.selectedEdgeId = null; }
+            render(); save();
+        }
+
+        function resetPlan() { 
+            if(confirm("Plan leeren?")) { state.nodes = []; state.edges = []; state.selectedId = null; state.selectedEdgeId = null; state.masterPassword = ""; updateMasterUI(); render(); save(); } 
+        }
+
+        function deselectAll() { if(!state.isConnecting) { state.selectedId = null; state.selectedEdgeId = null; render(); } }
+        function openModal(id) {
+            const n = state.nodes.find(n => n.id === id);
+            if(n) { document.getElementById('edit-id').value = n.id; document.getElementById('edit-label').value = n.label; document.getElementById('edit-model').value = n.model || ''; document.getElementById('edit-location').value = n.location || ''; document.getElementById('edit-ip').value = n.ip || ''; document.getElementById('edit-ports').value = n.ports || ''; document.getElementById('edit-user').value = n.user || ''; document.getElementById('edit-pass').value = n.pass || ''; document.getElementById('edit-pass').type = 'password'; document.getElementById('modal').style.display = 'flex'; }
+        }
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        function saveDetails() {
+            const n = state.nodes.find(n => n.id === document.getElementById('edit-id').value);
+            if(n) { n.label = document.getElementById('edit-label').value; n.model = document.getElementById('edit-model').value; n.location = document.getElementById('edit-location').value; n.ip = document.getElementById('edit-ip').value; n.ports = document.getElementById('edit-ports').value; n.user = document.getElementById('edit-user').value; n.pass = document.getElementById('edit-pass').value; closeModal(); render(); save(); }
+        }
+        function openMasterModal() { document.getElementById('old-pass-container').style.display = state.masterPassword ? 'block' : 'none'; document.getElementById('master-modal').style.display = 'flex'; }
+        function closeMasterModal() { document.getElementById('master-modal').style.display = 'none'; }
+        function saveMasterPassword() { const old = document.getElementById('old-master-pass').value, newP = document.getElementById('setup-master-pass').value; if(state.masterPassword && old !== state.masterPassword) { alert("Falsch!"); return; } state.masterPassword = newP; closeMasterModal(); save(); updateMasterUI(); }
+        function updateMasterUI() { document.getElementById('master-status-text').innerText = state.masterPassword ? "Passwort ändern" : "Passwort setzen"; }
+        function revealPassword() { const p = prompt("Passwort:"); if(p === state.masterPassword) { document.getElementById('edit-pass').type = 'text'; setTimeout(() => document.getElementById('edit-pass').type = 'password', 5000); } }
+        function save() { const data = { nodes: state.nodes.map(n => ({...n, pass: cryptText(n.pass, state.masterPassword)})), edges: state.edges, masterPassword: btoa(state.masterPassword || ""), pageSize: state.pageSize }; localStorage.setItem('netplan_native_v4', JSON.stringify(data)); }
+        function exportData() { save(); const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem('netplan_native_v4')); a.download = `Netzplan_${new Date().toISOString().slice(0,10)}.json`; a.click(); }
+        function importData(e) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const data = JSON.parse(ev.target.result); state.masterPassword = (data.masterPassword && data.masterPassword !== "null") ? atob(data.masterPassword) : ""; state.edges = (data.edges || []).map(e => ({...e, type: e.type || 'cable', color: e.color || '#3b82f6', info: e.info || ''})); state.pageSize = data.pageSize || 'a4'; selectPageSize.value = state.pageSize; canvasContainer.className = state.pageSize === 'a4' ? 'page-a4' : 'page-a3'; state.nodes = (data.nodes || []).map(n => { if(n.pass && state.masterPassword) n.pass = decryptText(n.pass, state.masterPassword); return n; }); render(); save(); updateMasterUI();
+            };
+            reader.readAsText(e.target.files[0]);
+        }
+        init();
+    </script>
+</body>
+</html>
