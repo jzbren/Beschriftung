@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sicherheitsbeleuchtung - Protokoll & Historie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { padding: 0; margin: 0; background: white; }
+            .print-border { border: none !important; box-shadow: none !important; }
+            table { font-size: 7px; width: 100%; border-collapse: collapse; }
+            select { appearance: none; border: none; padding: 0; background: transparent; width: auto; }
+            .section-container { page-break-inside: avoid; margin-bottom: 2rem; }
+            .page-break { page-break-before: always; }
+            .history-section { display: block !important; }
+        }
+        
+        [contenteditable]:hover { background-color: rgba(59, 130, 246, 0.05); outline: 1px dashed #3b82f6; }
+        [contenteditable]:focus { background-color: white; outline: 2px solid #3b82f6; }
+
+        th { font-size: 0.65rem; background-color: #f3f4f6; border: 1px solid black; padding: 2px; }
+        td { font-size: 0.75rem; border: 1px solid black; }
+
+        .dropdown-select { width: 100%; background: transparent; text-align: center; cursor: pointer; outline: none; font-size: 0.8rem; }
+        
+        .btn-reset:active { transform: scale(0.95); }
+    </style>
+    <script>
+        let maintenanceHistory = [];
+
+        function getFunctionOptions(selectedValue = "") {
+            const options = [
+                { val: "E ↓", label: "E ↓" }, { val: "E ←", label: "E ←" }, { val: "E →", label: "E →" },
+                { val: "NE ↓", label: "NE ↓" }, { val: "NE ←", label: "NE ←" }, { val: "NE →", label: "NE →" },
+                { val: "RS", label: "RS" }
+            ];
+            let html = `<select class="dropdown-select">`;
+            html += `<option value=""></option>`;
+            options.forEach(opt => {
+                const selected = opt.val === selectedValue ? "selected" : "";
+                html += `<option value="${opt.val}" ${selected}>${opt.label}</option>`;
+            });
+            html += `</select>`;
+            return html;
+        }
+
+        function createRowHtmlContent(initialData = {}) {
+            const globalDate = document.getElementById('globalTestDate')?.value || new Date().toLocaleDateString('de-DE');
+            const globalSig = document.getElementById('globalSignature')?.value || '';
+
+            return `
+                <td contenteditable="true" class="p-1 text-center font-bold col-num">${initialData.num || ''}</td>
+                <td contenteditable="true" class="p-1 col-loc">${initialData.loc || ''}</td>
+                <td class="p-0 text-center col-func">${getFunctionOptions(initialData.func || '')}</td>
+                <td contenteditable="true" class="p-1 text-xs col-fab">${initialData.fab || ''}</td>
+                <td contenteditable="true" class="p-1 text-xs text-center col-typ">${initialData.typ || ''}</td>
+                <td contenteditable="true" class="p-1 text-center col-inst-date">${initialData.instDate || ''}</td>
+                <td contenteditable="true" class="p-1 text-center col-dist">${initialData.dist || ''}</td>
+                <td contenteditable="true" class="p-1 text-center col-sec">${initialData.sec || ''}</td>
+                <td contenteditable="true" class="p-1 text-center cursor-pointer select-none col-sja" onclick="toggleX(this)">${initialData.sja || ''}</td>
+                <td contenteditable="true" class="p-1 text-center cursor-pointer select-none col-snein" onclick="toggleX(this)">${initialData.snein || ''}</td>
+                <td contenteditable="true" class="p-1 text-center col-test-date">${initialData.testDate || globalDate}</td>
+                <td contenteditable="true" class="p-1 text-center cursor-pointer select-none col-io" onclick="toggleX(this)">${initialData.io || ''}</td>
+                <td class="p-1 relative group">
+                    <div contenteditable="true" class="col-rep min-h-[1.2rem]">${initialData.rep || ''}</div>
+                </td>
+                <td contenteditable="true" class="p-1 text-center col-rep-date">${initialData.repDate || ''}</td>
+                <td contenteditable="true" class="p-1 text-center text-[10px] col-signature">${initialData.sig || globalSig}</td>
+                <td contenteditable="true" class="p-1 italic text-xs col-rem">${initialData.rem || ''}</td>
+                <td class="p-1 text-center no-print border-none bg-transparent">
+                    <button onclick="deleteRow(this)" class="text-red-300 hover:text-red-600 font-bold transition">×</button>
+                </td>
+            `;
+        }
+
+        function extractRowData(row) {
+            const section = row.closest('.section-container');
+            const room = section.querySelector('.room-title').innerText;
+            return {
+                timestamp: new Date().toISOString(),
+                room: room,
+                num: row.querySelector('.col-num').innerText,
+                loc: row.querySelector('.col-loc').innerText,
+                func: row.querySelector('.col-func select').value,
+                fab: row.querySelector('.col-fab').innerText,
+                typ: row.querySelector('.col-typ').innerText,
+                instDate: row.querySelector('.col-inst-date').innerText,
+                dist: row.querySelector('.col-dist').innerText,
+                sec: row.querySelector('.col-sec').innerText,
+                sja: row.querySelector('.col-sja').innerText,
+                snein: row.querySelector('.col-snein').innerText,
+                testDate: row.querySelector('.col-test-date').innerText,
+                io: row.querySelector('.col-io').innerText,
+                rep: row.querySelector('.col-rep').innerText,
+                repDate: row.querySelector('.col-rep-date').innerText,
+                sig: row.querySelector('.col-signature').innerText,
+                rem: row.querySelector('.col-rem').innerText
+            };
+        }
+
+        function startNewTestCycle() {
+            if(!confirm("Möchten Sie einen neuen Testzyklus starten? \n\nALLE aktuellen Daten jeder Zeile werden zuerst zwingend ins Logbuch archiviert. Danach werden Datum und Statusfelder zurückgesetzt. Stammdaten (Standort, Typ, Selbsttest-Kreuze, Bemerkungen) bleiben erhalten.")) {
+                return;
+            }
+
+            const today = new Date().toLocaleDateString('de-DE');
+            document.getElementById('globalTestDate').value = today;
+            const rows = document.querySelectorAll('.table-body tr');
+            
+            rows.forEach(row => {
+                maintenanceHistory.push(extractRowData(row));
+                row.querySelector('.col-test-date').innerText = today;
+                row.querySelector('.col-io').innerText = '';
+                row.querySelector('.col-rep').innerText = '';
+                row.querySelector('.col-rep-date').innerText = '';
+                row.querySelector('.col-signature').innerText = document.getElementById('globalSignature').value;
+            });
+
+            renderHistory();
+            showToast("Alle Daten archiviert und neuer Testzyklus vorbereitet.");
+        }
+
+        function renderHistory() {
+            const tbody = document.getElementById('historyBody');
+            const searchInput = document.getElementById('historySearch');
+            const searchVal = searchInput ? searchInput.value.toLowerCase().trim() : "";
+            
+            tbody.innerHTML = '';
+            
+            // Filter nach Leuchtennummer
+            const filtered = maintenanceHistory.filter(entry => 
+                entry.num.toLowerCase().includes(searchVal)
+            );
+            
+            const sorted = [...filtered].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            sorted.forEach(entry => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-200 hover:bg-gray-50 text-[9px]";
+                tr.innerHTML = `
+                    <td class="p-1 text-center font-bold">${entry.testDate}</td>
+                    <td class="p-1 text-center">${entry.num}</td>
+                    <td class="p-1">${entry.room} / ${entry.loc}</td>
+                    <td class="p-1 italic text-gray-500">${entry.fab} ${entry.typ} (${entry.dist}/${entry.sec})</td>
+                    <td class="p-1 text-center font-bold text-blue-800">${entry.io || '-'}</td>
+                    <td class="p-1 font-semibold">${entry.rep || '<span class="text-gray-300">Keine Rep.</span>'}</td>
+                    <td class="p-1 text-center">${entry.sig}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function addSection(sectionData = null) {
+            const container = document.getElementById('sectionsContainer');
+            const sectionId = 'section-' + Date.now() + Math.random().toString(36).substr(2, 9);
+            
+            const sectionHtml = `
+                <div id="${sectionId}" class="section-container mb-12 relative group">
+                    <div class="flex justify-between items-end mb-4 border-b border-gray-300 pb-2">
+                        <div class="flex items-center gap-4">
+                            <span class="font-semibold underline text-lg">Raum / Etage:</span>
+                            <div contenteditable="true" class="room-title border-b border-black min-w-[300px] px-2 font-bold text-xl uppercase">
+                                ${sectionData ? sectionData.roomName : 'NEUER RAUM'}
+                            </div>
+                        </div>
+                        <button onclick="removeSection('${sectionId}')" class="no-print bg-red-50 text-red-600 px-3 py-1 rounded text-xs hover:bg-red-200 transition">
+                            Raum entfernen
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2" class="w-16">Leuchten- Nummer</th>
+                                    <th rowspan="2" class="w-32">Standort</th>
+                                    <th rowspan="2" class="w-20">Funktion</th>
+                                    <th rowspan="2" class="w-24">Fabrikat / Lieferant</th>
+                                    <th rowspan="2" class="w-24">Typ / Art. Nr.</th>
+                                    <th rowspan="2" class="w-20 text-[8px]">Install. / Wechsel</th>
+                                    <th rowspan="2" class="w-20 text-[8px]">Ab Sicher.- vert.</th>
+                                    <th rowspan="2" class="w-12 text-[8px]">Sicher.- Nr.</th>
+                                    <th colspan="2">Selbsttest</th>
+                                    <th rowspan="2" class="w-20">Getestet am:</th>
+                                    <th colspan="3">Zustand</th>
+                                    <th rowspan="2" class="w-16">Unterschr.</th>
+                                    <th rowspan="2" class="w-24">Bemerkungen</th>
+                                    <th rowspan="2" class="w-6 no-print border-none bg-transparent"></th>
+                                </tr>
+                                <tr>
+                                    <th class="w-8 text-[9px]">JA</th>
+                                    <th class="w-8 text-[9px]">NEIN</th>
+                                    <th class="w-8 text-[9px]">i.O.</th>
+                                    <th class="text-[9px]">Repariert (was)</th>
+                                    <th class="w-20 text-[9px]">am:</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-body">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="no-print mt-2 flex gap-4">
+                        <button onclick="addRowToSection('${sectionId}')" class="text-blue-600 text-xs font-bold hover:underline">+ Zeile hinzufügen</button>
+                    </div>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', sectionHtml);
+            const tbody = document.getElementById(sectionId).querySelector('.table-body');
+            
+            if (sectionData && sectionData.rows) {
+                sectionData.rows.forEach(rowData => {
+                    const row = tbody.insertRow();
+                    row.className = "hover:bg-gray-50 transition-colors";
+                    row.innerHTML = createRowHtmlContent(rowData);
+                });
+            } else {
+                const row = tbody.insertRow();
+                row.className = "hover:bg-gray-50 transition-colors";
+                row.innerHTML = createRowHtmlContent();
+            }
+        }
+
+        function removeSection(id) {
+            if(confirm('Raum wirklich entfernen?')) document.getElementById(id).remove();
+        }
+
+        function addRowToSection(sectionId) {
+            const tbody = document.getElementById(sectionId).querySelector('.table-body');
+            const row = tbody.insertRow();
+            row.className = "hover:bg-gray-50 transition-colors";
+            row.innerHTML = createRowHtmlContent();
+        }
+
+        function deleteRow(btn) {
+            btn.closest('tr').remove();
+        }
+
+        function toggleX(cell) {
+            cell.innerText = cell.innerText.trim() === '' ? 'X' : '';
+        }
+
+        function syncGlobalValues() {
+            const dateVal = document.getElementById('globalTestDate').value;
+            const sigVal = document.getElementById('globalSignature').value;
+            document.querySelectorAll('.col-test-date').forEach(td => td.innerText = dateVal);
+            document.querySelectorAll('.col-signature').forEach(td => td.innerText = sigVal);
+        }
+
+        function showToast(msg, type="success") {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-5 right-5 px-6 py-3 rounded-lg shadow-2xl text-white font-bold transition-all z-50 transform translate-y-20 ${type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`;
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-20'), 100);
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        function exportData() {
+            const data = {
+                title: document.getElementById('mainTitle').innerText,
+                globalDate: document.getElementById('globalTestDate').value,
+                globalSig: document.getElementById('globalSignature').value,
+                history: maintenanceHistory,
+                sections: []
+            };
+
+            document.querySelectorAll('.section-container').forEach(section => {
+                const sectionObj = {
+                    roomName: section.querySelector('.room-title').innerText,
+                    rows: []
+                };
+                section.querySelectorAll('.table-body tr').forEach(row => {
+                    sectionObj.rows.push(extractRowData(row));
+                });
+                data.sections.push(sectionObj);
+            });
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Sicherheitsbeleuchtung_${data.title.replace(/\s+/g, '_')}.json`;
+            a.click();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    document.getElementById('mainTitle').innerText = data.title || '';
+                    document.getElementById('globalTestDate').value = data.globalDate || '';
+                    document.getElementById('globalSignature').value = data.globalSig || '';
+                    maintenanceHistory = data.history || [];
+                    
+                    document.getElementById('sectionsContainer').innerHTML = '';
+                    if (data.sections) data.sections.forEach(s => addSection(s));
+                    
+                    renderHistory();
+                    event.target.value = '';
+                    showToast("Daten erfolgreich geladen.");
+                } catch (err) { alert('Fehler beim Laden der Datei.'); }
+            };
+            reader.readAsText(file);
+        }
+
+        window.onload = function() {
+            const today = new Date().toLocaleDateString('de-DE');
+            document.getElementById('globalTestDate').value = today;
+            addSection({
+                roomName: "BEISPIEL OBJEKT",
+                rows: [{
+                    num: "1.01",
+                    loc: "Eingangshalle",
+                    func: "E ↓",
+                    fab: "Lumatec",
+                    typ: "604-KU",
+                    instDate: "01/2024",
+                    dist: "UV-EG",
+                    sec: "F1",
+                    sja: "X",
+                    testDate: today,
+                    io: "X",
+                    rem: "Regelmäßig prüfen"
+                }]
+            });
+        };
+    </script>
+</head>
+<body class="bg-slate-100 p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-[1500px] mx-auto bg-white p-8 shadow-2xl border border-gray-200 print-border relative">
+        
+        <!-- Main Header -->
+        <header class="mb-10 border-b-4 border-black pb-6">
+            <h1 id="mainTitle" contenteditable="true" class="text-3xl font-extrabold underline mb-4 text-center uppercase tracking-tight text-slate-900">
+                Sicherheitsbeleuchtung Objekt Name / Adresse
+            </h1>
+        </header>
+
+        <!-- Tool Bar -->
+        <div class="no-print mb-8 flex flex-col gap-6 bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="flex flex-col">
+                    <label class="text-xs font-black uppercase text-slate-500 mb-1">Globale Daten (Auto-Sync)</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="globalTestDate" oninput="syncGlobalValues()" placeholder="Testdatum" class="border rounded px-3 py-2 text-sm font-bold w-full focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input type="text" id="globalSignature" oninput="syncGlobalValues()" placeholder="Kürzel" class="border rounded px-3 py-2 text-sm font-bold w-full focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+                
+                <div class="flex flex-col justify-end">
+                    <button onclick="startNewTestCycle()" class="btn-reset bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-lg text-sm transition shadow-md font-black flex items-center justify-center gap-2">
+                        🔄 Neuen Testzyklus starten
+                    </button>
+                    <p class="text-[10px] text-amber-700 mt-1 italic text-center">Zwingende Archivierung & Reset</p>
+                </div>
+
+                <div class="flex flex-col justify-end">
+                    <button onclick="addSection()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm transition shadow-md font-bold">
+                        + Raum / Etage hinzufügen
+                    </button>
+                </div>
+
+                <div class="flex flex-col justify-end gap-2 text-right">
+                    <button onclick="window.print()" class="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded text-sm transition font-bold">
+                        🖨️ Protokoll drucken (PDF)
+                    </button>
+                    <div class="flex gap-2 justify-end">
+                        <button onclick="exportData()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded text-xs transition font-bold">
+                            Export (.json)
+                        </button>
+                        <label class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded text-xs transition font-bold cursor-pointer">
+                            Import
+                            <input type="file" accept=".json" onchange="importData(event)" class="hidden">
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sections (Rooms) Container -->
+        <div id="sectionsContainer"></div>
+
+        <!-- Logbuch (Wartungshistorie) -->
+        <div class="mt-16 history-section">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-4 border-b-2 border-black pb-2">
+                <h2 class="text-xl font-bold flex items-center gap-2">
+                    📋 Wartungshistorie & Logbuch (Vollständiges Archiv)
+                </h2>
+                <!-- NEU: Suchfunktion für Leuchtennummer -->
+                <div class="no-print mt-2 md:mt-0 flex items-center gap-2">
+                    <label for="historySearch" class="text-[10px] font-black uppercase text-slate-500">🔍 Leuchten-Nr. suchen:</label>
+                    <input type="text" id="historySearch" oninput="renderHistory()" placeholder="z.B. 1.01" class="border rounded px-2 py-1 text-xs focus:ring-2 focus:ring-blue-500 outline-none w-32 font-bold">
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse mb-8 text-[10px]">
+                    <thead>
+                        <tr>
+                            <th class="w-24">Test-Datum</th>
+                            <th class="w-16">L-Nr.</th>
+                            <th class="w-64">Raum & Standort</th>
+                            <th class="w-48">Details (Fab./Typ/Vert./SK)</th>
+                            <th class="w-12 bg-blue-50">i.O.</th>
+                            <th class="">Maßnahme / Ergebnis</th>
+                            <th class="w-16">Kürzel</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody"></tbody>
+                </table>
+            </div>
+            <p class="text-[9px] text-gray-400 italic">Hinweis: Jeder Testzyklus wird automatisch zeilenweise archiviert. Manuelles Löschen im Archiv ist nicht möglich. Über das Suchfeld oben können Sie gezielt nach einer Leuchte filtern.</p>
+        </div>
+
+        <!-- Prüfanweisungen -->
+        <div class="mt-12 p-6 bg-amber-50 border-l-4 border-amber-400 rounded-r-lg shadow-sm no-print">
+            <h3 class="text-amber-800 font-bold text-lg mb-3 flex items-center gap-2">
+                ℹ️ Prüfanweisungen zur Durchführung
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-amber-900">
+                <div class="space-y-2">
+                    <p class="font-bold border-b border-amber-200 pb-1 underline decoration-amber-300">1. Sichtprüfung</p>
+                    <ul class="list-disc list-inside space-y-1 ml-2 opacity-90">
+                        <li>Gehäuse auf Beschädigungen und Verschmutzung prüfen.</li>
+                        <li>Piktogramme auf korrekte Ausrichtung und Lesbarkeit prüfen.</li>
+                        <li>Prüfen, ob die Ladekontroll-LED (grün) leuchtet.</li>
+                    </ul>
+                </div>
+                <div class="space-y-2">
+                    <p class="font-bold border-b border-amber-200 pb-1 underline decoration-amber-300">2. Funktionstest</p>
+                    <ul class="list-disc list-inside space-y-1 ml-2 opacity-90">
+                        <li>Netzunterbrechung simulieren (Prüftaster oder Sicherung).</li>
+                        <li>Leuchte muss sofort in den Notbetrieb umschalten.</li>
+                        <li>Einzelbatterieleuchten: Brenndauer kontrollieren (Soll: 60 Min).</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend Section -->
+        <footer class="mt-12 grid grid-cols-2 gap-8 text-[10px] border-t-2 border-black pt-4">
+            <div class="space-y-1 text-slate-700">
+                <p><strong>E</strong>: Exit (Notausgang) | <strong>NE</strong>: Notelement | <strong>RS</strong>: Raumsicherheit</p>
+                <p><strong>i.O.</strong>: In Ordnung / Bestanden</p>
+            </div>
+            <div class="text-right space-y-1 text-slate-700">
+                <p><strong>LM</strong>: Leuchtmittel | <strong>AK</strong>: Akku | <strong>LE</strong>: Ladeelektronik</p>
+                <p class="italic text-gray-500">Digitales Wartungsprotokoll v3.4</p>
+            </div>
+        </footer>
+
+    </div>
+
+</body>
+</html>
