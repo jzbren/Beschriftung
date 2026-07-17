@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Konverter für Beschriftungstool</title>
+    <style>
+        :root {
+            --primary: #0056b3;
+            --bg: #f4f4f9;
+            --dark: #343a40;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .converter-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        h2 { color: var(--dark); margin-top: 0; }
+        p { color: #666; font-size: 14px; margin-bottom: 25px; }
+        
+        .upload-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.2s;
+            width: 100%;
+            display: inline-block;
+            box-sizing: border-box;
+        }
+        .upload-btn:hover { filter: brightness(1.1); }
+        
+        #fileInput { display: none; }
+        
+        .success-msg {
+            color: #28a745;
+            font-weight: bold;
+            margin-top: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="converter-card">
+        <h2>Alte Layouts konvertieren</h2>
+        <p>Wähle eine alte JSON-Datei aus. Sie wird automatisch in das neue Format (V2) umgewandelt und heruntergeladen.</p>
+        
+        <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+            📂 Alte JSON-Datei auswählen
+        </button>
+        <input type="file" id="fileInput" accept=".json" onchange="convertFile(event)">
+        
+        <div id="status" class="success-msg">✅ Erfolgreich konvertiert!</div>
+    </div>
+
+    <script>
+        function convertFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const oldData = JSON.parse(e.target.result);
+                    
+                    // Prüfen, ob es wirklich ein altes Format ist
+                    if (!oldData.Config || !oldData.Labels) {
+                        alert("Diese Datei scheint nicht im alten Format zu sein.");
+                        return;
+                    }
+
+                    const newData = migrateToNewFormat(oldData);
+                    downloadJson(newData, file.name.replace('.json', '_v2.json'));
+                    
+                    // UI Feedback
+                    const status = document.getElementById('status');
+                    status.style.display = 'block';
+                    setTimeout(() => { status.style.display = 'none'; }, 3000);
+                    
+                } catch (err) {
+                    console.error(err);
+                    alert("Fehler beim Verarbeiten der Datei. Ist es ein gültiges JSON?");
+                }
+                event.target.value = ''; // Input zurücksetzen
+            };
+            reader.readAsText(file);
+        }
+
+        function migrateToNewFormat(old) {
+            // Farben anhand von IsBlackLayout bestimmen
+            const isBlack = old.Config.IsBlackLayout === true;
+            const globalTextColor = isBlack ? "#ffffff" : "#000000";
+            const globalBgColor = isBlack ? "#000000" : "#ffffff";
+
+            // Hilfsfunktion um Null-Symbole abzufangen
+            const cleanSymbol = (sym) => (sym === null || sym === "") ? "--" : sym;
+
+            return {
+                config: {
+                    width: old.Config.Width || 35,
+                    height: old.Config.Height || 5,
+                    columns: old.Config.Columns || 7,
+                    fontSize: 12,             // Standardwert fürs neue Tool
+                    headerFontSize: 16,       // Standardwert fürs neue Tool
+                    textColorHex: globalTextColor,
+                    backgroundColorHex: globalBgColor
+                },
+                groups: [
+                    {
+                        id: Date.now(),
+                        header: "", // Altes Format hatte keine Header, daher leer lassen
+                        textColorHex: globalTextColor,
+                        backgroundColorHex: globalBgColor,
+                        labels: old.Labels.map((lbl, index) => ({
+                            id: Date.now() + index + Math.random(),
+                            text: lbl.Text || "",
+                            symbolL: cleanSymbol(lbl.SymbolL),
+                            symbolR: cleanSymbol(lbl.SymbolR),
+                            isBold: false,
+                            isUnderline: false,
+                            textColorHex: globalTextColor,
+                            backgroundColorHex: globalBgColor,
+                            customFontSize: ""
+                        }))
+                    }
+                ]
+            };
+        }
+
+        function downloadJson(data, filename) {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
