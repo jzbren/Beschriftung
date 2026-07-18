@@ -170,6 +170,8 @@
     <div class="toolbar">
         <div class="toolbar-title">Universal Beschriftungstool</div>
         <button class="btn-success" onclick="app.addPanel()"><i class="fa-solid fa-plus"></i> Panel</button>
+        <!-- NEU: Globaler Button um leere Felder aufzufüllen -->
+        <button class="btn-info" onclick="app.fillAllEmptyLabels()" title="Füllt in allen Panels leere Tasten auf"><i class="fa-solid fa-table-cells"></i> Alle Auffüllen</button>
         <button class="btn-info" onclick="document.getElementById('generatorModal').style.display = 'flex'"><i class="fa-solid fa-list-ol"></i> Auto-Nr</button>
         <button class="btn-info" onclick="document.getElementById('csvModal').style.display = 'flex'"><i class="fa-solid fa-file-csv"></i> CSV Import</button>
         <button onclick="document.getElementById('configModal').style.display = 'flex'"><i class="fa-solid fa-gear"></i> Layout</button>
@@ -226,7 +228,6 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <h4 style="grid-column: span 2; margin: 0 0 -5px 0;">Tasten / Labels</h4>
-                <!-- NEU: Randabstand (Padding) für Symbole -->
                 <div class="form-group"><label>Randabstand L/R (mm):</label><input type="number" id="cfgPaddingX" onchange="app.updateConfig()" step="0.5" title="Abstand der Symbole vom Rand"></div>
                 <div class="form-group"><label>Standard Textgröße:</label><input type="number" id="cfgFontSize" onchange="app.updateConfig()"></div>
                 <div class="form-group"><label>Global Textfarbe:</label><select id="cfgTextColor" onchange="app.updateConfig()"></select></div>
@@ -257,32 +258,32 @@
             <div style="margin-top: 20px; padding: 15px; background-color: #e9ecef; border-left: 4px solid var(--primary); border-radius: 4px; font-size: 13.5px; color: #495057;">
                 <strong style="display: block; margin-bottom: 8px; color: var(--dark);">💡 Standardwerte (Monteur-Hilfe):</strong>
                 <ul style="margin: 0; padding-left: 20px; line-height: 1.5;">
-		    <li><strong>Universaltaster:</strong> Breite 35, Höhe 5, Spalten max. 7</li>
+            <li><strong>Universaltaster:</strong> Breite 35, Höhe 5, Spalten max. 7</li>
 
-		    <li style="list-style: none; height: 10px;">&nbsp;</li>
+            <li style="list-style: none; height: 10px;">&nbsp;</li>
 
                     <li><strong>Universal R und M 4/5/6 Fach:</strong> Breite 21, Höhe 5, Spalten 4,5 oder 6</li>
                     <li><strong>Global 4/5:</strong> Breite , Höhe , Spalten 3 oder 4</li>
 
-		            <li style="list-style: none; height: 10px;">&nbsp;</li>
+                    <li style="list-style: none; height: 10px;">&nbsp;</li>
 
-		            <li><strong>E- Due 1- Fach:</strong> Breite , Höhe , Spalten 1</li>
-		            <li><strong>E- Due 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
+                    <li><strong>E- Due 1- Fach:</strong> Breite , Höhe , Spalten 1</li>
+                    <li><strong>E- Due 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
 
-		            <li style="list-style: none; height: 10px;">&nbsp;</li>
+                    <li style="list-style: none; height: 10px;">&nbsp;</li>
 
-		            <li><strong>BR- Kanal 1- Fach:</strong> Breite , Höhe , Spalten 1</li>
-		            <li><strong>BR- Kanal 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
+                    <li><strong>BR- Kanal 1- Fach:</strong> Breite , Höhe , Spalten 1</li>
+                    <li><strong>BR- Kanal 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
 
-		            <li style="list-style: none; height: 10px;">&nbsp;</li>
+                    <li style="list-style: none; height: 10px;">&nbsp;</li>
 
                     <li><strong>FLF 1- Fach:</strong> Breite , Höhe , Spalten 1</li>
-		            <li><strong>FLF 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
+                    <li><strong>FLF 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
 
-		            <li style="list-style: none; height: 10px;">&nbsp;</li>
+                    <li style="list-style: none; height: 10px;">&nbsp;</li>
 
-		            <li><strong>VS83:</strong> Breite , Höhe , Spalten 10</li>
-		            <li><strong>Plika TK75:</strong> Breite , Höhe , Spalten </li>
+                    <li><strong>VS83:</strong> Breite , Höhe , Spalten 10</li>
+                    <li><strong>Plika TK75:</strong> Breite , Höhe , Spalten </li>
                 </ul>
             </div>
         </div>
@@ -461,8 +462,6 @@ const SYMBOLS = [
     { val: "O", name: "O Aus", unicode: "O" }
 ];
 
-        
-        
         const COLORS = [
             { name: "Weiss", hex: "#ffffff" },
             { name: "Schwarz", hex: "#000000" },
@@ -478,41 +477,45 @@ const SYMBOLS = [
             { name: "Violett", hex: "#8a2be2" }
         ];
 
+        // OPTIMIERUNG 1: Basis-HTML für Dropdowns nur einmal berechnen
+        const BASE_SYMBOL_OPTIONS = SYMBOLS.map(s => `<option value="${s.val}">${s.name}</option>`).join('');
+        const BASE_COLOR_OPTIONS = COLORS.map(c => `<option value="${c.hex}">${c.name}</option>`).join('');
+
         function getColorOptions(selectedHex) {
             const hex = selectedHex ? selectedHex.toLowerCase() : '#ffffff';
-            return COLORS.map(c => `<option value="${c.hex}" ${c.hex === hex ? 'selected' : ''}>${c.name}</option>`).join('');
+            const searchStr = `value="${hex}"`;
+            if (BASE_COLOR_OPTIONS.includes(searchStr)) {
+                return BASE_COLOR_OPTIONS.replace(searchStr, `${searchStr} selected`);
+            }
+            return BASE_COLOR_OPTIONS;
         }
 
         function renderSymbol(sym) {
-    if (!sym || sym === '--') return '';
-    
-    // NEU: Logik für deine heruntergeladenen SVG-Dateien
-    if (sym.endsWith('.svg')) {
-        // Hinweis: Der Pfad 'icons/' geht davon aus, dass deine SVGs in einem Ordner namens "icons" liegen.
-        // Falls sie direkt neben der HTML-Datei liegen, entferne "icons/"
-        return `<span style="
-            display: inline-block;
-            width: 1.1em;
-            height: 1.1em;
-            background-color: currentColor; /* Übernimmt die eingestellte Label-Farbe */
-            -webkit-mask: url('icons/${sym}') no-repeat center / contain;
-            mask: url('icons/${sym}') no-repeat center / contain;
-            vertical-align: middle;
-        "></span>`;
-    }
+            if (!sym || sym === '--') return '';
+            
+            if (sym.endsWith('.svg')) {
+                return `<span style="
+                    display: inline-block;
+                    width: 1.1em;
+                    height: 1.1em;
+                    background-color: currentColor;
+                    -webkit-mask: url('icons/${sym}') no-repeat center / contain;
+                    mask: url('icons/${sym}') no-repeat center / contain;
+                    vertical-align: middle;
+                "></span>`;
+            }
 
-    // Abwärtskompatibilität für alte gespeicherte Daten
-    if (sym.startsWith('fa-')) {
-        return `<i class="${sym}"></i>`;
-    }
-    
-    return sym; // Für reine Text-Symbole wie "I" oder "O"
-}
+            if (sym.startsWith('fa-')) {
+                return `<i class="${sym}"></i>`;
+            }
+            
+            return sym; 
+        }
 
         const app = {
             config: {
                 width: 35, height: 5, columns: 7, fontSize: 12, headerFontSize: 16, 
-                paddingX: 3, // NEU: Globaler Abstand (Padding L/R)
+                paddingX: 3, 
                 textColorHex: '#000000', backgroundColorHex: '#ffffff', borderColorHex: '#000000',
                 headerTextColorHex: '#000000', headerBackgroundColorHex: '#ffffff', titlePosition: 'top',
                 isBold: false, isUnderline: false,
@@ -520,6 +523,7 @@ const SYMBOLS = [
                 gridVert: true, gridHorz: true
             },
             groups: [],
+            rafId: null, // Für die Flüssigkeits-Optimierung beim Tippen
             
             init() {
                 document.getElementById('cfgWidth').value = this.config.width;
@@ -587,7 +591,7 @@ const SYMBOLS = [
                     
                     g.fontSize = this.config.fontSize;
                     g.headerFontSize = this.config.headerFontSize;
-                    g.paddingX = this.config.paddingX; // Randabstand anwenden
+                    g.paddingX = this.config.paddingX; 
 
                     g.gridVert = this.config.gridVert;
                     g.gridHorz = this.config.gridHorz;
@@ -637,8 +641,7 @@ const SYMBOLS = [
                 }
             },
             
-            // NEU: Leere Felder automatisch auffüllen bis zur vollen Spaltenzahl
-            fillEmptyLabels(groupId) {
+            fillEmptyLabels(groupId, doRender = true) {
                 const group = this.groups.find(g => g.id === groupId);
                 if(group) {
                     const cols = this.config.columns;
@@ -654,12 +657,19 @@ const SYMBOLS = [
                             lbl.backgroundColorHex = group.backgroundColorHex;
                             group.labels.push(lbl);
                         }
-                        this.render();
+                        if (doRender) this.render();
                     }
                 }
             },
+
+            // NEU: Global alle leeren Labels auffüllen
+            fillAllEmptyLabels() {
+                this.groups.forEach(g => {
+                    this.fillEmptyLabels(g.id, false); // Füllt auf, zeichnet aber noch nicht neu
+                });
+                this.render(); // Zeichnet einmal ganz am Ende neu = super schnell
+            },
             
-            // NEU: Alle Symbole in diesem Panel überschreiben
             applyGlobalSymbols(groupId) {
                 const group = this.groups.find(g => g.id === groupId);
                 if(group) {
@@ -714,8 +724,8 @@ const SYMBOLS = [
                 const label = group.labels.find(l => l.id === labelId);
                 if(!label || !presetType) return;
                 
-                if (presetType === "store") { label.symbolL = "fa-solid fa-caret-up"; label.text = "Store"; label.symbolR = "fa-solid fa-caret-down"; }
-                else if (presetType === "licht_plus") { label.symbolL = "fa-solid fa-plus"; label.text = "Licht"; label.symbolR = "fa-solid fa-minus"; }
+                if (presetType === "store") { label.symbolL = "angle-up-solid-full.svg"; label.text = "Store"; label.symbolR = "angle-down-solid-full.svg"; }
+                else if (presetType === "licht_plus") { label.symbolL = "plus-solid-full.svg"; label.text = "Licht"; label.symbolR = "minus-solid-full.svg"; }
                 else if (presetType === "licht_io") { label.symbolL = "I"; label.text = "Licht"; label.symbolR = "O"; }
                 
                 this.render();
@@ -878,6 +888,8 @@ const SYMBOLS = [
                 const group = this.groups.find(g => g.id === groupId);
                 if (!group) return;
                 
+                let needsFullRender = false;
+
                 if (type === 'group') {
                     group[field] = value;
                     if (['textColorHex', 'backgroundColorHex', 'isBold', 'isUnderline'].includes(field)) {
@@ -886,18 +898,23 @@ const SYMBOLS = [
                             else if (field === 'isUnderline') l.isUnderline = value;
                             else l[field] = value;
                         });
-                        this.render(); 
-                        return;
-                    }
-                    if (['headerTextColorHex', 'headerBackgroundColorHex', 'headerFontSize', 'borderColorHex', 'headerLeft', 'headerCenter', 'headerRight', 'titlePosition', 'gridVert', 'gridHorz', 'paddingX'].includes(field)) {
-                        this.renderPreview();
-                        return;
+                        needsFullRender = true;
                     }
                 } else if (type === 'label') {
                     const label = group.labels.find(l => l.id === labelId);
                     if (label) label[field] = value;
                 }
-                this.renderPreview(); 
+
+                // OPTIMIERUNG 2: Beim normalen Eintippen von Text nicht den Editor neuladen, 
+                // und die Vorschau-Aktualisierung ganz geschmeidig an den Browser koppeln.
+                if (needsFullRender) {
+                    this.render(); 
+                } else {
+                    if (this.rafId) cancelAnimationFrame(this.rafId);
+                    this.rafId = requestAnimationFrame(() => {
+                        this.renderPreview();
+                    });
+                }
             },
 
             saveData() {
@@ -919,7 +936,7 @@ const SYMBOLS = [
                         const data = JSON.parse(e.target.result);
                         if (data.config) {
                             Object.assign(this.config, data.config);
-                            if (this.config.paddingX === undefined) this.config.paddingX = 1; // Fallback
+                            if (this.config.paddingX === undefined) this.config.paddingX = 1;
                         }
                         if (data.groups) {
                             data.groups.forEach(g => {
@@ -952,7 +969,7 @@ const SYMBOLS = [
                 const editor = document.getElementById('editorArea');
                 editor.innerHTML = '';
                 
-                const globalSymOptions = `<option value="">-- Nicht ändern --</option>` + SYMBOLS.map(s => `<option value="${s.val}">${s.name}</option>`).join('');
+                const globalSymOptions = `<option value="">-- Nicht ändern --</option>` + BASE_SYMBOL_OPTIONS;
 
                 this.groups.forEach(group => {
                     const isBottom = group.titlePosition === 'bottom';
@@ -994,7 +1011,6 @@ const SYMBOLS = [
                                         <div style="display:flex; align-items:center; gap:5px; margin-left: 10px;"><label>Abstand Rand L/R (mm):</label><input type="number" placeholder="Global" step="0.5" value="${group.paddingX !== undefined ? group.paddingX : ''}" oninput="app.updateData('group', ${group.id}, null, 'paddingX', this.value)" style="width: 60px;"></div>
                                     </div>
                                     
-                                    <!-- NEU: Globale Symbol-Zuweisung -->
                                     <div style="width: 100%; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px; margin-top: 5px; font-weight: bold; font-size: 12px; color: var(--primary);">ALLE SYMBOLE IM PANEL ÜBERSCHREIBEN</div>
                                     <div class="form-group" style="flex-basis: 100%; display: flex; gap: 15px; background: #e9ecef; padding: 5px 10px; border-radius: 4px; align-items: center;">
                                         <label style="font-weight:bold;">Links:</label>
@@ -1007,31 +1023,29 @@ const SYMBOLS = [
                                 </div>
                                 
                                 ${group.labels.map(label => {
-                                    const renderDropdown = (field) => {
-                                        let opts = '';
-                                        let found = false;
-                                        SYMBOLS.forEach(s => {
-                                            const isSelected = (s.val === label[field] || s.unicode === label[field]);
-                                            if (isSelected) found = true;
-                                            opts += `<option value="${s.val}" ${isSelected ? 'selected' : ''}>${s.name}</option>`;
-                                        });
-                                        if(!found && label[field] && label[field] !== '--') {
-                                            opts += `<option value="${label[field]}" selected>Eigen: ${label[field]}</option>`;
+                                    // OPTIMIERUNG 1: Caching der Dropdown-Auswahl ohne Schleife!
+                                    const renderDropdown = (fieldValue) => {
+                                        if (!fieldValue || fieldValue === '--') return BASE_SYMBOL_OPTIONS;
+                                        const searchStr = `value="${fieldValue}"`;
+                                        if (BASE_SYMBOL_OPTIONS.includes(searchStr)) {
+                                            return BASE_SYMBOL_OPTIONS.replace(searchStr, `${searchStr} selected`);
+                                        } else {
+                                            return BASE_SYMBOL_OPTIONS + `<option value="${fieldValue}" selected>Eigen: ${fieldValue}</option>`;
                                         }
-                                        return opts;
                                     };
 
                                     return `
                                     <div class="label-item">
                                         <div class="label-main-row">
+                                            
                                             <select class="symbol-select" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolL', this.value)">
-                                                ${renderDropdown('symbolL')}
+                                                ${renderDropdown(label.symbolL)}
                                             </select>
                                             
                                             <input type="text" placeholder="Text..." value="${label.text}" oninput="app.updateData('label', ${group.id}, ${label.id}, 'text', this.value)">
                                             
                                             <select class="symbol-select" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolR', this.value)">
-                                                ${renderDropdown('symbolR')}
+                                                ${renderDropdown(label.symbolR)}
                                             </select>
                                             
                                             <button class="icon-btn" onclick="app.toggleSettings('label-${label.id}')" title="Etiketten Einstellungen"><i class="fa-solid fa-sliders"></i></button>
