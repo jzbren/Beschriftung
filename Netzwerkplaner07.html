@@ -207,7 +207,7 @@
             <hr class="border-slate-100 my-2">
 
             <div class="grid grid-cols-2 gap-2">
-                <input type="file" id="file-input" class="hidden" accept=".json">
+                <input type="file" id="file-input" class="hidden" accept=".ServiceProNPL">
                 <button id="btn-import" class="flex items-center justify-center gap-2 py-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold hover:bg-slate-50 transition-all text-xs">📂 Laden</button>
                 <button id="btn-export" class="flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700 transition-all shadow-md text-xs">💾 Export</button>
             </div>
@@ -609,7 +609,7 @@
         function updateMasterUI() { document.getElementById('master-status-text').innerText = state.masterPassword ? "Passwort ändern" : "Passwort setzen"; }
         function revealPassword() { const p = prompt("Passwort:"); if(p === state.masterPassword) { document.getElementById('edit-pass').type = 'text'; setTimeout(() => document.getElementById('edit-pass').type = 'password', 5000); } }
         function save() { const data = { nodes: state.nodes.map(n => ({...n, pass: cryptText(n.pass, state.masterPassword)})), edges: state.edges, masterPassword: btoa(state.masterPassword || ""), pageSize: state.pageSize }; localStorage.setItem('netplan_native_v4', JSON.stringify(data)); }
-        function exportData() { save(); const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem('netplan_native_v4')); a.download = `Netzplan_${new Date().toISOString().slice(0,10)}.json`; a.click(); }
+        function exportData() { save(); const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(localStorage.getItem('netplan_native_v4')); a.download = `Netzplan_${new Date().toISOString().slice(0,10)}.ServiceProNPL`; a.click(); }
         function importData(e) {
             const reader = new FileReader();
             reader.onload = (ev) => {
