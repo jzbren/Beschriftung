@@ -285,7 +285,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Sicherheitsbeleuchtung_${data.title.replace(/\s+/g, '_')}.json`;
+            a.download = `Sicherheitsbeleuchtung_${data.title.replace(/\s+/g, '_')}.ServiceProRCD`;
             a.click();
         }
 
@@ -376,11 +376,11 @@
                     </button>
                     <div class="flex gap-2 justify-end">
                         <button onclick="exportData()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded text-xs transition font-bold">
-                            Export (.json)
+                            Export (.ServiceProRCD)
                         </button>
                         <label class="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1.5 rounded text-xs transition font-bold cursor-pointer">
                             Import
-                            <input type="file" accept=".json" onchange="importData(event)" class="hidden">
+                            <input type="file" accept=".ServiceProRCD" onchange="importData(event)" class="hidden">
                         </label>
                     </div>
                 </div>
