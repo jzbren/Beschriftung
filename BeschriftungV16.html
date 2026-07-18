@@ -60,17 +60,8 @@
         .label-main-row { display: flex; gap: 8px; align-items: center; }
         .label-main-row input[type="text"] { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
         .label-main-row select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; text-align: left; font-size: 14px;}
+        .label-main-row select.symbol-select { width: 140px; font-size: 14px; font-family: 'Segoe UI', 'FontAwesome', sans-serif; }
         
-        /* Custom Select Styles (NEU) */
-        .custom-select-wrapper { position: relative; width: 140px; font-size: 13px; user-select: none; text-align: left; }
-        .custom-select-display { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; background: #fff; cursor: pointer; min-height: 34px; white-space: nowrap; overflow: hidden; }
-        .custom-select-display:hover { border-color: var(--info); }
-        .custom-select-dropdown { position: absolute; top: 100%; left: 0; min-width: 100%; background: #fff; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); max-height: 300px; overflow-y: auto; z-index: 1000; display: none; margin-top: 2px; }
-        .custom-select-wrapper.open .custom-select-dropdown { display: block; }
-        .custom-option { padding: 8px 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; white-space: nowrap; border-bottom: 1px solid #eee; }
-        .custom-option:last-child { border-bottom: none; }
-        .custom-option:hover { background: var(--primary); color: #fff; }
-
         .settings-row { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; flex-wrap: wrap; gap: 15px; align-items: center; font-size: 13px; }
         .settings-row.active { display: flex; }
         .icon-btn { background: none; border: none; cursor: pointer; font-size: 18px; padding: 5px; color: var(--gray); border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;}
@@ -179,8 +170,6 @@
     <div class="toolbar">
         <div class="toolbar-title">Universal Beschriftungstool</div>
         <button class="btn-success" onclick="app.addPanel()"><i class="fa-solid fa-plus"></i> Panel</button>
-        <!-- NEU: Globaler Button um leere Felder aufzufüllen -->
-        <button class="btn-info" onclick="app.fillAllEmptyLabels()" title="Füllt in allen Panels leere Tasten auf, um die Zeilen abzuschließen"><i class="fa-solid fa-table-cells"></i> Alle Auffüllen</button>
         <button class="btn-info" onclick="document.getElementById('generatorModal').style.display = 'flex'"><i class="fa-solid fa-list-ol"></i> Auto-Nr</button>
         <button class="btn-info" onclick="document.getElementById('csvModal').style.display = 'flex'"><i class="fa-solid fa-file-csv"></i> CSV Import</button>
         <button onclick="document.getElementById('configModal').style.display = 'flex'"><i class="fa-solid fa-gear"></i> Layout</button>
@@ -237,6 +226,7 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <h4 style="grid-column: span 2; margin: 0 0 -5px 0;">Tasten / Labels</h4>
+                <!-- NEU: Randabstand (Padding) für Symbole -->
                 <div class="form-group"><label>Randabstand L/R (mm):</label><input type="number" id="cfgPaddingX" onchange="app.updateConfig()" step="0.5" title="Abstand der Symbole vom Rand"></div>
                 <div class="form-group"><label>Standard Textgröße:</label><input type="number" id="cfgFontSize" onchange="app.updateConfig()"></div>
                 <div class="form-group"><label>Global Textfarbe:</label><select id="cfgTextColor" onchange="app.updateConfig()"></select></div>
@@ -267,32 +257,32 @@
             <div style="margin-top: 20px; padding: 15px; background-color: #e9ecef; border-left: 4px solid var(--primary); border-radius: 4px; font-size: 13.5px; color: #495057;">
                 <strong style="display: block; margin-bottom: 8px; color: var(--dark);">💡 Standardwerte (Monteur-Hilfe):</strong>
                 <ul style="margin: 0; padding-left: 20px; line-height: 1.5;">
-            <li><strong>Universaltaster:</strong> Breite 35, Höhe 5, Spalten max. 7</li>
+		    <li><strong>Universaltaster:</strong> Breite 35, Höhe 5, Spalten max. 7</li>
 
-            <li style="list-style: none; height: 10px;">&nbsp;</li>
+		    <li style="list-style: none; height: 10px;">&nbsp;</li>
 
                     <li><strong>Universal R und M 4/5/6 Fach:</strong> Breite 21, Höhe 5, Spalten 4,5 oder 6</li>
                     <li><strong>Global 4/5:</strong> Breite , Höhe , Spalten 3 oder 4</li>
 
-                    <li style="list-style: none; height: 10px;">&nbsp;</li>
+		            <li style="list-style: none; height: 10px;">&nbsp;</li>
 
-                    <li><strong>E- Due 1- Fach:</strong> Breite , Höhe , Spalten 1</li>
-                    <li><strong>E- Due 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
+		            <li><strong>E- Due 1- Fach:</strong> Breite , Höhe , Spalten 1</li>
+		            <li><strong>E- Due 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
 
-                    <li style="list-style: none; height: 10px;">&nbsp;</li>
+		            <li style="list-style: none; height: 10px;">&nbsp;</li>
 
-                    <li><strong>BR- Kanal 1- Fach:</strong> Breite , Höhe , Spalten 1</li>
-                    <li><strong>BR- Kanal 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
+		            <li><strong>BR- Kanal 1- Fach:</strong> Breite , Höhe , Spalten 1</li>
+		            <li><strong>BR- Kanal 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
 
-                    <li style="list-style: none; height: 10px;">&nbsp;</li>
+		            <li style="list-style: none; height: 10px;">&nbsp;</li>
 
                     <li><strong>FLF 1- Fach:</strong> Breite , Höhe , Spalten 1</li>
-                    <li><strong>FLF 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
+		            <li><strong>FLF 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
 
-                    <li style="list-style: none; height: 10px;">&nbsp;</li>
+		            <li style="list-style: none; height: 10px;">&nbsp;</li>
 
-                    <li><strong>VS83:</strong> Breite , Höhe , Spalten 10</li>
-                    <li><strong>Plika TK75:</strong> Breite , Höhe , Spalten </li>
+		            <li><strong>VS83:</strong> Breite , Höhe , Spalten 10</li>
+		            <li><strong>Plika TK75:</strong> Breite , Höhe , Spalten </li>
                 </ul>
             </div>
         </div>
@@ -417,60 +407,62 @@ const SYMBOLS = [
     { val: "play-solid-full.svg", name: "▶ Play / Start", unicode: "▶" },
     { val: "pause-solid-full.svg", name: "⏸ Pause", unicode: "⏸" },
     { val: "stop-solid-full.svg", name: "⏹ Stop", unicode: "⏹" },
-    { val: "forward-fast-solid-full.svg", name: "⏭ Vorlauf", unicode: "⏭" },
-    { val: "backward-fast-solid-full.svg", name: "⏮ Rücklauf", unicode: "⏮" },
+    { val: "forward-fast-solid-full.svg", name: "⏭ Vor", unicode: "⏭" },
+    { val: "backward-fast-solid-full.svg", name: "⏮ Zurück", unicode: "⏮" },
     { val: "music-solid-full.svg", name: "🎵 Musik", unicode: "🎵" },
-    { val: "volume-high-solid-full.svg", name: "🔊 Laut", unicode: "🔊" },
-    { val: "volume-solid-full.svg", name: "🔉 Normal", unicode: "🔉" },
+    { val: "volume-high-solid-full.svg", name: "🔊 Lauter", unicode: "🔊" },
+    { val: "volume-solid-full.svg", name: "🔉 Leiser", unicode: "🔉" },
     { val: "volume-xmark-solid-full.svg", name: "🔇 Stumm", unicode: "🔇" },
     { val: "clapperboard-solid-full.svg", name: "🎬 Szene", unicode: "🎬" },
 
     // --- Licht & Power ---
     { val: "lightbulb-solid-full.svg", name: "💡 Licht An", unicode: "💡" },
     { val: "lightbulb-regular-full.svg", name: "💡 Licht Aus", unicode: "🔆" },
-    { val: "power-off-solid-full.svg", name: "⏻ Power IO", unicode: "⏻" },
+    { val: "power-off-solid-full.svg", name: "⏻ Power", unicode: "⏻" },
     { val: "plug-solid-full.svg", name: "🔌 Steckdose", unicode: "🔌" },
     { val: "battery-full-solid-full.svg", name: "🔋 Batterie", unicode: "🔋" },
     { val: "charging-station-solid-full.svg", name: "⚡ Ladestation", unicode: "⚡" },
 
     // --- Haus, Klima & Umwelt ---
     { val: "house-chimney-solid-full.svg", name: "🏠 Haus", unicode: "🏠" },
-    { val: "sun-regular-full.svg", name: "☀️ Sonne / Hell", unicode: "☀️" },
-    { val: "moon-regular-full.svg", name: "🌙 Mond / Dunkel", unicode: "🌙" },
-    { val: "star-and-crescent-solid-full.svg", name: "🌟 Nacht", unicode: "🌟" },
+    { val: "sun-regular-full.svg", name: "☀️ Tag", unicode: "☀️" },
+    { val: "moon-regular-full.svg", name: "🌙 Nacht", unicode: "🌙" },
+    { val: "star-and-crescent-solid-full.svg", name: "🌟 Nacht 2", unicode: "🌟" },
     { val: "snowflake-regular-full.svg", name: "❄️ Kühlen", unicode: "❄️" },
     { val: "fire-flame-curved-solid-full.svg", name: "🔥 Heizen", unicode: "🔥" },
     { val: "wind-solid-full.svg", name: "🌬️ Lüftung", unicode: "🌬️" },
     { val: "droplet-solid-full.svg", name: "💧 Wasser / Teich", unicode: "💧" },
     { val: "tree-solid-full.svg", name: "🌲 Garten", unicode: "🌲" },
-    { val: "fish-solid-full.svg", name: "🐟 Teich Tierwelt", unicode: "🐟" },
+    { val: "fish-solid-full.svg", name: "🐟 Teich", unicode: "🐟" },
 
     // --- Sicherheit & Zutritt ---
     { val: "bell-regular-full.svg", name: "🔔 Glocke", unicode: "🔔" },
     { val: "bell-slash-regular-full.svg", name: "🔕 Glocke Aus", unicode: "🔕" },
-    { val: "lock-solid-full.svg", name: "🔒 Schloss Zu", unicode: "🔒" },
-    { val: "lock-open-solid-full.svg", name: "🔓 Schloss Auf", unicode: "🔓" },
+    { val: "lock-solid-full.svg", name: "🔒 Schliessen", unicode: "🔒" },
+    { val: "lock-open-solid-full.svg", name: "🔓 Öffnen", unicode: "🔓" },
     { val: "unlock-solid-full.svg", name: "🔓 Entriegeln", unicode: "🔓" },
     { val: "key-solid-full.svg", name: "🔑 Schlüssel", unicode: "🔑" },
     { val: "shield-solid-full.svg", name: "🛡️ Sicherheit", unicode: "🛡️" },
-    { val: "ban-solid-full.svg", name: "🚫 Sperre / Verbot", unicode: "🚫" },
+    { val: "ban-solid-full.svg", name: "🚫 Sperren", unicode: "🚫" },
     { val: "people-roof-solid-full.svg", name: "👥 Anwesend", unicode: "👥" },
     { val: "person-running-solid-full.svg", name: "🏃 Bewegung (BWM)", unicode: "🏃" },
 
     // --- Werkstatt & Logistik ---
-    { val: "screwdriver-wrench-solid-full.svg", name: "🛠️ Werkstatt", unicode: "🛠️" },
+    { val: "screwdriver-wrench-solid-full.svg", name: "🛠️ Service", unicode: "🛠️" },
     { val: "car-solid-full.svg", name: "🚗 Auto", unicode: "🚗" },
-    { val: "box-open-solid-full.svg", name: "📦 Lager / Box", unicode: "📦" },
+    { val: "box-open-solid-full.svg", name: "📦 Packet", unicode: "📦" },
 
     // --- Zeit & Sonstiges ---
     { val: "alarm-clock-regular-full.svg", name: "⏰ Wecker", unicode: "⏰" },
     { val: "stopwatch-solid-full.svg", name: "⏱ Timer", unicode: "⏱" },
     { val: "plus-solid-full.svg", name: "➕ Plus", unicode: "➕" },
     { val: "minus-solid-full.svg", name: "➖ Minus", unicode: "➖" },
-    { val: "I", name: "I (Text)", unicode: "I" },
-    { val: "O", name: "O (Text)", unicode: "O" }
+    { val: "I", name: "I Ein", unicode: "I" },
+    { val: "O", name: "O Aus", unicode: "O" }
 ];
 
+        
+        
         const COLORS = [
             { name: "Weiss", hex: "#ffffff" },
             { name: "Schwarz", hex: "#000000" },
@@ -492,33 +484,35 @@ const SYMBOLS = [
         }
 
         function renderSymbol(sym) {
-            if (!sym || sym === '--') return '';
-            
-            // NEU: Logik für deine heruntergeladenen SVG-Dateien
-            if (sym.endsWith('.svg')) {
-                return `<span class="svg-icon" style="
-                    display: inline-block;
-                    width: 1.1em;
-                    height: 1.1em;
-                    background-color: currentColor; /* Übernimmt die eingestellte Label-Farbe */
-                    -webkit-mask: url('icons/${sym}') no-repeat center / contain;
-                    mask: url('icons/${sym}') no-repeat center / contain;
-                    vertical-align: middle;
-                "></span>`;
-            }
+    if (!sym || sym === '--') return '';
+    
+    // NEU: Logik für deine heruntergeladenen SVG-Dateien
+    if (sym.endsWith('.svg')) {
+        // Hinweis: Der Pfad 'icons/' geht davon aus, dass deine SVGs in einem Ordner namens "icons" liegen.
+        // Falls sie direkt neben der HTML-Datei liegen, entferne "icons/"
+        return `<span style="
+            display: inline-block;
+            width: 1.1em;
+            height: 1.1em;
+            background-color: currentColor; /* Übernimmt die eingestellte Label-Farbe */
+            -webkit-mask: url('icons/${sym}') no-repeat center / contain;
+            mask: url('icons/${sym}') no-repeat center / contain;
+            vertical-align: middle;
+        "></span>`;
+    }
 
-            // Abwärtskompatibilität für alte gespeicherte Daten
-            if (sym.startsWith('fa-')) {
-                return `<i class="${sym}"></i>`;
-            }
-            
-            return sym; // Für reine Text-Symbole wie "I" oder "O"
-        }
+    // Abwärtskompatibilität für alte gespeicherte Daten
+    if (sym.startsWith('fa-')) {
+        return `<i class="${sym}"></i>`;
+    }
+    
+    return sym; // Für reine Text-Symbole wie "I" oder "O"
+}
 
         const app = {
             config: {
                 width: 35, height: 5, columns: 7, fontSize: 12, headerFontSize: 16, 
-                paddingX: 3,
+                paddingX: 3, // NEU: Globaler Abstand (Padding L/R)
                 textColorHex: '#000000', backgroundColorHex: '#ffffff', borderColorHex: '#000000',
                 headerTextColorHex: '#000000', headerBackgroundColorHex: '#ffffff', titlePosition: 'top',
                 isBold: false, isUnderline: false,
@@ -643,7 +637,8 @@ const SYMBOLS = [
                 }
             },
             
-            fillEmptyLabels(groupId, doRender = true) {
+            // NEU: Leere Felder automatisch auffüllen bis zur vollen Spaltenzahl
+            fillEmptyLabels(groupId) {
                 const group = this.groups.find(g => g.id === groupId);
                 if(group) {
                     const cols = this.config.columns;
@@ -659,52 +654,27 @@ const SYMBOLS = [
                             lbl.backgroundColorHex = group.backgroundColorHex;
                             group.labels.push(lbl);
                         }
-                        if (doRender) this.render();
+                        this.render();
                     }
                 }
             },
             
-            // NEU: Global alle leeren Labels auffüllen
-            fillAllEmptyLabels() {
-                this.groups.forEach(g => {
-                    this.fillEmptyLabels(g.id, false);
-                });
-                this.render();
-            },
-
-            // NEU: Logik für die Custom Dropdowns (Visual Select)
-            toggleCustomSelect(event, el) {
-                event.stopPropagation();
-                const wrapper = el.closest('.custom-select-wrapper');
-                const wasOpen = wrapper.classList.contains('open');
-                
-                // Schließe alle anderen offenen Dropdowns
-                document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
-                
-                if (!wasOpen) wrapper.classList.add('open');
-            },
-
-            handleCustomSelect(event, type, groupId, labelId, field, value) {
-                event.stopPropagation();
-                if (type === 'label') {
-                    this.updateData('label', groupId, labelId, field, value);
-                } else if (type === 'globalL') {
-                    this.applyGlobalSymbolsSingle(groupId, 'L', value);
-                } else if (type === 'globalR') {
-                    this.applyGlobalSymbolsSingle(groupId, 'R', value);
-                }
-                
-                document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
-            },
-
-            applyGlobalSymbolsSingle(groupId, side, value) {
+            // NEU: Alle Symbole in diesem Panel überschreiben
+            applyGlobalSymbols(groupId) {
                 const group = this.groups.find(g => g.id === groupId);
-                if(group && value !== '') {
+                if(group) {
+                    const symL = document.getElementById(`globSymL-${groupId}`).value;
+                    const symR = document.getElementById(`globSymR-${groupId}`).value;
+                    let changed = false;
                     group.labels.forEach(l => {
-                        if(side === 'L') l.symbolL = value;
-                        if(side === 'R') l.symbolR = value;
+                        if(symL !== '') { l.symbolL = symL; changed = true; }
+                        if(symR !== '') { l.symbolR = symR; changed = true; }
                     });
-                    this.render();
+                    if(changed) {
+                        document.getElementById(`globSymL-${groupId}`).value = '';
+                        document.getElementById(`globSymR-${groupId}`).value = '';
+                        this.render();
+                    }
                 }
             },
 
@@ -744,8 +714,8 @@ const SYMBOLS = [
                 const label = group.labels.find(l => l.id === labelId);
                 if(!label || !presetType) return;
                 
-                if (presetType === "store") { label.symbolL = "angle-up-solid-full.svg"; label.text = "Store"; label.symbolR = "angle-down-solid-full.svg"; }
-                else if (presetType === "licht_plus") { label.symbolL = "plus-solid-full.svg"; label.text = "Licht"; label.symbolR = "minus-solid-full.svg"; }
+                if (presetType === "store") { label.symbolL = "fa-solid fa-caret-up"; label.text = "Store"; label.symbolR = "fa-solid fa-caret-down"; }
+                else if (presetType === "licht_plus") { label.symbolL = "fa-solid fa-plus"; label.text = "Licht"; label.symbolR = "fa-solid fa-minus"; }
                 else if (presetType === "licht_io") { label.symbolL = "I"; label.text = "Licht"; label.symbolR = "O"; }
                 
                 this.render();
@@ -982,30 +952,7 @@ const SYMBOLS = [
                 const editor = document.getElementById('editorArea');
                 editor.innerHTML = '';
                 
-                // Helfer-Funktion, die aus der Array-Struktur das neue Visual Dropdown generiert
-                const renderCustomDropdown = (type, groupId, labelId, field, currentValue) => {
-                    let currentSym = SYMBOLS.find(s => s.val === currentValue) || {val: currentValue, name: 'Eigen: ' + currentValue};
-                    
-                    let currentDisplay = currentValue === '--' ? '-- Nichts --' : `<span style="width:20px;text-align:center;display:inline-block;flex-shrink:0;">${renderSymbol(currentValue)}</span> <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${currentSym.name}</span>`;
-
-                    let optionsHtml = `<div class="custom-option" onclick="app.handleCustomSelect(event, '${type}', ${groupId}, ${labelId}, '${field}', '--')">-- Nichts --</div>`;
-                    
-                    optionsHtml += SYMBOLS.filter(s => s.val !== '--').map(s => {
-                        let display = `<span style="width:20px;text-align:center;display:inline-block;flex-shrink:0;">${renderSymbol(s.val)}</span> <span>${s.name}</span>`;
-                        return `<div class="custom-option" onclick="app.handleCustomSelect(event, '${type}', ${groupId}, ${labelId}, '${field}', '${s.val}')">${display}</div>`;
-                    }).join('');
-
-                    return `
-                    <div class="custom-select-wrapper" style="width: ${type.startsWith('global') ? '170px' : '140px'};">
-                        <div class="custom-select-display" onclick="app.toggleCustomSelect(event, this)">
-                            ${currentDisplay} <i class="fa-solid fa-caret-down" style="margin-left:auto; font-size: 10px; color:#999;"></i>
-                        </div>
-                        <div class="custom-select-dropdown">
-                            ${optionsHtml}
-                        </div>
-                    </div>
-                    `;
-                };
+                const globalSymOptions = `<option value="">-- Nicht ändern --</option>` + SYMBOLS.map(s => `<option value="${s.val}">${s.name}</option>`).join('');
 
                 this.groups.forEach(group => {
                     const isBottom = group.titlePosition === 'bottom';
@@ -1047,27 +994,45 @@ const SYMBOLS = [
                                         <div style="display:flex; align-items:center; gap:5px; margin-left: 10px;"><label>Abstand Rand L/R (mm):</label><input type="number" placeholder="Global" step="0.5" value="${group.paddingX !== undefined ? group.paddingX : ''}" oninput="app.updateData('group', ${group.id}, null, 'paddingX', this.value)" style="width: 60px;"></div>
                                     </div>
                                     
-                                    <!-- NEU: Custom Dropdown auch für das globale Überschreiben im Panel -->
+                                    <!-- NEU: Globale Symbol-Zuweisung -->
                                     <div style="width: 100%; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px; margin-top: 5px; font-weight: bold; font-size: 12px; color: var(--primary);">ALLE SYMBOLE IM PANEL ÜBERSCHREIBEN</div>
                                     <div class="form-group" style="flex-basis: 100%; display: flex; gap: 15px; background: #e9ecef; padding: 5px 10px; border-radius: 4px; align-items: center;">
-                                        <label style="font-weight:bold;">Links alle ersetzen:</label>
-                                        ${renderCustomDropdown('globalL', group.id, null, null, '--')}
-                                        <label style="font-weight:bold; margin-left: 10px;">Rechts alle ersetzen:</label>
-                                        ${renderCustomDropdown('globalR', group.id, null, null, '--')}
+                                        <label style="font-weight:bold;">Links:</label>
+                                        <select id="globSymL-${group.id}" class="symbol-select" style="width: 130px; padding:4px;">${globalSymOptions}</select>
+                                        <label style="font-weight:bold; margin-left: 10px;">Rechts:</label>
+                                        <select id="globSymR-${group.id}" class="symbol-select" style="width: 130px; padding:4px;">${globalSymOptions}</select>
+                                        <button onclick="app.applyGlobalSymbols(${group.id})" style="background:var(--success); color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;"><i class="fa-solid fa-check"></i> Anwenden</button>
                                     </div>
 
                                 </div>
                                 
                                 ${group.labels.map(label => {
+                                    const renderDropdown = (field) => {
+                                        let opts = '';
+                                        let found = false;
+                                        SYMBOLS.forEach(s => {
+                                            const isSelected = (s.val === label[field] || s.unicode === label[field]);
+                                            if (isSelected) found = true;
+                                            opts += `<option value="${s.val}" ${isSelected ? 'selected' : ''}>${s.name}</option>`;
+                                        });
+                                        if(!found && label[field] && label[field] !== '--') {
+                                            opts += `<option value="${label[field]}" selected>Eigen: ${label[field]}</option>`;
+                                        }
+                                        return opts;
+                                    };
+
                                     return `
                                     <div class="label-item">
                                         <div class="label-main-row">
-                                            
-                                            ${renderCustomDropdown('label', group.id, label.id, 'symbolL', label.symbolL)}
+                                            <select class="symbol-select" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolL', this.value)">
+                                                ${renderDropdown('symbolL')}
+                                            </select>
                                             
                                             <input type="text" placeholder="Text..." value="${label.text}" oninput="app.updateData('label', ${group.id}, ${label.id}, 'text', this.value)">
                                             
-                                            ${renderCustomDropdown('label', group.id, label.id, 'symbolR', label.symbolR)}
+                                            <select class="symbol-select" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolR', this.value)">
+                                                ${renderDropdown('symbolR')}
+                                            </select>
                                             
                                             <button class="icon-btn" onclick="app.toggleSettings('label-${label.id}')" title="Etiketten Einstellungen"><i class="fa-solid fa-sliders"></i></button>
                                             <button class="icon-btn duplicate" onclick="app.duplicateLabel(${group.id}, ${label.id})" title="Label duplizieren"><i class="fa-solid fa-copy"></i></button>
@@ -1167,13 +1132,6 @@ const SYMBOLS = [
                 });
             }
         };
-
-        // Klick außerhalb des Custom-Dropdowns schließt dieses
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.custom-select-wrapper')) {
-                document.querySelectorAll('.custom-select-wrapper.open').forEach(el => el.classList.remove('open'));
-            }
-        });
 
         window.onload = () => app.init();
     </script>
