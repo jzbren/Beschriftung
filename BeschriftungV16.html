@@ -396,29 +396,68 @@
     </template>
 
     <script>
-        const SYMBOLS = [
-            { val: "--", name: "-- Nichts --", unicode: "" },
-            { val: "fa-solid fa-caret-up", name: "▲ Pfeil Auf", unicode: "▲" },
-            { val: "fa-solid fa-caret-down", name: "▼ Pfeil Ab", unicode: "▼" },
-            { val: "fa-solid fa-caret-left", name: "◀ Pfeil Links", unicode: "◀" },
-            { val: "fa-solid fa-caret-right", name: "▶ Pfeil Rechts", unicode: "▶" },
-            { val: "fa-solid fa-lightbulb", name: "💡 Licht (An)", unicode: "💡" },
-            { val: "fa-regular fa-lightbulb", name: "💡 Licht (Aus)", unicode: "🔆" },
-            { val: "fa-solid fa-power-off", name: "⏻ Power / IO", unicode: "⏻" },
-            { val: "fa-solid fa-plug", name: "🔌 Steckdose", unicode: "🔌" },
-            { val: "fa-solid fa-battery-full", name: "🔋 Batterie", unicode: "🔋" },
-            { val: "fa-solid fa-sun", name: "☀️ Sonne / Hell", unicode: "☀️" },
-            { val: "fa-solid fa-moon", name: "🌙 Mond / Dunkel", unicode: "🌙" },
-            { val: "fa-solid fa-bell", name: "🔔 Glocke", unicode: "🔔" },
-            { val: "fa-solid fa-lock", name: "🔒 Schloss (Zu)", unicode: "🔒" },
-            { val: "fa-solid fa-lock-open", name: "🔓 Schloss (Auf)", unicode: "🔓" },
-            { val: "fa-solid fa-music", name: "🎵 Musik", unicode: "🎵" },
-            { val: "fa-solid fa-plus", name: "➕ Plus", unicode: "➕" },
-            { val: "fa-solid fa-minus", name: "➖ Minus", unicode: "➖" },
-            { val: "I", name: "I (Text)", unicode: "I" },
-            { val: "O", name: "O (Text)", unicode: "O" },
-            { val: "o", name: "o (Text klein)", unicode: "o" }
-        ];
+  const SYMBOLS = [
+    { val: "--", name: "-- Nichts --", unicode: "" },
+    
+    // --- Navigation & Pfeile ---
+    { val: "fa-solid fa-caret-up", name: "▲ Auf", unicode: "▲" },
+    { val: "fa-solid fa-caret-down", name: "▼ Ab", unicode: "▼" },
+    { val: "fa-solid fa-caret-left", name: "◀ Links", unicode: "◀" },
+    { val: "fa-solid fa-caret-right", name: "▶ Rechts", unicode: "▶" },
+    
+    // --- Licht & Power ---
+    { val: "fa-solid fa-lightbulb", name: "💡 Licht An", unicode: "💡" },
+    { val: "fa-regular fa-lightbulb", name: "💡 Licht Aus", unicode: "🔆" },
+    { val: "fa-solid fa-power-off", name: "⏻ Power IO", unicode: "⏻" },
+    { val: "fa-solid fa-plug", name: "🔌 Steckdose", unicode: "🔌" },
+    
+    // --- Bewegungsmelder ---
+    { val: "fa-solid fa-person-running", name: "🏃 BWM An", unicode: "🏃" },
+    { val: "fa-solid fa-person", name: "🚶 BWM Aus", unicode: "🚶" },
+    
+    // --- Szenen & Medien ---
+    { val: "fa-solid fa-clapperboard", name: "🎬 Szene", unicode: "🎬" },
+    { val: "fa-solid fa-play", name: "▶ Szene Start", unicode: "▶" },
+    { val: "fa-solid fa-music", name: "🎵 Musik An", unicode: "🎵" },
+    { val: "fa-solid fa-volume-xmark", name: "🔇 Musik Aus", unicode: "🔇" },
+    { val: "fa-solid fa-tv", name: "📺 TV / Medien", unicode: "📺" },
+    
+    // --- Anwesenheit ---
+    { val: "fa-solid fa-right-from-bracket", name: "🚶 Außer Haus", unicode: "🚪" },
+    { val: "fa-solid fa-right-to-bracket", name: "🏠 Wieder zurück", unicode: "🔑" },
+    
+    // --- Energie & Klima ---
+    { val: "fa-solid fa-bolt-lightning", name: "⚡ Energie / PV", unicode: "⚡" },
+    { val: "fa-solid fa-sun", name: "☀️ Sonne / Hell", unicode: "☀️" },
+    { val: "fa-solid fa-moon", name: "🌙 Mond / Dunkel", unicode: "🌙" },
+    { val: "fa-solid fa-temperature-half", name: "🌡️ Temperatur", unicode: "🌡️" },
+    { val: "fa-solid fa-battery-full", name: "🔋 Batterie", unicode: "🔋" },
+    
+    // --- Haus, Garten & Teich ---
+    { val: "fa-solid fa-house-chimney", name: "🏠 Haus", unicode: "🏠" },
+    { val: "fa-solid fa-droplet", name: "💧 Teich / Wasser", unicode: "💧" },
+    { val: "fa-solid fa-fish", name: "🐟 Teich Tierwelt", unicode: "🐟" },
+    { val: "fa-solid fa-tree", name: "🌲 Garten", unicode: "🌲" },
+    
+    // --- Werkstatt & Fahrzeug ---
+    { val: "fa-solid fa-screwdriver-wrench", name: "🛠️ Werkstatt", unicode: "🛠️" },
+    { val: "fa-solid fa-car", name: "🚗 Auto", unicode: "🚗" },
+    
+    // --- Sicherheit & Netzwerk ---
+    { val: "fa-solid fa-bell", name: "🔔 Glocke", unicode: "🔔" },
+    { val: "fa-solid fa-lock", name: "🔒 Schloss Zu", unicode: "🔒" },
+    { val: "fa-solid fa-lock-open", name: "🔓 Schloss Auf", unicode: "🔓" },
+    { val: "fa-solid fa-shield-halved", name: "🛡️ Sicherheit", unicode: "🛡️" },
+  
+    
+    // --- Sonstiges ---
+    { val: "fa-solid fa-plus", name: "➕ Plus", unicode: "➕" },
+    { val: "fa-solid fa-minus", name: "➖ Minus", unicode: "➖" },
+    { val: "I", name: "I (Text)", unicode: "I" },
+    { val: "O", name: "O (Text)", unicode: "O" }
+];
+
+        
         
         const COLORS = [
             { name: "Weiss", hex: "#ffffff" },
