@@ -175,7 +175,7 @@
         <button onclick="document.getElementById('configModal').style.display = 'flex'"><i class="fa-solid fa-gear"></i> Layout</button>
         <button onclick="app.saveData()"><i class="fa-solid fa-floppy-disk"></i> Speichern</button>
         <button onclick="document.getElementById('fileInput').click()"><i class="fa-solid fa-folder-open"></i> Öffnen</button>
-        <input type="file" id="fileInput" style="display: none" accept=".json" onchange="app.loadData(event)">
+        <input type="file" id="fileInput" style="display: none" accept=".ServiceProBeschriftung" onchange="app.loadData(event)">
         
         <div style="margin-left: auto; display: flex; gap: 10px;">
             <button onclick="app.exportPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
@@ -845,7 +845,7 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = "layout.json";
+                a.download = "layout.ServiceProBeschriftung";
                 a.click();
             },
 
