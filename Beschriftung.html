@@ -3,15 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beschriftung V22</title>
+    <title>Universal Beschriftungstool</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- NEU: Tom Select für durchsuchbare Dropdowns (CSS) -->
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.default.min.css" rel="stylesheet">
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- NEU: Tom Select für durchsuchbare Dropdowns (JS) -->
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
     <style>
         :root {
@@ -63,14 +58,9 @@
         .label-item { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 6px; background: #fafafa; position: relative; transition: all 0.2s ease;}
         .label-item:hover { border-color: var(--info); box-shadow: 0 0 5px rgba(23,162,184,0.3); }
         .label-main-row { display: flex; gap: 8px; align-items: center; }
-        .label-main-row input[type="text"] { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; height: 35px; }
+        .label-main-row input[type="text"] { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
         .label-main-row select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; text-align: left; font-size: 14px;}
-        
-        /* Anpassungen für Tom Select */
-        .ts-wrapper.symbol-select { flex: 0 0 150px; font-family: 'Segoe UI', 'FontAwesome', sans-serif; font-size: 13.5px; }
-        .ts-control { padding: 6px 8px; min-height: 35px; border: 1px solid #ccc; border-radius: 4px; background: white; box-shadow: none; }
-        .ts-dropdown { font-family: 'Segoe UI', 'FontAwesome', sans-serif; font-size: 13px; z-index: 10000 !important; }
-        .ts-dropdown .optgroup-header { font-weight: bold; color: var(--primary); background-color: #f0f4f8; font-size: 12.5px; padding: 6px 10px;}
+        .label-main-row select.symbol-select { width: 140px; font-size: 14px; font-family: 'Segoe UI', 'FontAwesome', sans-serif; }
         
         .settings-row { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; flex-wrap: wrap; gap: 15px; align-items: center; font-size: 13px; }
         .settings-row.active { display: flex; }
@@ -83,7 +73,7 @@
         .form-group input[type="number"], .form-group select, .form-group input[type="text"] { padding: 4px; border: 1px solid #ccc; border-radius: 4px; }
         .form-group input[type="number"] { width: 60px; }
 
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 10000; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .modal { background: white; padding: 25px; border-radius: 8px; width: 550px; max-width: 90%; box-shadow: 0 5px 15px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto;}
         .modal h3 { margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid var(--primary); padding-bottom: 5px;}
         .modal-footer { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #eee; padding-top: 15px;}
@@ -98,19 +88,64 @@
             display: flex; flex-direction: column; align-items: flex-start; min-width: min-content; margin: 0 auto;
         }
 
-        .preview-wrapper.layout-grid { flex-direction: row; flex-wrap: wrap; justify-content: flex-start; align-content: flex-start; }
-        .preview-wrapper.with-gap { gap: 5mm; }
+        .preview-wrapper.layout-grid {
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            align-content: flex-start;
+        }
+
+        .preview-wrapper.with-gap {
+            gap: 5mm;
+        }
         
-        .preview-panel { box-sizing: content-box; border: 1px solid var(--preview-border) !important; margin-bottom: 0px; page-break-inside: avoid; }
-        .preview-wrapper:not(.layout-grid):not(.with-gap) .preview-panel + .preview-panel { margin-top: -1px; }
-        .preview-wrapper.layout-grid:not(.with-gap) .preview-panel { margin-left: -1px; margin-top: -1px; }
-        .preview-wrapper.layout-grid:not(.with-gap) { padding-top: 21px; padding-left: 21px; }
+        .preview-panel { 
+            box-sizing: content-box; 
+            border: 1px solid var(--preview-border) !important;
+            margin-bottom: 0px; 
+            page-break-inside: avoid; 
+        }
         
-        .preview-panel-bar { font-weight: bold; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; overflow: hidden; white-space: nowrap; padding: 0 5px; }
+        .preview-wrapper:not(.layout-grid):not(.with-gap) .preview-panel + .preview-panel { 
+            margin-top: -1px; 
+        }
+        .preview-wrapper.layout-grid:not(.with-gap) .preview-panel {
+            margin-left: -1px;
+            margin-top: -1px;
+        }
+
+        .preview-wrapper.layout-grid:not(.with-gap) {
+            padding-top: 21px; 
+            padding-left: 21px;
+        }
+        
+        .preview-panel-bar { 
+            font-weight: bold; 
+            display: flex; justify-content: space-between; align-items: center; 
+            box-sizing: border-box;
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 0 5px; 
+        }
+        
         .preview-panel-bar > div { flex: 1; overflow: hidden; text-overflow: clip; }
+        
         .preview-grid { display: grid; gap: 0; }
-        .preview-label { display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; overflow: hidden; }
-        .preview-label-text { flex: 1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: clip; line-height: 0.95; }
+        
+        .preview-label { 
+            display: flex; justify-content: space-between; align-items: center; 
+            box-sizing: border-box; 
+            overflow: hidden; 
+        }
+        
+        .preview-label-text { 
+            flex: 1; 
+            text-align: center; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: clip; 
+            line-height: 0.95; 
+        }
 
         @media print {
             body { display: block; overflow: visible; background: white; }
@@ -118,8 +153,15 @@
             .main-container { display: block; }
             .preview-area { width: 100%; padding: 0; display: flex; flex-direction: column; align-items: flex-start; background: white; overflow: visible; }
             .preview-wrapper { box-shadow: none; padding: 0; border: none; margin: 0; width: 100%; min-width: 100%; }
-            .preview-wrapper.layout-grid { justify-content: flex-start; }
-            .preview-wrapper.layout-grid:not(.with-gap) { padding-top: 1px !important; padding-left: 1px !important; }
+            
+            .preview-wrapper.layout-grid {
+                justify-content: flex-start;
+            }
+
+            .preview-wrapper.layout-grid:not(.with-gap) {
+                padding-top: 1px !important;
+                padding-left: 1px !important;
+            }
         }
     </style>
 </head>
@@ -128,6 +170,7 @@
     <div class="toolbar">
         <div class="toolbar-title">Universal Beschriftungstool</div>
         <button class="btn-success" onclick="app.addPanel()"><i class="fa-solid fa-plus"></i> Panel</button>
+        <!-- NEU: Globaler Button um leere Felder aufzufüllen -->
         <button class="btn-info" onclick="app.fillAllEmptyLabels()" title="Füllt in allen Panels leere Tasten auf"><i class="fa-solid fa-table-cells"></i> Alle Auffüllen</button>
         <button class="btn-info" onclick="document.getElementById('generatorModal').style.display = 'flex'"><i class="fa-solid fa-list-ol"></i> Auto-Nr</button>
         <button class="btn-info" onclick="document.getElementById('csvModal').style.display = 'flex'"><i class="fa-solid fa-file-csv"></i> CSV Import</button>
@@ -150,91 +193,288 @@
         </div>
     </div>
 
-    <!-- Layout & CSV Modal (Bleiben unverändert vom Code oben, hier zwecks Übersichtlichkeit der Länge abgekürzt) -->
-    <!-- [Dein gesamter HTML Code für Modals (configModal, csvModal, generatorModal) gehört exakt hierhin. Ich habe ihn hier zur besseren Lesbarkeit ausgeblendet, du kannst ihn 1:1 übernehmen] -->
+    <!-- Modal: Layout -->
+    <div class="modal-overlay" id="configModal">
+        <div class="modal">
+            <h3>Globale Layout Einstellungen</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f9f9f9; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                <div class="form-group"><label>Breite (mm):</label><input type="number" id="cfgWidth" onchange="app.updateConfig()"></div>
+                <div class="form-group"><label>Höhe (mm):</label><input type="number" id="cfgHeight" onchange="app.updateConfig()"></div>
+                <div class="form-group"><label>Spalten:</label><input type="number" id="cfgCols" onchange="app.updateConfig()"></div>
+                <div class="form-group"><label>Panel-Randfarbe:</label><select id="cfgBorderColor" onchange="app.updateConfig()"></select></div>
+            </div>
 
-    <!-- Modals (Bitte deinen bisherigen Modal-Code hier einfügen) -->
-    <!-- ... -->
+            <div style="background: #e9ecef; padding: 10px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid var(--info);">
+                <div class="form-group" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <label style="font-weight: bold; width: 100%; margin-bottom: -5px;">Innere Linien (Gitter):</label>
+                    <label><input type="checkbox" id="cfgGridVert" onchange="app.updateConfig()"> Vertikale Linien ( | )</label>
+                    <label><input type="checkbox" id="cfgGridHorz" onchange="app.updateConfig()"> Horizontale Linien ( - )</label>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <h4 style="grid-column: span 2; margin: 0 0 -5px 0;">Zusatzzeile (Kopf/Fuß)</h4>
+                <div class="form-group"><label>Textgröße:</label><input type="number" id="cfgHeaderFontSize" onchange="app.updateConfig()"></div>
+                <div class="form-group"><label>Position:</label>
+                    <select id="cfgTitlePosition" onchange="app.updateConfig()">
+                        <option value="top">Oben</option>
+                        <option value="bottom">Unten</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Textfarbe:</label><select id="cfgHeaderTextColor" onchange="app.updateConfig()"></select></div>
+                <div class="form-group"><label>Hintergrund:</label><select id="cfgHeaderBgColor" onchange="app.updateConfig()"></select></div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <h4 style="grid-column: span 2; margin: 0 0 -5px 0;">Tasten / Labels</h4>
+                <div class="form-group"><label>Randabstand L/R (mm):</label><input type="number" id="cfgPaddingX" onchange="app.updateConfig()" step="0.5" title="Abstand der Symbole vom Rand"></div>
+                <div class="form-group"><label>Standard Textgröße:</label><input type="number" id="cfgFontSize" onchange="app.updateConfig()"></div>
+                <div class="form-group"><label>Global Textfarbe:</label><select id="cfgTextColor" onchange="app.updateConfig()"></select></div>
+                <div class="form-group"><label>Global Hintergrund:</label><select id="cfgBgColor" onchange="app.updateConfig()"></select></div>
+                <div class="form-group" style="grid-column: span 2; display: flex; gap: 20px;">
+                    <label><input type="checkbox" id="cfgBold" onchange="app.updateConfig()"> Alles Fett</label>
+                    <label><input type="checkbox" id="cfgUnderline" onchange="app.updateConfig()"> Alles Unterstrichen</label>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;">
+                <h4 style="margin: 0 0 -5px 0; color: var(--primary);">Druck- & Anzeige-Optimierung</h4>
+                <div class="form-group" style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <label style="cursor: pointer; font-weight: bold; color: var(--success); font-size: 14px;">
+                        <input type="checkbox" id="cfgLayoutMode" onchange="app.updateConfig()"> 🖨️ Platzsparend (Nebeneinander reihen)
+                    </label>
+                    <label style="cursor: pointer; font-size: 14px;">
+                        <input type="checkbox" id="cfgPrintGap" onchange="app.updateConfig()"> ✂️ Schnittabstand einfügen (5mm)
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="document.getElementById('configModal').style.display = 'none'">Schließen</button>
+                <button class="btn-confirm" onclick="app.applyGlobalSettings()">Einstellungen auf Alle anwenden</button>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background-color: #e9ecef; border-left: 4px solid var(--primary); border-radius: 4px; font-size: 13.5px; color: #495057;">
+                <strong style="display: block; margin-bottom: 8px; color: var(--dark);">💡 Standardwerte (Monteur-Hilfe):</strong>
+                <ul style="margin: 0; padding-left: 20px; line-height: 1.5;">
+            <li><strong>Universaltaster:</strong> Breite 35, Höhe 5, Spalten max. 7</li>
+
+            <li style="list-style: none; height: 10px;">&nbsp;</li>
+
+                    <li><strong>Universal R und M 4/5/6 Fach:</strong> Breite 21, Höhe 5, Spalten 4,5 oder 6</li>
+                    <li><strong>Global 4/5:</strong> Breite , Höhe , Spalten 3 oder 4</li>
+
+                    <li style="list-style: none; height: 10px;">&nbsp;</li>
+
+                    <li><strong>E- Due 1- Fach:</strong> Breite , Höhe , Spalten 1</li>
+                    <li><strong>E- Due 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
+
+                    <li style="list-style: none; height: 10px;">&nbsp;</li>
+
+                    <li><strong>BR- Kanal 1- Fach:</strong> Breite , Höhe , Spalten 1</li>
+                    <li><strong>BR- Kanal 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
+
+                    <li style="list-style: none; height: 10px;">&nbsp;</li>
+
+                    <li><strong>FLF 1- Fach:</strong> Breite , Höhe , Spalten 1</li>
+                    <li><strong>FLF 2- Fach:</strong> Breite , Höhe , Spalten 2</li>
+
+                    <li style="list-style: none; height: 10px;">&nbsp;</li>
+
+                    <li><strong>VS83:</strong> Breite , Höhe , Spalten 10</li>
+                    <li><strong>Plika TK75:</strong> Breite , Höhe , Spalten </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSV Import Modal -->
+    <div class="modal-overlay" id="csvModal">
+        <div class="modal" style="width: 600px;">
+            <h3>CSV / Excel Import</h3>
+            <p style="font-size: 13px; color: #666; margin-top: -10px;">Kopiere einfach eine Spalte aus Excel oder tippe deine Liste ein (jeder Eintrag in eine neue Zeile).</p>
+            
+            <textarea id="csvDataInput" style="width: 100%; height: 200px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace;" placeholder="Wohnzimmer&#10;Küche&#10;Bad&#10;Schlafzimmer"></textarea>
+            
+            <div style="margin-top: 15px; display: flex; align-items: center; gap: 15px; background: #f9f9f9; padding: 10px; border-radius: 6px;">
+                <div class="form-group">
+                    <label style="font-weight: bold;">Tasten pro Panel:</label>
+                    <input type="number" id="csvPerPanel" value="4" style="width: 80px;">
+                </div>
+                <small style="color: #666;">Teilt die Liste automatisch in mehrere Panels auf.</small>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="document.getElementById('csvModal').style.display = 'none'">Abbrechen</button>
+                <button class="btn-confirm" onclick="app.runCSVImport()"><i class="fa-solid fa-check"></i> Importieren</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generator Modal -->
+    <div class="modal-overlay" id="generatorModal">
+        <div class="modal" style="width: 500px;">
+            <h3>Smarter Nummern-Generator</h3>
+            
+            <div style="margin-bottom: 15px; padding: 12px; background: #fdfdfd; border: 1px solid #ddd; border-radius: 6px;">
+                <h4 style="margin: 0 0 10px 0; font-size: 13.5px; color: var(--primary);">1. Panel Überschrift (Mitte)</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start;">
+                    <div class="form-group" style="flex-direction: column; align-items: flex-start;">
+                        <label>Name (z.B. UWP):</label>
+                        <input type="text" id="genPanelName" value="" placeholder="Leer lassen = Kein Text" style="width: 100%;">
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 22px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label style="font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                <input type="checkbox" id="genPanelAutoNum"> Fortlaufend (+ Nr.)
+                            </label>
+                            <div class="form-group" style="margin: 0;">
+                                <label style="font-size: 13px;">Start:</label>
+                                <input type="number" id="genPanelStartNum" value="1" style="width: 50px; padding: 2px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px; padding: 12px; background: #fdfdfd; border: 1px solid #ddd; border-radius: 6px;">
+                <h4 style="margin: 0 0 10px 0; font-size: 13.5px; color: var(--primary);">2. Tasten / Ports</h4>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group" style="flex-direction: column; align-items: flex-start;"><label>Präfix (z.B. Port):</label><input type="text" id="genPrefix" style="width: 100%;"></div>
+                        <div class="form-group" style="flex-direction: column; align-items: flex-start;"><label>Suffix (z.B. A):</label><input type="text" id="genSuffix" style="width: 100%;"></div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group" style="flex-direction: column; align-items: flex-start;" title="Rückwärts geht auch (z.B. Start 20, Ende 1)"><label>Startnummer:</label><input type="number" id="genStart" value="1" style="width: 100%;"></div>
+                        <div class="form-group" style="flex-direction: column; align-items: flex-start;"><label>Endnummer:</label><input type="number" id="genEnd" value="20" style="width: 100%;"></div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group" style="flex-direction: column; align-items: flex-start;" title="2 = 01, 3 = 001"><label>Ziffern (Führende Nullen):</label><input type="number" id="genDigits" value="2" style="width: 100%;"></div>
+                        <div class="form-group" style="flex-direction: column; align-items: flex-start;"><label>Tasten/Ports pro Panel:</label><input type="number" id="genPerPanel" value="6" style="width: 100%;"></div>
+                    </div>
+
+                    <label style="font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px; margin-top: 5px; color: #17a2b8; font-weight: bold;" title="Erzeugt 2 Nummern pro Taste (z.B. 01/02)">
+                        <input type="checkbox" id="genVoicePanel"> Voicepanel-Modus (2 Nummern pro Label (300/301))
+                    </label>
+                    
+                    <label style="font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px; margin-top: 0px; color: var(--success); font-weight: bold;">
+                        <input type="checkbox" id="genFillEmpty" checked> Letztes Panel mit leeren Tasten auffüllen
+                    </label>
+                </div>
+            </div>
+
+            <div style="padding: 12px; background: #e9f2fb; border: 1px solid #b8daff; border-radius: 6px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: bold; cursor: pointer; font-size: 13.5px; color: #004085;">
+                    <input type="checkbox" id="genHeaderRange" style="width: 18px; height: 18px;">
+                    Start/ Endnummer (Auto Links Start-Nr, Rechts End-Nr)
+                </label>
+                
+                <div style="margin-top: 10px; margin-left: 26px; display: flex; align-items: center; gap: 10px;">
+                    <label style="font-size: 13px; color: #004085;">Zeile anhängen:</label>
+                    <select id="genBarPosition" style="padding: 4px; border-radius: 4px; border: 1px solid #ccc; font-size: 13px;">
+                        <option value="top">Oben (Über den Ports)</option>
+                        <option value="bottom">Unten (Unter den Ports)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="document.getElementById('generatorModal').style.display = 'none'">Abbrechen</button>
+                <button class="btn-confirm" onclick="app.runGenerator()">Generieren</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Presets -->
+    <template id="presetOptions">
+        <option value="">📋 Vorlage...</option>
+        <option value="store">▲ | Store | ▼</option>
+        <option value="licht_plus">➕ | Licht | ➖</option>
+        <option value="licht_io">I | Licht | O</option>
+    </template>
 
     <script>
-    // NEU: 'cat' hinzugefügt für das Gruppieren der Symbole!
-    const SYMBOLS = [
-        { cat: "Allgemein", val: "--", name: "-- Nichts --", unicode: "" },
-        
-        // --- Navigation & Medien ---
-        { cat: "Navigation & Medien", val: "angle-up-solid-full.svg", name: "▲ Auf", unicode: "▲" },
-        { cat: "Navigation & Medien", val: "angle-down-solid-full.svg", name: "▼ Ab", unicode: "▼" },
-        { cat: "Navigation & Medien", val: "angle-left-solid-full.svg", name: "◀ Links", unicode: "◀" },
-        { cat: "Navigation & Medien", val: "angle-right-solid-full.svg", name: "▶ Rechts", unicode: "▶" },
-        { cat: "Navigation & Medien", val: "play-solid-full.svg", name: "▶ Play / Start", unicode: "▶" },
-        { cat: "Navigation & Medien", val: "pause-solid-full.svg", name: "⏸ Pause", unicode: "⏸" },
-        { cat: "Navigation & Medien", val: "stop-solid-full.svg", name: "⏹ Stop", unicode: "⏹" },
-        { cat: "Navigation & Medien", val: "forward-fast-solid-full.svg", name: "⏭ Vor", unicode: "⏭" },
-        { cat: "Navigation & Medien", val: "backward-fast-solid-full.svg", name: "⏮ Zurück", unicode: "⏮" },
-        { cat: "Navigation & Medien", val: "music-solid-full.svg", name: "🎵 Musik", unicode: "🎵" },
-        { cat: "Navigation & Medien", val: "volume-high-solid-full.svg", name: "🔊 Lauter", unicode: "🔊" },
-        { cat: "Navigation & Medien", val: "volume-solid-full.svg", name: "🔉 Leiser", unicode: "🔉" },
-        { cat: "Navigation & Medien", val: "volume-xmark-solid-full.svg", name: "🔇 Stumm", unicode: "🔇" },
-        { cat: "Navigation & Medien", val: "clapperboard-solid-full.svg", name: "🎬 Szene", unicode: "🎬" },
+const SYMBOLS = [
+    { val: "--", name: "-- Nichts --", unicode: "" },
+    
+    // --- Navigation & Medien ---
+    { val: "angle-up-solid-full.svg", name: "▲ Auf", unicode: "▲" },
+    { val: "angle-down-solid-full.svg", name: "▼ Ab", unicode: "▼" },
+    { val: "angle-left-solid-full.svg", name: "◀ Links", unicode: "◀" },
+    { val: "angle-right-solid-full.svg", name: "▶ Rechts", unicode: "▶" },
+    { val: "play-solid-full.svg", name: "▶ Play / Start", unicode: "▶" },
+    { val: "pause-solid-full.svg", name: "⏸ Pause", unicode: "⏸" },
+    { val: "stop-solid-full.svg", name: "⏹ Stop", unicode: "⏹" },
+    { val: "forward-fast-solid-full.svg", name: "⏭ Vor", unicode: "⏭" },
+    { val: "backward-fast-solid-full.svg", name: "⏮ Zurück", unicode: "⏮" },
+    { val: "music-solid-full.svg", name: "🎵 Musik", unicode: "🎵" },
+    { val: "volume-high-solid-full.svg", name: "🔊 Lauter", unicode: "🔊" },
+    { val: "volume-solid-full.svg", name: "🔉 Leiser", unicode: "🔉" },
+    { val: "volume-xmark-solid-full.svg", name: "🔇 Stumm", unicode: "🔇" },
+    { val: "clapperboard-solid-full.svg", name: "🎬 Szene", unicode: "🎬" },
 
-        // --- Licht & Power ---
-        { cat: "Licht & Power", val: "licht-ein.svg", name: "💡 Licht An", unicode: "💡" },
-        { cat: "Licht & Power", val: "deckenleuchte.svg", name: "💡 Deckenleuchte", unicode: "💡" },
-        { cat: "Licht & Power", val: "nachtischleuchte.svg", name: "💡 Nachtischleuchte", unicode: "💡" },
-        { cat: "Licht & Power", val: "tableleuchte.svg", name: "💡 Tableleuchte", unicode: "💡" },
-        { cat: "Licht & Power", val: "wandleuchte.svg", name: "💡 Wandleuchte", unicode: "💡" },
-        { cat: "Licht & Power", val: "licht-aus.svg", name: "💡 Licht Aus", unicode: "🔆" },
-        { cat: "Licht & Power", val: "power-off-solid-full.svg", name: "⏻ Power", unicode: "⏻" },
-        { cat: "Licht & Power", val: "plug-solid-full.svg", name: "🔌 Steckdose", unicode: "🔌" },
-        { cat: "Licht & Power", val: "battery-full-solid-full.svg", name: "🔋 Batterie", unicode: "🔋" },
-        { cat: "Licht & Power", val: "charging-station-solid-full.svg", name: "⚡ Ladestation", unicode: "⚡" },
+    // --- Licht & Power ---
+    { val: "licht-ein.svg", name: "💡 Licht An", unicode: "💡" },
+    { val: "deckenleuchte.svg", name: "💡 Deckenleuchte", unicode: "💡" },
+    { val: "nachtischleuchte.svg", name: "💡 Nachtischleuchte", unicode: "💡" },
+    { val: "tableleuchte.svg", name: "💡 Tableleuchte", unicode: "💡" },
+    { val: "wandleuchte.svg", name: "💡 Wandleuchte", unicode: "💡" },
+    { val: "licht-aus.svg", name: "💡 Licht Aus", unicode: "🔆" },
+    { val: "power-off-solid-full.svg", name: "⏻ Power", unicode: "⏻" },
+    { val: "plug-solid-full.svg", name: "🔌 Steckdose", unicode: "🔌" },
+    { val: "battery-full-solid-full.svg", name: "🔋 Batterie", unicode: "🔋" },
+    { val: "charging-station-solid-full.svg", name: "⚡ Ladestation", unicode: "⚡" },
 
-        // --- Haus, Klima & Umwelt ---
-        { cat: "Haus, Klima & Umwelt", val: "home.svg", name: "🏠 Zuhause", unicode: "🏠" },
-        { cat: "Haus, Klima & Umwelt", val: "home-move.svg", name: "🏠 Abwesend", unicode: "🏠" },
-        { cat: "Haus, Klima & Umwelt", val: "sun-regular-full.svg", name: "☀️ Tag", unicode: "☀️" },
-        { cat: "Haus, Klima & Umwelt", val: "moon-regular-full.svg", name: "🌙 Nacht", unicode: "🌙" },
-        { cat: "Haus, Klima & Umwelt", val: "star-and-crescent-solid-full.svg", name: "🌟 Nacht 2", unicode: "🌟" },
-        { cat: "Haus, Klima & Umwelt", val: "snowflake-regular-full.svg", name: "❄️ Kühlen", unicode: "❄️" },
-        { cat: "Haus, Klima & Umwelt", val: "fire-flame-curved-solid-full.svg", name: "🔥 Heizen", unicode: "🔥" },
-        { cat: "Haus, Klima & Umwelt", val: "wind-solid-full.svg", name: "🌬️ Lüftung", unicode: "🌬️" },
-        { cat: "Haus, Klima & Umwelt", val: "wind-off.svg", name: "🌬️ Lüftung Aus", unicode: "🌬️" },
-        { cat: "Haus, Klima & Umwelt", val: "car-fan.svg", name: "💨 Lüftung Basis", unicode: "💨" },
-        { cat: "Haus, Klima & Umwelt", val: "car-fan-1.svg", name: "💨 Lüftung Stufe 1", unicode: "💨" },
-        { cat: "Haus, Klima & Umwelt", val: "car-fan-2.svg", name: "💨 Lüftung Stufe 2", unicode: "💨" },
-        { cat: "Haus, Klima & Umwelt", val: "car-fan-3.svg", name: "💨 Lüftung Stufe 3", unicode: "💨" },
-        { cat: "Haus, Klima & Umwelt", val: "car-fan-auto.svg", name: "💨 Lüftung Auto", unicode: "💨" },
-        { cat: "Haus, Klima & Umwelt", val: "droplet-solid-full.svg", name: "💧 Wasser / Teich", unicode: "💧" },
-        { cat: "Haus, Klima & Umwelt", val: "tree-solid-full.svg", name: "🌲 Garten", unicode: "🌲" },
-        { cat: "Haus, Klima & Umwelt", val: "fish-solid-full.svg", name: "🐟 Teich", unicode: "🐟" },
 
-        // --- Sicherheit & Zutritt ---
-        { cat: "Sicherheit & Zutritt", val: "bell-regular-full.svg", name: "🔔 Glocke", unicode: "🔔" },
-        { cat: "Sicherheit & Zutritt", val: "bell-slash-regular-full.svg", name: "🔕 Glocke Aus", unicode: "🔕" },
-        { cat: "Sicherheit & Zutritt", val: "lock-solid-full.svg", name: "🔒 Schliessen", unicode: "🔒" },
-        { cat: "Sicherheit & Zutritt", val: "lock-open-solid-full.svg", name: "🔓 Öffnen", unicode: "🔓" },
-        { cat: "Sicherheit & Zutritt", val: "unlock-solid-full.svg", name: "🔓 Entriegeln", unicode: "🔓" },
-        { cat: "Sicherheit & Zutritt", val: "key-solid-full.svg", name: "🔑 Schlüssel", unicode: "🔑" },
-        { cat: "Sicherheit & Zutritt", val: "shield-solid-full.svg", name: "🛡️ Sicherheit", unicode: "🛡️" },
-        { cat: "Sicherheit & Zutritt", val: "ban-solid-full.svg", name: "🚫 Sperren", unicode: "🚫" },
-        { cat: "Sicherheit & Zutritt", val: "people-roof-solid-full.svg", name: "👥 Gäste", unicode: "👥" },
-        { cat: "Sicherheit & Zutritt", val: "person-running-solid-full.svg", name: "🏃 Bewegung (BWM)", unicode: "🏃" },
-        { cat: "Sicherheit & Zutritt", val: "bluetooth.svg", name: "🔵 Bluetooth An", unicode: "🅱️" },
-        { cat: "Sicherheit & Zutritt", val: "bluetooth-off.svg", name: "⚪ Bluetooth Aus", unicode: "🅱️" },
+    // --- Haus, Klima & Umwelt ---
+    { val: "home.svg", name: "🏠 Zuhause", unicode: "🏠" },
+    { val: "home-move.svg", name: "🏠 Abwesend", unicode: "🏠" },
+    { val: "sun-regular-full.svg", name: "☀️ Tag", unicode: "☀️" },
+    { val: "moon-regular-full.svg", name: "🌙 Nacht", unicode: "🌙" },
+    { val: "star-and-crescent-solid-full.svg", name: "🌟 Nacht 2", unicode: "🌟" },
+    { val: "snowflake-regular-full.svg", name: "❄️ Kühlen", unicode: "❄️" },
+    { val: "fire-flame-curved-solid-full.svg", name: "🔥 Heizen", unicode: "🔥" },
+    { val: "wind-solid-full.svg", name: "🌬️ Lüftung", unicode: "🌬️" },
+    { val: "wind-off.svg", name: "🌬️ Lüftung Aus", unicode: "🌬️" },
+    { val: "car-fan.svg", name: "💨 Lüftung Basis", unicode: "💨" },
+    { val: "car-fan-1.svg", name: "💨 Lüftung Stufe 1", unicode: "💨" },
+    { val: "car-fan-2.svg", name: "💨 Lüftung Stufe 2", unicode: "💨" },
+    { val: "car-fan-3.svg", name: "💨 Lüftung Stufe 3", unicode: "💨" },
+    { val: "car-fan-auto.svg", name: "💨 Lüftung Auto", unicode: "💨" },
+    { val: "droplet-solid-full.svg", name: "💧 Wasser / Teich", unicode: "💧" },
+    { val: "tree-solid-full.svg", name: "🌲 Garten", unicode: "🌲" },
+    { val: "fish-solid-full.svg", name: "🐟 Teich", unicode: "🐟" },
 
-        // --- Werkstatt & Logistik ---
-        { cat: "Werkstatt & Logistik", val: "screwdriver-wrench-solid-full.svg", name: "🛠️ Service", unicode: "🛠️" },
-        { cat: "Werkstatt & Logistik", val: "car-solid-full.svg", name: "🚗 Auto", unicode: "🚗" },
-        { cat: "Werkstatt & Logistik", val: "box-open-solid-full.svg", name: "📦 Packet", unicode: "📦" },
+    // --- Sicherheit & Zutritt ---
+    { val: "bell-regular-full.svg", name: "🔔 Glocke", unicode: "🔔" },
+    { val: "bell-slash-regular-full.svg", name: "🔕 Glocke Aus", unicode: "🔕" },
+    { val: "lock-solid-full.svg", name: "🔒 Schliessen", unicode: "🔒" },
+    { val: "lock-open-solid-full.svg", name: "🔓 Öffnen", unicode: "🔓" },
+    { val: "unlock-solid-full.svg", name: "🔓 Entriegeln", unicode: "🔓" },
+    { val: "key-solid-full.svg", name: "🔑 Schlüssel", unicode: "🔑" },
+    { val: "shield-solid-full.svg", name: "🛡️ Sicherheit", unicode: "🛡️" },
+    { val: "ban-solid-full.svg", name: "🚫 Sperren", unicode: "🚫" },
+    { val: "people-roof-solid-full.svg", name: "👥 Gäste", unicode: "👥" },
+    { val: "person-running-solid-full.svg", name: "🏃 Bewegung (BWM)", unicode: "🏃" },
+    { val: "bluetooth.svg", name: "🔵 Bluetooth An", unicode: "🅱️" },
+    { val: "bluetooth-off.svg", name: "⚪ Bluetooth Aus", unicode: "🅱️" },
 
-        // --- Zeit & Sonstiges ---
-        { cat: "Zeit & Sonstiges", val: "alarm-clock-regular-full.svg", name: "⏰ Wecker", unicode: "⏰" },
-        { cat: "Zeit & Sonstiges", val: "stopwatch-solid-full.svg", name: "⏱ Timer", unicode: "⏱" },
-        { cat: "Zeit & Sonstiges", val: "plus-solid-full.svg", name: "➕ Plus", unicode: "➕" },
-        { cat: "Zeit & Sonstiges", val: "minus-solid-full.svg", name: "➖ Minus", unicode: "➖" },
-        { cat: "Zeit & Sonstiges", val: "I", name: "I Ein", unicode: "I" },
-        { cat: "Zeit & Sonstiges", val: "O", name: "O Aus", unicode: "O" }
-    ];
+    // --- Werkstatt & Logistik ---
+    { val: "screwdriver-wrench-solid-full.svg", name: "🛠️ Service", unicode: "🛠️" },
+    { val: "car-solid-full.svg", name: "🚗 Auto", unicode: "🚗" },
+    { val: "box-open-solid-full.svg", name: "📦 Packet", unicode: "📦" },
+
+    // --- Zeit & Sonstiges ---
+    { val: "alarm-clock-regular-full.svg", name: "⏰ Wecker", unicode: "⏰" },
+    { val: "stopwatch-solid-full.svg", name: "⏱ Timer", unicode: "⏱" },
+    { val: "plus-solid-full.svg", name: "➕ Plus", unicode: "➕" },
+    { val: "minus-solid-full.svg", name: "➖ Minus", unicode: "➖" },
+    { val: "I", name: "I Ein", unicode: "I" },
+    { val: "O", name: "O Aus", unicode: "O" }
+];
 
         const COLORS = [
             { name: "Weiss", hex: "#ffffff" },
@@ -251,24 +491,8 @@
             { name: "Violett", hex: "#8a2be2" }
         ];
 
-        // NEU: Logik zur Erstellung von <optgroup> basierend auf den Kategorien
-        let BASE_SYMBOL_OPTIONS = "";
-        const groupedSymbols = {};
-        SYMBOLS.forEach(s => {
-            if (!groupedSymbols[s.cat]) groupedSymbols[s.cat] = [];
-            groupedSymbols[s.cat].push(s);
-        });
-
-        for (const [category, symbols] of Object.entries(groupedSymbols)) {
-            if (category === "Allgemein") {
-                symbols.forEach(s => { BASE_SYMBOL_OPTIONS += `<option value="${s.val}">${s.name}</option>`; });
-            } else {
-                BASE_SYMBOL_OPTIONS += `<optgroup label="${category}">`;
-                symbols.forEach(s => { BASE_SYMBOL_OPTIONS += `<option value="${s.val}">${s.name}</option>`; });
-                BASE_SYMBOL_OPTIONS += `</optgroup>`;
-            }
-        }
-        
+        // OPTIMIERUNG 1: Basis-HTML für Dropdowns nur einmal berechnen
+        const BASE_SYMBOL_OPTIONS = SYMBOLS.map(s => `<option value="${s.val}">${s.name}</option>`).join('');
         const BASE_COLOR_OPTIONS = COLORS.map(c => `<option value="${c.hex}">${c.name}</option>`).join('');
 
         function getColorOptions(selectedHex) {
@@ -282,10 +506,23 @@
 
         function renderSymbol(sym) {
             if (!sym || sym === '--') return '';
+            
             if (sym.endsWith('.svg')) {
-                return `<span style="display: inline-block; width: 1.1em; height: 1.1em; background-color: currentColor; -webkit-mask: url('icons/${sym}') no-repeat center / contain; mask: url('icons/${sym}') no-repeat center / contain; vertical-align: middle;"></span>`;
+                return `<span style="
+                    display: inline-block;
+                    width: 1.1em;
+                    height: 1.1em;
+                    background-color: currentColor;
+                    -webkit-mask: url('icons/${sym}') no-repeat center / contain;
+                    mask: url('icons/${sym}') no-repeat center / contain;
+                    vertical-align: middle;
+                "></span>`;
             }
-            if (sym.startsWith('fa-')) return `<i class="${sym}"></i>`;
+
+            if (sym.startsWith('fa-')) {
+                return `<i class="${sym}"></i>`;
+            }
+            
             return sym; 
         }
 
@@ -300,32 +537,442 @@
                 gridVert: true, gridHorz: true
             },
             groups: [],
-            rafId: null,
-            tsInstances: [], // NEU: Array zum Verwalten der TomSelect Instanzen
+            rafId: null, // Für die Flüssigkeits-Optimierung beim Tippen
             
-            // ... (init, updateConfig, applyGlobalSettings, addPanel, etc. bleiben absolut 1:1 gleich) ...
-            // [Deinen bisherigen Code für init bis runCSVImport hier beibehalten]
-            init() { /* Dein bestehender Code */ document.getElementById('cfgWidth').value = this.config.width; /* ... */ if(this.groups.length === 0) this.addPanel(); this.render(); },
-            updateConfig() { /* Dein bestehender Code */ this.config.width = parseInt(document.getElementById('cfgWidth').value) || 40; /* ... */ this.render(); },
-            applyGlobalSettings() { /* Dein bestehender Code */ this.groups.forEach(g => { /* ... */ }); document.getElementById('configModal').style.display = 'none'; this.render(); },
-            addPanel() { /* Dein bestehender Code */ this.groups.push({ /* ... */ }); this.render(); },
-            removePanel(groupId) { /* Dein bestehender Code */ if(confirm("Panel wirklich löschen?")) { this.groups = this.groups.filter(g => g.id !== groupId); this.render(); } },
-            addLabel(groupId) { /* Dein bestehender Code */ const group = this.groups.find(g => g.id === groupId); if(group) { /* ... */ this.render(); } },
-            fillEmptyLabels(groupId, doRender = true) { /* Dein bestehender Code */ const group = this.groups.find(g => g.id === groupId); /* ... */ if (doRender) this.render(); },
-            fillAllEmptyLabels() { /* Dein bestehender Code */ this.groups.forEach(g => { this.fillEmptyLabels(g.id, false); }); this.render(); },
-            applyGlobalSymbols(groupId) { /* Dein bestehender Code */ const group = this.groups.find(g => g.id === groupId); /* ... */ },
-            duplicateLabel(groupId, labelId) { /* Dein bestehender Code */ const group = this.groups.find(g => g.id === groupId); /* ... */ },
-            removeLabel(groupId, labelId) { /* Dein bestehender Code */ const group = this.groups.find(g => g.id === groupId); /* ... */ },
-            createLabel() { /* Dein bestehender Code */ return { id: Date.now() + Math.random(), text: '', symbolL: '--', symbolR: '--', isBold: this.config.isBold || false, isUnderline: this.config.isUnderline || false, textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex, customFontSize: '' }; },
-            applyPreset(groupId, labelId, presetType) { /* Dein bestehender Code */ const group = this.groups.find(g => g.id === groupId); /* ... */ this.render(); },
-            runCSVImport() { /* Dein bestehender Code */ /* ... */ },
-            exportPDF() { /* Dein bestehender Code */ /* ... */ },
-            runGenerator() { /* Dein bestehender Code */ /* ... */ },
-            toggleSettings(id) { const el = document.getElementById('settings-' + id); el.classList.toggle('active'); },
-            updateData(type, groupId, labelId, field, value) { /* Dein bestehender Code */ /* ... */ if(field === 'isBold' || field === 'isUnderline') /* ... */ if(needsFullRender) this.render(); else { if(this.rafId) cancelAnimationFrame(this.rafId); this.rafId = requestAnimationFrame(() => { this.renderPreview(); }); } },
-            saveData() { /* Dein bestehender Code */ /* ... */ },
-            loadData(event) { /* Dein bestehender Code */ /* ... */ },
-            resetAll() { /* Dein bestehender Code */ /* ... */ },
+            init() {
+                document.getElementById('cfgWidth').value = this.config.width;
+                document.getElementById('cfgHeight').value = this.config.height;
+                document.getElementById('cfgCols').value = this.config.columns;
+                document.getElementById('cfgFontSize').value = this.config.fontSize;
+                document.getElementById('cfgHeaderFontSize').value = this.config.headerFontSize;
+                document.getElementById('cfgPaddingX').value = this.config.paddingX !== undefined ? this.config.paddingX : 1;
+                
+                document.getElementById('cfgTextColor').innerHTML = getColorOptions(this.config.textColorHex);
+                document.getElementById('cfgBgColor').innerHTML = getColorOptions(this.config.backgroundColorHex);
+                document.getElementById('cfgBorderColor').innerHTML = getColorOptions(this.config.borderColorHex || '#000000');
+                
+                document.getElementById('cfgHeaderTextColor').innerHTML = getColorOptions(this.config.headerTextColorHex || '#000000');
+                document.getElementById('cfgHeaderBgColor').innerHTML = getColorOptions(this.config.headerBackgroundColorHex || '#ffffff');
+                document.getElementById('cfgTitlePosition').value = this.config.titlePosition || 'top';
+                
+                document.getElementById('cfgBold').checked = !!this.config.isBold;
+                document.getElementById('cfgUnderline').checked = !!this.config.isUnderline;
+                
+                document.getElementById('cfgLayoutMode').checked = this.config.layoutMode === 'grid';
+                document.getElementById('cfgPrintGap').checked = this.config.printGap !== false;
+                document.getElementById('cfgGridVert').checked = this.config.gridVert !== false;
+                document.getElementById('cfgGridHorz').checked = this.config.gridHorz !== false;
+
+                if(this.groups.length === 0) this.addPanel();
+                this.render();
+            },
+
+            updateConfig() {
+                this.config.width = parseInt(document.getElementById('cfgWidth').value) || 40;
+                this.config.height = parseInt(document.getElementById('cfgHeight').value) || 15;
+                this.config.columns = parseInt(document.getElementById('cfgCols').value) || 3;
+                this.config.fontSize = parseInt(document.getElementById('cfgFontSize').value) || 12;
+                this.config.headerFontSize = parseInt(document.getElementById('cfgHeaderFontSize').value) || 16;
+                this.config.paddingX = parseFloat(document.getElementById('cfgPaddingX').value) || 0;
+                this.config.textColorHex = document.getElementById('cfgTextColor').value;
+                this.config.backgroundColorHex = document.getElementById('cfgBgColor').value;
+                this.config.borderColorHex = document.getElementById('cfgBorderColor').value;
+                
+                this.config.headerTextColorHex = document.getElementById('cfgHeaderTextColor').value;
+                this.config.headerBackgroundColorHex = document.getElementById('cfgHeaderBgColor').value;
+                this.config.titlePosition = document.getElementById('cfgTitlePosition').value;
+                
+                this.config.isBold = document.getElementById('cfgBold').checked;
+                this.config.isUnderline = document.getElementById('cfgUnderline').checked;
+                
+                this.config.layoutMode = document.getElementById('cfgLayoutMode').checked ? 'grid' : 'column';
+                this.config.printGap = document.getElementById('cfgPrintGap').checked;
+                this.config.gridVert = document.getElementById('cfgGridVert').checked;
+                this.config.gridHorz = document.getElementById('cfgGridHorz').checked;
+
+                this.render();
+            },
+
+            applyGlobalSettings() {
+                this.groups.forEach(g => {
+                    g.textColorHex = this.config.textColorHex;
+                    g.backgroundColorHex = this.config.backgroundColorHex;
+                    g.borderColorHex = this.config.borderColorHex;
+                    
+                    g.headerTextColorHex = this.config.headerTextColorHex;
+                    g.headerBackgroundColorHex = this.config.headerBackgroundColorHex;
+                    g.titlePosition = this.config.titlePosition;
+                    
+                    g.fontSize = this.config.fontSize;
+                    g.headerFontSize = this.config.headerFontSize;
+                    g.paddingX = this.config.paddingX; 
+
+                    g.gridVert = this.config.gridVert;
+                    g.gridHorz = this.config.gridHorz;
+
+                    g.labels.forEach(l => {
+                        l.textColorHex = this.config.textColorHex;
+                        l.backgroundColorHex = this.config.backgroundColorHex;
+                        if(this.config.isBold !== undefined) l.isBold = this.config.isBold;
+                        if(this.config.isUnderline !== undefined) l.isUnderline = this.config.isUnderline;
+                    });
+                });
+                document.getElementById('configModal').style.display = 'none';
+                this.render();
+            },
+
+            addPanel() {
+                this.groups.push({
+                    id: Date.now(),
+                    headerLeft: '', headerCenter: `Panel ${this.groups.length + 1}`, headerRight: '',
+                    textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
+                    borderColorHex: this.config.borderColorHex,
+                    headerTextColorHex: this.config.headerTextColorHex || '#000000',
+                    headerBackgroundColorHex: this.config.headerBackgroundColorHex || '#ffffff',
+                    titlePosition: this.config.titlePosition || 'top',
+                    fontSize: '', headerFontSize: '', paddingX: '',
+                    gridVert: this.config.gridVert !== false, gridHorz: this.config.gridHorz !== false,
+                    labels: [this.createLabel()]
+                });
+                this.render();
+            },
+
+            removePanel(groupId) {
+                if(confirm("Panel wirklich löschen?")) {
+                    this.groups = this.groups.filter(g => g.id !== groupId);
+                    this.render();
+                }
+            },
+
+            addLabel(groupId) {
+                const group = this.groups.find(g => g.id === groupId);
+                if(group) {
+                    const lbl = this.createLabel();
+                    lbl.textColorHex = group.textColorHex;
+                    lbl.backgroundColorHex = group.backgroundColorHex;
+                    group.labels.push(lbl);
+                    this.render();
+                }
+            },
+            
+            fillEmptyLabels(groupId, doRender = true) {
+                const group = this.groups.find(g => g.id === groupId);
+                if(group) {
+                    const cols = this.config.columns;
+                    const remainder = group.labels.length % cols;
+                    if(remainder !== 0) {
+                        const needed = cols - remainder;
+                        for(let i=0; i<needed; i++) {
+                            const lbl = this.createLabel();
+                            lbl.text = '';
+                            lbl.symbolL = '--';
+                            lbl.symbolR = '--';
+                            lbl.textColorHex = group.textColorHex;
+                            lbl.backgroundColorHex = group.backgroundColorHex;
+                            group.labels.push(lbl);
+                        }
+                        if (doRender) this.render();
+                    }
+                }
+            },
+
+            // NEU: Global alle leeren Labels auffüllen
+            fillAllEmptyLabels() {
+                this.groups.forEach(g => {
+                    this.fillEmptyLabels(g.id, false); // Füllt auf, zeichnet aber noch nicht neu
+                });
+                this.render(); // Zeichnet einmal ganz am Ende neu = super schnell
+            },
+            
+            applyGlobalSymbols(groupId) {
+                const group = this.groups.find(g => g.id === groupId);
+                if(group) {
+                    const symL = document.getElementById(`globSymL-${groupId}`).value;
+                    const symR = document.getElementById(`globSymR-${groupId}`).value;
+                    let changed = false;
+                    group.labels.forEach(l => {
+                        if(symL !== '') { l.symbolL = symL; changed = true; }
+                        if(symR !== '') { l.symbolR = symR; changed = true; }
+                    });
+                    if(changed) {
+                        document.getElementById(`globSymL-${groupId}`).value = '';
+                        document.getElementById(`globSymR-${groupId}`).value = '';
+                        this.render();
+                    }
+                }
+            },
+
+            duplicateLabel(groupId, labelId) {
+                const group = this.groups.find(g => g.id === groupId);
+                if(group) {
+                    const originalLabel = group.labels.find(l => l.id === labelId);
+                    if(originalLabel) {
+                        const newLabel = JSON.parse(JSON.stringify(originalLabel));
+                        newLabel.id = Date.now() + Math.random(); 
+                        const index = group.labels.indexOf(originalLabel);
+                        group.labels.splice(index + 1, 0, newLabel);
+                        this.render();
+                    }
+                }
+            },
+
+            removeLabel(groupId, labelId) {
+                const group = this.groups.find(g => g.id === groupId);
+                if(group) {
+                    group.labels = group.labels.filter(l => l.id !== labelId);
+                    this.render();
+                }
+            },
+
+            createLabel() {
+                return {
+                    id: Date.now() + Math.random(), text: '', symbolL: '--', symbolR: '--',
+                    isBold: this.config.isBold || false, isUnderline: this.config.isUnderline || false,
+                    textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
+                    customFontSize: '' 
+                };
+            },
+
+            applyPreset(groupId, labelId, presetType) {
+                const group = this.groups.find(g => g.id === groupId);
+                const label = group.labels.find(l => l.id === labelId);
+                if(!label || !presetType) return;
+                
+                if (presetType === "store") { label.symbolL = "angle-up-solid-full.svg"; label.text = "Store"; label.symbolR = "angle-down-solid-full.svg"; }
+                else if (presetType === "licht_plus") { label.symbolL = "plus-solid-full.svg"; label.text = "Licht"; label.symbolR = "minus-solid-full.svg"; }
+                else if (presetType === "licht_io") { label.symbolL = "I"; label.text = "Licht"; label.symbolR = "O"; }
+                
+                this.render();
+            },
+
+            runCSVImport() {
+                const data = document.getElementById('csvDataInput').value.trim();
+                if(!data) { alert("Bitte Text oder CSV Daten einfügen!"); return; }
+                
+                const lines = data.split('\n').map(l => l.trim()).filter(l => l !== '');
+                const perPanel = parseInt(document.getElementById('csvPerPanel').value) || 4;
+                
+                if (this.groups.length === 1 && this.groups[0].labels.length === 1 && !this.groups[0].labels[0].text) {
+                    this.groups = [];
+                }
+
+                let currentGroup = null;
+                let count = 0;
+                let panelCounter = this.groups.length + 1;
+
+                lines.forEach(line => {
+                    if (count === 0) {
+                        currentGroup = {
+                            id: Date.now() + Math.random(),
+                            headerLeft: '', headerCenter: `Import Panel ${panelCounter}`, headerRight: '',
+                            textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
+                            borderColorHex: this.config.borderColorHex,
+                            headerTextColorHex: this.config.headerTextColorHex || '#000000',
+                            headerBackgroundColorHex: this.config.headerBackgroundColorHex || '#ffffff',
+                            titlePosition: this.config.titlePosition || 'top',
+                            fontSize: '', headerFontSize: '', paddingX: '',
+                            gridVert: this.config.gridVert !== false, gridHorz: this.config.gridHorz !== false,
+                            labels: []
+                        };
+                        this.groups.push(currentGroup);
+                        panelCounter++;
+                    }
+
+                    const lbl = this.createLabel();
+                    lbl.text = line;
+                    currentGroup.labels.push(lbl);
+                    count++;
+                    if (count >= perPanel) count = 0;
+                });
+
+                document.getElementById('csvModal').style.display = 'none';
+                document.getElementById('csvDataInput').value = '';
+                this.render();
+            },
+
+            exportPDF() {
+                const element = document.getElementById('previewArea');
+                const opt = {
+                    margin:       10, 
+                    filename:     'Beschriftungen.pdf',
+                    image:        { type: 'jpeg', quality: 1.0 },
+                    html2canvas:  { scale: 4, useCORS: true },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+                html2pdf().set(opt).from(element).save();
+            },
+
+            runGenerator() {
+                const panelNameStr = document.getElementById('genPanelName').value;
+                const doPanelAutoNum = document.getElementById('genPanelAutoNum').checked;
+                const panelStartInput = parseInt(document.getElementById('genPanelStartNum').value);
+                
+                const prefix = document.getElementById('genPrefix').value;
+                const suffix = document.getElementById('genSuffix').value;
+                const start = parseInt(document.getElementById('genStart').value);
+                const end = parseInt(document.getElementById('genEnd').value);
+                const digits = parseInt(document.getElementById('genDigits').value);
+                const perPanel = parseInt(document.getElementById('genPerPanel').value);
+                const doFillEmpty = document.getElementById('genFillEmpty').checked;
+                const isVoice = document.getElementById('genVoicePanel').checked;
+                
+                const doPatchPanelMode = document.getElementById('genHeaderRange').checked;
+                const barPosition = document.getElementById('genBarPosition').value;
+
+                if (this.groups.length === 1 && this.groups[0].labels.length === 1 && !this.groups[0].labels[0].text) {
+                    this.groups = [];
+                }
+
+                const stepDir = start <= end ? 1 : -1;
+                const stepAmount = isVoice ? 2 : 1;
+                const totalItems = isVoice ? Math.ceil((Math.abs(end - start) + 1) / 2) : Math.abs(end - start) + 1;
+
+                let currentGroup = null;
+                let count = 0;
+                let panelStartNum = start;
+                let panelCounter = isNaN(panelStartInput) ? 1 : panelStartInput;
+                let currentNum = start;
+
+                for (let i = 0; i < totalItems; i++) {
+                    if (!currentGroup || count >= perPanel) {
+                        panelStartNum = currentNum;
+                        let pCenter = panelNameStr;
+                        if(doPanelAutoNum && pCenter.trim() !== '') pCenter += ' ' + panelCounter;
+                        else if(doPanelAutoNum && pCenter.trim() === '') pCenter = String(panelCounter);
+                        
+                        currentGroup = {
+                            id: Date.now() + i,
+                            headerLeft: '', headerCenter: pCenter, headerRight: '',
+                            textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
+                            borderColorHex: this.config.borderColorHex,
+                            headerTextColorHex: this.config.headerTextColorHex || '#000000',
+                            headerBackgroundColorHex: this.config.headerBackgroundColorHex || '#ffffff',
+                            titlePosition: barPosition,
+                            fontSize: '', headerFontSize: '', paddingX: '',
+                            gridVert: this.config.gridVert !== false, gridHorz: this.config.gridHorz !== false,
+                            labels: []
+                        };
+                        this.groups.push(currentGroup);
+                        panelCounter++;
+                        count = 0;
+                    }
+
+                    const lbl = this.createLabel();
+                    if(isVoice) {
+                        const n1 = currentNum;
+                        const n2 = currentNum + stepDir;
+                        lbl.text = prefix + String(n1).padStart(digits, '0') + "/" + String(n2).padStart(digits, '0') + suffix;
+                    } else {
+                        lbl.text = prefix + String(currentNum).padStart(digits, '0') + suffix;
+                    }
+                    
+                    currentGroup.labels.push(lbl);
+                    count++;
+
+                    if (count === perPanel || i === totalItems - 1) {
+                        if (doPatchPanelMode) {
+                            const endVal = isVoice ? currentNum + stepDir : currentNum;
+                            currentGroup.headerLeft = prefix + String(panelStartNum).padStart(digits, '0') + suffix;
+                            currentGroup.headerRight = prefix + String(endVal).padStart(digits, '0') + suffix;
+                        }
+                    }
+                    
+                    currentNum += stepDir * stepAmount;
+                }
+                
+                if (doFillEmpty && currentGroup && count > 0 && count < perPanel) {
+                    const needed = perPanel - count;
+                    for(let j=0; j<needed; j++) {
+                        const emptyLbl = this.createLabel();
+                        emptyLbl.text = ''; 
+                        currentGroup.labels.push(emptyLbl);
+                    }
+                }
+
+                document.getElementById('generatorModal').style.display = 'none';
+                this.render();
+            },
+
+            toggleSettings(id) {
+                const el = document.getElementById('settings-' + id);
+                el.classList.toggle('active');
+            },
+
+            updateData(type, groupId, labelId, field, value) {
+                const group = this.groups.find(g => g.id === groupId);
+                if (!group) return;
+                
+                let needsFullRender = false;
+
+                if (type === 'group') {
+                    group[field] = value;
+                    if (['textColorHex', 'backgroundColorHex', 'isBold', 'isUnderline'].includes(field)) {
+                        group.labels.forEach(l => {
+                            if (field === 'isBold') l.isBold = value;
+                            else if (field === 'isUnderline') l.isUnderline = value;
+                            else l[field] = value;
+                        });
+                        needsFullRender = true;
+                    }
+                } else if (type === 'label') {
+                    const label = group.labels.find(l => l.id === labelId);
+                    if (label) label[field] = value;
+                }
+
+                // OPTIMIERUNG 2: Beim normalen Eintippen von Text nicht den Editor neuladen, 
+                // und die Vorschau-Aktualisierung ganz geschmeidig an den Browser koppeln.
+                if (needsFullRender) {
+                    this.render(); 
+                } else {
+                    if (this.rafId) cancelAnimationFrame(this.rafId);
+                    this.rafId = requestAnimationFrame(() => {
+                        this.renderPreview();
+                    });
+                }
+            },
+
+            saveData() {
+                const data = { config: this.config, groups: this.groups };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "layout.ServiceProBeschriftung";
+                a.click();
+            },
+
+            loadData(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.config) {
+                            Object.assign(this.config, data.config);
+                            if (this.config.paddingX === undefined) this.config.paddingX = 1;
+                        }
+                        if (data.groups) {
+                            data.groups.forEach(g => {
+                                if(g.paddingX === undefined) g.paddingX = '';
+                            });
+                            this.groups = data.groups;
+                        }
+                        this.init();
+                    } catch (err) {
+                        alert("Fehler beim Laden der Datei.");
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            },
+
+            resetAll() {
+                if(confirm("Alles löschen und neu beginnen?")) {
+                    this.groups = [];
+                    this.addPanel();
+                }
+            },
 
             render() {
                 this.renderEditor();
@@ -334,13 +981,6 @@
 
             renderEditor() {
                 const editor = document.getElementById('editorArea');
-                
-                // NEU: Aufräumen der alten Suchfeld-Instanzen bevor wir neu zeichnen
-                if (this.tsInstances && this.tsInstances.length > 0) {
-                    this.tsInstances.forEach(ts => ts.destroy());
-                    this.tsInstances = [];
-                }
-
                 editor.innerHTML = '';
                 
                 const globalSymOptions = `<option value="">-- Nicht ändern --</option>` + BASE_SYMBOL_OPTIONS;
@@ -350,7 +990,6 @@
                     const html = `
                         <div class="panel-card">
                             <div class="panel-header">
-                                <!-- HTML Kopfbereich bleibt exakt wie vorher! -->
                                 <div class="panel-header-inputs">
                                     <input type="text" placeholder="Links (z.B. 01)" value="${group.headerLeft || ''}" oninput="app.updateData('group', ${group.id}, null, 'headerLeft', this.value)">
                                     <input type="text" placeholder="Mitte" value="${group.headerCenter !== undefined ? group.headerCenter : ''}" oninput="app.updateData('group', ${group.id}, null, 'headerCenter', this.value)">
@@ -366,7 +1005,7 @@
                             
                             <div class="panel-body" style="padding-top: 0;">
                                 <div class="settings-row" id="settings-group-${group.id}" style="background: #f9f9f9; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
-                                    <!-- HTML Panel-Settings bleiben exakt wie vorher! -->
+                                    
                                     <div style="width: 100%; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px; font-weight: bold; font-size: 12px; color: var(--primary);">ZUSATZZEILE (KOPF/FUß)</div>
                                     <div class="form-group"><label>Position:</label><select onchange="app.updateData('group', ${group.id}, null, 'titlePosition', this.value)"><option value="top" ${!isBottom ? 'selected' : ''}>Oben</option><option value="bottom" ${isBottom ? 'selected' : ''}>Unten</option></select></div>
                                     <div class="form-group"><label>Farbe:</label><select onchange="app.updateData('group', ${group.id}, null, 'headerTextColorHex', this.value)">${getColorOptions(group.headerTextColorHex || this.config.headerTextColorHex || '#000000')}</select></div>
@@ -394,9 +1033,11 @@
                                         <select id="globSymR-${group.id}" class="symbol-select" style="width: 130px; padding:4px;">${globalSymOptions}</select>
                                         <button onclick="app.applyGlobalSymbols(${group.id})" style="background:var(--success); color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;"><i class="fa-solid fa-check"></i> Anwenden</button>
                                     </div>
+
                                 </div>
                                 
                                 ${group.labels.map(label => {
+                                    // OPTIMIERUNG 1: Caching der Dropdown-Auswahl ohne Schleife!
                                     const renderDropdown = (fieldValue) => {
                                         if (!fieldValue || fieldValue === '--') return BASE_SYMBOL_OPTIONS;
                                         const searchStr = `value="${fieldValue}"`;
@@ -410,6 +1051,7 @@
                                     return `
                                     <div class="label-item">
                                         <div class="label-main-row">
+                                            
                                             <select class="symbol-select" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolL', this.value)">
                                                 ${renderDropdown(label.symbolL)}
                                             </select>
@@ -442,31 +1084,80 @@
                     `;
                     editor.insertAdjacentHTML('beforeend', html);
                 });
-
-                // NEU: Tom Select Initialisierung
-                // Sucht alle generierten Dropdowns und macht sie interaktiv + durchsuchbar!
-                document.querySelectorAll('.symbol-select').forEach(el => {
-                    const ts = new TomSelect(el, {
-                        create: true, // Erlaubt das Eintippen eigener Symbole (wie bisher mit 'Eigen: ')
-                        sortField: null, // Verhindert alphabetisches Sortieren, damit Kategorien erhalten bleiben
-                        searchField: ['text', 'value'], // Suchen nach Name & Dateinamen
-                        dropdownParent: 'body', // Verhindert, dass das Dropdown abgeschnitten wird
-                        maxOptions: null, // Zeige alle Treffer
-                        onChange: function(val) {
-                            // Wichtig: Das originale onchange-Event manuell aufrufen, 
-                            // damit app.updateData direkt getriggert wird!
-                            const event = new Event('change', { bubbles: true });
-                            el.dispatchEvent(event);
-                        }
-                    });
-                    this.tsInstances.push(ts);
-                });
             },
 
             renderPreview() {
-                // ... (Hier bleibt die renderPreview absolut unverändert!) ...
-                // [Füge deinen restlichen Preview-Code hier wieder ein]
-                const preview = document.getElementById('previewArea'); preview.innerHTML = ''; preview.className = 'preview-wrapper'; if (this.config.layoutMode === 'grid') preview.classList.add('layout-grid'); if (this.config.printGap) preview.classList.add('with-gap'); const { width, height, columns, fontSize, headerFontSize, borderColorHex } = this.config; const globalPadX = this.config.paddingX !== undefined ? this.config.paddingX : 1; this.groups.forEach(group => { const pBorderCol = group.borderColorHex || borderColorHex || '#000000'; const pHeadSize = group.headerFontSize || headerFontSize; const pFontSize = group.fontSize || fontSize; const padX = (group.paddingX !== undefined && group.paddingX !== '') ? group.paddingX : globalPadX; const hL = group.headerLeft || ''; const hC = group.headerCenter !== undefined ? group.headerCenter : ''; const hR = group.headerRight || ''; let groupHtml = `<div class="preview-panel" style="--preview-border: ${pBorderCol}; width: ${columns * width}mm;">`; let barHtml = ''; if (hL.trim() !== "" || hC.trim() !== "" || hR.trim() !== "") { const hTextColor = group.headerTextColorHex || this.config.headerTextColorHex || '#000000'; const hBgColor = group.headerBackgroundColorHex || this.config.headerBackgroundColorHex || '#ffffff'; let innerColumns = ''; if (hL.trim() === "" && hR.trim() === "") innerColumns = `<div style="text-align: center;">${hC}</div>`; else innerColumns = `<div style="text-align: left;">${hL}</div><div style="text-align: center;">${hC}</div><div style="text-align: right;">${hR}</div>`; const barBorderTop = (group.titlePosition === 'bottom' && group.gridHorz) ? `1px solid ${pBorderCol}` : 'none'; const barBorderBottom = (group.titlePosition !== 'bottom' && group.gridHorz) ? `1px solid ${pBorderCol}` : 'none'; barHtml = `<div class="preview-panel-bar" style="height: ${height}mm; background-color: ${hBgColor}; color: ${hTextColor}; font-size: ${pHeadSize}px; border-top: ${barBorderTop}; border-bottom: ${barBorderBottom};">${innerColumns}</div>`; } if (group.titlePosition !== 'bottom') groupHtml += barHtml; groupHtml += `<div class="preview-grid" style="grid-template-columns: repeat(${columns}, ${width}mm);">`; const vertStyle = group.gridVert ? `1px solid ${pBorderCol}` : 'none'; const horzStyle = group.gridHorz ? `1px solid ${pBorderCol}` : 'none'; group.labels.forEach(label => { const styleFontW = label.isBold ? 'bold' : 'normal'; const styleTextD = label.isUnderline ? 'underline' : 'none'; const actFontSize = label.customFontSize ? label.customFontSize : pFontSize; const symLeftHTML = label.symbolL && label.symbolL !== '--' ? `<span style="padding-right: 2px; text-align: center; flex-shrink: 0; line-height: 0.95;">${renderSymbol(label.symbolL)}</span>` : ''; const symRightHTML = label.symbolR && label.symbolR !== '--' ? `<span style="padding-left: 2px; text-align: center; flex-shrink: 0; line-height: 0.95;">${renderSymbol(label.symbolR)}</span>` : ''; groupHtml += ` <div class="preview-label" style=" width: ${width}mm; height: ${height}mm; background-color: ${label.backgroundColorHex}; color: ${label.textColorHex}; font-size: ${actFontSize}px; border-right: ${vertStyle}; border-bottom: ${horzStyle}; padding: 0 ${padX}mm;"> ${symLeftHTML} <span class="preview-label-text" style="font-weight: ${styleFontW}; text-decoration: ${styleTextD};">${label.text}</span> ${symRightHTML} </div> `; }); groupHtml += `</div>`; if (group.titlePosition === 'bottom') groupHtml += barHtml; groupHtml += `</div>`; preview.insertAdjacentHTML('beforeend', groupHtml); });
+                const preview = document.getElementById('previewArea');
+                preview.innerHTML = '';
+                
+                preview.className = 'preview-wrapper';
+                if (this.config.layoutMode === 'grid') preview.classList.add('layout-grid');
+                if (this.config.printGap) preview.classList.add('with-gap');
+
+                const { width, height, columns, fontSize, headerFontSize, borderColorHex } = this.config;
+                const globalPadX = this.config.paddingX !== undefined ? this.config.paddingX : 1;
+
+                this.groups.forEach(group => {
+                    const pBorderCol = group.borderColorHex || borderColorHex || '#000000';
+                    const pHeadSize = group.headerFontSize || headerFontSize;
+                    const pFontSize = group.fontSize || fontSize;
+                    
+                    const padX = (group.paddingX !== undefined && group.paddingX !== '') ? group.paddingX : globalPadX;
+                    
+                    const hL = group.headerLeft || '';
+                    const hC = group.headerCenter !== undefined ? group.headerCenter : '';
+                    const hR = group.headerRight || '';
+
+                    let groupHtml = `<div class="preview-panel" style="--preview-border: ${pBorderCol}; width: ${columns * width}mm;">`;
+                    
+                    let barHtml = '';
+                    if (hL.trim() !== "" || hC.trim() !== "" || hR.trim() !== "") {
+                        const hTextColor = group.headerTextColorHex || this.config.headerTextColorHex || '#000000';
+                        const hBgColor = group.headerBackgroundColorHex || this.config.headerBackgroundColorHex || '#ffffff';
+                        
+                        let innerColumns = '';
+                        if (hL.trim() === "" && hR.trim() === "") innerColumns = `<div style="text-align: center;">${hC}</div>`;
+                        else innerColumns = `<div style="text-align: left;">${hL}</div><div style="text-align: center;">${hC}</div><div style="text-align: right;">${hR}</div>`;
+                        
+                        const barBorderTop = (group.titlePosition === 'bottom' && group.gridHorz) ? `1px solid ${pBorderCol}` : 'none';
+                        const barBorderBottom = (group.titlePosition !== 'bottom' && group.gridHorz) ? `1px solid ${pBorderCol}` : 'none';
+
+                        barHtml = `<div class="preview-panel-bar" style="height: ${height}mm; background-color: ${hBgColor}; color: ${hTextColor}; font-size: ${pHeadSize}px; border-top: ${barBorderTop}; border-bottom: ${barBorderBottom};">${innerColumns}</div>`;
+                    }
+                    
+                    if (group.titlePosition !== 'bottom') groupHtml += barHtml;
+                    
+                    groupHtml += `<div class="preview-grid" style="grid-template-columns: repeat(${columns}, ${width}mm);">`;
+
+                    const vertStyle = group.gridVert ? `1px solid ${pBorderCol}` : 'none';
+                    const horzStyle = group.gridHorz ? `1px solid ${pBorderCol}` : 'none';
+
+                    group.labels.forEach(label => {
+                        const styleFontW = label.isBold ? 'bold' : 'normal';
+                        const styleTextD = label.isUnderline ? 'underline' : 'none';
+                        const actFontSize = label.customFontSize ? label.customFontSize : pFontSize;
+                        
+                        const symLeftHTML = label.symbolL && label.symbolL !== '--' ? `<span style="padding-right: 2px; text-align: center; flex-shrink: 0; line-height: 0.95;">${renderSymbol(label.symbolL)}</span>` : '';
+                        const symRightHTML = label.symbolR && label.symbolR !== '--' ? `<span style="padding-left: 2px; text-align: center; flex-shrink: 0; line-height: 0.95;">${renderSymbol(label.symbolR)}</span>` : '';
+                        
+                        groupHtml += `
+                            <div class="preview-label" style="
+                                width: ${width}mm; height: ${height}mm; 
+                                background-color: ${label.backgroundColorHex}; color: ${label.textColorHex}; 
+                                font-size: ${actFontSize}px; border-right: ${vertStyle}; border-bottom: ${horzStyle};
+                                padding: 0 ${padX}mm;">
+                                ${symLeftHTML}
+                                <span class="preview-label-text" style="font-weight: ${styleFontW}; text-decoration: ${styleTextD};">${label.text}</span>
+                                ${symRightHTML}
+                            </div>
+                        `;
+                    });
+
+                    groupHtml += `</div>`;
+                    if (group.titlePosition === 'bottom') groupHtml += barHtml;
+                    groupHtml += `</div>`;
+                    preview.insertAdjacentHTML('beforeend', groupHtml);
+                });
             }
         };
 
