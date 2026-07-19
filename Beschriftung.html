@@ -27,6 +27,13 @@
             print-color-adjust: exact; 
         }
 
+        .toolbar button img {
+            width: 16px; 
+            height: 16px; 
+            /* Macht schwarze SVGs komplett weiß, passend zum Text */
+            filter: brightness(0) invert(1); 
+        }
+
         .toolbar { background: var(--dark); padding: 10px 20px; color: white; display: flex; gap: 10px; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 100; flex-shrink: 0; flex-wrap: wrap;}
         .toolbar button { background: var(--gray); color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px; transition: 0.2s; display: flex; align-items: center; gap: 5px;}
         .toolbar button:hover { filter: brightness(1.1); }
@@ -122,18 +129,36 @@
 
     <div class="toolbar">
         <div class="toolbar-title">Beschriftung V22</div>
-        <button class="btn-success" onclick="app.addPanel()">➕ Panel</button>
-        <button class="btn-info" onclick="app.fillAllEmptyLabels()" title="Füllt in allen Panels leere Tasten auf">🔠 Alle Auffüllen</button>
-        <button class="btn-info" onclick="document.getElementById('generatorModal').style.display = 'flex'">🔢 Auto-Nr</button>
-        <button class="btn-info" onclick="document.getElementById('csvModal').style.display = 'flex'">📄 CSV Import</button>
-        <button onclick="document.getElementById('configModal').style.display = 'flex'">⚙️ Layout</button>
-        <button onclick="app.saveData()">💾 Speichern</button>
-        <button onclick="document.getElementById('fileInput').click()">📂 Öffnen</button>
+        <button class="btn-success" onclick="app.addPanel()">
+            <img src="icons/table-plus.svg"> Panel
+        </button>
+        <button class="btn-info" onclick="app.fillAllEmptyLabels()" title="Füllt in allen Panels leere Tasten auf">
+            <img src="icons/template.svg"> Alle Auffüllen
+        </button>
+        <button class="btn-info" onclick="document.getElementById('generatorModal').style.display = 'flex'">
+            <img src="icons/number-123.svg"> Auto-Nr
+        </button>
+        <button class="btn-info" onclick="document.getElementById('csvModal').style.display = 'flex'">
+            <img src="icons/file-type-csv.svg"> CSV Import
+        </button>
+        <button onclick="document.getElementById('configModal').style.display = 'flex'">
+            <img src="icons/settings.svg"> Layout
+        </button>
+        <button onclick="app.saveData()">
+            <img src="icons/download.svg"> Speichern
+        </button>
+        <button onclick="document.getElementById('fileInput').click()">
+            <img src="icons/file-upload.svg"> Öffnen
+        </button>
         <input type="file" id="fileInput" style="display: none" accept=".ServiceProBeschriftung" onchange="app.loadData(event)">
         
         <div style="margin-left: auto; display: flex; gap: 10px;">
-            <button onclick="window.print()">🖨️ Drucken</button>
-            <button class="btn-danger" onclick="app.resetAll()">🗑️ Löschen</button>
+            <button onclick="window.print()">
+                <img src="icons/printer.svg"> Drucken
+            </button>
+            <button class="btn-danger" onclick="app.resetAll()">
+                <img src="icons/trash-x.svg"> Löschen
+            </button>
         </div>
     </div>
 
