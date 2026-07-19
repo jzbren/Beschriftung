@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beschriftung V22</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- NEU: Tom Select für durchsuchbare Dropdowns (CSS) -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.default.min.css" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- NEU: Tom Select für durchsuchbare Dropdowns (JS) -->
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #0056b3;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --dark: #343a40;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --bg: #f4f4f9;
+            --preview-border: #000000;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body { 
+            margin: 0; padding: 0; background-color: var(--bg); display: flex; flex-direction: column; height: 100vh; overflow: hidden; 
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact; 
+        }
+
+        .toolbar { background: var(--dark); padding: 10px 20px; color: white; display: flex; gap: 10px; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 100; flex-shrink: 0; flex-wrap: wrap;}
+        .toolbar button { background: var(--gray); color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px; transition: 0.2s; display: flex; align-items: center; gap: 5px;}
+        .toolbar button:hover { filter: brightness(1.1); }
+        .toolbar button.btn-success { background: var(--success); }
+        .toolbar button.btn-info { background: var(--info); }
+        .toolbar button.btn-danger { background: var(--danger); }
+        .toolbar-title { font-weight: bold; margin-right: auto; font-size: 18px; }
+
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        
+        .editor-area { width: 45%; background: white; border-right: 1px solid #ddd; overflow-y: auto; padding: 20px; }
+        
+        .preview-area { width: 55%; background: var(--bg); padding: 20px; overflow: auto; display: flex; flex-direction: column; align-items: flex-start; }
+
+        .panel-card { border: 1px solid var(--primary); border-radius: 8px; margin-bottom: 20px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .panel-header { background: #e9f2fb; padding: 10px 15px; border-bottom: 1px solid var(--primary); display: flex; justify-content: space-between; align-items: center; border-radius: 8px 8px 0 0; flex-wrap: wrap; gap: 10px;}
+        
+        .panel-header-inputs { display: flex; gap: 5px; flex: 1; min-width: 250px; }
+        .panel-header-inputs input { font-weight: bold; font-size: 13px; border: 1px solid #ccc; padding: 6px; border-radius: 4px; width: 33.3%; }
+        .panel-header-inputs input::placeholder { font-weight: normal; color: #999; }
+
+        .panel-header-actions { display: flex; gap: 5px; }
+        
+        .panel-body { padding: 15px; }
+        
+        .label-item { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 6px; background: #fafafa; position: relative; transition: all 0.2s ease;}
+        .label-item:hover { border-color: var(--info); box-shadow: 0 0 5px rgba(23,162,184,0.3); }
+        .label-main-row { display: flex; gap: 8px; align-items: center; }
+        .label-main-row input[type="text"] { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; height: 35px; }
+        .label-main-row select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; text-align: left; font-size: 14px;}
+        
+        /* Anpassungen für Tom Select */
+        .ts-wrapper.symbol-select { flex: 0 0 150px; font-family: 'Segoe UI', 'FontAwesome', sans-serif; font-size: 13.5px; }
+        .ts-control { padding: 6px 8px; min-height: 35px; border: 1px solid #ccc; border-radius: 4px; background: white; box-shadow: none; }
+        .ts-dropdown { font-family: 'Segoe UI', 'FontAwesome', sans-serif; font-size: 13px; z-index: 10000 !important; }
+        .ts-dropdown .optgroup-header { font-weight: bold; color: var(--primary); background-color: #f0f4f8; font-size: 12.5px; padding: 6px 10px;}
+        
+        .settings-row { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; flex-wrap: wrap; gap: 15px; align-items: center; font-size: 13px; }
+        .settings-row.active { display: flex; }
+        .icon-btn { background: none; border: none; cursor: pointer; font-size: 18px; padding: 5px; color: var(--gray); border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;}
+        .icon-btn:hover { background: #eee; color: var(--dark); }
+        .icon-btn.delete { color: var(--danger); }
+        .icon-btn.duplicate { color: var(--success); }
+        
+        .form-group { display: flex; align-items: center; gap: 5px; }
+        .form-group input[type="number"], .form-group select, .form-group input[type="text"] { padding: 4px; border: 1px solid #ccc; border-radius: 4px; }
+        .form-group input[type="number"] { width: 60px; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 10000; }
+        .modal { background: white; padding: 25px; border-radius: 8px; width: 550px; max-width: 90%; box-shadow: 0 5px 15px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto;}
+        .modal h3 { margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid var(--primary); padding-bottom: 5px;}
+        .modal-footer { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #eee; padding-top: 15px;}
+        .modal-footer button { padding: 8px 15px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold;}
+        .btn-cancel { background: #ddd; }
+        .btn-cancel:hover { background: #ccc; }
+        .btn-confirm { background: var(--primary); color: white; }
+        .btn-confirm:hover { background: #004494; }
+
+        .preview-wrapper { 
+            background: white; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 8px; width: 100%; min-height: 50vh; 
+            display: flex; flex-direction: column; align-items: flex-start; min-width: min-content; margin: 0 auto;
+        }
+
+        .preview-wrapper.layout-grid { flex-direction: row; flex-wrap: wrap; justify-content: flex-start; align-content: flex-start; }
+        .preview-wrapper.with-gap { gap: 5mm; }
+        
+        .preview-panel { box-sizing: content-box; border: 1px solid var(--preview-border) !important; margin-bottom: 0px; page-break-inside: avoid; }
+        .preview-wrapper:not(.layout-grid):not(.with-gap) .preview-panel + .preview-panel { margin-top: -1px; }
+        .preview-wrapper.layout-grid:not(.with-gap) .preview-panel { margin-left: -1px; margin-top: -1px; }
+        .preview-wrapper.layout-grid:not(.with-gap) { padding-top: 21px; padding-left: 21px; }
+        
+        .preview-panel-bar { font-weight: bold; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; overflow: hidden; white-space: nowrap; padding: 0 5px; }
+        .preview-panel-bar > div { flex: 1; overflow: hidden; text-overflow: clip; }
+        .preview-grid { display: grid; gap: 0; }
+        .preview-label { display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; overflow: hidden; }
+        .preview-label-text { flex: 1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: clip; line-height: 0.95; }
+
+        @media print {
+            body { display: block; overflow: visible; background: white; }
+            .toolbar, .editor-area, .modal-overlay { display: none !important; }
+            .main-container { display: block; }
+            .preview-area { width: 100%; padding: 0; display: flex; flex-direction: column; align-items: flex-start; background: white; overflow: visible; }
+            .preview-wrapper { box-shadow: none; padding: 0; border: none; margin: 0; width: 100%; min-width: 100%; }
+            .preview-wrapper.layout-grid { justify-content: flex-start; }
+            .preview-wrapper.layout-grid:not(.with-gap) { padding-top: 1px !important; padding-left: 1px !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <div class="toolbar-title">Universal Beschriftungstool</div>
+        <button class="btn-success" onclick="app.addPanel()"><i class="fa-solid fa-plus"></i> Panel</button>
+        <button class="btn-info" onclick="app.fillAllEmptyLabels()" title="Füllt in allen Panels leere Tasten auf"><i class="fa-solid fa-table-cells"></i> Alle Auffüllen</button>
+        <button class="btn-info" onclick="document.getElementById('generatorModal').style.display = 'flex'"><i class="fa-solid fa-list-ol"></i> Auto-Nr</button>
+        <button class="btn-info" onclick="document.getElementById('csvModal').style.display = 'flex'"><i class="fa-solid fa-file-csv"></i> CSV Import</button>
+        <button onclick="document.getElementById('configModal').style.display = 'flex'"><i class="fa-solid fa-gear"></i> Layout</button>
+        <button onclick="app.saveData()"><i class="fa-solid fa-floppy-disk"></i> Speichern</button>
+        <button onclick="document.getElementById('fileInput').click()"><i class="fa-solid fa-folder-open"></i> Öffnen</button>
+        <input type="file" id="fileInput" style="display: none" accept=".ServiceProBeschriftung" onchange="app.loadData(event)">
+        
+        <div style="margin-left: auto; display: flex; gap: 10px;">
+            <button onclick="app.exportPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+            <button onclick="window.print()"><i class="fa-solid fa-print"></i> Drucken</button>
+            <button class="btn-danger" onclick="app.resetAll()"><i class="fa-solid fa-trash"></i> Löschen</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="editor-area" id="editorArea"></div>
+        <div class="preview-area">
+            <div class="preview-wrapper layout-grid with-gap" id="previewArea"></div>
+        </div>
+    </div>
+
+    <!-- Layout & CSV Modal (Bleiben unverändert vom Code oben, hier zwecks Übersichtlichkeit der Länge abgekürzt) -->
+    <!-- [Dein gesamter HTML Code für Modals (configModal, csvModal, generatorModal) gehört exakt hierhin. Ich habe ihn hier zur besseren Lesbarkeit ausgeblendet, du kannst ihn 1:1 übernehmen] -->
+
+    <!-- Modals (Bitte deinen bisherigen Modal-Code hier einfügen) -->
+    <!-- ... -->
+
+    <script>
+    // NEU: 'cat' hinzugefügt für das Gruppieren der Symbole!
+    const SYMBOLS = [
+        { cat: "Allgemein", val: "--", name: "-- Nichts --", unicode: "" },
+        
+        // --- Navigation & Medien ---
+        { cat: "Navigation & Medien", val: "angle-up-solid-full.svg", name: "▲ Auf", unicode: "▲" },
+        { cat: "Navigation & Medien", val: "angle-down-solid-full.svg", name: "▼ Ab", unicode: "▼" },
+        { cat: "Navigation & Medien", val: "angle-left-solid-full.svg", name: "◀ Links", unicode: "◀" },
+        { cat: "Navigation & Medien", val: "angle-right-solid-full.svg", name: "▶ Rechts", unicode: "▶" },
+        { cat: "Navigation & Medien", val: "play-solid-full.svg", name: "▶ Play / Start", unicode: "▶" },
+        { cat: "Navigation & Medien", val: "pause-solid-full.svg", name: "⏸ Pause", unicode: "⏸" },
+        { cat: "Navigation & Medien", val: "stop-solid-full.svg", name: "⏹ Stop", unicode: "⏹" },
+        { cat: "Navigation & Medien", val: "forward-fast-solid-full.svg", name: "⏭ Vor", unicode: "⏭" },
+        { cat: "Navigation & Medien", val: "backward-fast-solid-full.svg", name: "⏮ Zurück", unicode: "⏮" },
+        { cat: "Navigation & Medien", val: "music-solid-full.svg", name: "🎵 Musik", unicode: "🎵" },
+        { cat: "Navigation & Medien", val: "volume-high-solid-full.svg", name: "🔊 Lauter", unicode: "🔊" },
+        { cat: "Navigation & Medien", val: "volume-solid-full.svg", name: "🔉 Leiser", unicode: "🔉" },
+        { cat: "Navigation & Medien", val: "volume-xmark-solid-full.svg", name: "🔇 Stumm", unicode: "🔇" },
+        { cat: "Navigation & Medien", val: "clapperboard-solid-full.svg", name: "🎬 Szene", unicode: "🎬" },
+
+        // --- Licht & Power ---
+        { cat: "Licht & Power", val: "licht-ein.svg", name: "💡 Licht An", unicode: "💡" },
+        { cat: "Licht & Power", val: "deckenleuchte.svg", name: "💡 Deckenleuchte", unicode: "💡" },
+        { cat: "Licht & Power", val: "nachtischleuchte.svg", name: "💡 Nachtischleuchte", unicode: "💡" },
+        { cat: "Licht & Power", val: "tableleuchte.svg", name: "💡 Tableleuchte", unicode: "💡" },
+        { cat: "Licht & Power", val: "wandleuchte.svg", name: "💡 Wandleuchte", unicode: "💡" },
+        { cat: "Licht & Power", val: "licht-aus.svg", name: "💡 Licht Aus", unicode: "🔆" },
+        { cat: "Licht & Power", val: "power-off-solid-full.svg", name: "⏻ Power", unicode: "⏻" },
+        { cat: "Licht & Power", val: "plug-solid-full.svg", name: "🔌 Steckdose", unicode: "🔌" },
+        { cat: "Licht & Power", val: "battery-full-solid-full.svg", name: "🔋 Batterie", unicode: "🔋" },
+        { cat: "Licht & Power", val: "charging-station-solid-full.svg", name: "⚡ Ladestation", unicode: "⚡" },
+
+        // --- Haus, Klima & Umwelt ---
+        { cat: "Haus, Klima & Umwelt", val: "home.svg", name: "🏠 Zuhause", unicode: "🏠" },
+        { cat: "Haus, Klima & Umwelt", val: "home-move.svg", name: "🏠 Abwesend", unicode: "🏠" },
+        { cat: "Haus, Klima & Umwelt", val: "sun-regular-full.svg", name: "☀️ Tag", unicode: "☀️" },
+        { cat: "Haus, Klima & Umwelt", val: "moon-regular-full.svg", name: "🌙 Nacht", unicode: "🌙" },
+        { cat: "Haus, Klima & Umwelt", val: "star-and-crescent-solid-full.svg", name: "🌟 Nacht 2", unicode: "🌟" },
+        { cat: "Haus, Klima & Umwelt", val: "snowflake-regular-full.svg", name: "❄️ Kühlen", unicode: "❄️" },
+        { cat: "Haus, Klima & Umwelt", val: "fire-flame-curved-solid-full.svg", name: "🔥 Heizen", unicode: "🔥" },
+        { cat: "Haus, Klima & Umwelt", val: "wind-solid-full.svg", name: "🌬️ Lüftung", unicode: "🌬️" },
+        { cat: "Haus, Klima & Umwelt", val: "wind-off.svg", name: "🌬️ Lüftung Aus", unicode: "🌬️" },
+        { cat: "Haus, Klima & Umwelt", val: "car-fan.svg", name: "💨 Lüftung Basis", unicode: "💨" },
+        { cat: "Haus, Klima & Umwelt", val: "car-fan-1.svg", name: "💨 Lüftung Stufe 1", unicode: "💨" },
+        { cat: "Haus, Klima & Umwelt", val: "car-fan-2.svg", name: "💨 Lüftung Stufe 2", unicode: "💨" },
+        { cat: "Haus, Klima & Umwelt", val: "car-fan-3.svg", name: "💨 Lüftung Stufe 3", unicode: "💨" },
+        { cat: "Haus, Klima & Umwelt", val: "car-fan-auto.svg", name: "💨 Lüftung Auto", unicode: "💨" },
+        { cat: "Haus, Klima & Umwelt", val: "droplet-solid-full.svg", name: "💧 Wasser / Teich", unicode: "💧" },
+        { cat: "Haus, Klima & Umwelt", val: "tree-solid-full.svg", name: "🌲 Garten", unicode: "🌲" },
+        { cat: "Haus, Klima & Umwelt", val: "fish-solid-full.svg", name: "🐟 Teich", unicode: "🐟" },
+
+        // --- Sicherheit & Zutritt ---
+        { cat: "Sicherheit & Zutritt", val: "bell-regular-full.svg", name: "🔔 Glocke", unicode: "🔔" },
+        { cat: "Sicherheit & Zutritt", val: "bell-slash-regular-full.svg", name: "🔕 Glocke Aus", unicode: "🔕" },
+        { cat: "Sicherheit & Zutritt", val: "lock-solid-full.svg", name: "🔒 Schliessen", unicode: "🔒" },
+        { cat: "Sicherheit & Zutritt", val: "lock-open-solid-full.svg", name: "🔓 Öffnen", unicode: "🔓" },
+        { cat: "Sicherheit & Zutritt", val: "unlock-solid-full.svg", name: "🔓 Entriegeln", unicode: "🔓" },
+        { cat: "Sicherheit & Zutritt", val: "key-solid-full.svg", name: "🔑 Schlüssel", unicode: "🔑" },
+        { cat: "Sicherheit & Zutritt", val: "shield-solid-full.svg", name: "🛡️ Sicherheit", unicode: "🛡️" },
+        { cat: "Sicherheit & Zutritt", val: "ban-solid-full.svg", name: "🚫 Sperren", unicode: "🚫" },
+        { cat: "Sicherheit & Zutritt", val: "people-roof-solid-full.svg", name: "👥 Gäste", unicode: "👥" },
+        { cat: "Sicherheit & Zutritt", val: "person-running-solid-full.svg", name: "🏃 Bewegung (BWM)", unicode: "🏃" },
+        { cat: "Sicherheit & Zutritt", val: "bluetooth.svg", name: "🔵 Bluetooth An", unicode: "🅱️" },
+        { cat: "Sicherheit & Zutritt", val: "bluetooth-off.svg", name: "⚪ Bluetooth Aus", unicode: "🅱️" },
+
+        // --- Werkstatt & Logistik ---
+        { cat: "Werkstatt & Logistik", val: "screwdriver-wrench-solid-full.svg", name: "🛠️ Service", unicode: "🛠️" },
+        { cat: "Werkstatt & Logistik", val: "car-solid-full.svg", name: "🚗 Auto", unicode: "🚗" },
+        { cat: "Werkstatt & Logistik", val: "box-open-solid-full.svg", name: "📦 Packet", unicode: "📦" },
+
+        // --- Zeit & Sonstiges ---
+        { cat: "Zeit & Sonstiges", val: "alarm-clock-regular-full.svg", name: "⏰ Wecker", unicode: "⏰" },
+        { cat: "Zeit & Sonstiges", val: "stopwatch-solid-full.svg", name: "⏱ Timer", unicode: "⏱" },
+        { cat: "Zeit & Sonstiges", val: "plus-solid-full.svg", name: "➕ Plus", unicode: "➕" },
+        { cat: "Zeit & Sonstiges", val: "minus-solid-full.svg", name: "➖ Minus", unicode: "➖" },
+        { cat: "Zeit & Sonstiges", val: "I", name: "I Ein", unicode: "I" },
+        { cat: "Zeit & Sonstiges", val: "O", name: "O Aus", unicode: "O" }
+    ];
+
+        const COLORS = [
+            { name: "Weiss", hex: "#ffffff" },
+            { name: "Schwarz", hex: "#000000" },
+            { name: "Grau", hex: "#999999" },
+            { name: "Hellgrau", hex: "#dddddd" },
+            { name: "Rot", hex: "#ff0000" },
+            { name: "Blau", hex: "#0000ff" },
+            { name: "Hellblau", hex: "#cce5ff" },
+            { name: "Orange", hex: "#ffa500" },
+            { name: "Gelb", hex: "#ffff00" },
+            { name: "Grün", hex: "#00ff00" },
+            { name: "Rosa", hex: "#ff69b4" },
+            { name: "Violett", hex: "#8a2be2" }
+        ];
+
+        // NEU: Logik zur Erstellung von <optgroup> basierend auf den Kategorien
+        let BASE_SYMBOL_OPTIONS = "";
+        const groupedSymbols = {};
+        SYMBOLS.forEach(s => {
+            if (!groupedSymbols[s.cat]) groupedSymbols[s.cat] = [];
+            groupedSymbols[s.cat].push(s);
+        });
+
+        for (const [category, symbols] of Object.entries(groupedSymbols)) {
+            if (category === "Allgemein") {
+                symbols.forEach(s => { BASE_SYMBOL_OPTIONS += `<option value="${s.val}">${s.name}</option>`; });
+            } else {
+                BASE_SYMBOL_OPTIONS += `<optgroup label="${category}">`;
+                symbols.forEach(s => { BASE_SYMBOL_OPTIONS += `<option value="${s.val}">${s.name}</option>`; });
+                BASE_SYMBOL_OPTIONS += `</optgroup>`;
+            }
+        }
+        
+        const BASE_COLOR_OPTIONS = COLORS.map(c => `<option value="${c.hex}">${c.name}</option>`).join('');
+
+        function getColorOptions(selectedHex) {
+            const hex = selectedHex ? selectedHex.toLowerCase() : '#ffffff';
+            const searchStr = `value="${hex}"`;
+            if (BASE_COLOR_OPTIONS.includes(searchStr)) {
+                return BASE_COLOR_OPTIONS.replace(searchStr, `${searchStr} selected`);
+            }
+            return BASE_COLOR_OPTIONS;
+        }
+
+        function renderSymbol(sym) {
+            if (!sym || sym === '--') return '';
+            if (sym.endsWith('.svg')) {
+                return `<span style="display: inline-block; width: 1.1em; height: 1.1em; background-color: currentColor; -webkit-mask: url('icons/${sym}') no-repeat center / contain; mask: url('icons/${sym}') no-repeat center / contain; vertical-align: middle;"></span>`;
+            }
+            if (sym.startsWith('fa-')) return `<i class="${sym}"></i>`;
+            return sym; 
+        }
+
+        const app = {
+            config: {
+                width: 35, height: 5, columns: 7, fontSize: 12, headerFontSize: 16, 
+                paddingX: 3, 
+                textColorHex: '#000000', backgroundColorHex: '#ffffff', borderColorHex: '#000000',
+                headerTextColorHex: '#000000', headerBackgroundColorHex: '#ffffff', titlePosition: 'top',
+                isBold: false, isUnderline: false,
+                layoutMode: 'grid', printGap: false,
+                gridVert: true, gridHorz: true
+            },
+            groups: [],
+            rafId: null,
+            tsInstances: [], // NEU: Array zum Verwalten der TomSelect Instanzen
+            
+            // ... (init, updateConfig, applyGlobalSettings, addPanel, etc. bleiben absolut 1:1 gleich) ...
+            // [Deinen bisherigen Code für init bis runCSVImport hier beibehalten]
+            init() { /* Dein bestehender Code */ document.getElementById('cfgWidth').value = this.config.width; /* ... */ if(this.groups.length === 0) this.addPanel(); this.render(); },
+            updateConfig() { /* Dein bestehender Code */ this.config.width = parseInt(document.getElementById('cfgWidth').value) || 40; /* ... */ this.render(); },
+            applyGlobalSettings() { /* Dein bestehender Code */ this.groups.forEach(g => { /* ... */ }); document.getElementById('configModal').style.display = 'none'; this.render(); },
+            addPanel() { /* Dein bestehender Code */ this.groups.push({ /* ... */ }); this.render(); },
+            removePanel(groupId) { /* Dein bestehender Code */ if(confirm("Panel wirklich löschen?")) { this.groups = this.groups.filter(g => g.id !== groupId); this.render(); } },
+            addLabel(groupId) { /* Dein bestehender Code */ const group = this.groups.find(g => g.id === groupId); if(group) { /* ... */ this.render(); } },
+            fillEmptyLabels(groupId, doRender = true) { /* Dein bestehender Code */ const group = this.groups.find(g => g.id === groupId); /* ... */ if (doRender) this.render(); },
+            fillAllEmptyLabels() { /* Dein bestehender Code */ this.groups.forEach(g => { this.fillEmptyLabels(g.id, false); }); this.render(); },
+            applyGlobalSymbols(groupId) { /* Dein bestehender Code */ const group = this.groups.find(g => g.id === groupId); /* ... */ },
+            duplicateLabel(groupId, labelId) { /* Dein bestehender Code */ const group = this.groups.find(g => g.id === groupId); /* ... */ },
+            removeLabel(groupId, labelId) { /* Dein bestehender Code */ const group = this.groups.find(g => g.id === groupId); /* ... */ },
+            createLabel() { /* Dein bestehender Code */ return { id: Date.now() + Math.random(), text: '', symbolL: '--', symbolR: '--', isBold: this.config.isBold || false, isUnderline: this.config.isUnderline || false, textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex, customFontSize: '' }; },
+            applyPreset(groupId, labelId, presetType) { /* Dein bestehender Code */ const group = this.groups.find(g => g.id === groupId); /* ... */ this.render(); },
+            runCSVImport() { /* Dein bestehender Code */ /* ... */ },
+            exportPDF() { /* Dein bestehender Code */ /* ... */ },
+            runGenerator() { /* Dein bestehender Code */ /* ... */ },
+            toggleSettings(id) { const el = document.getElementById('settings-' + id); el.classList.toggle('active'); },
+            updateData(type, groupId, labelId, field, value) { /* Dein bestehender Code */ /* ... */ if(field === 'isBold' || field === 'isUnderline') /* ... */ if(needsFullRender) this.render(); else { if(this.rafId) cancelAnimationFrame(this.rafId); this.rafId = requestAnimationFrame(() => { this.renderPreview(); }); } },
+            saveData() { /* Dein bestehender Code */ /* ... */ },
+            loadData(event) { /* Dein bestehender Code */ /* ... */ },
+            resetAll() { /* Dein bestehender Code */ /* ... */ },
+
+            render() {
+                this.renderEditor();
+                this.renderPreview();
+            },
+
+            renderEditor() {
+                const editor = document.getElementById('editorArea');
+                
+                // NEU: Aufräumen der alten Suchfeld-Instanzen bevor wir neu zeichnen
+                if (this.tsInstances && this.tsInstances.length > 0) {
+                    this.tsInstances.forEach(ts => ts.destroy());
+                    this.tsInstances = [];
+                }
+
+                editor.innerHTML = '';
+                
+                const globalSymOptions = `<option value="">-- Nicht ändern --</option>` + BASE_SYMBOL_OPTIONS;
+
+                this.groups.forEach(group => {
+                    const isBottom = group.titlePosition === 'bottom';
+                    const html = `
+                        <div class="panel-card">
+                            <div class="panel-header">
+                                <!-- HTML Kopfbereich bleibt exakt wie vorher! -->
+                                <div class="panel-header-inputs">
+                                    <input type="text" placeholder="Links (z.B. 01)" value="${group.headerLeft || ''}" oninput="app.updateData('group', ${group.id}, null, 'headerLeft', this.value)">
+                                    <input type="text" placeholder="Mitte" value="${group.headerCenter !== undefined ? group.headerCenter : ''}" oninput="app.updateData('group', ${group.id}, null, 'headerCenter', this.value)">
+                                    <input type="text" placeholder="Rechts (z.B. 10)" value="${group.headerRight || ''}" oninput="app.updateData('group', ${group.id}, null, 'headerRight', this.value)">
+                                </div>
+                                <div class="panel-header-actions">
+                                    <button class="icon-btn" onclick="app.fillEmptyLabels(${group.id})" title="Mit leeren Tasten auffüllen bis Zeile voll"><i class="fa-solid fa-table-cells"></i></button>
+                                    <button class="icon-btn" onclick="app.toggleSettings('group-${group.id}')" title="Panel Einstellungen"><i class="fa-solid fa-gear"></i></button>
+                                    <button class="icon-btn" onclick="app.addLabel(${group.id})" title="Label hinzufügen"><i class="fa-solid fa-plus"></i></button>
+                                    <button class="icon-btn delete" onclick="app.removePanel(${group.id})" title="Panel löschen"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                            
+                            <div class="panel-body" style="padding-top: 0;">
+                                <div class="settings-row" id="settings-group-${group.id}" style="background: #f9f9f9; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+                                    <!-- HTML Panel-Settings bleiben exakt wie vorher! -->
+                                    <div style="width: 100%; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px; font-weight: bold; font-size: 12px; color: var(--primary);">ZUSATZZEILE (KOPF/FUß)</div>
+                                    <div class="form-group"><label>Position:</label><select onchange="app.updateData('group', ${group.id}, null, 'titlePosition', this.value)"><option value="top" ${!isBottom ? 'selected' : ''}>Oben</option><option value="bottom" ${isBottom ? 'selected' : ''}>Unten</option></select></div>
+                                    <div class="form-group"><label>Farbe:</label><select onchange="app.updateData('group', ${group.id}, null, 'headerTextColorHex', this.value)">${getColorOptions(group.headerTextColorHex || this.config.headerTextColorHex || '#000000')}</select></div>
+                                    <div class="form-group"><label>HG:</label><select onchange="app.updateData('group', ${group.id}, null, 'headerBackgroundColorHex', this.value)">${getColorOptions(group.headerBackgroundColorHex || this.config.headerBackgroundColorHex || '#ffffff')}</select></div>
+                                    <div class="form-group"><label>Größe:</label><input type="number" placeholder="Global" value="${group.headerFontSize || ''}" oninput="app.updateData('group', ${group.id}, null, 'headerFontSize', this.value)" style="width: 55px;"></div>
+
+                                    <div style="width: 100%; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px; margin-top: 5px; font-weight: bold; font-size: 12px; color: var(--primary);">TASTEN (PANEL STANDARD)</div>
+                                    <div class="form-group"><label>Text Farbe:</label><select onchange="app.updateData('group', ${group.id}, null, 'textColorHex', this.value)">${getColorOptions(group.textColorHex)}</select></div>
+                                    <div class="form-group"><label>Hintergrund:</label><select onchange="app.updateData('group', ${group.id}, null, 'backgroundColorHex', this.value)">${getColorOptions(group.backgroundColorHex)}</select></div>
+                                    <div class="form-group"><label>Rahmen:</label><select onchange="app.updateData('group', ${group.id}, null, 'borderColorHex', this.value)">${getColorOptions(group.borderColorHex || this.config.borderColorHex)}</select></div>
+                                    <div class="form-group"><label>Größe:</label><input type="number" placeholder="Global" value="${group.fontSize || ''}" oninput="app.updateData('group', ${group.id}, null, 'fontSize', this.value)" style="width: 55px;"></div>
+                                    
+                                    <div class="form-group" style="flex-basis: 100%; display: flex; gap: 15px; margin-top: 5px; background: #e9ecef; padding: 5px 10px; border-radius: 4px; flex-wrap: wrap;">
+                                        <div style="width: 100%;"><strong>Gitter & Abstand:</strong></div>
+                                        <label><input type="checkbox" onchange="app.updateData('group', ${group.id}, null, 'gridVert', this.checked)" ${group.gridVert ? 'checked' : ''}> Vertikal ( | )</label>
+                                        <label><input type="checkbox" onchange="app.updateData('group', ${group.id}, null, 'gridHorz', this.checked)" ${group.gridHorz ? 'checked' : ''}> Horizontal ( - )</label>
+                                        <div style="display:flex; align-items:center; gap:5px; margin-left: 10px;"><label>Abstand Rand L/R (mm):</label><input type="number" placeholder="Global" step="0.5" value="${group.paddingX !== undefined ? group.paddingX : ''}" oninput="app.updateData('group', ${group.id}, null, 'paddingX', this.value)" style="width: 60px;"></div>
+                                    </div>
+                                    
+                                    <div style="width: 100%; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px; margin-top: 5px; font-weight: bold; font-size: 12px; color: var(--primary);">ALLE SYMBOLE IM PANEL ÜBERSCHREIBEN</div>
+                                    <div class="form-group" style="flex-basis: 100%; display: flex; gap: 15px; background: #e9ecef; padding: 5px 10px; border-radius: 4px; align-items: center;">
+                                        <label style="font-weight:bold;">Links:</label>
+                                        <select id="globSymL-${group.id}" class="symbol-select" style="width: 130px; padding:4px;">${globalSymOptions}</select>
+                                        <label style="font-weight:bold; margin-left: 10px;">Rechts:</label>
+                                        <select id="globSymR-${group.id}" class="symbol-select" style="width: 130px; padding:4px;">${globalSymOptions}</select>
+                                        <button onclick="app.applyGlobalSymbols(${group.id})" style="background:var(--success); color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;"><i class="fa-solid fa-check"></i> Anwenden</button>
+                                    </div>
+                                </div>
+                                
+                                ${group.labels.map(label => {
+                                    const renderDropdown = (fieldValue) => {
+                                        if (!fieldValue || fieldValue === '--') return BASE_SYMBOL_OPTIONS;
+                                        const searchStr = `value="${fieldValue}"`;
+                                        if (BASE_SYMBOL_OPTIONS.includes(searchStr)) {
+                                            return BASE_SYMBOL_OPTIONS.replace(searchStr, `${searchStr} selected`);
+                                        } else {
+                                            return BASE_SYMBOL_OPTIONS + `<option value="${fieldValue}" selected>Eigen: ${fieldValue}</option>`;
+                                        }
+                                    };
+
+                                    return `
+                                    <div class="label-item">
+                                        <div class="label-main-row">
+                                            <select class="symbol-select" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolL', this.value)">
+                                                ${renderDropdown(label.symbolL)}
+                                            </select>
+                                            
+                                            <input type="text" placeholder="Text..." value="${label.text}" oninput="app.updateData('label', ${group.id}, ${label.id}, 'text', this.value)">
+                                            
+                                            <select class="symbol-select" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolR', this.value)">
+                                                ${renderDropdown(label.symbolR)}
+                                            </select>
+                                            
+                                            <button class="icon-btn" onclick="app.toggleSettings('label-${label.id}')" title="Etiketten Einstellungen"><i class="fa-solid fa-sliders"></i></button>
+                                            <button class="icon-btn duplicate" onclick="app.duplicateLabel(${group.id}, ${label.id})" title="Label duplizieren"><i class="fa-solid fa-copy"></i></button>
+                                            <button class="icon-btn delete" onclick="app.removeLabel(${group.id}, ${label.id})" title="Löschen"><i class="fa-solid fa-xmark"></i></button>
+                                        </div>
+
+                                        <div class="settings-row" id="settings-label-${label.id}">
+                                            <label><input type="checkbox" ${label.isBold ? 'checked' : ''} onchange="app.updateData('label', ${group.id}, ${label.id}, 'isBold', this.checked)"> Fett</label>
+                                            <label><input type="checkbox" ${label.isUnderline ? 'checked' : ''} onchange="app.updateData('label', ${group.id}, ${label.id}, 'isUnderline', this.checked)"> Unterstrichen</label>
+                                            <div class="form-group" title="Wenn leer, wird Panel/Global Größe genutzt"><label>Größe:</label><input type="number" placeholder="Auto" value="${label.customFontSize || ''}" oninput="app.updateData('label', ${group.id}, ${label.id}, 'customFontSize', this.value)"></div>
+                                            <div class="form-group"><label>Text:</label><select onchange="app.updateData('label', ${group.id}, ${label.id}, 'textColorHex', this.value)">${getColorOptions(label.textColorHex)}</select></div>
+                                            <div class="form-group"><label>HG:</label><select onchange="app.updateData('label', ${group.id}, ${label.id}, 'backgroundColorHex', this.value)">${getColorOptions(label.backgroundColorHex)}</select></div>
+                                            <select onchange="app.applyPreset(${group.id}, ${label.id}, this.value); this.value=''">
+                                                ${document.getElementById('presetOptions').innerHTML}
+                                            </select>
+                                        </div>
+                                    </div>
+                                `}).join('')}
+                            </div>
+                        </div>
+                    `;
+                    editor.insertAdjacentHTML('beforeend', html);
+                });
+
+                // NEU: Tom Select Initialisierung
+                // Sucht alle generierten Dropdowns und macht sie interaktiv + durchsuchbar!
+                document.querySelectorAll('.symbol-select').forEach(el => {
+                    const ts = new TomSelect(el, {
+                        create: true, // Erlaubt das Eintippen eigener Symbole (wie bisher mit 'Eigen: ')
+                        sortField: null, // Verhindert alphabetisches Sortieren, damit Kategorien erhalten bleiben
+                        searchField: ['text', 'value'], // Suchen nach Name & Dateinamen
+                        dropdownParent: 'body', // Verhindert, dass das Dropdown abgeschnitten wird
+                        maxOptions: null, // Zeige alle Treffer
+                        onChange: function(val) {
+                            // Wichtig: Das originale onchange-Event manuell aufrufen, 
+                            // damit app.updateData direkt getriggert wird!
+                            const event = new Event('change', { bubbles: true });
+                            el.dispatchEvent(event);
+                        }
+                    });
+                    this.tsInstances.push(ts);
+                });
+            },
+
+            renderPreview() {
+                // ... (Hier bleibt die renderPreview absolut unverändert!) ...
+                // [Füge deinen restlichen Preview-Code hier wieder ein]
+                const preview = document.getElementById('previewArea'); preview.innerHTML = ''; preview.className = 'preview-wrapper'; if (this.config.layoutMode === 'grid') preview.classList.add('layout-grid'); if (this.config.printGap) preview.classList.add('with-gap'); const { width, height, columns, fontSize, headerFontSize, borderColorHex } = this.config; const globalPadX = this.config.paddingX !== undefined ? this.config.paddingX : 1; this.groups.forEach(group => { const pBorderCol = group.borderColorHex || borderColorHex || '#000000'; const pHeadSize = group.headerFontSize || headerFontSize; const pFontSize = group.fontSize || fontSize; const padX = (group.paddingX !== undefined && group.paddingX !== '') ? group.paddingX : globalPadX; const hL = group.headerLeft || ''; const hC = group.headerCenter !== undefined ? group.headerCenter : ''; const hR = group.headerRight || ''; let groupHtml = `<div class="preview-panel" style="--preview-border: ${pBorderCol}; width: ${columns * width}mm;">`; let barHtml = ''; if (hL.trim() !== "" || hC.trim() !== "" || hR.trim() !== "") { const hTextColor = group.headerTextColorHex || this.config.headerTextColorHex || '#000000'; const hBgColor = group.headerBackgroundColorHex || this.config.headerBackgroundColorHex || '#ffffff'; let innerColumns = ''; if (hL.trim() === "" && hR.trim() === "") innerColumns = `<div style="text-align: center;">${hC}</div>`; else innerColumns = `<div style="text-align: left;">${hL}</div><div style="text-align: center;">${hC}</div><div style="text-align: right;">${hR}</div>`; const barBorderTop = (group.titlePosition === 'bottom' && group.gridHorz) ? `1px solid ${pBorderCol}` : 'none'; const barBorderBottom = (group.titlePosition !== 'bottom' && group.gridHorz) ? `1px solid ${pBorderCol}` : 'none'; barHtml = `<div class="preview-panel-bar" style="height: ${height}mm; background-color: ${hBgColor}; color: ${hTextColor}; font-size: ${pHeadSize}px; border-top: ${barBorderTop}; border-bottom: ${barBorderBottom};">${innerColumns}</div>`; } if (group.titlePosition !== 'bottom') groupHtml += barHtml; groupHtml += `<div class="preview-grid" style="grid-template-columns: repeat(${columns}, ${width}mm);">`; const vertStyle = group.gridVert ? `1px solid ${pBorderCol}` : 'none'; const horzStyle = group.gridHorz ? `1px solid ${pBorderCol}` : 'none'; group.labels.forEach(label => { const styleFontW = label.isBold ? 'bold' : 'normal'; const styleTextD = label.isUnderline ? 'underline' : 'none'; const actFontSize = label.customFontSize ? label.customFontSize : pFontSize; const symLeftHTML = label.symbolL && label.symbolL !== '--' ? `<span style="padding-right: 2px; text-align: center; flex-shrink: 0; line-height: 0.95;">${renderSymbol(label.symbolL)}</span>` : ''; const symRightHTML = label.symbolR && label.symbolR !== '--' ? `<span style="padding-left: 2px; text-align: center; flex-shrink: 0; line-height: 0.95;">${renderSymbol(label.symbolR)}</span>` : ''; groupHtml += ` <div class="preview-label" style=" width: ${width}mm; height: ${height}mm; background-color: ${label.backgroundColorHex}; color: ${label.textColorHex}; font-size: ${actFontSize}px; border-right: ${vertStyle}; border-bottom: ${horzStyle}; padding: 0 ${padX}mm;"> ${symLeftHTML} <span class="preview-label-text" style="font-weight: ${styleFontW}; text-decoration: ${styleTextD};">${label.text}</span> ${symRightHTML} </div> `; }); groupHtml += `</div>`; if (group.titlePosition === 'bottom') groupHtml += barHtml; groupHtml += `</div>`; preview.insertAdjacentHTML('beforeend', groupHtml); });
+            }
+        };
+
+        window.onload = () => app.init();
+    </script>
+</body>
+</html>
