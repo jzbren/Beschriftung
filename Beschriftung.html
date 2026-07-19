@@ -1081,19 +1081,19 @@
                                     <input type="text" placeholder="Rechts (z.B. 10)" value="${group.headerRight || ''}" oninput="app.updateData('group', ${group.id}, null, 'headerRight', this.value)">
                                 </div>
                                 <div class="panel-header-actions">
-    <button class="icon-btn" onclick="app.fillEmptyLabels(${group.id})" title="Mit leeren Tasten auffüllen bis Zeile voll">
-        <img src="icons/template.svg">
-    </button>
-    <button class="icon-btn" onclick="app.toggleSettings('group-${group.id}')" title="Panel Einstellungen">
-        <img src="icons/settings.svg">
-    </button>
-    <button class="icon-btn" onclick="app.addLabel(${group.id})" title="Label hinzufügen">
-        <img src="icons/plus-solid-full.svg">
-    </button>
-    <button class="icon-btn delete" onclick="app.removePanel(${group.id})" title="Panel löschen">
-        <img src="icons/trash-x.svg">
-    </button>
-</div>
+                                    <button class="icon-btn" onclick="app.fillEmptyLabels(${group.id})" title="Mit leeren Tasten auffüllen bis Zeile voll">
+                                    <img src="icons/template.svg">
+                                </button>
+                                <button class="icon-btn" onclick="app.toggleSettings('group-${group.id}')" title="Panel Einstellungen">
+                                    <img src="icons/settings.svg">
+                                </button>
+                                <button class="icon-btn" onclick="app.addLabel(${group.id})" title="Label hinzufügen">
+                                    <img src="icons/plus-solid-full.svg">
+                                </button>
+                                <button class="icon-btn delete" onclick="app.removePanel(${group.id})" title="Panel löschen">
+                                    <img src="icons/trash-x.svg">
+                                </button>
+                            </div>
                             </div>
                             
                             <div class="panel-body" style="padding-top: 0;">
