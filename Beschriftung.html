@@ -111,8 +111,8 @@
         .preview-panel-bar { font-weight: bold; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; overflow: hidden; white-space: nowrap; padding: 0 5px; }
         .preview-panel-bar > div { flex: 1; overflow: hidden; text-overflow: clip; }
         .preview-grid { display: grid; gap: 0; }
-        .preview-label { display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; overflow: hidden; }
-        .preview-label-text { flex: 1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: clip; line-height: 0.95; }
+        .preview-label { display: flex; justify-content: center; /* Zentriert alles, statt Space-Between */align-items: center; box-sizing: border-box; overflow: hidden; padding: 0 1px; /* Padding bei 5mm reduzieren */}
+        .preview-label-text { flex: 1; text-align: center; white-space: nowrap; overflow: hidden; line-height: 1; /* Auf 1 setzen, um Text vertikal besser zu zentrieren */font-size: 8px; /* Wichtig: Bei 5mm Höhe darf die Schrift nicht zu groß sein */display: block;}
 
         /* Styling für die neuen SVG-Bilder in den kleinen Buttons */
         .icon-btn img {
@@ -1246,8 +1246,13 @@
                         const styleTextD = label.isUnderline ? 'underline' : 'none';
                         const actFontSize = label.customFontSize ? label.customFontSize : pFontSize;
                         
-                        const symLeftHTML = label.symbolL && label.symbolL !== '--' ? `<span style="padding-right: 2px; text-align: center; flex-shrink: 0; line-height: 0.95;">${renderSymbol(label.symbolL)}</span>` : '';
-                        const symRightHTML = label.symbolR && label.symbolR !== '--' ? `<span style="padding-left: 2px; text-align: center; flex-shrink: 0; line-height: 0.95;">${renderSymbol(label.symbolR)}</span>` : '';
+                        // Ändere dies im renderPreview Bereich:
+const symLeftHTML = (label.symbolL && label.symbolL !== '--' && label.symbolL !== '') 
+    ? `<span style="display:inline-flex; align-items:center; height:100%;">${renderSymbol(label.symbolL)}</span>` 
+    : '';
+const symRightHTML = (label.symbolR && label.symbolR !== '--' && label.symbolR !== '') 
+    ? `<span style="display:inline-flex; align-items:center; height:100%;">${renderSymbol(label.symbolR)}</span>` 
+    : '';
                         
                         groupHtml += `
                             <div class="preview-label" style="
