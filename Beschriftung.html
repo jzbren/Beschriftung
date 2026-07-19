@@ -538,6 +538,19 @@
         document.addEventListener('click', closeAllCustomMenus);
         document.querySelector('.editor-area').addEventListener('scroll', closeAllCustomMenus);
 
+        // --- Custom Vanilla JS Searchable Dropdown ---
+        let activeCustomMenu = null;
+
+        function closeAllCustomMenus() {
+            if(activeCustomMenu) {
+                activeCustomMenu.remove();
+                activeCustomMenu = null;
+            }
+        }
+
+        document.addEventListener('click', closeAllCustomMenus);
+        document.querySelector('.editor-area').addEventListener('scroll', closeAllCustomMenus);
+
         function initCustomDropdowns() {
             document.querySelectorAll('.symbol-select').forEach(selectElement => {
                 if(selectElement.dataset.customized) return;
@@ -550,7 +563,18 @@
 
                 const btn = document.createElement('div');
                 btn.className = 'custom-select-btn';
-                btn.innerHTML = selectElement.options[selectElement.selectedIndex]?.text || '-- Nichts --';
+                
+                // NEU: Initiale Anzeige des Buttons MIT SVG Icon
+                const initialVal = selectElement.value;
+                const initialSym = SYMBOLS.find(s => s.val === initialVal);
+                const initialText = initialSym ? initialSym.name : (selectElement.options[selectElement.selectedIndex]?.text || '-- Nichts --');
+                const initialIcon = initialSym ? renderSymbol(initialSym.val) : '';
+                
+                // Flexbox für Icon + Text
+                btn.innerHTML = `<div style="display: flex; align-items: center; gap: 6px; width: 100%;">
+                                    ${initialIcon} 
+                                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${initialText}</span>
+                                 </div>`;
                 wrapper.appendChild(btn);
 
                 btn.onclick = (e) => {
@@ -591,11 +615,23 @@
                                 filteredSyms.forEach(s => {
                                     const opt = document.createElement('div');
                                     opt.className = 'custom-option';
-                                    opt.innerText = s.name;
+                                    
+                                    // NEU: Dropdown Liste MIT SVG Icon rendern
+                                    opt.innerHTML = `<div style="display: flex; align-items: center; gap: 8px;">
+                                                        ${renderSymbol(s.val)} 
+                                                        <span>${s.name}</span>
+                                                     </div>`;
+                                    
                                     opt.onclick = (ev) => {
                                         ev.stopPropagation();
                                         selectElement.value = s.val;
-                                        btn.innerHTML = s.name;
+                                        
+                                        // NEU: Beim Klicken Icon im Button updaten
+                                        btn.innerHTML = `<div style="display: flex; align-items: center; gap: 6px; width: 100%;">
+                                                            ${renderSymbol(s.val)} 
+                                                            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${s.name}</span>
+                                                         </div>`;
+                                        
                                         closeAllCustomMenus();
                                         selectElement.dispatchEvent(new Event('change', { bubbles: true }));
                                     };
@@ -616,7 +652,12 @@
                             const val = searchInput.value.trim();
                             selectElement.innerHTML += `<option value="${val}">${val}</option>`;
                             selectElement.value = val;
-                            btn.innerHTML = val;
+                            
+                            // Anzeige für eigenen Text updaten (hat kein SVG)
+                            btn.innerHTML = `<div style="display: flex; align-items: center; gap: 6px; width: 100%;">
+                                                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${val}</span>
+                                             </div>`;
+                                             
                             closeAllCustomMenus();
                             selectElement.dispatchEvent(new Event('change', { bubbles: true }));
                         }
@@ -625,7 +666,6 @@
                     document.body.appendChild(menu);
                     activeCustomMenu = menu;
 
-                    // Exakte Positionierung auf dem Bildschirm (damit es beim Scrollen nicht abgeschnitten wird)
                     const rect = btn.getBoundingClientRect();
                     menu.style.top = (rect.bottom + window.scrollY + 2) + 'px';
                     menu.style.left = rect.left + 'px';
