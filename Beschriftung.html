@@ -153,34 +153,34 @@
     <div class="toolbar">
         <div class="toolbar-title">Beschriftung V22</div>
         <button class="btn-success" onclick="app.addPanel()">
-            <img src="icons/plus-solid-full.svg"> Panel
+            <img src="icons/Plus.svg"> Panel
         </button>
         <button class="btn-info" onclick="app.fillAllEmptyLabels()" title="Füllt in allen Panels leere Tasten auf">
-            <img src="icons/table-plus.svg"> Alle Auffüllen
+            <img src="icons/Auffuellen.svg"> Alle Auffüllen
         </button>
         <button class="btn-info" onclick="document.getElementById('generatorModal').style.display = 'flex'">
-            <img src="icons/number-123.svg"> Auto-Nr
+            <img src="icons/Generator-Zahlen.svg"> Auto-Nr
         </button>
         <button class="btn-info" onclick="document.getElementById('csvModal').style.display = 'flex'">
-            <img src="icons/file-type-csv.svg"> CSV Import
+            <img src="icons/CSV-Datei.svg"> CSV Import
         </button>
         <button onclick="document.getElementById('configModal').style.display = 'flex'">
-            <img src="icons/settings.svg"> Layout
+            <img src="icons/Einstellungen.svg"> Layout
         </button>
         <button onclick="app.saveData()">
-            <img src="icons/file-download.svg"> Speichern
+            <img src="icons/Download.svg"> Speichern
         </button>
         <button onclick="document.getElementById('fileInput').click()">
-            <img src="icons/file-upload.svg"> Öffnen
+            <img src="icons/Hochladen.svg"> Öffnen
         </button>
         <input type="file" id="fileInput" style="display: none" accept=".ServiceProBeschriftung" onchange="app.loadData(event)">
         
         <div style="margin-left: auto; display: flex; gap: 10px;">
             <button onclick="window.print()">
-                <img src="icons/printer.svg"> Drucken
+                <img src="icons/Drucken.svg"> Drucken
             </button>
             <button class="btn-danger" onclick="app.resetAll()">
-                <img src="icons/eraser.svg"> Löschen
+                <img src="icons/Radierer.svg"> Löschen
             </button>
         </div>
     </div>
@@ -390,83 +390,83 @@
         { cat: "Allgemein", val: "--", name: "-- Nichts --", unicode: "" },
         
         // --- Navigation & Medien ---
-        { cat: "Navigation & Medien", val: "angle-up-solid-full.svg", name: "▲ Auf", unicode: "▲" },
-        { cat: "Navigation & Medien", val: "angle-down-solid-full.svg", name: "▼ Ab", unicode: "▼" },
-        { cat: "Navigation & Medien", val: "angle-left-solid-full.svg", name: "◀ Links", unicode: "◀" },
-        { cat: "Navigation & Medien", val: "angle-right-solid-full.svg", name: "▶ Rechts", unicode: "▶" },
-        { cat: "Navigation & Medien", val: "play-solid-full.svg", name: "▶ Play / Start", unicode: "▶" },
+        { cat: "Navigation & Medien", val: "Pfeil-Hoch-Einfach.svg", name: "▲ Auf", unicode: "▲" },
+        { cat: "Navigation & Medien", val: "Pfeil-Runter-Einfach.svg", name: "▼ Ab", unicode: "▼" },
+        { cat: "Navigation & Medien", val: "Pfeil-Links-Einfach.svg", name: "◀ Links", unicode: "◀" },
+        { cat: "Navigation & Medien", val: "Pfeil-Rechts-Einfach.svg", name: "▶ Rechts", unicode: "▶" },
+        { cat: "Navigation & Medien", val: "Play.svg", name: "▶ Play / Start", unicode: "▶" },
 
 // --- Navigation & Medien (Ergänzung für Double Arrows) ---
-{ cat: "Navigation & Medien", val: "double_arrow_up.svg", name: "▲▲ Auf", unicode: "▲▲" },
-{ cat: "Navigation & Medien", val: "double_arrow_down.svg", name: "▼▼ Ab", unicode: "▼▼" },
-{ cat: "Navigation & Medien", val: "double_arrow_left.svg", name: "◀◀ Links", unicode: "◀◀" },
-{ cat: "Navigation & Medien", val: "double_arrow_right.svg", name: "▶▶ Rechts", unicode: "▶▶" },
+{ cat: "Navigation & Medien", val: "Pfeil-Hoch-Doppelt.svg", name: "▲▲ Auf", unicode: "▲▲" },
+{ cat: "Navigation & Medien", val: "Pfeil-Runter-Doppelt.svg", name: "▼▼ Ab", unicode: "▼▼" },
+{ cat: "Navigation & Medien", val: "Pfeil-Links-Doppelt.svg", name: "◀◀ Links", unicode: "◀◀" },
+{ cat: "Navigation & Medien", val: "Pfeil-Rechts-Doppelt.svg", name: "▶▶ Rechts", unicode: "▶▶" },
 
-        { cat: "Navigation & Medien", val: "pause-solid-full.svg", name: "⏸ Pause", unicode: "⏸" },
-        { cat: "Navigation & Medien", val: "stop-solid-full.svg", name: "⏹ Stop", unicode: "⏹" },
-        { cat: "Navigation & Medien", val: "forward-fast-solid-full.svg", name: "⏭ Vor", unicode: "⏭" },
-        { cat: "Navigation & Medien", val: "backward-fast-solid-full.svg", name: "⏮ Zurück", unicode: "⏮" },
-        { cat: "Navigation & Medien", val: "music-solid-full.svg", name: "🎵 Musik", unicode: "🎵" },
-        { cat: "Navigation & Medien", val: "volume-high-solid-full.svg", name: "🔊 Lauter", unicode: "🔊" },
-        { cat: "Navigation & Medien", val: "volume-solid-full.svg", name: "🔉 Leiser", unicode: "🔉" },
-        { cat: "Navigation & Medien", val: "volume-xmark-solid-full.svg", name: "🔇 Stumm", unicode: "🔇" },
-        { cat: "Navigation & Medien", val: "clapperboard-solid-full.svg", name: "🎬 Szene", unicode: "🎬" },
+        { cat: "Navigation & Medien", val: "Pause.svg", name: "⏸ Pause", unicode: "⏸" },
+        { cat: "Navigation & Medien", val: "Volume-Stop.svg", name: "⏹ Stop", unicode: "⏹" },
+        { cat: "Navigation & Medien", val: "Vorwaertsspulen.svg", name: "⏭ Vor", unicode: "⏭" },
+        { cat: "Navigation & Medien", val: "Zurueckspuelen.svg", name: "⏮ Zurück", unicode: "⏮" },
+        { cat: "Navigation & Medien", val: "Musik.svg", name: "🎵 Musik", unicode: "🎵" },
+        { cat: "Navigation & Medien", val: "Volume.Hoch.svg", name: "🔊 Lauter", unicode: "🔊" },
+        { cat: "Navigation & Medien", val: "Volume-Runter.svg", name: "🔉 Leiser", unicode: "🔉" },
+        { cat: "Navigation & Medien", val: "Volume-Aus.svg", name: "🔇 Stumm", unicode: "🔇" },
+        { cat: "Navigation & Medien", val: "Szene.svg", name: "🎬 Szene", unicode: "🎬" },
 
         // --- Licht & Power ---
-        { cat: "Licht & Power", val: "licht-ein.svg", name: "💡 Licht An", unicode: "💡" },
-        { cat: "Licht & Power", val: "deckenleuchte.svg", name: "💡 Deckenleuchte", unicode: "💡" },
-        { cat: "Licht & Power", val: "nachtischleuchte.svg", name: "💡 Nachtischleuchte", unicode: "💡" },
-        { cat: "Licht & Power", val: "tableleuchte.svg", name: "💡 Tableleuchte", unicode: "💡" },
-        { cat: "Licht & Power", val: "wandleuchte.svg", name: "💡 Wandleuchte", unicode: "💡" },
-        { cat: "Licht & Power", val: "licht-aus.svg", name: "💡 Licht Aus", unicode: "🔆" },
-        { cat: "Licht & Power", val: "power-off-solid-full.svg", name: "⏻ Power", unicode: "⏻" },
-        { cat: "Licht & Power", val: "plug-solid-full.svg", name: "🔌 Steckdose", unicode: "🔌" },
-        { cat: "Licht & Power", val: "battery-full-solid-full.svg", name: "🔋 Batterie", unicode: "🔋" },
-        { cat: "Licht & Power", val: "charging-station-solid-full.svg", name: "⚡ Ladestation", unicode: "⚡" },
+        { cat: "Licht & Power", val: "Licht-Ein.svg", name: "💡 Licht An", unicode: "💡" },
+        { cat: "Licht & Power", val: "Deckenleuchte.svg", name: "💡 Deckenleuchte", unicode: "💡" },
+        { cat: "Licht & Power", val: "Nachtischleuchte.svg", name: "💡 Nachtischleuchte", unicode: "💡" },
+        { cat: "Licht & Power", val: "Tischleuchte.svg", name: "💡 Tableleuchte", unicode: "💡" },
+        { cat: "Licht & Power", val: "Wandleuchte.svg", name: "💡 Wandleuchte", unicode: "💡" },
+        { cat: "Licht & Power", val: "Licht-Aus.svg", name: "💡 Licht Aus", unicode: "🔆" },
+        { cat: "Licht & Power", val: "Power.svg", name: "⏻ Power", unicode: "⏻" },
+        { cat: "Licht & Power", val: "Stecker.svg", name: "🔌 Steckdose", unicode: "🔌" },
+        { cat: "Licht & Power", val: "Akku.svg", name: "🔋 Batterie", unicode: "🔋" },
+        { cat: "Licht & Power", val: "Ladestation.svg", name: "⚡ Ladestation", unicode: "⚡" },
 
         // --- Haus, Klima & Umwelt ---
-        { cat: "Haus, Klima & Umwelt", val: "home.svg", name: "🏠 Zuhause", unicode: "🏠" },
-        { cat: "Haus, Klima & Umwelt", val: "home-move.svg", name: "🏠 Abwesend", unicode: "🏠" },
-        { cat: "Haus, Klima & Umwelt", val: "sun-high.svg", name: "☀️ Tag", unicode: "☀️" },
-        { cat: "Haus, Klima & Umwelt", val: "moon-regular-full.svg", name: "🌙 Nacht", unicode: "🌙" },
-        { cat: "Haus, Klima & Umwelt", val: "star-and-crescent-solid-full.svg", name: "🌟 Nacht 2", unicode: "🌟" },
-        { cat: "Haus, Klima & Umwelt", val: "snowflake-regular-full.svg", name: "❄️ Kühlen", unicode: "❄️" },
-        { cat: "Haus, Klima & Umwelt", val: "fire-flame-curved-solid-full.svg", name: "🔥 Heizen", unicode: "🔥" },
-        { cat: "Haus, Klima & Umwelt", val: "wind-solid-full.svg", name: "🌬️ Lüftung", unicode: "🌬️" },
-        { cat: "Haus, Klima & Umwelt", val: "wind-off.svg", name: "🌬️ Lüftung Aus", unicode: "🌬️" },
-        { cat: "Haus, Klima & Umwelt", val: "car-fan.svg", name: "💨 Lüftung Basis", unicode: "💨" },
-        { cat: "Haus, Klima & Umwelt", val: "car-fan-1.svg", name: "💨 Lüftung Stufe 1", unicode: "💨" },
-        { cat: "Haus, Klima & Umwelt", val: "car-fan-2.svg", name: "💨 Lüftung Stufe 2", unicode: "💨" },
-        { cat: "Haus, Klima & Umwelt", val: "car-fan-3.svg", name: "💨 Lüftung Stufe 3", unicode: "💨" },
-        { cat: "Haus, Klima & Umwelt", val: "car-fan-auto.svg", name: "💨 Lüftung Auto", unicode: "💨" },
-        { cat: "Haus, Klima & Umwelt", val: "droplet-solid-full.svg", name: "💧 Wasser / Teich", unicode: "💧" },
-        { cat: "Haus, Klima & Umwelt", val: "tree-solid-full.svg", name: "🌲 Garten", unicode: "🌲" },
-        { cat: "Haus, Klima & Umwelt", val: "fish-solid-full.svg", name: "🐟 Teich", unicode: "🐟" },
+        { cat: "Haus, Klima & Umwelt", val: "Zuhause.svg", name: "🏠 Zuhause", unicode: "🏠" },
+        { cat: "Haus, Klima & Umwelt", val: "Abwesend.svg", name: "🏠 Abwesend", unicode: "🏠" },
+        { cat: "Haus, Klima & Umwelt", val: "Sonne.svg", name: "☀️ Tag", unicode: "☀️" },
+        { cat: "Haus, Klima & Umwelt", val: "Nacht.svg", name: "🌙 Nacht", unicode: "🌙" },
+        { cat: "Haus, Klima & Umwelt", val: "Nacht-Mit-Stern.svg", name: "🌟 Nacht 2", unicode: "🌟" },
+        { cat: "Haus, Klima & Umwelt", val: "Schneeflocke.svg", name: "❄️ Kühlen", unicode: "❄️" },
+        { cat: "Haus, Klima & Umwelt", val: "Flamme.svg", name: "🔥 Heizen", unicode: "🔥" },
+        { cat: "Haus, Klima & Umwelt", val: "Wind-Ein.svg", name: "🌬️ Lüftung", unicode: "🌬️" },
+        { cat: "Haus, Klima & Umwelt", val: "Wind-Aus.svg", name: "🌬️ Lüftung Aus", unicode: "🌬️" },
+        { cat: "Haus, Klima & Umwelt", val: "Ventilator-Ein.svg", name: "💨 Lüftung Basis", unicode: "💨" },
+        { cat: "Haus, Klima & Umwelt", val: "Ventilator-Stufe-1.svg", name: "💨 Lüftung Stufe 1", unicode: "💨" },
+        { cat: "Haus, Klima & Umwelt", val: "Ventilator-Stufe-2.svg", name: "💨 Lüftung Stufe 2", unicode: "💨" },
+        { cat: "Haus, Klima & Umwelt", val: "Ventilator-Stufe-3.svg", name: "💨 Lüftung Stufe 3", unicode: "💨" },
+        { cat: "Haus, Klima & Umwelt", val: "Ventilator-Stufe-Auto.svg", name: "💨 Lüftung Auto", unicode: "💨" },
+        { cat: "Haus, Klima & Umwelt", val: "Wassertropf.svg", name: "💧 Wasser / Teich", unicode: "💧" },
+        { cat: "Haus, Klima & Umwelt", val: "Baum.svg", name: "🌲 Garten", unicode: "🌲" },
+        { cat: "Haus, Klima & Umwelt", val: "Fisch.svg", name: "🐟 Teich", unicode: "🐟" },
 
         // --- Sicherheit & Zutritt ---
-        { cat: "Sicherheit & Zutritt", val: "bell-regular-full.svg", name: "🔔 Glocke", unicode: "🔔" },
-        { cat: "Sicherheit & Zutritt", val: "bell-slash-regular-full.svg", name: "🔕 Glocke Aus", unicode: "🔕" },
-        { cat: "Sicherheit & Zutritt", val: "lock-solid-full.svg", name: "🔒 Schliessen", unicode: "🔒" },
-        { cat: "Sicherheit & Zutritt", val: "lock-open-solid-full.svg", name: "🔓 Öffnen", unicode: "🔓" },
-        { cat: "Sicherheit & Zutritt", val: "unlock-solid-full.svg", name: "🔓 Entriegeln", unicode: "🔓" },
-        { cat: "Sicherheit & Zutritt", val: "key-solid-full.svg", name: "🔑 Schlüssel", unicode: "🔑" },
-        { cat: "Sicherheit & Zutritt", val: "shield-solid-full.svg", name: "🛡️ Sicherheit", unicode: "🛡️" },
-        { cat: "Sicherheit & Zutritt", val: "ban-solid-full.svg", name: "🚫 Sperren", unicode: "🚫" },
-        { cat: "Sicherheit & Zutritt", val: "people-roof-solid-full.svg", name: "👥 Gäste", unicode: "👥" },
-        { cat: "Sicherheit & Zutritt", val: "person-running-solid-full.svg", name: "🏃 Bewegung (BWM)", unicode: "🏃" },
-        { cat: "Sicherheit & Zutritt", val: "bluetooth.svg", name: "🔵 Bluetooth An", unicode: "🅱️" },
-        { cat: "Sicherheit & Zutritt", val: "bluetooth-off.svg", name: "⚪ Bluetooth Aus", unicode: "🅱️" },
+        { cat: "Sicherheit & Zutritt", val: "Klingel.svg", name: "🔔 Glocke", unicode: "🔔" },
+        { cat: "Sicherheit & Zutritt", val: "Klingel-Aus.svg", name: "🔕 Glocke Aus", unicode: "🔕" },
+        { cat: "Sicherheit & Zutritt", val: "Schliessen.svg", name: "🔒 Schliessen", unicode: "🔒" },
+        { cat: "Sicherheit & Zutritt", val: "Oeffnen.svg", name: "🔓 Öffnen", unicode: "🔓" },
+        { cat: "Sicherheit & Zutritt", val: "Entrigeln.svg", name: "🔓 Entriegeln", unicode: "🔓" },
+        { cat: "Sicherheit & Zutritt", val: "Schluessel.svg", name: "🔑 Schlüssel", unicode: "🔑" },
+        { cat: "Sicherheit & Zutritt", val: "Schild.svg", name: "🛡️ Sicherheit", unicode: "🛡️" },
+        { cat: "Sicherheit & Zutritt", val: "Verbot.svg", name: "🚫 Sperren", unicode: "🚫" },
+        { cat: "Sicherheit & Zutritt", val: "Gaeste.svg", name: "👥 Gäste", unicode: "👥" },
+        { cat: "Sicherheit & Zutritt", val: "Bewegung.svg", name: "🏃 Bewegung (BWM)", unicode: "🏃" },
+        { cat: "Sicherheit & Zutritt", val: "Bluetooth-Ein.svg", name: "🔵 Bluetooth An", unicode: "🅱️" },
+        { cat: "Sicherheit & Zutritt", val: "Bluetooth-Aus.svg", name: "⚪ Bluetooth Aus", unicode: "🅱️" },
 
         // --- Werkstatt & Logistik ---
-        { cat: "Werkstatt & Logistik", val: "screwdriver-wrench-solid-full.svg", name: "🛠️ Service", unicode: "🛠️" },
-        { cat: "Werkstatt & Logistik", val: "car-solid-full.svg", name: "🚗 Auto", unicode: "🚗" },
-        { cat: "Werkstatt & Logistik", val: "box.svg", name: "📦 Packet", unicode: "📦" },
+        { cat: "Werkstatt & Logistik", val: "Service.svg", name: "🛠️ Service", unicode: "🛠️" },
+        { cat: "Werkstatt & Logistik", val: "Auto.svg", name: "🚗 Auto", unicode: "🚗" },
+        { cat: "Werkstatt & Logistik", val: "Packet.svg", name: "📦 Packet", unicode: "📦" },
 
         // --- Zeit & Sonstiges ---
-        { cat: "Zeit & Sonstiges", val: "alarm-clock-regular-full.svg", name: "⏰ Wecker", unicode: "⏰" },
-        { cat: "Zeit & Sonstiges", val: "stopwatch-solid-full.svg", name: "⏱ Timer", unicode: "⏱" },
-        { cat: "Zeit & Sonstiges", val: "plus-solid-full.svg", name: "➕ Plus", unicode: "➕" },
-        { cat: "Zeit & Sonstiges", val: "minus-solid-full.svg", name: "➖ Minus", unicode: "➖" },
+        { cat: "Zeit & Sonstiges", val: "Wecker.svg", name: "⏰ Wecker", unicode: "⏰" },
+        { cat: "Zeit & Sonstiges", val: "Stopuhr.svg", name: "⏱ Timer", unicode: "⏱" },
+        { cat: "Zeit & Sonstiges", val: "Plus.svg", name: "➕ Plus", unicode: "➕" },
+        { cat: "Zeit & Sonstiges", val: "Minus.svg", name: "➖ Minus", unicode: "➖" },
         { cat: "Zeit & Sonstiges", val: "I", name: "I Ein", unicode: "I" },
         { cat: "Zeit & Sonstiges", val: "O", name: "O Aus", unicode: "O" }
     ];
@@ -844,8 +844,8 @@
                 const label = group.labels.find(l => l.id === labelId);
                 if(!label || !presetType) return;
                 
-                if (presetType === "store") { label.symbolL = "angle-up-solid-full.svg"; label.text = "Store"; label.symbolR = "angle-down-solid-full.svg"; }
-                else if (presetType === "licht_plus") { label.symbolL = "plus-solid-full.svg"; label.text = "Licht"; label.symbolR = "minus-solid-full.svg"; }
+                if (presetType === "store") { label.symbolL = "Pfeil-Hoch-Doppelt.svg"; label.text = "Store"; label.symbolR = "Pfeil-Runter-Doppelt.svg"; }
+                else if (presetType === "licht_plus") { label.symbolL = "Plus.svg"; label.text = "Licht"; label.symbolR = "Minus.svg"; }
                 else if (presetType === "licht_io") { label.symbolL = "I"; label.text = "Licht"; label.symbolR = "O"; }
                 
                 this.render();
