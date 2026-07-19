@@ -1082,7 +1082,7 @@
                                 </div>
                                 <div class="panel-header-actions">
                                     <button class="icon-btn" onclick="app.fillEmptyLabels(${group.id})" title="Mit leeren Tasten auffüllen bis Zeile voll">
-                                    <img src="icons/template.svg">
+                                    <img src="icons/table-plus.svg">
                                 </button>
                                 <button class="icon-btn" onclick="app.toggleSettings('group-${group.id}')" title="Panel Einstellungen">
                                     <img src="icons/settings.svg">
@@ -1153,9 +1153,15 @@
                                                 ${renderDropdown(label.symbolR)}
                                             </select>
                                             
-                                            <button class="icon-btn" onclick="app.toggleSettings('label-${label.id}')" title="Etiketten Einstellungen">⚙️</button>
-                                            <button class="icon-btn duplicate" onclick="app.duplicateLabel(${group.id}, ${label.id})" title="Label duplizieren">📋</button>
-                                            <button class="icon-btn delete" onclick="app.removeLabel(${group.id}, ${label.id})" title="Löschen">❌</button>
+                                            <button class="icon-btn" onclick="app.toggleSettings('label-${label.id}')" title="Etiketten Einstellungen">
+                                                <img src="icons/settings.svg">
+                                            </button>
+                                            <button class="icon-btn duplicate" onclick="app.duplicateLabel(${group.id}, ${label.id})" title="Label duplizieren">
+                                                <img src="icons/files.svg">
+                                            </button>
+                                            <button class="icon-btn delete" onclick="app.removeLabel(${group.id}, ${label.id})" title="Löschen">
+                                                <img src="icons/trash-x.svg">
+                                            </button>
                                         </div>
 
                                         <div class="settings-row" id="settings-label-${label.id}">
