@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON Konverter für Beschriftungstool</title>
+    <title>Format Konverter für Beschriftungstool</title>
     <style>
         :root {
             --primary: #0056b3;
@@ -25,11 +25,11 @@
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             text-align: center;
-            max-width: 400px;
+            max-width: 450px;
             width: 100%;
         }
         h2 { color: var(--dark); margin-top: 0; }
-        p { color: #666; font-size: 14px; margin-bottom: 25px; }
+        p { color: #666; font-size: 14px; margin-bottom: 25px; line-height: 1.5; }
         
         .upload-btn {
             background: var(--primary);
@@ -61,12 +61,13 @@
 
     <div class="converter-card">
         <h2>Alte Layouts konvertieren</h2>
-        <p>Wähle eine alte JSON-Datei aus. Sie wird automatisch in das neue Format (V2) umgewandelt und heruntergeladen.</p>
+        <p>Wähle eine alte Layout-Datei aus. Sie wird automatisch in das neue Format (V2) umgewandelt und als <strong>.ServiceProBeschriftung</strong> heruntergeladen.</p>
         
         <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-            📂 Alte JSON-Datei auswählen
+            📂 Alte Datei auswählen
         </button>
-        <input type="file" id="fileInput" accept=".json" onchange="convertFile(event)">
+        <!-- Akzeptiert .json und die neue Endung -->
+        <input type="file" id="fileInput" accept=".json, .ServiceProBeschriftung" onchange="convertFile(event)">
         
         <div id="status" class="success-msg">✅ Erfolgreich konvertiert!</div>
     </div>
@@ -88,7 +89,11 @@
                     }
 
                     const newData = migrateToNewFormat(oldData);
-                    downloadJson(newData, file.name.replace('.json', '_v2.json'));
+                    
+                    // Dateiendung sauber ersetzen (egal ob vorher .json oder .ServiceProBeschriftung)
+                    const newFilename = file.name.replace(/\.(json|ServiceProBeschriftung)$/i, '') + '_v2.ServiceProBeschriftung';
+                    
+                    downloadJson(newData, newFilename);
                     
                     // UI Feedback
                     const status = document.getElementById('status');
@@ -97,9 +102,9 @@
                     
                 } catch (err) {
                     console.error(err);
-                    alert("Fehler beim Verarbeiten der Datei. Ist es ein gültiges JSON?");
+                    alert("Fehler beim Verarbeiten der Datei. Ist das Dateiformat fehlerhaft?");
                 }
-                event.target.value = ''; // Input zurücksetzen
+                event.target.value = ''; // Input zurücksetzen, falls die gleiche Datei nochmal gewählt wird
             };
             reader.readAsText(file);
         }
