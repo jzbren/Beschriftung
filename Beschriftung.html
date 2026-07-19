@@ -114,6 +114,29 @@
         .preview-label { display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; overflow: hidden; }
         .preview-label-text { flex: 1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: clip; line-height: 0.95; }
 
+        /* Styling für die neuen SVG-Bilder in den kleinen Buttons */
+        .icon-btn img {
+            width: 16px;
+            height: 16px;
+            opacity: 0.6; /* Macht sie dezent grau */
+            transition: 0.2s;
+            pointer-events: none;
+        }
+        
+        .icon-btn:hover img {
+            opacity: 1; /* Volle Sichtbarkeit beim Hovern */
+        }
+
+        /* Färbt das Löschen-Icon rot beim Drüberfahren */
+        .icon-btn.delete:hover img {
+            filter: invert(27%) sepia(91%) saturate(5353%) hue-rotate(349deg) brightness(92%) contrast(93%);
+        }
+        
+        /* Färbt das Duplizieren-Icon grün beim Drüberfahren */
+        .icon-btn.duplicate:hover img {
+            filter: invert(48%) sepia(87%) saturate(1251%) hue-rotate(85deg) brightness(99%) contrast(89%);
+        }
+
         @media print {
             body { display: block; overflow: visible; background: white; }
             .toolbar, .editor-area, .modal-overlay { display: none !important; }
@@ -157,7 +180,7 @@
                 <img src="icons/printer.svg"> Drucken
             </button>
             <button class="btn-danger" onclick="app.resetAll()">
-                <img src="icons/trash-x.svg"> Löschen
+                <img src="icons/eraser.svg"> Löschen
             </button>
         </div>
     </div>
@@ -1058,11 +1081,19 @@
                                     <input type="text" placeholder="Rechts (z.B. 10)" value="${group.headerRight || ''}" oninput="app.updateData('group', ${group.id}, null, 'headerRight', this.value)">
                                 </div>
                                 <div class="panel-header-actions">
-                                    <button class="icon-btn" onclick="app.fillEmptyLabels(${group.id})" title="Mit leeren Tasten auffüllen bis Zeile voll">🔠</button>
-                                    <button class="icon-btn" onclick="app.toggleSettings('group-${group.id}')" title="Panel Einstellungen">⚙️</button>
-                                    <button class="icon-btn" onclick="app.addLabel(${group.id})" title="Label hinzufügen">➕</button>
-                                    <button class="icon-btn delete" onclick="app.removePanel(${group.id})" title="Panel löschen">🗑️</button>
-                                </div>
+    <button class="icon-btn" onclick="app.fillEmptyLabels(${group.id})" title="Mit leeren Tasten auffüllen bis Zeile voll">
+        <img src="icons/template.svg">
+    </button>
+    <button class="icon-btn" onclick="app.toggleSettings('group-${group.id}')" title="Panel Einstellungen">
+        <img src="icons/settings.svg">
+    </button>
+    <button class="icon-btn" onclick="app.addLabel(${group.id})" title="Label hinzufügen">
+        <img src="icons/plus-solid-full.svg">
+    </button>
+    <button class="icon-btn delete" onclick="app.removePanel(${group.id})" title="Panel löschen">
+        <img src="icons/trash-x.svg">
+    </button>
+</div>
                             </div>
                             
                             <div class="panel-body" style="padding-top: 0;">
