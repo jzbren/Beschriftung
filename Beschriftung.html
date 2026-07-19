@@ -151,7 +151,7 @@
 <body>
 
     <div class="toolbar">
-        <div class="toolbar-title">Beschriftung V1.2</div>
+        <div class="toolbar-title">Beschriftung V1.0</div>
         <button class="btn-success" onclick="app.addPanel()">
             <img src="icons/Plus.svg"> Panel
         </button>
@@ -1246,25 +1246,21 @@
                         const styleTextD = label.isUnderline ? 'underline' : 'none';
                         const actFontSize = label.customFontSize ? label.customFontSize : pFontSize;
                         
-                       // NEUER BEREICH: Randabstand (padX) wird nur noch erzeugt, wenn auch Symbole da sind!
-const symLeftHTML = (label.symbolL && label.symbolL !== '--' && label.symbolL !== '') 
-    ? `<span style="display:inline-flex; align-items:center; height:100%; padding-left: ${padX}mm; padding-right: 2px;">${renderSymbol(label.symbolL)}</span>` 
-    : '';
-const symRightHTML = (label.symbolR && label.symbolR !== '--' && label.symbolR !== '') 
-    ? `<span style="display:inline-flex; align-items:center; height:100%; padding-right: ${padX}mm; padding-left: 2px;">${renderSymbol(label.symbolR)}</span>` 
-    : '';
+                        // NEUER BEREICH: Randabstand (padX) wird nur noch erzeugt, wenn auch Symbole da sind!
+                        const symLeftHTML = (label.symbolL && label.symbolL !== '--' && label.symbolL !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; padding-left: ${padX}mm; padding-right: 2px;">${renderSymbol(label.symbolL)}</span>` : '';
+                        const symRightHTML = (label.symbolR && label.symbolR !== '--' && label.symbolR !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; padding-right: ${padX}mm; padding-left: 2px;">${renderSymbol(label.symbolR)}</span>` : '';
                         
-// Das 'padding: 0 ${padX}mm;' wurde im div-style unten absichtlich entfernt.
-groupHtml += `
-    <div class="preview-label" style="
-        width: ${width}mm; height: ${height}mm; 
-        background-color: ${label.backgroundColorHex}; color: ${label.textColorHex}; 
-        font-size: ${actFontSize}px; border-right: ${vertStyle}; border-bottom: ${horzStyle};">
-        ${symLeftHTML}
-        <span class="preview-label-text" style="font-weight: ${styleFontW}; text-decoration: ${styleTextD};">${label.text}</span>
-        ${symRightHTML}
-    </div>
-`;
+                        // Das 'padding: 0 ${padX}mm;' wurde im div-style unten absichtlich entfernt.
+                    groupHtml += `
+                        <div class="preview-label" style="
+                            width: ${width}mm; height: ${height}mm; 
+                            background-color: ${label.backgroundColorHex}; color: ${label.textColorHex}; 
+                            font-size: ${actFontSize}px; border-right: ${vertStyle}; border-bottom: ${horzStyle};">
+                            ${symLeftHTML}
+                            <span class="preview-label-text" style="font-weight: ${styleFontW}; text-decoration: ${styleTextD};">${label.text}</span>
+                            ${symRightHTML}
+                        </div>
+                        `;
                     });
 
                     groupHtml += `</div>`;
