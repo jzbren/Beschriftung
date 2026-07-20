@@ -646,9 +646,25 @@
                     activeCustomMenu = menu;
 
                     // Exakte Positionierung auf dem Bildschirm (damit es beim Scrollen nicht abgeschnitten wird)
+                    // Smart Auto-Positioning (klappt nach oben auf, wenn unten kein Platz ist)
                     const rect = btn.getBoundingClientRect();
-                    menu.style.top = (rect.bottom + window.scrollY + 2) + 'px';
+                    const menuHeight = 350; // Max-Höhe des Menüs aus der CSS
+                    const spaceBelow = window.innerHeight - rect.bottom;
+                    const spaceAbove = rect.top;
+                    
                     menu.style.left = rect.left + 'px';
+                    
+                    // Wenn unten weniger als 350px Platz ist, aber oben mehr Platz vorhanden ist -> nach oben öffnen
+                    if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
+                        const calculatedTop = rect.top + window.scrollY - menuHeight - 2;
+                        // Falls es über den oberen Bildrand hinausragt, am oberen Rand festpinnen
+                        menu.style.top = Math.max(window.scrollY + 10, calculatedTop) + 'px';
+                        menu.style.maxHeight = Math.min(menuHeight, rect.top - 10) + 'px';
+                    } else {
+                        // Normal nach unten öffnen
+                        menu.style.top = (rect.bottom + window.scrollY + 2) + 'px';
+                        menu.style.maxHeight = Math.min(menuHeight, spaceBelow - 10) + 'px';
+                    }
 
                     searchInput.focus();
                 };
