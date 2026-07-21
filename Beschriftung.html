@@ -224,7 +224,8 @@
                     </select>
                 </div>
                 <div class="form-group"><label>Textfarbe:</label><select id="cfgHeaderTextColor" onchange="app.updateConfig()"></select></div>
-                <div class="form-group"><label>Hintergrund:</label><select id="cfgHeaderBgColor" onchange="app.updateConfig()"></select></div>
+                <div class="form-group"><label>Symbol Farbe:</label><select id="cfgHeaderSymbolColor" onchange="app.updateConfig()"></select></div>
+                <div class="form-group" style="grid-column: span 2;"><label>Hintergrund:</label><select id="cfgHeaderBgColor" onchange="app.updateConfig()"></select></div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
@@ -538,7 +539,8 @@
         { cat: "Zeit & Sonstiges", val: "Plus.svg", name: "Plus" },
         { cat: "Zeit & Sonstiges", val: "Minus.svg", name: "Minus" },
         { cat: "Zeit & Sonstiges", val: "I", name: "Ein" },
-        { cat: "Zeit & Sonstiges", val: "O", name: "Aus" }
+        { cat: "Zeit & Sonstiges", val: "O", name: "Aus" },
+        { cat: "Zeit & Sonstiges", val: "RSK.svg", name: "RSK" }
     ];
 
         const COLORS = [
@@ -777,7 +779,7 @@
                 paddingX: 3, 
                 textColorHex: '#000000', backgroundColorHex: '#ffffff', borderColorHex: '#000000',
                 headerSymbolL: '--', headerSymbolR: '--',
-                headerTextColorHex: '#000000', headerBackgroundColorHex: '#ffffff', titlePosition: 'top',
+                headerTextColorHex: '#000000', headerSymbolColorHex: '#000000', headerBackgroundColorHex: '#ffffff', titlePosition: 'top',
                 isBold: false, isUnderline: false,
                 layoutMode: 'grid', printGap: false,
                 gridVert: true, gridHorz: true
@@ -803,6 +805,7 @@
                 document.getElementById('cfgBorderColor').innerHTML = getColorOptions(this.config.borderColorHex || '#000000');
                 
                 document.getElementById('cfgHeaderTextColor').innerHTML = getColorOptions(this.config.headerTextColorHex || '#000000');
+                document.getElementById('cfgHeaderSymbolColor').innerHTML = getColorOptions(this.config.headerSymbolColorHex || this.config.headerTextColorHex || '#000000');
                 document.getElementById('cfgHeaderBgColor').innerHTML = getColorOptions(this.config.headerBackgroundColorHex || '#ffffff');
                 document.getElementById('cfgTitlePosition').value = this.config.titlePosition || 'top';
                 
@@ -846,6 +849,7 @@
                 this.config.borderColorHex = document.getElementById('cfgBorderColor').value;
                 
                 this.config.headerTextColorHex = document.getElementById('cfgHeaderTextColor').value;
+                this.config.headerSymbolColorHex = document.getElementById('cfgHeaderSymbolColor').value;
                 this.config.headerBackgroundColorHex = document.getElementById('cfgHeaderBgColor').value;
                 this.config.titlePosition = document.getElementById('cfgTitlePosition').value;
                 
@@ -870,6 +874,7 @@
                     g.headerSymbolR = this.config.headerSymbolR;
                     
                     g.headerTextColorHex = this.config.headerTextColorHex;
+                    g.headerSymbolColorHex = this.config.headerSymbolColorHex;
                     g.headerBackgroundColorHex = this.config.headerBackgroundColorHex;
                     g.titlePosition = this.config.titlePosition;
                     g.fontSize = this.config.fontSize;
@@ -897,6 +902,7 @@
                     textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
                     borderColorHex: this.config.borderColorHex,
                     headerTextColorHex: this.config.headerTextColorHex || '#000000',
+                    headerSymbolColorHex: this.config.headerSymbolColorHex || this.config.headerTextColorHex || '#000000',
                     headerBackgroundColorHex: this.config.headerBackgroundColorHex || '#ffffff',
                     titlePosition: this.config.titlePosition || 'top',
                     fontSize: '', headerFontSize: '', paddingX: '',
@@ -1037,6 +1043,7 @@
                             textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
                             borderColorHex: this.config.borderColorHex,
                             headerTextColorHex: this.config.headerTextColorHex || '#000000',
+                            headerSymbolColorHex: this.config.headerSymbolColorHex || this.config.headerTextColorHex || '#000000',
                             headerBackgroundColorHex: this.config.headerBackgroundColorHex || '#ffffff',
                             titlePosition: this.config.titlePosition || 'top',
                             fontSize: '', headerFontSize: '', paddingX: '',
@@ -1104,6 +1111,7 @@
                             textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
                             borderColorHex: this.config.borderColorHex,
                             headerTextColorHex: this.config.headerTextColorHex || '#000000',
+                            headerSymbolColorHex: this.config.headerSymbolColorHex || this.config.headerTextColorHex || '#000000',
                             headerBackgroundColorHex: this.config.headerBackgroundColorHex || '#ffffff',
                             titlePosition: barPosition,
                             fontSize: '', headerFontSize: '', paddingX: '',
@@ -1207,10 +1215,17 @@
                         if (data.config) {
                             Object.assign(this.config, data.config);
                             if (this.config.paddingX === undefined) this.config.paddingX = 1;
+                            // Rückwärtskompatibilität für fehlende Symbolfarbe im Kopf
+                            if (this.config.headerSymbolColorHex === undefined) {
+                                this.config.headerSymbolColorHex = this.config.headerTextColorHex || '#000000';
+                            }
                         }
                         if (data.groups) {
                             data.groups.forEach(g => {
                                 if(g.paddingX === undefined) g.paddingX = '';
+                                if(g.headerSymbolColorHex === undefined) {
+                                    g.headerSymbolColorHex = g.headerTextColorHex || '#000000';
+                                }
                             });
                             this.groups = data.groups;
                         }
@@ -1274,7 +1289,8 @@
                                     <div class="form-group"><label>Position:</label><select onchange="app.updateData('group', ${group.id}, null, 'titlePosition', this.value)"><option value="top" ${!isBottom ? 'selected' : ''}>Oben</option><option value="bottom" ${isBottom ? 'selected' : ''}>Unten</option></select></div>
                                     <div class="form-group"><label>Sym L:</label><select class="symbol-select" onchange="app.updateData('group', ${group.id}, null, 'headerSymbolL', this.value)">${renderDropdown(group.headerSymbolL || '--')}</select></div>
                                     <div class="form-group"><label>Sym R:</label><select class="symbol-select" onchange="app.updateData('group', ${group.id}, null, 'headerSymbolR', this.value)">${renderDropdown(group.headerSymbolR || '--')}</select></div>
-                                    <div class="form-group"><label>Farbe:</label><select onchange="app.updateData('group', ${group.id}, null, 'headerTextColorHex', this.value)">${getColorOptions(group.headerTextColorHex || this.config.headerTextColorHex || '#000000')}</select></div>
+                                    <div class="form-group"><label>Textfarbe:</label><select onchange="app.updateData('group', ${group.id}, null, 'headerTextColorHex', this.value)">${getColorOptions(group.headerTextColorHex || this.config.headerTextColorHex || '#000000')}</select></div>
+                                    <div class="form-group"><label>Symbol Farbe:</label><select onchange="app.updateData('group', ${group.id}, null, 'headerSymbolColorHex', this.value)">${getColorOptions(group.headerSymbolColorHex || group.headerTextColorHex || this.config.headerTextColorHex || '#000000')}</select></div>
                                     <div class="form-group"><label>HG:</label><select onchange="app.updateData('group', ${group.id}, null, 'headerBackgroundColorHex', this.value)">${getColorOptions(group.headerBackgroundColorHex || this.config.headerBackgroundColorHex || '#ffffff')}</select></div>
                                     <div class="form-group"><label>Größe:</label><input type="number" placeholder="Global" value="${group.headerFontSize || ''}" oninput="app.updateData('group', ${group.id}, null, 'headerFontSize', this.value)" style="width: 55px;"></div>
 
@@ -1376,10 +1392,11 @@
                     let barHtml = '';
                     if (hL.trim() !== "" || hC.trim() !== "" || hR.trim() !== "" || (group.headerSymbolL && group.headerSymbolL !== '--') || (group.headerSymbolR && group.headerSymbolR !== '--')) {
                         const hTextColor = group.headerTextColorHex || this.config.headerTextColorHex || '#000000';
+                        const hSymbolColor = group.headerSymbolColorHex || group.headerTextColorHex || this.config.headerSymbolColorHex || this.config.headerTextColorHex || '#000000';
                         const hBgColor = group.headerBackgroundColorHex || this.config.headerBackgroundColorHex || '#ffffff';
                         
-                        const symLeftHTML = (group.headerSymbolL && group.headerSymbolL !== '--' && group.headerSymbolL !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${pHeadSize}px; padding-right: 5px;">${renderSymbol(group.headerSymbolL)}</span>` : '';
-                        const symRightHTML = (group.headerSymbolR && group.headerSymbolR !== '--' && group.headerSymbolR !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${pHeadSize}px; padding-left: 5px;">${renderSymbol(group.headerSymbolR)}</span>` : '';
+                        const symLeftHTML = (group.headerSymbolL && group.headerSymbolL !== '--' && group.headerSymbolL !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${pHeadSize}px; color: ${hSymbolColor}; padding-right: 5px;">${renderSymbol(group.headerSymbolL)}</span>` : '';
+                        const symRightHTML = (group.headerSymbolR && group.headerSymbolR !== '--' && group.headerSymbolR !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${pHeadSize}px; color: ${hSymbolColor}; padding-left: 5px;">${renderSymbol(group.headerSymbolR)}</span>` : '';
 
                         let innerColumns = '';
                         if (hL.trim() === "" && hR.trim() === "" && !symLeftHTML && !symRightHTML) {
