@@ -68,6 +68,11 @@
         .custom-select-search { padding: 8px; border-bottom: 1px solid #ddd; position: sticky; top: 0; background: #f8f9fa; z-index: 10; }
         .custom-select-search input { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
         .custom-optgroup { font-weight: bold; padding: 6px 10px; background: #e9ecef; color: var(--primary); font-size: 12px; position: sticky; top: 45px; z-index: 9; border-bottom: 1px solid #ddd;}
+        
+        /* Details & Summary Fix */
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        
         .custom-option { padding: 6px 15px; cursor: pointer; font-size: 13px; color: #333; display: flex; align-items: center; gap: 8px; }
         .custom-option:hover { background: var(--primary); color: white; }
 
@@ -585,20 +590,7 @@
             return sym; 
         }
 
-        // --- Custom Vanilla JS Searchable Dropdown mit Vorschau-Bildern ---
-        let activeCustomMenu = null;
-
-        function closeAllCustomMenus() {
-            if(activeCustomMenu) {
-                activeCustomMenu.remove();
-                activeCustomMenu = null;
-            }
-        }
-
-        document.addEventListener('click', closeAllCustomMenus);
-        document.querySelector('.editor-area').addEventListener('scroll', closeAllCustomMenus);
-
-       // --- Custom Vanilla JS Searchable Dropdown mit einklappbaren Kategorien ---
+        // --- Custom Vanilla JS Searchable Dropdown ---
         let activeCustomMenu = null;
 
         function closeAllCustomMenus() {
@@ -650,7 +642,7 @@
                     searchDiv.className = 'custom-select-search';
                     const searchInput = document.createElement('input');
                     searchInput.type = 'text';
-                    searchInput.placeholder = 'Suchen... (klappt alles auf)';
+                    searchInput.placeholder = 'Suchen...';
                     searchDiv.appendChild(searchInput);
                     
                     const hintInfo = document.createElement('small');
@@ -661,7 +653,6 @@
                     menu.appendChild(searchDiv);
 
                     const listDiv = document.createElement('div');
-                    listDiv.style.cssText = 'overflow-y: auto; max-height: 280px;';
                     menu.appendChild(listDiv);
 
                     function renderList(filter = '') {
@@ -689,7 +680,7 @@
                                 } else {
                                     // Einklappbare Gruppe via <details> / <summary>
                                     const details = document.createElement('details');
-                                    // Beim Tippen in die Suche automatisch aufklappen, sonst standardmäßig eingeklappt
+                                    // Beim Tippen in die Suche automatisch aufklappen
                                     if (isSearching) details.open = true;
 
                                     const summary = document.createElement('summary');
@@ -697,11 +688,8 @@
                                     summary.style.cssText = 'cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center;';
                                     summary.innerHTML = `<span>${category}</span> <span style="font-size: 10px; color: #666;">(${filteredSyms.length})</span>`;
                                     
-                                    // Verhindern, dass sich das Menü schliesst, wenn man auf den Kategorie-Header klickt
-                                    summary.onclick = (ev) => {
-                                        // Standarddetails-Verhalten beibehalten, aber Event stoppen
-                                        ev.stopPropagation();
-                                    };
+                                    // Event stoppen, damit das Haupt-Dropdown nicht schliesst
+                                    summary.onclick = (ev) => ev.stopPropagation();
 
                                     details.appendChild(summary);
 
@@ -709,7 +697,7 @@
                                     filteredSyms.forEach(s => {
                                         const opt = document.createElement('div');
                                         opt.className = 'custom-option';
-                                        opt.style.paddingLeft = '25px'; // Etwas eingerückt für Untermenü-Optik
+                                        opt.style.paddingLeft = '25px'; // Optische Einrückung
                                         opt.innerHTML = renderItemWithIcon(s.val, s.name);
                                         
                                         opt.onclick = (ev) => {
@@ -770,8 +758,7 @@
                 selectElement.parentNode.insertBefore(wrapper, selectElement.nextSibling);
             });
         }
-
-        
+        // --- Ende Custom Dropdown ---
 
         const app = {
             config: {
@@ -1381,7 +1368,6 @@
                         const styleTextD = label.isUnderline ? 'underline' : 'none';
                         const actFontSize = label.customFontSize ? label.customFontSize : pFontSize;
                         
-                        // FIX: Verdoppelte Linien an den Außenkanten entfernen
                         const isLastCol = (index % columns) === (columns - 1);
                         const isLastRow = Math.floor(index / columns) === Math.floor((group.labels.length - 1) / columns);
 
