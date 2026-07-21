@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
+<!DOCTYPE html><html lang="de"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beschriftung</title>
@@ -30,7 +28,6 @@
         .toolbar button img {
             width: 16px; 
             height: 16px; 
-            /* Macht schwarze SVGs komplett weiß, passend zum Text */
             filter: brightness(0) invert(1); 
         }
 
@@ -64,14 +61,14 @@
         .label-main-row { display: flex; gap: 8px; align-items: center; }
         .label-main-row input[type="text"] { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; height: 35px; }
         
-        /* Custom Dropdown Styling (Offline Ersatz für Tom Select) */
+        /* Custom Dropdown Styling */
         .custom-select-btn { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; background: white; font-size: 13.5px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; height: 35px; display: flex; align-items: center; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
         .custom-select-btn:hover { border-color: #999; }
         .custom-select-menu { position: absolute; width: 250px; background: white; border: 1px solid #ccc; box-shadow: 0 5px 15px rgba(0,0,0,0.2); border-radius: 4px; z-index: 10000; max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; }
         .custom-select-search { padding: 8px; border-bottom: 1px solid #ddd; position: sticky; top: 0; background: #f8f9fa; z-index: 10; }
         .custom-select-search input { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
         .custom-optgroup { font-weight: bold; padding: 6px 10px; background: #e9ecef; color: var(--primary); font-size: 12px; position: sticky; top: 45px; z-index: 9; border-bottom: 1px solid #ddd;}
-        .custom-option { padding: 6px 15px; cursor: pointer; font-size: 13px; color: #333; }
+        .custom-option { padding: 6px 15px; cursor: pointer; font-size: 13px; color: #333; display: flex; align-items: center; gap: 8px; }
         .custom-option:hover { background: var(--primary); color: white; }
 
         .settings-row { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; flex-wrap: wrap; gap: 15px; align-items: center; font-size: 13px; }
@@ -111,28 +108,25 @@
         .preview-panel-bar { font-weight: bold; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; overflow: hidden; white-space: nowrap; padding: 0 5px; }
         .preview-panel-bar > div { flex: 1; overflow: hidden; text-overflow: clip; }
         .preview-grid { display: grid; gap: 0; }
-        .preview-label { display: flex; justify-content: center; /* Zentriert alles, statt Space-Between */align-items: center; box-sizing: border-box; overflow: hidden; padding: 0 1px; /* Padding bei 5mm reduzieren */}
-        .preview-label-text { flex: 1; text-align: center; white-space: nowrap; overflow: hidden; line-height: 1; /* Auf 1 setzen, um Text vertikal besser zu zentrieren */font-size: 8px; /* Wichtig: Bei 5mm Höhe darf die Schrift nicht zu groß sein */display: block;}
+        .preview-label { display: flex; justify-content: center; align-items: center; box-sizing: border-box; overflow: hidden; padding: 0 1px; }
+        .preview-label-text { flex: 1; text-align: center; white-space: nowrap; overflow: hidden; line-height: 1; font-size: 8px; display: block;}
 
-        /* Styling für die neuen SVG-Bilder in den kleinen Buttons */
         .icon-btn img {
             width: 16px;
             height: 16px;
-            opacity: 0.6; /* Macht sie dezent grau */
+            opacity: 0.6; 
             transition: 0.2s;
             pointer-events: none;
         }
         
         .icon-btn:hover img {
-            opacity: 1; /* Volle Sichtbarkeit beim Hovern */
+            opacity: 1; 
         }
 
-        /* Färbt das Löschen-Icon rot beim Drüberfahren */
         .icon-btn.delete:hover img {
             filter: invert(27%) sepia(91%) saturate(5353%) hue-rotate(349deg) brightness(92%) contrast(93%);
         }
         
-        /* Färbt das Duplizieren-Icon grün beim Drüberfahren */
         .icon-btn.duplicate:hover img {
             filter: invert(48%) sepia(87%) saturate(1251%) hue-rotate(85deg) brightness(99%) contrast(89%);
         }
@@ -151,7 +145,7 @@
 <body>
 
     <div class="toolbar">
-        <div class="toolbar-title">Beschriftung V1.0</div>
+        <div class="toolbar-title">Beschriftung V1.1</div>
         <button class="btn-success" onclick="app.addPanel()">
             <img src="icons/Plus.svg"> Panel
         </button>
@@ -239,24 +233,19 @@
 
             <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;">
                 <h4 style="margin: 0 0 -5px 0; color: var(--primary);">Druck- & Anzeige-Optimierung</h4>
-    
-                <!-- Hier wurde display: flex auf flex-direction: column geändert, um sie untereinander zu stapeln -->
                 <div class="form-group" style="display: flex; flex-direction: column; gap: 10px; align-items: flex-start;">
-        
                     <!-- Drucker Zeile -->
                     <label style="cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; color: var(--dark);">
                         <input type="checkbox" id="cfgLayoutMode" onchange="app.updateConfig()" style="margin: 0;"> 
                         <img src="icons/Drucken.svg" style="width: 18px; height: 18px; opacity: 0.7;"> 
                         Platzsparend (Nebeneinander reihen)
                     </label>
-
                     <!-- Schere Zeile -->
                     <label style="cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; color: var(--dark);">
                         <input type="checkbox" id="cfgPrintGap" onchange="app.updateConfig()" style="margin: 0;"> 
                         <img src="icons/Schere.svg" style="width: 18px; height: 18px; opacity: 0.7;"> 
                         Schnittabstand einfügen (5mm)
                     </label>
-        
                 </div>
             </div>
 
@@ -271,8 +260,8 @@
                     Standardwerte (Monteur-Hilfe):
                 </strong>
                 <ul style="margin: 0; padding-left: 20px; line-height: 1.5;">
-            <li><strong>Universaltaster:</strong> Breite 35, Höhe 5, Spalten max. 7</li>
-            <li style="list-style: none; height: 10px;">&nbsp;</li>
+                    <li><strong>Universaltaster:</strong> Breite 35, Höhe 5, Spalten max. 7</li>
+                    <li style="list-style: none; height: 10px;">&nbsp;</li>
                     <li><strong>Universal R und M 4/5/6 Fach:</strong> Breite 21, Höhe 5, Spalten 4,5 oder 6</li>
                     <li><strong>Global 4/5:</strong> Breite , Höhe , Spalten 3 oder 4</li>
                     <li style="list-style: none; height: 10px;">&nbsp;</li>
@@ -545,7 +534,7 @@
             return sym; 
         }
 
-        // --- Custom Vanilla JS Searchable Dropdown ---
+        // --- Custom Vanilla JS Searchable Dropdown mit Vorschau-Bildern ---
         let activeCustomMenu = null;
 
         function closeAllCustomMenus() {
@@ -558,11 +547,20 @@
         document.addEventListener('click', closeAllCustomMenus);
         document.querySelector('.editor-area').addEventListener('scroll', closeAllCustomMenus);
 
+        // Hilfsfunktion zum Rendern des Icons UND des Textes im Dropdown
+        function renderItemWithIcon(val, text) {
+            if (!val || val === '--' || val === '') return text;
+            return `<div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="display: flex; justify-content: center; align-items: center; width: 16px; height: 16px; color: currentColor;">${renderSymbol(val)}</span>
+                        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${text}</span>
+                    </div>`;
+        }
+
         function initCustomDropdowns() {
             document.querySelectorAll('.symbol-select').forEach(selectElement => {
                 if(selectElement.dataset.customized) return;
                 selectElement.dataset.customized = "true";
-                selectElement.style.display = 'none'; // Verstecke das native Select
+                selectElement.style.display = 'none';
 
                 const wrapper = document.createElement('div');
                 wrapper.className = 'custom-select-wrapper';
@@ -570,7 +568,12 @@
 
                 const btn = document.createElement('div');
                 btn.className = 'custom-select-btn';
-                btn.innerHTML = selectElement.options[selectElement.selectedIndex]?.text || '-- Nichts --';
+                
+                const selectedOpt = selectElement.options[selectElement.selectedIndex];
+                const initialText = selectedOpt ? selectedOpt.text : '-- Nichts --';
+                const initialVal = selectedOpt ? selectedOpt.value : '';
+                
+                btn.innerHTML = renderItemWithIcon(initialVal, initialText);
                 wrapper.appendChild(btn);
 
                 btn.onclick = (e) => {
@@ -611,11 +614,12 @@
                                 filteredSyms.forEach(s => {
                                     const opt = document.createElement('div');
                                     opt.className = 'custom-option';
-                                    opt.innerText = s.name;
+                                    opt.innerHTML = renderItemWithIcon(s.val, s.name);
+                                    
                                     opt.onclick = (ev) => {
                                         ev.stopPropagation();
                                         selectElement.value = s.val;
-                                        btn.innerHTML = s.name;
+                                        btn.innerHTML = renderItemWithIcon(s.val, s.name);
                                         closeAllCustomMenus();
                                         selectElement.dispatchEvent(new Event('change', { bubbles: true }));
                                     };
@@ -630,13 +634,12 @@
                     searchInput.onclick = (ev) => ev.stopPropagation();
                     menu.onclick = (ev) => ev.stopPropagation();
                     
-                    // Eigenen Text per Enter hinzufügen
                     searchInput.onkeydown = (ev) => {
                         if(ev.key === 'Enter' && searchInput.value.trim() !== '') {
                             const val = searchInput.value.trim();
                             selectElement.innerHTML += `<option value="${val}">${val}</option>`;
                             selectElement.value = val;
-                            btn.innerHTML = val;
+                            btn.innerHTML = renderItemWithIcon(val, val);
                             closeAllCustomMenus();
                             selectElement.dispatchEvent(new Event('change', { bubbles: true }));
                         }
@@ -645,23 +648,18 @@
                     document.body.appendChild(menu);
                     activeCustomMenu = menu;
 
-                    // Exakte Positionierung auf dem Bildschirm (damit es beim Scrollen nicht abgeschnitten wird)
-                    // Smart Auto-Positioning (klappt nach oben auf, wenn unten kein Platz ist)
                     const rect = btn.getBoundingClientRect();
-                    const menuHeight = 350; // Max-Höhe des Menüs aus der CSS
+                    const menuHeight = 350; 
                     const spaceBelow = window.innerHeight - rect.bottom;
                     const spaceAbove = rect.top;
                     
                     menu.style.left = rect.left + 'px';
                     
-                    // Wenn unten weniger als 350px Platz ist, aber oben mehr Platz vorhanden ist -> nach oben öffnen
                     if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
                         const calculatedTop = rect.top + window.scrollY - menuHeight - 2;
-                        // Falls es über den oberen Bildrand hinausragt, am oberen Rand festpinnen
                         menu.style.top = Math.max(window.scrollY + 10, calculatedTop) + 'px';
                         menu.style.maxHeight = Math.min(menuHeight, rect.top - 10) + 'px';
                     } else {
-                        // Normal nach unten öffnen
                         menu.style.top = (rect.bottom + window.scrollY + 2) + 'px';
                         menu.style.maxHeight = Math.min(menuHeight, spaceBelow - 10) + 'px';
                     }
@@ -1277,28 +1275,25 @@
                     const vertStyle = group.gridVert ? `1px solid ${pBorderCol}` : 'none';
                     const horzStyle = group.gridHorz ? `1px solid ${pBorderCol}` : 'none';
 
-                    // ÄNDERUNG 1: index zur Schleife hinzufügen
                     group.labels.forEach((label, index) => {
                         const styleFontW = label.isBold ? 'bold' : 'normal';
                         const styleTextD = label.isUnderline ? 'underline' : 'none';
                         const actFontSize = label.customFontSize ? label.customFontSize : pFontSize;
-
-                        // --- NEU: Prüfen, ob es die letzte Zeile oder Spalte ist ---
+                        
+                        // FIX: Verdoppelte Linien an den Außenkanten entfernen
                         const isLastCol = (index % columns) === (columns - 1);
                         const isLastRow = Math.floor(index / columns) === Math.floor((group.labels.length - 1) / columns);
 
                         const currentVertStyle = isLastCol ? 'none' : vertStyle;
                         const currentHorzStyle = isLastRow ? 'none' : horzStyle;
-                        // ------------------------------------------------------------
-
+                        
                         const symLeftHTML = (label.symbolL && label.symbolL !== '--' && label.symbolL !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actFontSize}px; padding-left: ${padX}mm; padding-right: 2px;">${renderSymbol(label.symbolL)}</span>` : '';
                         const symRightHTML = (label.symbolR && label.symbolR !== '--' && label.symbolR !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actFontSize}px; padding-right: ${padX}mm; padding-left: 2px;">${renderSymbol(label.symbolR)}</span>` : '';
 
-                    // ÄNDERUNG 2: Nutze currentVertStyle und currentHorzStyle für die Ränder
                     groupHtml += `
                         <div class="preview-label" style="
-                            width: ${width}mm; height: ${height}mm;
-                            background-color: ${label.backgroundColorHex}; color: ${label.textColorHex};
+                            width: ${width}mm; height: ${height}mm; 
+                            background-color: ${label.backgroundColorHex}; color: ${label.textColorHex}; 
                             border-right: ${currentVertStyle}; border-bottom: ${currentHorzStyle};">
                             ${symLeftHTML}
                             <span class="preview-label-text" style="font-size: ${actFontSize}px; font-weight: ${styleFontW}; text-decoration: ${styleTextD};">${label.text}</span>
