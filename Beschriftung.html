@@ -423,7 +423,7 @@
         { cat: "Multimedia & Audio", val: "Foerwaertsspuelen-Fein.svg", name: "Vor Fein" },
         { cat: "Multimedia & Audio", val: "Foerwaertsspuelen-Fein-Doppelt.svg", name: "Vor Fein (Doppelt)" },
         { cat: "Multimedia & Audio", val: "Zuerueckspulen.svg", name: "Zurück" },
-        { cat: "Multimedia & Audio", val: "Rueckwaertsspuelen-Fein.svg", name: "Zurück Fein" },
+        { cat: "Multimedia & Audio", val: "Rueckwaertspuelen-Fein.svg", name: "Zurück Fein" },
         { cat: "Multimedia & Audio", val: "Zuerueckspulen-Fein-Doppelt.svg", name: "Zurück Fein (Doppelt)" },
         { cat: "Multimedia & Audio", val: "Zufallswidergabe.svg", name: "Zufallswiedergabe" },
         { cat: "Multimedia & Audio", val: "Widerholen.svg", name: "Wiederholen" },
@@ -678,9 +678,7 @@
                                         listDiv.appendChild(opt);
                                     });
                                 } else {
-                                    // Einklappbare Gruppe via <details> / <summary>
                                     const details = document.createElement('details');
-                                    // Beim Tippen in die Suche automatisch aufklappen
                                     if (isSearching) details.open = true;
 
                                     const summary = document.createElement('summary');
@@ -688,7 +686,6 @@
                                     summary.style.cssText = 'cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center;';
                                     summary.innerHTML = `<span>${category}</span> <span style="font-size: 10px; color: #666;">(${filteredSyms.length})</span>`;
                                     
-                                    // Event stoppen, damit das Haupt-Dropdown nicht schliesst
                                     summary.onclick = (ev) => ev.stopPropagation();
 
                                     details.appendChild(summary);
@@ -697,7 +694,7 @@
                                     filteredSyms.forEach(s => {
                                         const opt = document.createElement('div');
                                         opt.className = 'custom-option';
-                                        opt.style.paddingLeft = '25px'; // Optische Einrückung
+                                        opt.style.paddingLeft = '25px';
                                         opt.innerHTML = renderItemWithIcon(s.val, s.name);
                                         
                                         opt.onclick = (ev) => {
@@ -856,6 +853,7 @@
                 this.groups.push({
                     id: Date.now(),
                     headerLeft: '', headerCenter: `Panel ${this.groups.length + 1}`, headerRight: '',
+                    headerSymbolL: '--', headerSymbolR: '--',
                     textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
                     borderColorHex: this.config.borderColorHex,
                     headerTextColorHex: this.config.headerTextColorHex || '#000000',
@@ -995,6 +993,7 @@
                         currentGroup = {
                             id: Date.now() + Math.random(),
                             headerLeft: '', headerCenter: `Import Panel ${panelCounter}`, headerRight: '',
+                            headerSymbolL: '--', headerSymbolR: '--',
                             textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
                             borderColorHex: this.config.borderColorHex,
                             headerTextColorHex: this.config.headerTextColorHex || '#000000',
@@ -1061,6 +1060,7 @@
                         currentGroup = {
                             id: Date.now() + i,
                             headerLeft: '', headerCenter: pCenter, headerRight: '',
+                            headerSymbolL: '--', headerSymbolR: '--',
                             textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
                             borderColorHex: this.config.borderColorHex,
                             headerTextColorHex: this.config.headerTextColorHex || '#000000',
@@ -1201,6 +1201,16 @@
                 
                 const globalSymOptions = `<option value="">-- Nicht ändern --</option>` + BASE_SYMBOL_OPTIONS;
 
+                const renderDropdown = (fieldValue) => {
+                    if (!fieldValue || fieldValue === '--') return BASE_SYMBOL_OPTIONS;
+                    const searchStr = `value="${fieldValue}"`;
+                    if (BASE_SYMBOL_OPTIONS.includes(searchStr)) {
+                        return BASE_SYMBOL_OPTIONS.replace(searchStr, `${searchStr} selected`);
+                    } else {
+                        return BASE_SYMBOL_OPTIONS + `<option value="${fieldValue}" selected>${fieldValue}</option>`;
+                    }
+                };
+
                 this.groups.forEach(group => {
                     const isBottom = group.titlePosition === 'bottom';
                     const html = `
@@ -1232,6 +1242,8 @@
                                     
                                     <div style="width: 100%; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px; font-weight: bold; font-size: 12px; color: var(--primary);">ZUSATZZEILE (KOPF/FUß)</div>
                                     <div class="form-group"><label>Position:</label><select onchange="app.updateData('group', ${group.id}, null, 'titlePosition', this.value)"><option value="top" ${!isBottom ? 'selected' : ''}>Oben</option><option value="bottom" ${isBottom ? 'selected' : ''}>Unten</option></select></div>
+                                    <div class="form-group"><label>Sym L:</label><select class="symbol-select" onchange="app.updateData('group', ${group.id}, null, 'headerSymbolL', this.value)">${renderDropdown(group.headerSymbolL || '--')}</select></div>
+                                    <div class="form-group"><label>Sym R:</label><select class="symbol-select" onchange="app.updateData('group', ${group.id}, null, 'headerSymbolR', this.value)">${renderDropdown(group.headerSymbolR || '--')}</select></div>
                                     <div class="form-group"><label>Farbe:</label><select onchange="app.updateData('group', ${group.id}, null, 'headerTextColorHex', this.value)">${getColorOptions(group.headerTextColorHex || this.config.headerTextColorHex || '#000000')}</select></div>
                                     <div class="form-group"><label>HG:</label><select onchange="app.updateData('group', ${group.id}, null, 'headerBackgroundColorHex', this.value)">${getColorOptions(group.headerBackgroundColorHex || this.config.headerBackgroundColorHex || '#ffffff')}</select></div>
                                     <div class="form-group"><label>Größe:</label><input type="number" placeholder="Global" value="${group.headerFontSize || ''}" oninput="app.updateData('group', ${group.id}, null, 'headerFontSize', this.value)" style="width: 55px;"></div>
@@ -1260,16 +1272,6 @@
                                 </div>
                                 
                                 ${group.labels.map(label => {
-                                    const renderDropdown = (fieldValue) => {
-                                        if (!fieldValue || fieldValue === '--') return BASE_SYMBOL_OPTIONS;
-                                        const searchStr = `value="${fieldValue}"`;
-                                        if (BASE_SYMBOL_OPTIONS.includes(searchStr)) {
-                                            return BASE_SYMBOL_OPTIONS.replace(searchStr, `${searchStr} selected`);
-                                        } else {
-                                            return BASE_SYMBOL_OPTIONS + `<option value="${fieldValue}" selected>${fieldValue}</option>`;
-                                        }
-                                    };
-
                                     return `
                                     <div class="label-item">
                                         <div class="label-main-row">
@@ -1342,13 +1344,19 @@
                     let groupHtml = `<div class="preview-panel" style="--preview-border: ${pBorderCol}; width: ${columns * width}mm;">`;
                     
                     let barHtml = '';
-                    if (hL.trim() !== "" || hC.trim() !== "" || hR.trim() !== "") {
+                    if (hL.trim() !== "" || hC.trim() !== "" || hR.trim() !== "" || (group.headerSymbolL && group.headerSymbolL !== '--') || (group.headerSymbolR && group.headerSymbolR !== '--')) {
                         const hTextColor = group.headerTextColorHex || this.config.headerTextColorHex || '#000000';
                         const hBgColor = group.headerBackgroundColorHex || this.config.headerBackgroundColorHex || '#ffffff';
                         
+                        const symLeftHTML = (group.headerSymbolL && group.headerSymbolL !== '--' && group.headerSymbolL !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${pHeadSize}px; padding-right: 5px;">${renderSymbol(group.headerSymbolL)}</span>` : '';
+                        const symRightHTML = (group.headerSymbolR && group.headerSymbolR !== '--' && group.headerSymbolR !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${pHeadSize}px; padding-left: 5px;">${renderSymbol(group.headerSymbolR)}</span>` : '';
+
                         let innerColumns = '';
-                        if (hL.trim() === "" && hR.trim() === "") innerColumns = `<div style="text-align: center;">${hC}</div>`;
-                        else innerColumns = `<div style="text-align: left;">${hL}</div><div style="text-align: center;">${hC}</div><div style="text-align: right;">${hR}</div>`;
+                        if (hL.trim() === "" && hR.trim() === "" && !symLeftHTML && !symRightHTML) {
+                            innerColumns = `<div style="text-align: center;">${hC}</div>`;
+                        } else {
+                            innerColumns = `<div style="text-align: left; display:flex; align-items:center;">${symLeftHTML}${hL}</div><div style="text-align: center;">${hC}</div><div style="text-align: right; display:flex; align-items:center; justify-content:flex-end;">${hR}${symRightHTML}</div>`;
+                        }
                         
                         const barBorderTop = (group.titlePosition === 'bottom' && group.gridHorz) ? `1px solid ${pBorderCol}` : 'none';
                         const barBorderBottom = (group.titlePosition !== 'bottom' && group.gridHorz) ? `1px solid ${pBorderCol}` : 'none';
