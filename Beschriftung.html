@@ -598,7 +598,19 @@
         document.addEventListener('click', closeAllCustomMenus);
         document.querySelector('.editor-area').addEventListener('scroll', closeAllCustomMenus);
 
-        // Hilfsfunktion zum Rendern des Icons UND des Textes im Dropdown
+       // --- Custom Vanilla JS Searchable Dropdown mit einklappbaren Kategorien ---
+        let activeCustomMenu = null;
+
+        function closeAllCustomMenus() {
+            if(activeCustomMenu) {
+                activeCustomMenu.remove();
+                activeCustomMenu = null;
+            }
+        }
+
+        document.addEventListener('click', closeAllCustomMenus);
+        document.querySelector('.editor-area').addEventListener('scroll', closeAllCustomMenus);
+
         function renderItemWithIcon(val, text) {
             if (!val || val === '--' || val === '') return text;
             return `<div style="display: flex; align-items: center; gap: 8px;">
@@ -638,7 +650,7 @@
                     searchDiv.className = 'custom-select-search';
                     const searchInput = document.createElement('input');
                     searchInput.type = 'text';
-                    searchInput.placeholder = 'Suchen...';
+                    searchInput.placeholder = 'Suchen... (klappt alles auf)';
                     searchDiv.appendChild(searchInput);
                     
                     const hintInfo = document.createElement('small');
@@ -649,33 +661,70 @@
                     menu.appendChild(searchDiv);
 
                     const listDiv = document.createElement('div');
+                    listDiv.style.cssText = 'overflow-y: auto; max-height: 280px;';
                     menu.appendChild(listDiv);
 
                     function renderList(filter = '') {
                         listDiv.innerHTML = '';
+                        const isSearching = filter.trim() !== '';
+
                         for (const [category, symbols] of Object.entries(groupedSymbols)) {
                             const filteredSyms = symbols.filter(s => s.name.toLowerCase().includes(filter) || s.val.toLowerCase().includes(filter));
+                            
                             if(filteredSyms.length > 0) {
-                                if(category !== "Allgemein") {
-                                    const grp = document.createElement('div');
-                                    grp.className = 'custom-optgroup';
-                                    grp.innerText = category;
-                                    listDiv.appendChild(grp);
-                                }
-                                filteredSyms.forEach(s => {
-                                    const opt = document.createElement('div');
-                                    opt.className = 'custom-option';
-                                    opt.innerHTML = renderItemWithIcon(s.val, s.name);
+                                if(category === "Allgemein") {
+                                    filteredSyms.forEach(s => {
+                                        const opt = document.createElement('div');
+                                        opt.className = 'custom-option';
+                                        opt.innerHTML = renderItemWithIcon(s.val, s.name);
+                                        opt.onclick = (ev) => {
+                                            ev.stopPropagation();
+                                            selectElement.value = s.val;
+                                            btn.innerHTML = renderItemWithIcon(s.val, s.name);
+                                            closeAllCustomMenus();
+                                            selectElement.dispatchEvent(new Event('change', { bubbles: true }));
+                                        };
+                                        listDiv.appendChild(opt);
+                                    });
+                                } else {
+                                    // Einklappbare Gruppe via <details> / <summary>
+                                    const details = document.createElement('details');
+                                    // Beim Tippen in die Suche automatisch aufklappen, sonst standardmäßig eingeklappt
+                                    if (isSearching) details.open = true;
+
+                                    const summary = document.createElement('summary');
+                                    summary.className = 'custom-optgroup';
+                                    summary.style.cssText = 'cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center;';
+                                    summary.innerHTML = `<span>${category}</span> <span style="font-size: 10px; color: #666;">(${filteredSyms.length})</span>`;
                                     
-                                    opt.onclick = (ev) => {
+                                    // Verhindern, dass sich das Menü schliesst, wenn man auf den Kategorie-Header klickt
+                                    summary.onclick = (ev) => {
+                                        // Standarddetails-Verhalten beibehalten, aber Event stoppen
                                         ev.stopPropagation();
-                                        selectElement.value = s.val;
-                                        btn.innerHTML = renderItemWithIcon(s.val, s.name);
-                                        closeAllCustomMenus();
-                                        selectElement.dispatchEvent(new Event('change', { bubbles: true }));
                                     };
-                                    listDiv.appendChild(opt);
-                                });
+
+                                    details.appendChild(summary);
+
+                                    const contentDiv = document.createElement('div');
+                                    filteredSyms.forEach(s => {
+                                        const opt = document.createElement('div');
+                                        opt.className = 'custom-option';
+                                        opt.style.paddingLeft = '25px'; // Etwas eingerückt für Untermenü-Optik
+                                        opt.innerHTML = renderItemWithIcon(s.val, s.name);
+                                        
+                                        opt.onclick = (ev) => {
+                                            ev.stopPropagation();
+                                            selectElement.value = s.val;
+                                            btn.innerHTML = renderItemWithIcon(s.val, s.name);
+                                            closeAllCustomMenus();
+                                            selectElement.dispatchEvent(new Event('change', { bubbles: true }));
+                                        };
+                                        contentDiv.appendChild(opt);
+                                    });
+
+                                    details.appendChild(contentDiv);
+                                    listDiv.appendChild(details);
+                                }
                             }
                         }
                     }
@@ -721,7 +770,8 @@
                 selectElement.parentNode.insertBefore(wrapper, selectElement.nextSibling);
             });
         }
-        // --- Ende Custom Dropdown ---
+
+        
 
         const app = {
             config: {
