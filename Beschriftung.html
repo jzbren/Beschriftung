@@ -1277,21 +1277,29 @@
                     const vertStyle = group.gridVert ? `1px solid ${pBorderCol}` : 'none';
                     const horzStyle = group.gridHorz ? `1px solid ${pBorderCol}` : 'none';
 
-                    group.labels.forEach(label => {
+                    // ÄNDERUNG 1: index zur Schleife hinzufügen
+                    group.labels.forEach((label, index) => {
                         const styleFontW = label.isBold ? 'bold' : 'normal';
                         const styleTextD = label.isUnderline ? 'underline' : 'none';
                         const actFontSize = label.customFontSize ? label.customFontSize : pFontSize;
-                        
-                        // NEUER BEREICH: Randabstand (padX) wird nur noch erzeugt, wenn auch Symbole da sind!
+
+                        // --- NEU: Prüfen, ob es die letzte Zeile oder Spalte ist ---
+                        const isLastCol = (index % columns) === (columns - 1);
+                        const isLastRow = Math.floor(index / columns) === Math.floor((group.labels.length - 1) / columns);
+
+                        const currentVertStyle = isLastCol ? 'none' : vertStyle;
+                        const currentHorzStyle = isLastRow ? 'none' : horzStyle;
+                        // ------------------------------------------------------------
+
                         const symLeftHTML = (label.symbolL && label.symbolL !== '--' && label.symbolL !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actFontSize}px; padding-left: ${padX}mm; padding-right: 2px;">${renderSymbol(label.symbolL)}</span>` : '';
                         const symRightHTML = (label.symbolR && label.symbolR !== '--' && label.symbolR !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actFontSize}px; padding-right: ${padX}mm; padding-left: 2px;">${renderSymbol(label.symbolR)}</span>` : '';
-                        
-                    // ÄNDERUNG: Gib die font-size direkt an den Text-Span weiter!
+
+                    // ÄNDERUNG 2: Nutze currentVertStyle und currentHorzStyle für die Ränder
                     groupHtml += `
                         <div class="preview-label" style="
-                            width: ${width}mm; height: ${height}mm; 
-                            background-color: ${label.backgroundColorHex}; color: ${label.textColorHex}; 
-                            border-right: ${vertStyle}; border-bottom: ${horzStyle};">
+                            width: ${width}mm; height: ${height}mm;
+                            background-color: ${label.backgroundColorHex}; color: ${label.textColorHex};
+                            border-right: ${currentVertStyle}; border-bottom: ${currentHorzStyle};">
                             ${symLeftHTML}
                             <span class="preview-label-text" style="font-size: ${actFontSize}px; font-weight: ${styleFontW}; text-decoration: ${styleTextD};">${label.text}</span>
                             ${symRightHTML}
