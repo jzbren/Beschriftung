@@ -213,6 +213,9 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                 <h4 style="grid-column: span 2; margin: 0 0 -5px 0;">Zusatzzeile (Kopf/Fuß)</h4>
+                <div class="form-group"><label>Sym L:</label><select id="cfgHeaderSymbolL" class="symbol-select" onchange="app.updateConfig()"></select></div>
+                <div class="form-group"><label>Sym R:</label><select id="cfgHeaderSymbolR" class="symbol-select" onchange="app.updateConfig()"></select></div>
+                
                 <div class="form-group"><label>Textgröße:</label><input type="number" id="cfgHeaderFontSize" onchange="app.updateConfig()"></div>
                 <div class="form-group"><label>Position:</label>
                     <select id="cfgTitlePosition" onchange="app.updateConfig()">
@@ -590,6 +593,17 @@
             return sym; 
         }
 
+        // Global Helper for Dropdowns
+        function renderDropdown(fieldValue) {
+            if (!fieldValue || fieldValue === '--') return BASE_SYMBOL_OPTIONS;
+            const searchStr = `value="${fieldValue}"`;
+            if (BASE_SYMBOL_OPTIONS.includes(searchStr)) {
+                return BASE_SYMBOL_OPTIONS.replace(searchStr, `${searchStr} selected`);
+            } else {
+                return BASE_SYMBOL_OPTIONS + `<option value="${fieldValue}" selected>${fieldValue}</option>`;
+            }
+        }
+
         // --- Custom Vanilla JS Searchable Dropdown ---
         let activeCustomMenu = null;
 
@@ -762,6 +776,7 @@
                 width: 35, height: 5, columns: 7, fontSize: 12, headerFontSize: 16, 
                 paddingX: 3, 
                 textColorHex: '#000000', backgroundColorHex: '#ffffff', borderColorHex: '#000000',
+                headerSymbolL: '--', headerSymbolR: '--',
                 headerTextColorHex: '#000000', headerBackgroundColorHex: '#ffffff', titlePosition: 'top',
                 isBold: false, isUnderline: false,
                 layoutMode: 'grid', printGap: false,
@@ -777,6 +792,11 @@
                 document.getElementById('cfgFontSize').value = this.config.fontSize;
                 document.getElementById('cfgHeaderFontSize').value = this.config.headerFontSize;
                 document.getElementById('cfgPaddingX').value = this.config.paddingX !== undefined ? this.config.paddingX : 1;
+                
+                document.getElementById('cfgHeaderSymbolL').innerHTML = renderDropdown(this.config.headerSymbolL || '--');
+                document.getElementById('cfgHeaderSymbolL').value = this.config.headerSymbolL || '--';
+                document.getElementById('cfgHeaderSymbolR').innerHTML = renderDropdown(this.config.headerSymbolR || '--');
+                document.getElementById('cfgHeaderSymbolR').value = this.config.headerSymbolR || '--';
                 
                 document.getElementById('cfgTextColor').innerHTML = getColorOptions(this.config.textColorHex);
                 document.getElementById('cfgBgColor').innerHTML = getColorOptions(this.config.backgroundColorHex);
@@ -796,6 +816,18 @@
 
                 if(this.groups.length === 0) this.addPanel();
                 this.render();
+
+                // UI-Sync für die Custom Dropdowns in den Global Settings nach dem Laden
+                const updateUI = (id, val) => {
+                    const sel = document.getElementById(id);
+                    if(sel && sel.dataset.customized) {
+                        const btn = sel.nextElementSibling.querySelector('.custom-select-btn');
+                        const opt = sel.querySelector(`option[value="${val}"]`);
+                        if(btn) btn.innerHTML = renderItemWithIcon(val, opt ? opt.text : val);
+                    }
+                };
+                updateUI('cfgHeaderSymbolL', this.config.headerSymbolL || '--');
+                updateUI('cfgHeaderSymbolR', this.config.headerSymbolR || '--');
             },
 
             updateConfig() {
@@ -805,6 +837,10 @@
                 this.config.fontSize = parseInt(document.getElementById('cfgFontSize').value) || 12;
                 this.config.headerFontSize = parseInt(document.getElementById('cfgHeaderFontSize').value) || 16;
                 this.config.paddingX = parseFloat(document.getElementById('cfgPaddingX').value) || 0;
+                
+                this.config.headerSymbolL = document.getElementById('cfgHeaderSymbolL').value;
+                this.config.headerSymbolR = document.getElementById('cfgHeaderSymbolR').value;
+                
                 this.config.textColorHex = document.getElementById('cfgTextColor').value;
                 this.config.backgroundColorHex = document.getElementById('cfgBgColor').value;
                 this.config.borderColorHex = document.getElementById('cfgBorderColor').value;
@@ -829,6 +865,10 @@
                     g.textColorHex = this.config.textColorHex;
                     g.backgroundColorHex = this.config.backgroundColorHex;
                     g.borderColorHex = this.config.borderColorHex;
+                    
+                    g.headerSymbolL = this.config.headerSymbolL;
+                    g.headerSymbolR = this.config.headerSymbolR;
+                    
                     g.headerTextColorHex = this.config.headerTextColorHex;
                     g.headerBackgroundColorHex = this.config.headerBackgroundColorHex;
                     g.titlePosition = this.config.titlePosition;
@@ -853,7 +893,7 @@
                 this.groups.push({
                     id: Date.now(),
                     headerLeft: '', headerCenter: `Panel ${this.groups.length + 1}`, headerRight: '',
-                    headerSymbolL: '--', headerSymbolR: '--',
+                    headerSymbolL: this.config.headerSymbolL || '--', headerSymbolR: this.config.headerSymbolR || '--',
                     textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
                     borderColorHex: this.config.borderColorHex,
                     headerTextColorHex: this.config.headerTextColorHex || '#000000',
@@ -993,7 +1033,7 @@
                         currentGroup = {
                             id: Date.now() + Math.random(),
                             headerLeft: '', headerCenter: `Import Panel ${panelCounter}`, headerRight: '',
-                            headerSymbolL: '--', headerSymbolR: '--',
+                            headerSymbolL: this.config.headerSymbolL || '--', headerSymbolR: this.config.headerSymbolR || '--',
                             textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
                             borderColorHex: this.config.borderColorHex,
                             headerTextColorHex: this.config.headerTextColorHex || '#000000',
@@ -1060,7 +1100,7 @@
                         currentGroup = {
                             id: Date.now() + i,
                             headerLeft: '', headerCenter: pCenter, headerRight: '',
-                            headerSymbolL: '--', headerSymbolR: '--',
+                            headerSymbolL: this.config.headerSymbolL || '--', headerSymbolR: this.config.headerSymbolR || '--',
                             textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
                             borderColorHex: this.config.borderColorHex,
                             headerTextColorHex: this.config.headerTextColorHex || '#000000',
@@ -1200,16 +1240,6 @@
                 editor.innerHTML = '';
                 
                 const globalSymOptions = `<option value="">-- Nicht ändern --</option>` + BASE_SYMBOL_OPTIONS;
-
-                const renderDropdown = (fieldValue) => {
-                    if (!fieldValue || fieldValue === '--') return BASE_SYMBOL_OPTIONS;
-                    const searchStr = `value="${fieldValue}"`;
-                    if (BASE_SYMBOL_OPTIONS.includes(searchStr)) {
-                        return BASE_SYMBOL_OPTIONS.replace(searchStr, `${searchStr} selected`);
-                    } else {
-                        return BASE_SYMBOL_OPTIONS + `<option value="${fieldValue}" selected>${fieldValue}</option>`;
-                    }
-                };
 
                 this.groups.forEach(group => {
                     const isBottom = group.titlePosition === 'bottom';
