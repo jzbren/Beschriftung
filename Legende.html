@@ -86,7 +86,7 @@
 
         .preview-header { margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 12px; }
         
-        /* Korrigierte Logo-Ausrichtung (Exakt in einer Linie, Rot eingefärbt) */
+        /* Streng ausgerichteter Header mit rotem Logo */
         .preview-logo-container { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
         .preview-logo { width: 34px; height: 34px; color: #dc3545; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .preview-logo svg { width: 100%; height: 100%; fill: currentColor; display: block; }
@@ -95,10 +95,11 @@
         .preview-title { font-size: 16px; font-weight: bold; text-decoration: underline; margin-bottom: 4px; color: #000; }
         .preview-subtitle { font-size: 13px; font-weight: bold; text-decoration: underline; color: #333; margin-bottom: 15px; }
 
+        /* Spalten-Layout für die Legenden-Einträge */
         .preview-list { display: flex; flex-direction: column; gap: 5px; }
-        .preview-row { display: flex; font-size: 12.5px; line-height: 1.35; }
-        .preview-col-left { width: 80px; font-weight: bold; color: #000; }
-        .preview-col-right { flex: 1; color: #222; }
+        .preview-row { display: flex; font-size: 12.5px; line-height: 1.35; break-inside: avoid; page-break-inside: avoid; margin-bottom: 4px; }
+        .preview-col-left { width: 70px; font-weight: bold; color: #000; flex-shrink: 0; }
+        .preview-col-right { flex: 1; color: #222; overflow: hidden; text-overflow: ellipsis; }
 
         @media print {
             body { display: block; overflow: visible; background: white; }
@@ -112,7 +113,7 @@
 <body>
 
     <div class="toolbar">
-        <div class="toolbar-title">Legenden Generator V1.0</div>
+        <div class="toolbar-title">Legenden Generator V1.3</div>
         
         <div style="display: flex; align-items: center; gap: 5px;">
             <label style="font-size: 13px; font-weight: bold;">Format:</label>
@@ -121,6 +122,16 @@
                 <option value="A4_landscape">A4 Querformat</option>
                 <option value="A5_portrait">A5 Hochformat</option>
                 <option value="A5_landscape">A5 Querformat</option>
+            </select>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 5px;">
+            <label style="font-size: 13px; font-weight: bold;">Spalten:</label>
+            <select id="columnCountSelect" onchange="app.changeColumns(this.value)">
+                <option value="1">1 Spalte</option>
+                <option value="2">2 Spalten</option>
+                <option value="3">3 Spalten</option>
+                <option value="4">4 Spalten</option>
             </select>
         </div>
 
@@ -178,6 +189,7 @@
 
     const app = {
         format: 'A4_portrait',
+        columns: 1,
         sections: [],
 
         init() {
@@ -190,11 +202,17 @@
                 ];
             }
             document.getElementById('pageFormatSelect').value = this.format;
+            document.getElementById('columnCountSelect').value = this.columns;
             this.render();
         },
 
         changeFormat(fmt) {
             this.format = fmt;
+            this.renderPreviewOnly();
+        },
+
+        changeColumns(cols) {
+            this.columns = parseInt(cols) || 1;
             this.renderPreviewOnly();
         },
 
@@ -298,7 +316,7 @@
         },
 
         saveData() {
-            const data = { format: this.format, sections: this.sections };
+            const data = { format: this.format, columns: this.columns, sections: this.sections };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
@@ -318,6 +336,7 @@
                         this.sections = parsed;
                     } else {
                         this.format = parsed.format || 'A4_portrait';
+                        this.columns = parsed.columns || 1;
                         this.sections = parsed.sections || [];
                     }
                     this.init();
@@ -409,13 +428,16 @@
                                  </div>`;
                 });
 
+                // Spalten-Stile dynamisch je nach Auswahl (1 bis 4 Spalten)
+                const listStyle = `display: ${this.columns > 1 ? 'block' : 'flex'}; flex-direction: ${this.columns > 1 ? 'none' : 'column'}; column-count: ${this.columns}; column-gap: 15px;`;
+
                 page.innerHTML = `
                     <div class="preview-header">
                         ${renderRSKLogo()}
                         <div class="preview-title">${sec.title}</div>
                         <div class="preview-subtitle">${sec.subtitle}</div>
                     </div>
-                    <div class="preview-list">
+                    <div class="preview-list" style="${listStyle}">
                         ${rowsHtml}
                     </div>
                 `;
