@@ -86,13 +86,18 @@
 
         .preview-header { margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 12px; }
         
-        /* Perfekt ausgerichteter Header mit grösserem, rotem Logo */
-        .preview-logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-        .preview-logo { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: #dc3545; }
-        .preview-logo svg { width: 100%; height: 100%; fill: #dc3545 !important; display: block; }
-        .preview-logo svg * { fill: #dc3545 !important; }
+        /* Perfekt ausgerichteter Header mit rotem Logo über Filter */
+        .preview-logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; margin-left: 0; }
+        .preview-logo { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        /* Der Filter erzwingt das genaue Rot #dc3545, unabhängig von der Originalfarbe der SVG */
+        .preview-logo svg { 
+            width: 100%; 
+            height: 100%; 
+            display: block; 
+            filter: invert(27%) sepia(91%) saturate(5353%) hue-rotate(349deg) brightness(92%) contrast(93%);
+        }
         
-        .preview-logo-text { font-size: 11px; font-weight: bold; letter-spacing: 2.5px; color: #444; text-transform: uppercase; line-height: 1.15; display: flex; flex-direction: column; justify-content: center; }
+        .preview-logo-text { font-size: 11px; font-weight: bold; letter-spacing: 2.5px; color: #444; text-transform: uppercase; line-height: 1.15; display: flex; flex-direction: column; justify-content: center; margin-top: 2px;}
         
         .preview-title { font-size: 16px; font-weight: bold; text-decoration: underline; margin-bottom: 4px; color: #000; }
         .preview-subtitle { font-size: 13px; font-weight: bold; text-decoration: underline; color: #333; margin-bottom: 15px; }
@@ -103,6 +108,32 @@
         .preview-row { display: flex; font-size: 12.5px; line-height: 1.35; min-height: 18px; break-inside: avoid; page-break-inside: avoid; }
         .preview-col-left { width: 70px; font-weight: bold; color: #000; flex-shrink: 0; min-height: 18px; }
         .preview-col-right { flex: 1; color: #222; overflow: hidden; text-overflow: ellipsis; min-height: 18px; }
+
+        /* Adressbalken und Soforthilfe am Ende der Seite */
+        .preview-footer {
+            margin-top: auto; /* Drückt den Footer immer ganz nach unten */
+            width: 100%;
+            padding-top: 15px;
+        }
+        .footer-columns {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            line-height: 1.4;
+            font-size: 10px;
+            color: #333;
+        }
+        .footer-col {
+            flex: 1;
+        }
+        .footer-red-bar {
+            background-color: var(--danger);
+            color: white;
+            font-weight: bold;
+            padding: 5px 10px;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
 
         @media print {
             body { display: block; overflow: visible; background: white; }
@@ -185,9 +216,46 @@
     <script>
     function renderRSKLogo() {
         return `<div class="preview-logo-container">
-                    <span class="preview-logo"><svg viewBox="0 0 100 100" style="fill: #dc3545;"><use href="icons/RSK.svg#Layer_1" style="fill: #dc3545;"></use></svg></span>
+                    <span class="preview-logo"><svg viewBox="0 0 100 100"><use href="icons/RSK.svg#Layer_1"></use></svg></span>
                     <div class="preview-logo-text">RSK<br><span style="font-size: 7.5px; font-weight: normal; color: #666;">ELEKTRO</span></div>
                 </div>`;
+    }
+
+    // HTML Vorlage für den statischen Adressbalken
+    function renderFooter() {
+        return `
+            <div class="preview-footer">
+                <div class="footer-columns">
+                    <div class="footer-col">
+                        Korrespondenzadresse<br>
+                        RSK Elektro AG<br>
+                        Allmendstrasse 4<br>
+                        6210 Sursee
+                    </div>
+                    <div class="footer-col">
+                        Zweigniederlassung Nottwil<br>
+                        RSK Elektro AG<br>
+                        Kantonsstrasse 32<br>
+                        6207 Nottwil
+                    </div>
+                    <div class="footer-col">
+                        <span style="visibility: hidden;">-</span><br>
+                        RSK Elektro AG<br>
+                        6182 Escholzmatt<br>
+                        3437 Rüderswil
+                    </div>
+                    <div class="footer-col">
+                        Telefon 041 922 18 18<br>
+                        info@rskelektro.ch<br>
+                        www.rskelektro.ch<br>
+                        MwSt-Nr. CH-170.3.021.567-5
+                    </div>
+                </div>
+                <div class="footer-red-bar">
+                    Elektro-Soforthilfe
+                </div>
+            </div>
+        `;
     }
 
     const app = {
@@ -416,10 +484,11 @@
             const cssPrintFmt = this.format.replace('_', ' ');
             styleTag.innerHTML = `@media print { @page { size: ${cssPrintFmt}; margin: 0; } }`;
 
-            let maxRowsPerCol = 38;
-            if (this.format === 'A4_landscape') maxRowsPerCol = 22;
-            else if (this.format === 'A5_portrait') maxRowsPerCol = 24;
-            else if (this.format === 'A5_landscape') maxRowsPerCol = 14;
+            // Max rows leicht reduziert, damit der neue Fussbereich Platz hat
+            let maxRowsPerCol = 34;
+            if (this.format === 'A4_landscape') maxRowsPerCol = 18;
+            else if (this.format === 'A5_portrait') maxRowsPerCol = 20;
+            else if (this.format === 'A5_landscape') maxRowsPerCol = 10;
 
             this.sections.forEach(sec => {
                 let rowsPerSlice = maxRowsPerCol * this.columns;
@@ -463,6 +532,7 @@
                         <div class="preview-columns-container" style="grid-template-columns: repeat(${this.columns}, 1fr);">
                             ${columnsHtml}
                         </div>
+                        ${renderFooter()}
                     `;
                     preview.appendChild(page);
                 }
