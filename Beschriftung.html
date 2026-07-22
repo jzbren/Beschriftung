@@ -150,7 +150,7 @@
 <body>
 
     <div class="toolbar">
-        <div class="toolbar-title">Beschriftung V1.3</div>
+        <div class="toolbar-title">Beschriftung V1.4</div>
         <button class="btn-success" onclick="app.addPanel()">
             <img src="icons/Plus.svg"> Panel
         </button>
@@ -197,8 +197,8 @@
             <h3>Globale Layout Einstellungen</h3>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f9f9f9; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-                <div class="form-group"><label>Breite (mm):</label><input type="number" id="cfgWidth" onchange="app.updateConfig()"></div>
-                <div class="form-group"><label>Höhe (mm):</label><input type="number" id="cfgHeight" onchange="app.updateConfig()"></div>
+                <div class="form-group"><label>Tasten Breite (mm):</label><input type="number" id="cfgWidth" onchange="app.updateConfig()"></div>
+                <div class="form-group"><label>Tasten Höhe (mm):</label><input type="number" id="cfgHeight" onchange="app.updateConfig()"></div>
                 <div class="form-group"><label>Spalten:</label><input type="number" id="cfgCols" onchange="app.updateConfig()"></div>
                 <div class="form-group"><label>Panel-Randfarbe:</label><select id="cfgBorderColor" onchange="app.updateConfig()"></select></div>
             </div>
@@ -213,22 +213,23 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                 <h4 style="grid-column: span 3; margin: 0 0 -5px 0;">Zusatzzeile (Kopf/Fuß)</h4>
+                <div class="form-group"><label>Höhe (mm):</label><input type="number" id="cfgHeaderHeight" onchange="app.updateConfig()" placeholder="Auto"></div>
+                <div class="form-group"><label>Textgröße:</label><input type="number" id="cfgHeaderFontSize" onchange="app.updateConfig()"></div>
+                <div class="form-group"><label>Sym. Größe:</label><input type="number" id="cfgHeaderSymbolSize" onchange="app.updateConfig()" placeholder="Auto"></div>
+                
                 <div class="form-group"><label>Sym L:</label><select id="cfgHeaderSymbolL" class="symbol-select" onchange="app.updateConfig()"></select></div>
                 <div class="form-group"><label>Sym Mitte:</label><select id="cfgHeaderSymbolC" class="symbol-select" onchange="app.updateConfig()"></select></div>
                 <div class="form-group"><label>Sym R:</label><select id="cfgHeaderSymbolR" class="symbol-select" onchange="app.updateConfig()"></select></div>
                 
-                <div class="form-group"><label>Textgröße:</label><input type="number" id="cfgHeaderFontSize" onchange="app.updateConfig()"></div>
-                <div class="form-group"><label>Sym. Größe:</label><input type="number" id="cfgHeaderSymbolSize" onchange="app.updateConfig()" placeholder="Auto"></div>
                 <div class="form-group"><label>Position:</label>
                     <select id="cfgTitlePosition" onchange="app.updateConfig()">
                         <option value="top">Oben</option>
                         <option value="bottom">Unten</option>
                     </select>
                 </div>
-                
                 <div class="form-group"><label>Textfarbe:</label><select id="cfgHeaderTextColor" onchange="app.updateConfig()"></select></div>
                 <div class="form-group"><label>Symbol Farbe:</label><select id="cfgHeaderSymbolColor" onchange="app.updateConfig()"></select></div>
-                <div class="form-group"><label>Hintergrund:</label><select id="cfgHeaderBgColor" onchange="app.updateConfig()"></select></div>
+                <div class="form-group" style="grid-column: span 3;"><label>Hintergrund:</label><select id="cfgHeaderBgColor" onchange="app.updateConfig()"></select></div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
@@ -640,13 +641,11 @@
 
                 const wrapper = document.createElement('div');
                 wrapper.className = 'custom-select-wrapper';
-                
-                // Flexible Breite: Etwas schmaler, da wir jetzt 3 Dropdowns in einer Zeile haben
-                wrapper.style.cssText = 'position:relative; width: 115px; flex-shrink: 0;';
+                wrapper.style.cssText = 'position:relative; width: 130px; flex-shrink: 0;';
 
                 const btn = document.createElement('div');
                 btn.className = 'custom-select-btn';
-                btn.title = selectElement.title || ''; // Übernimmt den Titel (Tooltip)
+                btn.title = selectElement.title || '';
                 
                 const selectedOpt = selectElement.options[selectElement.selectedIndex];
                 const initialText = selectedOpt ? selectedOpt.text : '-- Nichts --';
@@ -783,7 +782,7 @@
 
         const app = {
             config: {
-                width: 35, height: 5, columns: 7, fontSize: 12, headerFontSize: 16, headerSymbolSize: '', labelSymbolSize: '',
+                width: 35, height: 5, headerHeight: '', columns: 7, fontSize: 12, headerFontSize: 16, headerSymbolSize: '', labelSymbolSize: '',
                 paddingX: 3, 
                 textColorHex: '#000000', backgroundColorHex: '#ffffff', borderColorHex: '#000000',
                 headerSymbolL: '--', headerSymbolC: '--', headerSymbolR: '--',
@@ -798,6 +797,7 @@
             init() {
                 document.getElementById('cfgWidth').value = this.config.width;
                 document.getElementById('cfgHeight').value = this.config.height;
+                document.getElementById('cfgHeaderHeight').value = this.config.headerHeight !== undefined ? this.config.headerHeight : '';
                 document.getElementById('cfgCols').value = this.config.columns;
                 document.getElementById('cfgFontSize').value = this.config.fontSize;
                 document.getElementById('cfgHeaderFontSize').value = this.config.headerFontSize;
@@ -834,7 +834,6 @@
                 if(this.groups.length === 0) this.addPanel();
                 this.render();
 
-                // UI-Sync für die Custom Dropdowns in den Global Settings nach dem Laden
                 const updateUI = (id, val) => {
                     const sel = document.getElementById(id);
                     if(sel && sel.dataset.customized) {
@@ -851,6 +850,7 @@
             updateConfig() {
                 this.config.width = parseInt(document.getElementById('cfgWidth').value) || 40;
                 this.config.height = parseInt(document.getElementById('cfgHeight').value) || 15;
+                this.config.headerHeight = document.getElementById('cfgHeaderHeight').value ? parseInt(document.getElementById('cfgHeaderHeight').value) : '';
                 this.config.columns = parseInt(document.getElementById('cfgCols').value) || 3;
                 this.config.fontSize = parseInt(document.getElementById('cfgFontSize').value) || 12;
                 this.config.headerFontSize = parseInt(document.getElementById('cfgHeaderFontSize').value) || 16;
@@ -899,6 +899,9 @@
                     g.fontSize = this.config.fontSize;
                     g.headerFontSize = this.config.headerFontSize;
                     g.headerSymbolSize = this.config.headerSymbolSize;
+                    g.headerHeight = this.config.headerHeight;
+                    g.width = this.config.width;
+                    g.height = this.config.height;
                     g.paddingX = this.config.paddingX; 
                     g.gridVert = this.config.gridVert;
                     g.gridHorz = this.config.gridHorz;
@@ -927,7 +930,7 @@
                     headerSymbolColorHex: this.config.headerSymbolColorHex || this.config.headerTextColorHex || '#000000',
                     headerBackgroundColorHex: this.config.headerBackgroundColorHex || '#ffffff',
                     titlePosition: this.config.titlePosition || 'top',
-                    fontSize: '', headerFontSize: '', headerSymbolSize: this.config.headerSymbolSize || '', paddingX: '',
+                    fontSize: '', headerFontSize: '', headerSymbolSize: this.config.headerSymbolSize || '', headerHeight: '', width: '', height: '', paddingX: '',
                     gridVert: this.config.gridVert !== false, gridHorz: this.config.gridHorz !== false,
                     labels: [this.createLabel()]
                 });
@@ -1074,7 +1077,7 @@
                             headerSymbolColorHex: this.config.headerSymbolColorHex || this.config.headerTextColorHex || '#000000',
                             headerBackgroundColorHex: this.config.headerBackgroundColorHex || '#ffffff',
                             titlePosition: this.config.titlePosition || 'top',
-                            fontSize: '', headerFontSize: '', headerSymbolSize: this.config.headerSymbolSize || '', paddingX: '',
+                            fontSize: '', headerFontSize: '', headerSymbolSize: this.config.headerSymbolSize || '', headerHeight: '', width: '', height: '', paddingX: '',
                             gridVert: this.config.gridVert !== false, gridHorz: this.config.gridHorz !== false,
                             labels: []
                         };
@@ -1144,7 +1147,7 @@
                             headerSymbolColorHex: this.config.headerSymbolColorHex || this.config.headerTextColorHex || '#000000',
                             headerBackgroundColorHex: this.config.headerBackgroundColorHex || '#ffffff',
                             titlePosition: barPosition,
-                            fontSize: '', headerFontSize: '', headerSymbolSize: this.config.headerSymbolSize || '', paddingX: '',
+                            fontSize: '', headerFontSize: '', headerSymbolSize: this.config.headerSymbolSize || '', headerHeight: '', width: '', height: '', paddingX: '',
                             gridVert: this.config.gridVert !== false, gridHorz: this.config.gridHorz !== false,
                             labels: []
                         };
@@ -1244,13 +1247,13 @@
                         const data = JSON.parse(e.target.result);
                         if (data.config) {
                             Object.assign(this.config, data.config);
-                            // Rückwärtskompatibilität für neue Werte
                             if (this.config.paddingX === undefined) this.config.paddingX = 1;
                             if (this.config.headerSymbolColorHex === undefined) {
                                 this.config.headerSymbolColorHex = this.config.headerTextColorHex || '#000000';
                             }
                             if (this.config.headerSymbolC === undefined) this.config.headerSymbolC = '--';
                             if (this.config.labelSymbolSize === undefined) this.config.labelSymbolSize = '';
+                            if (this.config.headerHeight === undefined) this.config.headerHeight = '';
                         }
                         if (data.groups) {
                             data.groups.forEach(g => {
@@ -1259,6 +1262,9 @@
                                     g.headerSymbolColorHex = g.headerTextColorHex || '#000000';
                                 }
                                 if(g.headerSymbolC === undefined) g.headerSymbolC = '--';
+                                if(g.headerHeight === undefined) g.headerHeight = '';
+                                if(g.width === undefined) g.width = '';
+                                if(g.height === undefined) g.height = '';
                                 
                                 g.labels.forEach(l => {
                                     if(l.symbolC === undefined) l.symbolC = '--';
@@ -1331,10 +1337,13 @@
                                     <div class="form-group"><label>Textfarbe:</label><select onchange="app.updateData('group', ${group.id}, null, 'headerTextColorHex', this.value)">${getColorOptions(group.headerTextColorHex || this.config.headerTextColorHex || '#000000')}</select></div>
                                     <div class="form-group"><label>Symbol Farbe:</label><select onchange="app.updateData('group', ${group.id}, null, 'headerSymbolColorHex', this.value)">${getColorOptions(group.headerSymbolColorHex || group.headerTextColorHex || this.config.headerTextColorHex || '#000000')}</select></div>
                                     <div class="form-group"><label>HG:</label><select onchange="app.updateData('group', ${group.id}, null, 'headerBackgroundColorHex', this.value)">${getColorOptions(group.headerBackgroundColorHex || this.config.headerBackgroundColorHex || '#ffffff')}</select></div>
+                                    <div class="form-group"><label>Höhe:</label><input type="number" placeholder="Auto" value="${group.headerHeight || ''}" oninput="app.updateData('group', ${group.id}, null, 'headerHeight', this.value)" style="width: 55px;"></div>
                                     <div class="form-group"><label>Größe:</label><input type="number" placeholder="Global" value="${group.headerFontSize || ''}" oninput="app.updateData('group', ${group.id}, null, 'headerFontSize', this.value)" style="width: 55px;"></div>
                                     <div class="form-group"><label>Sym-Größe:</label><input type="number" placeholder="Auto" value="${group.headerSymbolSize || ''}" oninput="app.updateData('group', ${group.id}, null, 'headerSymbolSize', this.value)" style="width: 55px;"></div>
 
                                     <div style="width: 100%; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px; margin-top: 5px; font-weight: bold; font-size: 12px; color: var(--primary);">TASTEN (PANEL STANDARD)</div>
+                                    <div class="form-group"><label>Breite:</label><input type="number" placeholder="Global" value="${group.width || ''}" oninput="app.updateData('group', ${group.id}, null, 'width', this.value)" style="width: 55px;"></div>
+                                    <div class="form-group"><label>Höhe:</label><input type="number" placeholder="Global" value="${group.height || ''}" oninput="app.updateData('group', ${group.id}, null, 'height', this.value)" style="width: 55px;"></div>
                                     <div class="form-group"><label>Text Farbe:</label><select onchange="app.updateData('group', ${group.id}, null, 'textColorHex', this.value)">${getColorOptions(group.textColorHex)}</select></div>
                                     <div class="form-group"><label>Hintergrund:</label><select onchange="app.updateData('group', ${group.id}, null, 'backgroundColorHex', this.value)">${getColorOptions(group.backgroundColorHex)}</select></div>
                                     <div class="form-group"><label>Rahmen:</label><select onchange="app.updateData('group', ${group.id}, null, 'borderColorHex', this.value)">${getColorOptions(group.borderColorHex || this.config.borderColorHex)}</select></div>
@@ -1368,10 +1377,6 @@
                                                 ${renderDropdown(label.symbolL)}
                                             </select>
                                             
-                                            <select class="symbol-select" title="Mitte (Anstelle Text)" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolC', this.value)">
-                                                ${renderDropdown(label.symbolC || '--')}
-                                            </select>
-                                            
                                             <input type="text" placeholder="Text..." value="${label.text}" oninput="app.updateData('label', ${group.id}, ${label.id}, 'text', this.value)">
                                             
                                             <select class="symbol-select" title="Rechts" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolR', this.value)">
@@ -1392,6 +1397,7 @@
                                         <div class="settings-row" id="settings-label-${label.id}">
                                             <label><input type="checkbox" ${label.isBold ? 'checked' : ''} onchange="app.updateData('label', ${group.id}, ${label.id}, 'isBold', this.checked)"> Fett</label>
                                             <label><input type="checkbox" ${label.isUnderline ? 'checked' : ''} onchange="app.updateData('label', ${group.id}, ${label.id}, 'isUnderline', this.checked)"> Unterstrichen</label>
+                                            <div class="form-group"><label>Sym Mitte:</label><select class="symbol-select" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolC', this.value)">${renderDropdown(label.symbolC || '--')}</select></div>
                                             <div class="form-group" title="Wenn leer, wird Panel/Global Größe genutzt"><label>Text Größe:</label><input type="number" placeholder="Auto" value="${label.customFontSize || ''}" oninput="app.updateData('label', ${group.id}, ${label.id}, 'customFontSize', this.value)"></div>
                                             <div class="form-group" title="Wenn leer, wird Panel/Global Größe genutzt"><label>Sym. Größe:</label><input type="number" placeholder="Auto" value="${label.customSymbolSize || ''}" oninput="app.updateData('label', ${group.id}, ${label.id}, 'customSymbolSize', this.value)"></div>
                                             <div class="form-group"><label>Text:</label><select onchange="app.updateData('label', ${group.id}, ${label.id}, 'textColorHex', this.value)">${getColorOptions(label.textColorHex)}</select></div>
@@ -1420,11 +1426,15 @@
                 if (this.config.layoutMode === 'grid') preview.classList.add('layout-grid');
                 if (this.config.printGap) preview.classList.add('with-gap');
 
-                const { width, height, columns, fontSize, headerFontSize, borderColorHex } = this.config;
+                const { width, height, headerHeight, columns, fontSize, headerFontSize, borderColorHex } = this.config;
                 const globalPadX = this.config.paddingX !== undefined ? this.config.paddingX : 1;
-                const globalLabelSymSize = this.config.labelSymbolSize; // Globale Symbolgröße der Tasten
+                const globalLabelSymSize = this.config.labelSymbolSize;
 
                 this.groups.forEach(group => {
+                    const pWidth = group.width || width;
+                    const pHeight = group.height || height;
+                    const pHeaderHeight = (group.headerHeight !== undefined && group.headerHeight !== '') ? group.headerHeight : (headerHeight !== '' ? headerHeight : pHeight);
+
                     const pBorderCol = group.borderColorHex || borderColorHex || '#000000';
                     const pHeadSize = group.headerFontSize || headerFontSize;
                     const pFontSize = group.fontSize || fontSize;
@@ -1435,7 +1445,7 @@
                     const hC = group.headerCenter !== undefined ? group.headerCenter : '';
                     const hR = group.headerRight || '';
 
-                    let groupHtml = `<div class="preview-panel" style="--preview-border: ${pBorderCol}; width: ${columns * width}mm;">`;
+                    let groupHtml = `<div class="preview-panel" style="--preview-border: ${pBorderCol}; width: ${columns * pWidth}mm;">`;
                     
                     let barHtml = '';
                     if (hL.trim() !== "" || hC.trim() !== "" || hR.trim() !== "" || (group.headerSymbolL && group.headerSymbolL !== '--') || (group.headerSymbolC && group.headerSymbolC !== '--') || (group.headerSymbolR && group.headerSymbolR !== '--')) {
@@ -1443,7 +1453,6 @@
                         const hSymbolColor = group.headerSymbolColorHex || group.headerTextColorHex || this.config.headerSymbolColorHex || this.config.headerTextColorHex || '#000000';
                         const hBgColor = group.headerBackgroundColorHex || this.config.headerBackgroundColorHex || '#ffffff';
 
-                        // Separate Symbolgröße berechnen (Fallback auf globale Symbolgröße -> dann auf Textgröße)
                         const pHeadSymSize = group.headerSymbolSize || this.config.headerSymbolSize || pHeadSize;
 
                         const symLeftHTML = (group.headerSymbolL && group.headerSymbolL !== '--' && group.headerSymbolL !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${pHeadSymSize}px; color: ${hSymbolColor}; padding-right: 5px;">${renderSymbol(group.headerSymbolL)}</span>` : '';
@@ -1460,13 +1469,12 @@
                         const barBorderTop = (group.titlePosition === 'bottom' && group.gridHorz) ? `1px solid ${pBorderCol}` : 'none';
                         const barBorderBottom = (group.titlePosition !== 'bottom' && group.gridHorz) ? `1px solid ${pBorderCol}` : 'none';
 
-                        // padding: 0 ${padX}mm; sorgt dafür, dass die Kopfzeile exakt denselben Randabstand hat wie die Etiketten darunter!
-                        barHtml = `<div class="preview-panel-bar" style="height: ${height}mm; background-color: ${hBgColor}; color: ${hTextColor}; font-size: ${pHeadSize}px; border-top: ${barBorderTop}; border-bottom: ${barBorderBottom}; padding: 0 ${padX}mm;">${innerColumns}</div>`;
+                        barHtml = `<div class="preview-panel-bar" style="height: ${pHeaderHeight}mm; background-color: ${hBgColor}; color: ${hTextColor}; font-size: ${pHeadSize}px; border-top: ${barBorderTop}; border-bottom: ${barBorderBottom}; padding: 0 ${padX}mm;">${innerColumns}</div>`;
                     }
                     
                     if (group.titlePosition !== 'bottom') groupHtml += barHtml;
                     
-                    groupHtml += `<div class="preview-grid" style="grid-template-columns: repeat(${columns}, ${width}mm);">`;
+                    groupHtml += `<div class="preview-grid" style="grid-template-columns: repeat(${columns}, ${pWidth}mm);">`;
 
                     const vertStyle = group.gridVert ? `1px solid ${pBorderCol}` : 'none';
                     const horzStyle = group.gridHorz ? `1px solid ${pBorderCol}` : 'none';
@@ -1476,7 +1484,6 @@
                         const styleTextD = label.isUnderline ? 'underline' : 'none';
                         const actFontSize = label.customFontSize ? label.customFontSize : pFontSize;
                         
-                        // Spezifische Symbolgröße berechnen
                         const actSymSize = label.customSymbolSize ? label.customSymbolSize : (globalLabelSymSize ? globalLabelSymSize : actFontSize);
                         
                         const isLastCol = (index % columns) === (columns - 1);
@@ -1486,12 +1493,12 @@
                         const currentHorzStyle = isLastRow ? 'none' : horzStyle;
                         
                         const symLeftHTML = (label.symbolL && label.symbolL !== '--' && label.symbolL !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actSymSize}px; padding-left: ${padX}mm; padding-right: 2px;">${renderSymbol(label.symbolL)}</span>` : '';
-                        const symCenterHTML = (label.symbolC && label.symbolC !== '--' && label.symbolC !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actSymSize}px;">${renderSymbol(label.symbolC)}</span>` : '';
+                        const symCenterHTML = (label.symbolC && label.symbolC !== '--' && label.symbolC !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actSymSize}px; padding-right: 2px;">${renderSymbol(label.symbolC)}</span>` : '';
                         const symRightHTML = (label.symbolR && label.symbolR !== '--' && label.symbolR !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actSymSize}px; padding-right: ${padX}mm; padding-left: 2px;">${renderSymbol(label.symbolR)}</span>` : '';
 
                     groupHtml += `
                         <div class="preview-label" style="
-                            width: ${width}mm; height: ${height}mm; 
+                            width: ${pWidth}mm; height: ${pHeight}mm; 
                             background-color: ${label.backgroundColorHex}; color: ${label.textColorHex}; 
                             border-right: ${currentVertStyle}; border-bottom: ${currentHorzStyle};">
                             ${symLeftHTML}
