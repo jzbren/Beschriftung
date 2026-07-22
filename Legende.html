@@ -124,7 +124,7 @@
             font-weight: bold;
             font-size: 15px;
             color: #000;
-            
+            text-decoration: underline; /* Unterstreichung hier hinzugefügt */
             margin-top: 12px;
             margin-bottom: 6px;   
             width: 100%;
@@ -170,7 +170,7 @@
 <body>
 
     <div class="toolbar">
-        <div class="toolbar-title">Legenden Generator V1.2</div>
+        <div class="toolbar-title">Legenden Generator V1.3</div>
         
         <div style="display: flex; align-items: center; gap: 5px;">
             <label style="font-size: 13px; font-weight: bold;">Format:</label>
@@ -239,7 +239,9 @@
     <script>
     const SVGs = {
         pageBreak: `<svg viewBox="0 0 24 24"><path d="M4 19h16v2H4zM4 3h16v2H4zm5 4h6v4h3l-6 5-6-5h3z"/></svg>`,
-        heading: `<svg viewBox="0 0 24 24"><path d="M5 4v3h5.5v12h3V7H19V4z"/></svg>`
+        heading: `<svg viewBox="0 0 24 24"><path d="M5 4v3h5.5v12h3V7H19V4z"/></svg>`,
+        arrowUp: `<svg viewBox="0 0 24 24"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>`,
+        arrowDown: `<svg viewBox="0 0 24 24"><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`
     };
 
     function renderRSKLogo() {
@@ -391,6 +393,53 @@
                 }
             }
         },
+        
+        // NEU: Umschalten zwischen Zeile und Überschrift
+        toggleRowType(secId, rowId) {
+            const sec = this.sections.find(s => s.id === secId);
+            if(sec) {
+                const row = sec.rows.find(r => r.id === rowId);
+                if(row) {
+                    if (row.type === 'heading') {
+                        row.type = 'row';
+                        if (row.text) row.right = row.text;
+                    } else {
+                        row.type = 'heading';
+                        if (row.right) row.text = row.right;
+                        else if (row.left) row.text = row.left;
+                    }
+                    this.render();
+                }
+            }
+        },
+
+        // NEU: Zeile nach oben verschieben
+        moveRowUp(secId, rowId) {
+            const sec = this.sections.find(s => s.id === secId);
+            if(sec) {
+                const idx = sec.rows.findIndex(r => r.id === rowId);
+                if(idx > 0) {
+                    const temp = sec.rows[idx];
+                    sec.rows[idx] = sec.rows[idx - 1];
+                    sec.rows[idx - 1] = temp;
+                    this.render();
+                }
+            }
+        },
+
+        // NEU: Zeile nach unten verschieben
+        moveRowDown(secId, rowId) {
+            const sec = this.sections.find(s => s.id === secId);
+            if(sec) {
+                const idx = sec.rows.findIndex(r => r.id === rowId);
+                if(idx < sec.rows.length - 1) {
+                    const temp = sec.rows[idx];
+                    sec.rows[idx] = sec.rows[idx + 1];
+                    sec.rows[idx + 1] = temp;
+                    this.render();
+                }
+            }
+        },
 
         updateSecData(secId, field, val) {
             const sec = this.sections.find(s => s.id === secId);
@@ -471,7 +520,6 @@
                         this.columns = parsed.columns || 1;
                         this.sections = parsed.sections || [];
                     }
-                    // Rückwärtskompatibilität für alte Speicherstände anpassen
                     this.sections.forEach(sec => {
                         sec.rows.forEach(r => {
                             if(!r.type) r.type = "row";
@@ -538,7 +586,14 @@
                                 return `
                                 <div class="row-item ${row.type === 'heading' ? 'is-heading' : ''}">
                                     <button class="icon-btn pagebreak ${row.pageBreak ? 'active' : ''}" onclick="app.togglePageBreak(${sec.id}, ${row.id})" title="Seitenumbruch vor diesem Element erzwingen">${SVGs.pageBreak}</button>
+                                    
+                                    <button class="icon-btn" onclick="app.toggleRowType(${sec.id}, ${row.id})" title="Zwischen Zeile und Überschrift wechseln" style="${row.type === 'heading' ? 'color: var(--primary);' : ''}">${SVGs.heading}</button>
+                                    
                                     ${contentHtml}
+                                    
+                                    <button class="icon-btn" onclick="app.moveRowUp(${sec.id}, ${row.id})" title="Nach oben verschieben">${SVGs.arrowUp}</button>
+                                    <button class="icon-btn" onclick="app.moveRowDown(${sec.id}, ${row.id})" title="Nach unten verschieben">${SVGs.arrowDown}</button>
+                                    
                                     <button class="icon-btn duplicate" onclick="app.duplicateRow(${sec.id}, ${row.id})" title="Duplizieren"><img src="icons/Dublizieren.svg" onerror="this.style.display='none'; this.nextSibling.textContent='D'"></button>
                                     <button class="icon-btn delete" onclick="app.removeRow(${sec.id}, ${row.id})" title="Löschen"><img src="icons/Papierkorb.svg" onerror="this.style.display='none'; this.nextSibling.textContent='-'"></button>
                                 </div>
@@ -575,15 +630,12 @@
             else if (this.format === 'A5_landscape') maxRowsPerCol = 10;
 
             this.sections.forEach(sec => {
-                
-                // Intelligenter Page-Builder (anstatt starrem Slicing)
                 let pagesData = [];
                 let currentPage = { cols: Array.from({ length: this.columns }, () => []) };
                 let currentColumnIndex = 0;
                 let currentRowsInColumn = 0;
 
                 sec.rows.forEach((item, index) => {
-                    // Prüfen ob manueller Seitenumbruch gefordert ist (aber nicht beim allerersten Element)
                     if (item.pageBreak && index !== 0) {
                         pagesData.push(currentPage);
                         currentPage = { cols: Array.from({ length: this.columns }, () => []) };
@@ -591,11 +643,9 @@
                         currentRowsInColumn = 0;
                     }
 
-                    // Prüfen ob aktuelle Spalte voll ist
                     if (currentRowsInColumn >= maxRowsPerCol) {
                         currentColumnIndex++;
                         currentRowsInColumn = 0;
-                        // Prüfen ob Seite voll ist
                         if (currentColumnIndex >= this.columns) {
                             pagesData.push(currentPage);
                             currentPage = { cols: Array.from({ length: this.columns }, () => []) };
@@ -603,19 +653,14 @@
                         }
                     }
 
-                    // Element in aktuelle Spalte einfügen
                     currentPage.cols[currentColumnIndex].push(item);
-
-                    // Eine Überschrift nimmt kalkulatorisch etwas mehr Platz ein, damit sie nicht ganz unten klebt
                     currentRowsInColumn += (item.type === 'heading' ? 1.5 : 1);
                 });
                 
-                // Letzte Seite hinzufügen, falls sie Inhalt hat
                 if (currentPage.cols.some(c => c.length > 0)) {
                     pagesData.push(currentPage);
                 }
 
-                // Render die berechneten Seiten
                 pagesData.forEach((pageData, pageIndex) => {
                     const page = document.createElement('div');
                     page.className = 'page-preview';
@@ -642,7 +687,6 @@
                         columnsHtml += `<div class="preview-single-column">${colRowsHtml}</div>`;
                     });
 
-                    // Kopfzeilen nur auf der ersten Seite des Abschnitts
                     let titleHtml = '';
                     if (pageIndex === 0) {
                         let backupFuseHtml = sec.backupFuse ? `<div class="preview-backup-fuse">${sec.backupFuse}</div>` : '';
