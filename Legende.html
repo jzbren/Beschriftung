@@ -86,22 +86,23 @@
 
         .preview-header { margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 12px; }
         
-        /* Streng ausgerichteter Header mit rotem Logo */
+        /* Streng ausgerichteter Header mit garantiert rotem Logo */
         .preview-logo-container { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
         .preview-logo { width: 34px; height: 34px; color: #dc3545; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .preview-logo svg { width: 100%; height: 100%; fill: currentColor; display: block; }
+        .preview-logo svg { width: 100%; height: 100%; fill: #dc3545 !important; display: block; }
+        .preview-logo svg * { fill: #dc3545 !important; }
         .preview-logo-text { font-size: 10px; font-weight: bold; letter-spacing: 2px; color: #555; text-transform: uppercase; line-height: 1.15; display: flex; flex-direction: column; justify-content: center; }
         
         .preview-title { font-size: 16px; font-weight: bold; text-decoration: underline; margin-bottom: 4px; color: #000; }
         .preview-subtitle { font-size: 13px; font-weight: bold; text-decoration: underline; color: #333; margin-bottom: 15px; }
 
-        /* Multi-Spalten Container per Grid (füllt Spalte 1 komplett von oben nach unten) */
         .preview-columns-container { display: grid; gap: 20px; flex: 1; align-content: start; }
         .preview-single-column { display: flex; flex-direction: column; gap: 5px; }
 
-        .preview-row { display: flex; font-size: 12.5px; line-height: 1.35; break-inside: avoid; page-break-inside: avoid; }
-        .preview-col-left { width: 70px; font-weight: bold; color: #000; flex-shrink: 0; }
-        .preview-col-right { flex: 1; color: #222; overflow: hidden; text-overflow: ellipsis; }
+        /* Einheitliche Zeilenhöhe auch bei leeren Feldern */
+        .preview-row { display: flex; font-size: 12.5px; line-height: 1.35; min-height: 18px; break-inside: avoid; page-break-inside: avoid; }
+        .preview-col-left { width: 70px; font-weight: bold; color: #000; flex-shrink: 0; min-height: 18px; }
+        .preview-col-right { flex: 1; color: #222; overflow: hidden; text-overflow: ellipsis; min-height: 18px; }
 
         @media print {
             body { display: block; overflow: visible; background: white; }
@@ -115,7 +116,7 @@
 <body>
 
     <div class="toolbar">
-        <div class="toolbar-title">Legenden Generator V1.0</div>
+        <div class="toolbar-title">Legenden Generator V1.5</div>
         
         <div style="display: flex; align-items: center; gap: 5px;">
             <label style="font-size: 13px; font-weight: bold;">Format:</label>
@@ -415,14 +416,12 @@
             const cssPrintFmt = this.format.replace('_', ' ');
             styleTag.innerHTML = `@media print { @page { size: ${cssPrintFmt}; margin: 0; } }`;
 
-            // Maximale Zeilen pro Spalte basierend auf Format berechnen, um Überläufe zu verhindern
-            let maxRowsPerCol = 38; // A4 Hochformat Standard
+            let maxRowsPerCol = 38;
             if (this.format === 'A4_landscape') maxRowsPerCol = 22;
             else if (this.format === 'A5_portrait') maxRowsPerCol = 24;
             else if (this.format === 'A5_landscape') maxRowsPerCol = 14;
 
             this.sections.forEach(sec => {
-                // Teile alle Zeilen des Abschnitts in Seiten und Spalten auf
                 let rowsPerSlice = maxRowsPerCol * this.columns;
                 
                 for (let i = 0; i < sec.rows.length; i += rowsPerSlice) {
@@ -434,11 +433,10 @@
                     page.style.minHeight = height;
                     page.style.padding = padding;
 
-                    // Berechne Spalten-Arrays exakt so, dass Spalte 1 zuerst komplett gefüllt wird!
                     let colsData = Array.from({ length: this.columns }, () => []);
                     pageRows.forEach((r, idx) => {
                         let targetCol = Math.floor(idx / maxRowsPerCol);
-                        if (targetCol >= this.columns) targetCol = this.columns - 1; // Fallback
+                        if (targetCol >= this.columns) targetCol = this.columns - 1;
                         colsData[targetCol].push(r);
                     });
 
@@ -446,9 +444,11 @@
                     colsData.forEach(colRows => {
                         let colRowsHtml = '';
                         colRows.forEach(r => {
+                            let leftVal = (r.left !== undefined && r.left !== '') ? r.left : '&nbsp;';
+                            let rightVal = (r.right !== undefined && r.right !== '') ? r.right : '&nbsp;';
                             colRowsHtml += `<div class="preview-row">
-                                                <div class="preview-col-left">${r.left}</div>
-                                                <div class="preview-col-right">${r.right}</div>
+                                                <div class="preview-col-left">${leftVal}</div>
+                                                <div class="preview-col-right">${rightVal}</div>
                                              </div>`;
                         });
                         columnsHtml += `<div class="preview-single-column">${colRowsHtml}</div>`;
