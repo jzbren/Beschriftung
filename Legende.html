@@ -106,10 +106,9 @@
             mask: url('icons/RSK.svg') no-repeat center / contain; 
         }
         
-        .preview-logo-text { font-size: 11px; font-weight: bold; letter-spacing: 2.5px; color: #444; text-transform: uppercase; line-height: 1.15; display: flex; flex-direction: column; justify-content: center; margin-top: 2px;}
-        
         .preview-title { font-size: 16px; font-weight: bold; text-decoration: underline; margin-bottom: 4px; color: #000; }
-        .preview-subtitle { font-size: 13px; font-weight: bold; text-decoration: underline; color: #333; margin-bottom: 15px; }
+        .preview-subtitle { font-size: 13px; font-weight: bold; text-decoration: underline; color: #333; margin-bottom: 8px; }
+        .preview-backup-fuse { font-size: 12px; font-weight: bold; color: #444; margin-bottom: 15px; background: #f0f0f0; padding: 4px 8px; border-radius: 3px; display: inline-block; border-left: 3px solid var(--danger); }
 
         .preview-columns-container { display: grid; gap: 20px; flex: 1; align-content: start; }
         .preview-single-column { display: flex; flex-direction: column; gap: 5px; }
@@ -158,7 +157,7 @@
 <body>
 
     <div class="toolbar">
-        <div class="toolbar-title">Legenden Generator V1.1</div>
+        <div class="toolbar-title">Legenden Generator V1.0</div>
         
         <div style="display: flex; align-items: center; gap: 5px;">
             <label style="font-size: 13px; font-weight: bold;">Format:</label>
@@ -301,6 +300,7 @@
                 id: Date.now(),
                 title: "Legende: HV Allgemein",
                 subtitle: "Strasse, Geschoss, Wohnung",
+                backupFuse: "Vorsicherung: ab HV F5",
                 rows: [{ id: Date.now()+1, left: "F01", right: "Beschreibung..." }]
             });
             this.render();
@@ -386,6 +386,7 @@
                     id: Date.now(),
                     title: "Legende: Import",
                     subtitle: "Objekt / Verteiler",
+                    backupFuse: "Vorsicherung: ab HV F5",
                     rows: newRows
                 });
             }
@@ -445,6 +446,9 @@
             editor.innerHTML = '';
 
             this.sections.forEach(sec => {
+                // Fallback für ältere gespeicherte Daten ohne backupFuse
+                if(sec.backupFuse === undefined) sec.backupFuse = "";
+
                 const card = document.createElement('div');
                 card.className = 'legend-card';
                 card.innerHTML = `
@@ -452,6 +456,7 @@
                         <div class="legend-header-inputs">
                             <input type="text" class="main-title" value="${sec.title}" placeholder="Titel (z.B. Legende: HV)" oninput="app.updateSecData(${sec.id}, 'title', this.value)">
                             <input type="text" value="${sec.subtitle}" placeholder="Untertitel (z.B. Adresse / Ort)" oninput="app.updateSecData(${sec.id}, 'subtitle', this.value)">
+                            <input type="text" value="${sec.backupFuse}" placeholder="Vorsicherung (z.B. Vorsicherung: ab HV F5)" oninput="app.updateSecData(${sec.id}, 'backupFuse', this.value)">
                         </div>
                         <div style="display: flex; gap: 5px;">
                             <button class="icon-btn" onclick="app.addRow(${sec.id})" title="Zeile hinzufügen"><img src="icons/Plus.svg"></button>
@@ -526,17 +531,19 @@
                             colRowsHtml += `<div class="preview-row">
                                                 <div class="preview-col-left">${leftVal}</div>
                                                 <div class="preview-col-right">${rightVal}</div>
-                                             </div>`;
+                                           </div>`;
                         });
                         columnsHtml += `<div class="preview-single-column">${colRowsHtml}</div>`;
                     });
 
-                    // Auf Seite 1 (i === 0) kommt Titel und Untertitel, ab Seite 2 wird der Block weggelassen
+                    // Auf Seite 1 (i === 0) kommt Titel, Untertitel und Vorsicherung, ab Seite 2 wird der Block angepasst
                     let titleHtml = '';
                     if (i === 0) {
+                        let backupFuseHtml = sec.backupFuse ? `<div class="preview-backup-fuse">${sec.backupFuse}</div>` : '';
                         titleHtml = `
                             <div class="preview-title">${sec.title}</div>
                             <div class="preview-subtitle">${sec.subtitle}</div>
+                            ${backupFuseHtml}
                         `;
                     }
 
