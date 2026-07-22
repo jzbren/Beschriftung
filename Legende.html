@@ -81,7 +81,7 @@
         .page-preview {
             background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border-radius: 4px;
             display: flex; flex-direction: column; position: relative; margin-bottom: 20px;
-            box-sizing: border-box;
+            box-sizing: border-box; overflow: hidden;
         }
 
         .preview-header { margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 12px; }
@@ -95,9 +95,11 @@
         .preview-title { font-size: 16px; font-weight: bold; text-decoration: underline; margin-bottom: 4px; color: #000; }
         .preview-subtitle { font-size: 13px; font-weight: bold; text-decoration: underline; color: #333; margin-bottom: 15px; }
 
-        /* Spalten-Layout für die Legenden-Einträge */
-        .preview-list { display: flex; flex-direction: column; gap: 5px; }
-        .preview-row { display: flex; font-size: 12.5px; line-height: 1.35; break-inside: avoid; page-break-inside: avoid; margin-bottom: 4px; }
+        /* Multi-Spalten Container per Grid (füllt Spalte 1 komplett von oben nach unten) */
+        .preview-columns-container { display: grid; gap: 20px; flex: 1; align-content: start; }
+        .preview-single-column { display: flex; flex-direction: column; gap: 5px; }
+
+        .preview-row { display: flex; font-size: 12.5px; line-height: 1.35; break-inside: avoid; page-break-inside: avoid; }
         .preview-col-left { width: 70px; font-weight: bold; color: #000; flex-shrink: 0; }
         .preview-col-right { flex: 1; color: #222; overflow: hidden; text-overflow: ellipsis; }
 
@@ -113,7 +115,7 @@
 <body>
 
     <div class="toolbar">
-        <div class="toolbar-title">Legenden Generator V1.3</div>
+        <div class="toolbar-title">Legenden Generator V1.0</div>
         
         <div style="display: flex; align-items: center; gap: 5px;">
             <label style="font-size: 13px; font-weight: bold;">Format:</label>
@@ -413,35 +415,57 @@
             const cssPrintFmt = this.format.replace('_', ' ');
             styleTag.innerHTML = `@media print { @page { size: ${cssPrintFmt}; margin: 0; } }`;
 
+            // Maximale Zeilen pro Spalte basierend auf Format berechnen, um Überläufe zu verhindern
+            let maxRowsPerCol = 38; // A4 Hochformat Standard
+            if (this.format === 'A4_landscape') maxRowsPerCol = 22;
+            else if (this.format === 'A5_portrait') maxRowsPerCol = 24;
+            else if (this.format === 'A5_landscape') maxRowsPerCol = 14;
+
             this.sections.forEach(sec => {
-                const page = document.createElement('div');
-                page.className = 'page-preview';
-                page.style.width = width;
-                page.style.minHeight = height;
-                page.style.padding = padding;
+                // Teile alle Zeilen des Abschnitts in Seiten und Spalten auf
+                let rowsPerSlice = maxRowsPerCol * this.columns;
                 
-                let rowsHtml = '';
-                sec.rows.forEach(r => {
-                    rowsHtml += `<div class="preview-row">
-                                    <div class="preview-col-left">${r.left}</div>
-                                    <div class="preview-col-right">${r.right}</div>
-                                 </div>`;
-                });
+                for (let i = 0; i < sec.rows.length; i += rowsPerSlice) {
+                    let pageRows = sec.rows.slice(i, i + rowsPerSlice);
+                    
+                    const page = document.createElement('div');
+                    page.className = 'page-preview';
+                    page.style.width = width;
+                    page.style.minHeight = height;
+                    page.style.padding = padding;
 
-                // Spalten-Stile dynamisch je nach Auswahl (1 bis 4 Spalten)
-                const listStyle = `display: ${this.columns > 1 ? 'block' : 'flex'}; flex-direction: ${this.columns > 1 ? 'none' : 'column'}; column-count: ${this.columns}; column-gap: 15px;`;
+                    // Berechne Spalten-Arrays exakt so, dass Spalte 1 zuerst komplett gefüllt wird!
+                    let colsData = Array.from({ length: this.columns }, () => []);
+                    pageRows.forEach((r, idx) => {
+                        let targetCol = Math.floor(idx / maxRowsPerCol);
+                        if (targetCol >= this.columns) targetCol = this.columns - 1; // Fallback
+                        colsData[targetCol].push(r);
+                    });
 
-                page.innerHTML = `
-                    <div class="preview-header">
-                        ${renderRSKLogo()}
-                        <div class="preview-title">${sec.title}</div>
-                        <div class="preview-subtitle">${sec.subtitle}</div>
-                    </div>
-                    <div class="preview-list" style="${listStyle}">
-                        ${rowsHtml}
-                    </div>
-                `;
-                preview.appendChild(page);
+                    let columnsHtml = '';
+                    colsData.forEach(colRows => {
+                        let colRowsHtml = '';
+                        colRows.forEach(r => {
+                            colRowsHtml += `<div class="preview-row">
+                                                <div class="preview-col-left">${r.left}</div>
+                                                <div class="preview-col-right">${r.right}</div>
+                                             </div>`;
+                        });
+                        columnsHtml += `<div class="preview-single-column">${colRowsHtml}</div>`;
+                    });
+
+                    page.innerHTML = `
+                        <div class="preview-header">
+                            ${renderRSKLogo()}
+                            <div class="preview-title">${sec.title}${i > 0 ? ' (Fortsetzung)' : ''}</div>
+                            <div class="preview-subtitle">${sec.subtitle}</div>
+                        </div>
+                        <div class="preview-columns-container" style="grid-template-columns: repeat(${this.columns}, 1fr);">
+                            ${columnsHtml}
+                        </div>
+                    `;
+                    preview.appendChild(page);
+                }
             });
         }
     };
