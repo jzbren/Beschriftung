@@ -114,7 +114,7 @@
         .preview-panel-bar > div { flex: 1; overflow: hidden; text-overflow: clip; }
         .preview-grid { display: grid; gap: 0; }
         .preview-label { display: flex; justify-content: center; align-items: center; box-sizing: border-box; overflow: hidden; padding: 0 1px; }
-        .preview-label-text { flex: 1; text-align: center; white-space: nowrap; overflow: hidden; line-height: 1; font-size: 8px; display: block;}
+        .preview-label-text { flex: 1; text-align: center; white-space: nowrap; overflow: hidden; line-height: 1; font-size: 8px; display: flex; justify-content: center; align-items: center; gap: 3px;}
 
         .icon-btn img {
             width: 16px;
@@ -150,7 +150,7 @@
 <body>
 
     <div class="toolbar">
-        <div class="toolbar-title">Beschriftung V1.2</div>
+        <div class="toolbar-title">Beschriftung V1.3</div>
         <button class="btn-success" onclick="app.addPanel()">
             <img src="icons/Plus.svg"> Panel
         </button>
@@ -211,9 +211,10 @@
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                <h4 style="grid-column: span 2; margin: 0 0 -5px 0;">Zusatzzeile (Kopf/Fuß)</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <h4 style="grid-column: span 3; margin: 0 0 -5px 0;">Zusatzzeile (Kopf/Fuß)</h4>
                 <div class="form-group"><label>Sym L:</label><select id="cfgHeaderSymbolL" class="symbol-select" onchange="app.updateConfig()"></select></div>
+                <div class="form-group"><label>Sym Mitte:</label><select id="cfgHeaderSymbolC" class="symbol-select" onchange="app.updateConfig()"></select></div>
                 <div class="form-group"><label>Sym R:</label><select id="cfgHeaderSymbolR" class="symbol-select" onchange="app.updateConfig()"></select></div>
                 
                 <div class="form-group"><label>Textgröße:</label><input type="number" id="cfgHeaderFontSize" onchange="app.updateConfig()"></div>
@@ -224,15 +225,18 @@
                         <option value="bottom">Unten</option>
                     </select>
                 </div>
+                
                 <div class="form-group"><label>Textfarbe:</label><select id="cfgHeaderTextColor" onchange="app.updateConfig()"></select></div>
                 <div class="form-group"><label>Symbol Farbe:</label><select id="cfgHeaderSymbolColor" onchange="app.updateConfig()"></select></div>
-                <div class="form-group" style="grid-column: span 2;"><label>Hintergrund:</label><select id="cfgHeaderBgColor" onchange="app.updateConfig()"></select></div>
+                <div class="form-group"><label>Hintergrund:</label><select id="cfgHeaderBgColor" onchange="app.updateConfig()"></select></div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <h4 style="grid-column: span 2; margin: 0 0 -5px 0;">Tasten / Labels</h4>
                 <div class="form-group"><label>Randabstand L/R (mm):</label><input type="number" id="cfgPaddingX" onchange="app.updateConfig()" step="0.5" title="Abstand der Symbole vom Rand"></div>
+                <div></div>
                 <div class="form-group"><label>Standard Textgröße:</label><input type="number" id="cfgFontSize" onchange="app.updateConfig()"></div>
+                <div class="form-group"><label>Standard Sym. Größe:</label><input type="number" id="cfgLabelSymbolSize" onchange="app.updateConfig()" placeholder="Auto" title="Größe der Symbole auf Tasten"></div>
                 <div class="form-group"><label>Global Textfarbe:</label><select id="cfgTextColor" onchange="app.updateConfig()"></select></div>
                 <div class="form-group"><label>Global Hintergrund:</label><select id="cfgBgColor" onchange="app.updateConfig()"></select></div>
                 <div class="form-group" style="grid-column: span 2; display: flex; gap: 20px;">
@@ -636,10 +640,13 @@
 
                 const wrapper = document.createElement('div');
                 wrapper.className = 'custom-select-wrapper';
-                wrapper.style.cssText = 'position:relative; width: 140px; flex-shrink: 0;';
+                
+                // Flexible Breite: Etwas schmaler, da wir jetzt 3 Dropdowns in einer Zeile haben
+                wrapper.style.cssText = 'position:relative; width: 115px; flex-shrink: 0;';
 
                 const btn = document.createElement('div');
                 btn.className = 'custom-select-btn';
+                btn.title = selectElement.title || ''; // Übernimmt den Titel (Tooltip)
                 
                 const selectedOpt = selectElement.options[selectElement.selectedIndex];
                 const initialText = selectedOpt ? selectedOpt.text : '-- Nichts --';
@@ -776,10 +783,10 @@
 
         const app = {
             config: {
-                width: 35, height: 5, columns: 7, fontSize: 12, headerFontSize: 16, headerSymbolSize: '', 
+                width: 35, height: 5, columns: 7, fontSize: 12, headerFontSize: 16, headerSymbolSize: '', labelSymbolSize: '',
                 paddingX: 3, 
                 textColorHex: '#000000', backgroundColorHex: '#ffffff', borderColorHex: '#000000',
-                headerSymbolL: '--', headerSymbolR: '--',
+                headerSymbolL: '--', headerSymbolC: '--', headerSymbolR: '--',
                 headerTextColorHex: '#000000', headerSymbolColorHex: '#000000', headerBackgroundColorHex: '#ffffff', titlePosition: 'top',
                 isBold: false, isUnderline: false,
                 layoutMode: 'grid', printGap: false,
@@ -795,10 +802,15 @@
                 document.getElementById('cfgFontSize').value = this.config.fontSize;
                 document.getElementById('cfgHeaderFontSize').value = this.config.headerFontSize;
                 document.getElementById('cfgHeaderSymbolSize').value = this.config.headerSymbolSize || '';
+                document.getElementById('cfgLabelSymbolSize').value = this.config.labelSymbolSize || '';
                 document.getElementById('cfgPaddingX').value = this.config.paddingX !== undefined ? this.config.paddingX : 1;
                 
                 document.getElementById('cfgHeaderSymbolL').innerHTML = renderDropdown(this.config.headerSymbolL || '--');
                 document.getElementById('cfgHeaderSymbolL').value = this.config.headerSymbolL || '--';
+                
+                document.getElementById('cfgHeaderSymbolC').innerHTML = renderDropdown(this.config.headerSymbolC || '--');
+                document.getElementById('cfgHeaderSymbolC').value = this.config.headerSymbolC || '--';
+
                 document.getElementById('cfgHeaderSymbolR').innerHTML = renderDropdown(this.config.headerSymbolR || '--');
                 document.getElementById('cfgHeaderSymbolR').value = this.config.headerSymbolR || '--';
                 
@@ -832,6 +844,7 @@
                     }
                 };
                 updateUI('cfgHeaderSymbolL', this.config.headerSymbolL || '--');
+                updateUI('cfgHeaderSymbolC', this.config.headerSymbolC || '--');
                 updateUI('cfgHeaderSymbolR', this.config.headerSymbolR || '--');
             },
 
@@ -842,9 +855,11 @@
                 this.config.fontSize = parseInt(document.getElementById('cfgFontSize').value) || 12;
                 this.config.headerFontSize = parseInt(document.getElementById('cfgHeaderFontSize').value) || 16;
                 this.config.headerSymbolSize = document.getElementById('cfgHeaderSymbolSize').value ? parseInt(document.getElementById('cfgHeaderSymbolSize').value) : '';
+                this.config.labelSymbolSize = document.getElementById('cfgLabelSymbolSize').value ? parseInt(document.getElementById('cfgLabelSymbolSize').value) : '';
                 this.config.paddingX = parseFloat(document.getElementById('cfgPaddingX').value) || 0;
                 
                 this.config.headerSymbolL = document.getElementById('cfgHeaderSymbolL').value;
+                this.config.headerSymbolC = document.getElementById('cfgHeaderSymbolC').value;
                 this.config.headerSymbolR = document.getElementById('cfgHeaderSymbolR').value;
                 
                 this.config.textColorHex = document.getElementById('cfgTextColor').value;
@@ -874,6 +889,7 @@
                     g.borderColorHex = this.config.borderColorHex;
                     
                     g.headerSymbolL = this.config.headerSymbolL;
+                    g.headerSymbolC = this.config.headerSymbolC;
                     g.headerSymbolR = this.config.headerSymbolR;
                     
                     g.headerTextColorHex = this.config.headerTextColorHex;
@@ -902,7 +918,9 @@
                 this.groups.push({
                     id: Date.now(),
                     headerLeft: '', headerCenter: `Panel ${this.groups.length + 1}`, headerRight: '',
-                    headerSymbolL: this.config.headerSymbolL || '--', headerSymbolR: this.config.headerSymbolR || '--',
+                    headerSymbolL: this.config.headerSymbolL || '--', 
+                    headerSymbolC: this.config.headerSymbolC || '--', 
+                    headerSymbolR: this.config.headerSymbolR || '--',
                     textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
                     borderColorHex: this.config.borderColorHex,
                     headerTextColorHex: this.config.headerTextColorHex || '#000000',
@@ -945,6 +963,7 @@
                             const lbl = this.createLabel();
                             lbl.text = '';
                             lbl.symbolL = '--';
+                            lbl.symbolC = '--';
                             lbl.symbolR = '--';
                             lbl.textColorHex = group.textColorHex;
                             lbl.backgroundColorHex = group.backgroundColorHex;
@@ -966,14 +985,17 @@
                 const group = this.groups.find(g => g.id === groupId);
                 if(group) {
                     const symL = document.getElementById(`globSymL-${groupId}`).value;
+                    const symC = document.getElementById(`globSymC-${groupId}`).value;
                     const symR = document.getElementById(`globSymR-${groupId}`).value;
                     let changed = false;
                     group.labels.forEach(l => {
                         if(symL !== '') { l.symbolL = symL; changed = true; }
+                        if(symC !== '') { l.symbolC = symC; changed = true; }
                         if(symR !== '') { l.symbolR = symR; changed = true; }
                     });
                     if(changed) {
                         document.getElementById(`globSymL-${groupId}`).value = '';
+                        document.getElementById(`globSymC-${groupId}`).value = '';
                         document.getElementById(`globSymR-${groupId}`).value = '';
                         this.render();
                     }
@@ -1004,10 +1026,10 @@
 
             createLabel() {
                 return {
-                    id: Date.now() + Math.random(), text: '', symbolL: '--', symbolR: '--',
+                    id: Date.now() + Math.random(), text: '', symbolL: '--', symbolC: '--', symbolR: '--',
                     isBold: this.config.isBold || false, isUnderline: this.config.isUnderline || false,
                     textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
-                    customFontSize: '' 
+                    customFontSize: '', customSymbolSize: '' 
                 };
             },
 
@@ -1043,7 +1065,9 @@
                         currentGroup = {
                             id: Date.now() + Math.random(),
                             headerLeft: '', headerCenter: `Import Panel ${panelCounter}`, headerRight: '',
-                            headerSymbolL: this.config.headerSymbolL || '--', headerSymbolR: this.config.headerSymbolR || '--',
+                            headerSymbolL: this.config.headerSymbolL || '--', 
+                            headerSymbolC: this.config.headerSymbolC || '--', 
+                            headerSymbolR: this.config.headerSymbolR || '--',
                             textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
                             borderColorHex: this.config.borderColorHex,
                             headerTextColorHex: this.config.headerTextColorHex || '#000000',
@@ -1111,7 +1135,9 @@
                         currentGroup = {
                             id: Date.now() + i,
                             headerLeft: '', headerCenter: pCenter, headerRight: '',
-                            headerSymbolL: this.config.headerSymbolL || '--', headerSymbolR: this.config.headerSymbolR || '--',
+                            headerSymbolL: this.config.headerSymbolL || '--', 
+                            headerSymbolC: this.config.headerSymbolC || '--',
+                            headerSymbolR: this.config.headerSymbolR || '--',
                             textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
                             borderColorHex: this.config.borderColorHex,
                             headerTextColorHex: this.config.headerTextColorHex || '#000000',
@@ -1218,11 +1244,13 @@
                         const data = JSON.parse(e.target.result);
                         if (data.config) {
                             Object.assign(this.config, data.config);
+                            // Rückwärtskompatibilität für neue Werte
                             if (this.config.paddingX === undefined) this.config.paddingX = 1;
-                            // Rückwärtskompatibilität für fehlende Symbolfarbe im Kopf
                             if (this.config.headerSymbolColorHex === undefined) {
                                 this.config.headerSymbolColorHex = this.config.headerTextColorHex || '#000000';
                             }
+                            if (this.config.headerSymbolC === undefined) this.config.headerSymbolC = '--';
+                            if (this.config.labelSymbolSize === undefined) this.config.labelSymbolSize = '';
                         }
                         if (data.groups) {
                             data.groups.forEach(g => {
@@ -1230,6 +1258,12 @@
                                 if(g.headerSymbolColorHex === undefined) {
                                     g.headerSymbolColorHex = g.headerTextColorHex || '#000000';
                                 }
+                                if(g.headerSymbolC === undefined) g.headerSymbolC = '--';
+                                
+                                g.labels.forEach(l => {
+                                    if(l.symbolC === undefined) l.symbolC = '--';
+                                    if(l.customSymbolSize === undefined) l.customSymbolSize = '';
+                                });
                             });
                             this.groups = data.groups;
                         }
@@ -1292,6 +1326,7 @@
                                     <div style="width: 100%; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px; font-weight: bold; font-size: 12px; color: var(--primary);">ZUSATZZEILE (KOPF/FUß)</div>
                                     <div class="form-group"><label>Position:</label><select onchange="app.updateData('group', ${group.id}, null, 'titlePosition', this.value)"><option value="top" ${!isBottom ? 'selected' : ''}>Oben</option><option value="bottom" ${isBottom ? 'selected' : ''}>Unten</option></select></div>
                                     <div class="form-group"><label>Sym L:</label><select class="symbol-select" onchange="app.updateData('group', ${group.id}, null, 'headerSymbolL', this.value)">${renderDropdown(group.headerSymbolL || '--')}</select></div>
+                                    <div class="form-group"><label>Sym Mitte:</label><select class="symbol-select" onchange="app.updateData('group', ${group.id}, null, 'headerSymbolC', this.value)">${renderDropdown(group.headerSymbolC || '--')}</select></div>
                                     <div class="form-group"><label>Sym R:</label><select class="symbol-select" onchange="app.updateData('group', ${group.id}, null, 'headerSymbolR', this.value)">${renderDropdown(group.headerSymbolR || '--')}</select></div>
                                     <div class="form-group"><label>Textfarbe:</label><select onchange="app.updateData('group', ${group.id}, null, 'headerTextColorHex', this.value)">${getColorOptions(group.headerTextColorHex || this.config.headerTextColorHex || '#000000')}</select></div>
                                     <div class="form-group"><label>Symbol Farbe:</label><select onchange="app.updateData('group', ${group.id}, null, 'headerSymbolColorHex', this.value)">${getColorOptions(group.headerSymbolColorHex || group.headerTextColorHex || this.config.headerTextColorHex || '#000000')}</select></div>
@@ -1313,12 +1348,14 @@
                                     </div>
                                     
                                     <div style="width: 100%; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px; margin-top: 5px; font-weight: bold; font-size: 12px; color: var(--primary);">ALLE SYMBOLE IM PANEL ÜBERSCHREIBEN</div>
-                                    <div class="form-group" style="flex-basis: 100%; display: flex; gap: 15px; background: #e9ecef; padding: 5px 10px; border-radius: 4px; align-items: center;">
-                                        <label style="font-weight:bold;">Links:</label>
+                                    <div class="form-group" style="flex-basis: 100%; display: flex; gap: 15px; background: #e9ecef; padding: 5px 10px; border-radius: 4px; align-items: center; flex-wrap: wrap;">
+                                        <label style="font-weight:bold;">L:</label>
                                         <select id="globSymL-${group.id}" class="symbol-select">${globalSymOptions}</select>
-                                        <label style="font-weight:bold; margin-left: 10px;">Rechts:</label>
+                                        <label style="font-weight:bold; margin-left: 10px;">Mitte:</label>
+                                        <select id="globSymC-${group.id}" class="symbol-select">${globalSymOptions}</select>
+                                        <label style="font-weight:bold; margin-left: 10px;">R:</label>
                                         <select id="globSymR-${group.id}" class="symbol-select">${globalSymOptions}</select>
-                                        <button onclick="app.applyGlobalSymbols(${group.id})" style="background:var(--success); color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold;">Anwenden</button>
+                                        <button onclick="app.applyGlobalSymbols(${group.id})" style="background:var(--success); color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; margin-left: auto;">Anwenden</button>
                                     </div>
                                 </div>
                                 
@@ -1327,13 +1364,17 @@
                                     <div class="label-item">
                                         <div class="label-main-row">
                                             
-                                            <select class="symbol-select" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolL', this.value)">
+                                            <select class="symbol-select" title="Links" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolL', this.value)">
                                                 ${renderDropdown(label.symbolL)}
+                                            </select>
+                                            
+                                            <select class="symbol-select" title="Mitte (Anstelle Text)" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolC', this.value)">
+                                                ${renderDropdown(label.symbolC || '--')}
                                             </select>
                                             
                                             <input type="text" placeholder="Text..." value="${label.text}" oninput="app.updateData('label', ${group.id}, ${label.id}, 'text', this.value)">
                                             
-                                            <select class="symbol-select" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolR', this.value)">
+                                            <select class="symbol-select" title="Rechts" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolR', this.value)">
                                                 ${renderDropdown(label.symbolR)}
                                             </select>
                                             
@@ -1351,7 +1392,8 @@
                                         <div class="settings-row" id="settings-label-${label.id}">
                                             <label><input type="checkbox" ${label.isBold ? 'checked' : ''} onchange="app.updateData('label', ${group.id}, ${label.id}, 'isBold', this.checked)"> Fett</label>
                                             <label><input type="checkbox" ${label.isUnderline ? 'checked' : ''} onchange="app.updateData('label', ${group.id}, ${label.id}, 'isUnderline', this.checked)"> Unterstrichen</label>
-                                            <div class="form-group" title="Wenn leer, wird Panel/Global Größe genutzt"><label>Größe:</label><input type="number" placeholder="Auto" value="${label.customFontSize || ''}" oninput="app.updateData('label', ${group.id}, ${label.id}, 'customFontSize', this.value)"></div>
+                                            <div class="form-group" title="Wenn leer, wird Panel/Global Größe genutzt"><label>Text Größe:</label><input type="number" placeholder="Auto" value="${label.customFontSize || ''}" oninput="app.updateData('label', ${group.id}, ${label.id}, 'customFontSize', this.value)"></div>
+                                            <div class="form-group" title="Wenn leer, wird Panel/Global Größe genutzt"><label>Sym. Größe:</label><input type="number" placeholder="Auto" value="${label.customSymbolSize || ''}" oninput="app.updateData('label', ${group.id}, ${label.id}, 'customSymbolSize', this.value)"></div>
                                             <div class="form-group"><label>Text:</label><select onchange="app.updateData('label', ${group.id}, ${label.id}, 'textColorHex', this.value)">${getColorOptions(label.textColorHex)}</select></div>
                                             <div class="form-group"><label>HG:</label><select onchange="app.updateData('label', ${group.id}, ${label.id}, 'backgroundColorHex', this.value)">${getColorOptions(label.backgroundColorHex)}</select></div>
                                             <select onchange="app.applyPreset(${group.id}, ${label.id}, this.value); this.value=''">
@@ -1380,6 +1422,7 @@
 
                 const { width, height, columns, fontSize, headerFontSize, borderColorHex } = this.config;
                 const globalPadX = this.config.paddingX !== undefined ? this.config.paddingX : 1;
+                const globalLabelSymSize = this.config.labelSymbolSize; // Globale Symbolgröße der Tasten
 
                 this.groups.forEach(group => {
                     const pBorderCol = group.borderColorHex || borderColorHex || '#000000';
@@ -1395,28 +1438,29 @@
                     let groupHtml = `<div class="preview-panel" style="--preview-border: ${pBorderCol}; width: ${columns * width}mm;">`;
                     
                     let barHtml = '';
-                    if (hL.trim() !== "" || hC.trim() !== "" || hR.trim() !== "" || (group.headerSymbolL && group.headerSymbolL !== '--') || (group.headerSymbolR && group.headerSymbolR !== '--')) {
+                    if (hL.trim() !== "" || hC.trim() !== "" || hR.trim() !== "" || (group.headerSymbolL && group.headerSymbolL !== '--') || (group.headerSymbolC && group.headerSymbolC !== '--') || (group.headerSymbolR && group.headerSymbolR !== '--')) {
                         const hTextColor = group.headerTextColorHex || this.config.headerTextColorHex || '#000000';
                         const hSymbolColor = group.headerSymbolColorHex || group.headerTextColorHex || this.config.headerSymbolColorHex || this.config.headerTextColorHex || '#000000';
                         const hBgColor = group.headerBackgroundColorHex || this.config.headerBackgroundColorHex || '#ffffff';
 
-                        // NEU: Separate Symbolgröße berechnen (Fallback auf globale Symbolgröße -> dann auf Textgröße)
+                        // Separate Symbolgröße berechnen (Fallback auf globale Symbolgröße -> dann auf Textgröße)
                         const pHeadSymSize = group.headerSymbolSize || this.config.headerSymbolSize || pHeadSize;
 
                         const symLeftHTML = (group.headerSymbolL && group.headerSymbolL !== '--' && group.headerSymbolL !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${pHeadSymSize}px; color: ${hSymbolColor}; padding-right: 5px;">${renderSymbol(group.headerSymbolL)}</span>` : '';
+                        const symCenterHTML = (group.headerSymbolC && group.headerSymbolC !== '--' && group.headerSymbolC !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${pHeadSymSize}px; color: ${hSymbolColor}; padding-right: 5px;">${renderSymbol(group.headerSymbolC)}</span>` : '';
                         const symRightHTML = (group.headerSymbolR && group.headerSymbolR !== '--' && group.headerSymbolR !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${pHeadSymSize}px; color: ${hSymbolColor}; padding-left: 5px;">${renderSymbol(group.headerSymbolR)}</span>` : '';
 
                         let innerColumns = '';
                         if (hL.trim() === "" && hR.trim() === "" && !symLeftHTML && !symRightHTML) {
-                            innerColumns = `<div style="text-align: center;">${hC}</div>`;
+                            innerColumns = `<div style="text-align: center; display:flex; justify-content:center; align-items:center;">${symCenterHTML}${hC}</div>`;
                         } else {
-                            innerColumns = `<div style="text-align: left; display:flex; align-items:center;">${symLeftHTML}${hL}</div><div style="text-align: center;">${hC}</div><div style="text-align: right; display:flex; align-items:center; justify-content:flex-end;">${hR}${symRightHTML}</div>`;
+                            innerColumns = `<div style="text-align: left; display:flex; align-items:center;">${symLeftHTML}${hL}</div><div style="text-align: center; display:flex; justify-content:center; align-items:center;">${symCenterHTML}${hC}</div><div style="text-align: right; display:flex; align-items:center; justify-content:flex-end;">${hR}${symRightHTML}</div>`;
                         }
                         
                         const barBorderTop = (group.titlePosition === 'bottom' && group.gridHorz) ? `1px solid ${pBorderCol}` : 'none';
                         const barBorderBottom = (group.titlePosition !== 'bottom' && group.gridHorz) ? `1px solid ${pBorderCol}` : 'none';
 
-                        // NEU: padding: 0 ${padX}mm; sorgt dafür, dass die Kopfzeile exakt denselben Randabstand hat wie die Etiketten darunter!
+                        // padding: 0 ${padX}mm; sorgt dafür, dass die Kopfzeile exakt denselben Randabstand hat wie die Etiketten darunter!
                         barHtml = `<div class="preview-panel-bar" style="height: ${height}mm; background-color: ${hBgColor}; color: ${hTextColor}; font-size: ${pHeadSize}px; border-top: ${barBorderTop}; border-bottom: ${barBorderBottom}; padding: 0 ${padX}mm;">${innerColumns}</div>`;
                     }
                     
@@ -1432,14 +1476,18 @@
                         const styleTextD = label.isUnderline ? 'underline' : 'none';
                         const actFontSize = label.customFontSize ? label.customFontSize : pFontSize;
                         
+                        // Spezifische Symbolgröße berechnen
+                        const actSymSize = label.customSymbolSize ? label.customSymbolSize : (globalLabelSymSize ? globalLabelSymSize : actFontSize);
+                        
                         const isLastCol = (index % columns) === (columns - 1);
                         const isLastRow = Math.floor(index / columns) === Math.floor((group.labels.length - 1) / columns);
 
                         const currentVertStyle = isLastCol ? 'none' : vertStyle;
                         const currentHorzStyle = isLastRow ? 'none' : horzStyle;
                         
-                        const symLeftHTML = (label.symbolL && label.symbolL !== '--' && label.symbolL !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actFontSize}px; padding-left: ${padX}mm; padding-right: 2px;">${renderSymbol(label.symbolL)}</span>` : '';
-                        const symRightHTML = (label.symbolR && label.symbolR !== '--' && label.symbolR !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actFontSize}px; padding-right: ${padX}mm; padding-left: 2px;">${renderSymbol(label.symbolR)}</span>` : '';
+                        const symLeftHTML = (label.symbolL && label.symbolL !== '--' && label.symbolL !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actSymSize}px; padding-left: ${padX}mm; padding-right: 2px;">${renderSymbol(label.symbolL)}</span>` : '';
+                        const symCenterHTML = (label.symbolC && label.symbolC !== '--' && label.symbolC !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actSymSize}px;">${renderSymbol(label.symbolC)}</span>` : '';
+                        const symRightHTML = (label.symbolR && label.symbolR !== '--' && label.symbolR !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actSymSize}px; padding-right: ${padX}mm; padding-left: 2px;">${renderSymbol(label.symbolR)}</span>` : '';
 
                     groupHtml += `
                         <div class="preview-label" style="
@@ -1447,7 +1495,7 @@
                             background-color: ${label.backgroundColorHex}; color: ${label.textColorHex}; 
                             border-right: ${currentVertStyle}; border-bottom: ${currentHorzStyle};">
                             ${symLeftHTML}
-                            <span class="preview-label-text" style="font-size: ${actFontSize}px; font-weight: ${styleFontW}; text-decoration: ${styleTextD};">${label.text}</span>
+                            <span class="preview-label-text" style="font-size: ${actFontSize}px; font-weight: ${styleFontW}; text-decoration: ${styleTextD};">${symCenterHTML}${label.text}</span>
                             ${symRightHTML}
                         </div>
                     `;
