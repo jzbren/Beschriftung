@@ -38,6 +38,8 @@
         .toolbar button.btn-success { background: var(--success); }
         .toolbar button.btn-info { background: var(--info); }
         .toolbar button.btn-danger { background: var(--danger); }
+        .toolbar button.btn-warning { background: var(--warning); color: var(--dark); }
+        .toolbar button.btn-warning img { filter: none; }
         .toolbar select { padding: 8px; border-radius: 4px; border: none; background: var(--gray); color: white; font-size: 14px; cursor: pointer; }
         .toolbar-title { font-weight: bold; margin-right: auto; font-size: 18px; }
 
@@ -117,14 +119,13 @@
         .preview-single-column { display: flex; flex-direction: column; gap: 5px; }
 
         .preview-row { display: flex; font-size: 12.5px; line-height: 1.35; min-height: 18px; break-inside: avoid; page-break-inside: avoid; }
-        .preview-col-left { width: 50px; font-weight: bold; color: #000; flex-shrink: 0; min-height: 18px; text-align: left;}
-        .preview-col-right { flex: 1; color: #222; overflow: hidden; text-overflow: ellipsis; min-height: 18px; }
+        .preview-col-left { width: 50px; font-weight: bold; flex-shrink: 0; min-height: 18px; text-align: left;}
+        .preview-col-right { flex: 1; overflow: hidden; text-overflow: ellipsis; min-height: 18px; }
 
         .preview-heading-row {
             font-weight: bold;
             font-size: 15px;
-            color: #000;
-            text-decoration: underline; /* Unterstreichung hier hinzugefügt */
+            text-decoration: underline; 
             margin-top: 12px;
             margin-bottom: 6px;   
             width: 100%;
@@ -170,7 +171,7 @@
 <body>
 
     <div class="toolbar">
-        <div class="toolbar-title">Legenden Generator V1.3</div>
+        <div class="toolbar-title">Legenden Generator V1.4</div>
         
         <div style="display: flex; align-items: center; gap: 5px;">
             <label style="font-size: 13px; font-weight: bold;">Format:</label>
@@ -197,6 +198,9 @@
         </button>
         <button class="btn-info" onclick="document.getElementById('csvModal').style.display = 'flex'">
             <img src="icons/CSV-Datei.svg" onerror="this.style.display='none'"> CSV Import
+        </button>
+        <button class="btn-warning" onclick="app.openSmartColorModal()">
+            <img src="icons/Einstellungen.svg" onerror="this.style.display='none'; this.nextSibling.textContent='⚙'"> Auto-Farben
         </button>
         <button onclick="app.saveData()">
             <img src="icons/Download.svg" onerror="this.style.display='none'"> Speichern
@@ -232,6 +236,29 @@
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="document.getElementById('csvModal').style.display = 'none'">Abbrechen</button>
                 <button class="btn-confirm" onclick="app.runCSVImport()">In neuen Abschnitt importieren</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Smart Colors Modal -->
+    <div class="modal-overlay" id="smartColorModal">
+        <div class="modal" style="width: 550px;">
+            <h3>Intelligenter Farbgenerator</h3>
+            <p style="font-size: 13px; color: #666; margin-top: -10px;">Lege Regeln fest: Zeilen, die das exakte Schlagwort enthalten (z.B. "EG", "OG"), werden automatisch eingefärbt (Groß-/Kleinschreibung wird beachtet!).</p>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center;">
+                <input type="text" id="smartKeyword" placeholder="Schlagwort (z.B. EG)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <input type="color" id="smartColor" value="#ff0000" style="width: 50px; height: 35px; padding: 0; border: none; cursor: pointer; border-radius: 4px;">
+                <button class="btn-success" style="padding: 8px 15px; border-radius: 4px; border: none; color: white; cursor: pointer;" onclick="app.addSmartRule()">Hinzufügen</button>
+            </div>
+            
+            <div id="smartRulesList" style="max-height: 200px; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 4px; margin-bottom: 15px; background: #fafafa;">
+                <!-- Regeln werden hier gerendert -->
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="document.getElementById('smartColorModal').style.display = 'none'">Schliessen</button>
+                <button class="btn-confirm" onclick="app.applySmartColors()">Jetzt anwenden</button>
             </div>
         </div>
     </div>
@@ -300,14 +327,15 @@
         format: 'A4_portrait',
         columns: 1,
         sections: [],
+        colorRules: [],
 
         init() {
             if(this.sections.length === 0) {
                 this.addSection();
                 this.sections[0].rows = [
-                    { id: 1, type: "row", left: "F01", right: "Licht Wohnzimmer", pageBreak: false },
-                    { id: 2, type: "heading", text: "Küche", pageBreak: false },
-                    { id: 3, type: "row", left: "F02", right: "Steckdosen Küche", pageBreak: false }
+                    { id: 1, type: "row", left: "F01", right: "Licht Wohnzimmer", pageBreak: false, color: "" },
+                    { id: 2, type: "heading", text: "Küche", pageBreak: false, color: "" },
+                    { id: 3, type: "row", left: "F02", right: "Steckdosen Küche", pageBreak: false, color: "" }
                 ];
             }
             document.getElementById('pageFormatSelect').value = this.format;
@@ -331,7 +359,7 @@
                 title: "Legende: HV Allgemein",
                 subtitle: "Strasse, Geschoss, Wohnung",
                 backupFuse: "Vorsicherung: ab HV F5",
-                rows: [{ id: Date.now()+1, type: "row", left: "F01", right: "Beschreibung...", pageBreak: false }]
+                rows: [{ id: Date.now()+1, type: "row", left: "F01", right: "Beschreibung...", pageBreak: false, color: "" }]
             });
             this.render();
         },
@@ -346,7 +374,7 @@
         addRow(secId) {
             const sec = this.sections.find(s => s.id === secId);
             if(sec) {
-                sec.rows.push({ id: Date.now(), type: "row", left: "", right: "", pageBreak: false });
+                sec.rows.push({ id: Date.now(), type: "row", left: "", right: "", pageBreak: false, color: "" });
                 this.render();
             }
         },
@@ -354,7 +382,7 @@
         addHeading(secId) {
             const sec = this.sections.find(s => s.id === secId);
             if(sec) {
-                sec.rows.push({ id: Date.now(), type: "heading", text: "", pageBreak: false });
+                sec.rows.push({ id: Date.now(), type: "heading", text: "", pageBreak: false, color: "" });
                 this.render();
             }
         },
@@ -373,7 +401,7 @@
                 const orig = sec.rows.find(r => r.id === rowId);
                 if(orig) {
                     const idx = sec.rows.indexOf(orig);
-                    let newRow = { id: Date.now(), type: orig.type, pageBreak: orig.pageBreak };
+                    let newRow = { id: Date.now(), type: orig.type, pageBreak: orig.pageBreak, color: orig.color };
                     if(orig.type === 'heading') newRow.text = orig.text;
                     else { newRow.left = orig.left; newRow.right = orig.right; }
                     
@@ -394,7 +422,6 @@
             }
         },
         
-        // NEU: Umschalten zwischen Zeile und Überschrift
         toggleRowType(secId, rowId) {
             const sec = this.sections.find(s => s.id === secId);
             if(sec) {
@@ -413,7 +440,6 @@
             }
         },
 
-        // NEU: Zeile nach oben verschieben
         moveRowUp(secId, rowId) {
             const sec = this.sections.find(s => s.id === secId);
             if(sec) {
@@ -427,7 +453,6 @@
             }
         },
 
-        // NEU: Zeile nach unten verschieben
         moveRowDown(secId, rowId) {
             const sec = this.sections.find(s => s.id === secId);
             if(sec) {
@@ -455,6 +480,9 @@
                 const row = sec.rows.find(r => r.id === rowId);
                 if(row) {
                     row[field] = val;
+                    if(field === 'color') {
+                        this.renderEditor(); // Wenn sich die Farbe ändert, auch Editor aktualisieren wg. Rahmen
+                    }
                     this.renderPreviewOnly();
                 }
             }
@@ -477,7 +505,7 @@
                 if(parts.length === 1) left = '';
 
                 if(left || right) {
-                    newRows.push({ id: Date.now() + Math.random(), type: "row", left: left, right: right, pageBreak: false });
+                    newRows.push({ id: Date.now() + Math.random(), type: "row", left: left, right: right, pageBreak: false, color: "" });
                 }
             });
 
@@ -496,8 +524,80 @@
             this.render();
         },
 
+        // --- Intelligenter Farbgenerator Funktionen ---
+        openSmartColorModal() {
+            document.getElementById('smartColorModal').style.display = 'flex';
+            this.renderSmartRules();
+        },
+
+        addSmartRule() {
+            const kw = document.getElementById('smartKeyword').value.trim();
+            const col = document.getElementById('smartColor').value;
+            if (kw) {
+                this.colorRules.push({ keyword: kw, color: col });
+                document.getElementById('smartKeyword').value = '';
+                this.renderSmartRules();
+            }
+        },
+
+        removeSmartRule(index) {
+            this.colorRules.splice(index, 1);
+            this.renderSmartRules();
+        },
+
+        renderSmartRules() {
+            const list = document.getElementById('smartRulesList');
+            if (this.colorRules.length === 0) {
+                list.innerHTML = '<span style="color: #999; font-size: 13px;">Noch keine Regeln definiert.</span>';
+                return;
+            }
+            list.innerHTML = this.colorRules.map((rule, i) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px 8px; border-bottom: 1px solid #e0e0e0; background: white; margin-bottom: 5px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 20px; height: 20px; background-color: ${rule.color}; border-radius: 3px; border: 1px solid #ccc;"></div>
+                        <strong style="font-family: monospace; font-size: 14px;">"${rule.keyword}"</strong>
+                    </div>
+                    <button style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 13px; font-weight: bold;" onclick="app.removeSmartRule(${i})">Löschen</button>
+                </div>
+            `).join('');
+        },
+
+        applySmartColors() {
+            if (this.colorRules.length === 0) {
+                alert("Bitte zuerst Regeln hinzufügen!");
+                return;
+            }
+            let changes = 0;
+            this.sections.forEach(sec => {
+                sec.rows.forEach(row => {
+                    this.colorRules.forEach(rule => {
+                        // Regex zum genauen Finden des Wortes, berücksichtigt auch deutsche Zeichen (nicht nur \b)
+                        // Bsp: ^|Leerzeichen|Satzzeichen Schlagwort Leerzeichen|Satzzeichen|$
+                        const escapedKw = rule.keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        const regex = new RegExp(`(^|[\\s/.,;:\\!\\?()\\-])` + escapedKw + `([\\s/.,;:\\!\\?()\\-]|$)`);
+                        
+                        let match = false;
+                        if (row.type === 'heading' && row.text && regex.test(row.text)) match = true;
+                        if (row.type === 'row') {
+                            if (row.left && regex.test(row.left)) match = true;
+                            if (row.right && regex.test(row.right)) match = true;
+                        }
+
+                        if (match) {
+                            row.color = rule.color;
+                            changes++;
+                        }
+                    });
+                });
+            });
+            this.render();
+            alert(`${changes} Zeile(n) wurden eingefärbt.`);
+            document.getElementById('smartColorModal').style.display = 'none';
+        },
+        // --- Ende Intelligenter Farbgenerator ---
+
         saveData() {
-            const data = { format: this.format, columns: this.columns, sections: this.sections };
+            const data = { format: this.format, columns: this.columns, sections: this.sections, colorRules: this.colorRules };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
@@ -519,11 +619,13 @@
                         this.format = parsed.format || 'A4_portrait';
                         this.columns = parsed.columns || 1;
                         this.sections = parsed.sections || [];
+                        this.colorRules = parsed.colorRules || [];
                     }
                     this.sections.forEach(sec => {
                         sec.rows.forEach(r => {
                             if(!r.type) r.type = "row";
                             if(r.pageBreak === undefined) r.pageBreak = false;
+                            if(r.color === undefined) r.color = "";
                         });
                     });
 
@@ -584,7 +686,7 @@
                                 }
 
                                 return `
-                                <div class="row-item ${row.type === 'heading' ? 'is-heading' : ''}">
+                                <div class="row-item ${row.type === 'heading' ? 'is-heading' : ''}" style="${row.color ? `border-left: 4px solid ${row.color};` : 'border-left: 4px solid transparent;'}">
                                     <button class="icon-btn pagebreak ${row.pageBreak ? 'active' : ''}" onclick="app.togglePageBreak(${sec.id}, ${row.id})" title="Seitenumbruch vor diesem Element erzwingen">
                                         <img src="icons/Seitenumbruch.svg" onerror="this.style.display='none'; this.nextSibling.textContent='⤲'"><span></span>
                                     </button>
@@ -592,6 +694,14 @@
                                     <button class="icon-btn" onclick="app.toggleRowType(${sec.id}, ${row.id})" title="Zwischen Zeile und Überschrift wechseln" style="${row.type === 'heading' ? 'color: var(--primary);' : ''}">
                                         <img src="icons/Ueberschrift.svg" onerror="this.style.display='none'; this.nextSibling.textContent='T'"><span></span>
                                     </button>
+
+                                    <!-- Farbwähler-Button inline -->
+                                    <div style="position: relative; display: inline-flex; overflow: hidden; border-radius: 4px;" title="Zeilenfarbe individuell festlegen">
+                                        <button class="icon-btn" style="pointer-events: none; ${row.color ? `color: ${row.color};` : ''}">
+                                            <img src="icons/Einstellungen.svg" onerror="this.style.display='none'; this.nextSibling.textContent='⚙'" style="${row.color ? 'filter: none;' : ''}"><span></span>
+                                        </button>
+                                        <input type="color" value="${row.color || '#000000'}" oninput="app.updateRowData(${sec.id}, ${row.id}, 'color', this.value)" style="opacity: 0; position: absolute; top: -5px; left: -5px; width: 40px; height: 40px; cursor: pointer;">
+                                    </div>
                                     
                                     ${contentHtml}
                                     
@@ -676,13 +786,16 @@
                     pageData.cols.forEach(colRows => {
                         let colRowsHtml = '';
                         colRows.forEach(r => {
+                            // Textfarbe in der Vorschau anhand von r.color anwenden
+                            let colorStyle = r.color ? `style="color: ${r.color};"` : '';
+                            
                             if (r.type === 'heading') {
                                 let textVal = (r.text !== undefined && r.text !== '') ? r.text : '&nbsp;';
-                                colRowsHtml += `<div class="preview-row preview-heading-row">${textVal}</div>`;
+                                colRowsHtml += `<div class="preview-row preview-heading-row" ${colorStyle}>${textVal}</div>`;
                             } else {
                                 let leftVal = (r.left !== undefined && r.left !== '') ? r.left : '&nbsp;';
                                 let rightVal = (r.right !== undefined && r.right !== '') ? r.right : '&nbsp;';
-                                colRowsHtml += `<div class="preview-row">
+                                colRowsHtml += `<div class="preview-row" ${colorStyle}>
                                                     <div class="preview-col-left">${leftVal}</div>
                                                     <div class="preview-col-right">${rightVal}</div>
                                                 </div>`;
