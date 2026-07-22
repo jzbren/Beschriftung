@@ -566,7 +566,7 @@
                         </div>
                         <div style="display: flex; gap: 5px;">
                             <button class="icon-btn" onclick="app.addRow(${sec.id})" title="Zeile hinzufügen"><img src="icons/Plus.svg" onerror="this.style.display='none'; this.nextSibling.textContent='+'"></button>
-                            <button class="icon-btn" onclick="app.addHeading(${sec.id})" title="Überschrift hinzufügen">${SVGs.heading}</button>
+                            <button class="icon-btn" onclick="app.addHeading(${sec.id})" title="Überschrift hinzufügen"><img src="icons/Ueberschrift.svg" onerror="this.style.display='none'; this.nextSibling.textContent='T'"><span></span></button>
                             <button class="icon-btn delete" onclick="app.removeSection(${sec.id})" title="Abschnitt löschen"><img src="icons/Papierkorb.svg" onerror="this.style.display='none'; this.nextSibling.textContent='X'"></button>
                         </div>
                     </div>
@@ -585,14 +585,18 @@
 
                                 return `
                                 <div class="row-item ${row.type === 'heading' ? 'is-heading' : ''}">
-                                    <button class="icon-btn pagebreak ${row.pageBreak ? 'active' : ''}" onclick="app.togglePageBreak(${sec.id}, ${row.id})" title="Seitenumbruch vor diesem Element erzwingen">${SVGs.pageBreak}</button>
+                                    <button class="icon-btn pagebreak ${row.pageBreak ? 'active' : ''}" onclick="app.togglePageBreak(${sec.id}, ${row.id})" title="Seitenumbruch vor diesem Element erzwingen">
+                                        <img src="icons/Seitenumbruch.svg" onerror="this.style.display='none'; this.nextSibling.textContent='⤲'"><span></span>
+                                    </button>
                                     
-                                    <button class="icon-btn" onclick="app.toggleRowType(${sec.id}, ${row.id})" title="Zwischen Zeile und Überschrift wechseln" style="${row.type === 'heading' ? 'color: var(--primary);' : ''}">${SVGs.heading}</button>
+                                    <button class="icon-btn" onclick="app.toggleRowType(${sec.id}, ${row.id})" title="Zwischen Zeile und Überschrift wechseln" style="${row.type === 'heading' ? 'color: var(--primary);' : ''}">
+                                        <img src="icons/Ueberschrift.svg" onerror="this.style.display='none'; this.nextSibling.textContent='T'"><span></span>
+                                    </button>
                                     
                                     ${contentHtml}
                                     
-                                    <button class="icon-btn" onclick="app.moveRowUp(${sec.id}, ${row.id})" title="Nach oben verschieben">${SVGs.arrowUp}</button>
-                                    <button class="icon-btn" onclick="app.moveRowDown(${sec.id}, ${row.id})" title="Nach unten verschieben">${SVGs.arrowDown}</button>
+                                    <button class="icon-btn" onclick="app.moveRowUp(${sec.id}, ${row.id})" title="Nach oben verschieben"><img src="icons/Pfeil-Auf.svg" onerror="this.style.display='none'; this.nextSibling.textContent='▲'"><span></span></button>
+                                    <button class="icon-btn" onclick="app.moveRowDown(${sec.id}, ${row.id})" title="Nach unten verschieben"><img src="icons/Pfeil-Runter.svg" onerror="this.style.display='none'; this.nextSibling.textContent='▼'"><span></span></button>
                                     
                                     <button class="icon-btn duplicate" onclick="app.duplicateRow(${sec.id}, ${row.id})" title="Duplizieren"><img src="icons/Dublizieren.svg" onerror="this.style.display='none'; this.nextSibling.textContent='D'"></button>
                                     <button class="icon-btn delete" onclick="app.removeRow(${sec.id}, ${row.id})" title="Löschen"><img src="icons/Papierkorb.svg" onerror="this.style.display='none'; this.nextSibling.textContent='-'"></button>
