@@ -112,8 +112,10 @@
         
         .preview-panel-bar { font-weight: bold; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; overflow: hidden; white-space: nowrap; padding: 0 5px; }
         .preview-panel-bar > div { flex: 1; overflow: hidden; text-overflow: clip; }
-        .preview-grid { display: grid; gap: 0; }
-        .preview-label { display: flex; justify-content: center; align-items: center; box-sizing: border-box; overflow: hidden; padding: 0 1px; }
+        
+        /* Updated for dynamic width/columns wrapping */
+        .preview-grid { display: flex; flex-wrap: wrap; gap: 0; align-content: flex-start; }
+        .preview-label { display: flex; justify-content: center; align-items: center; box-sizing: border-box; overflow: hidden; padding: 0 1px; flex-shrink: 0; }
         .preview-label-text { flex: 1; text-align: center; white-space: nowrap; overflow: hidden; line-height: 1; font-size: 8px; display: flex; justify-content: center; align-items: center; gap: 3px;}
 
         .icon-btn img {
@@ -150,7 +152,7 @@
 <body>
 
     <div class="toolbar">
-        <div class="toolbar-title">Beschriftung V1.4</div>
+        <div class="toolbar-title">Beschriftung V1.5</div>
         <button class="btn-success" onclick="app.addPanel()">
             <img src="icons/Plus.svg"> Panel
         </button>
@@ -905,12 +907,14 @@
                     g.paddingX = this.config.paddingX; 
                     g.gridVert = this.config.gridVert;
                     g.gridHorz = this.config.gridHorz;
+                    g.columns = ''; // Setzt überschriebene Spalten zurück aufs Globale Limit
 
                     g.labels.forEach(l => {
                         l.textColorHex = this.config.textColorHex;
                         l.backgroundColorHex = this.config.backgroundColorHex;
                         if(this.config.isBold !== undefined) l.isBold = this.config.isBold;
                         if(this.config.isUnderline !== undefined) l.isUnderline = this.config.isUnderline;
+                        // HINWEIS: l.customWidth bleibt unberührt, um manuelle Anpassungen nicht versehentlich zu überschreiben
                     });
                 });
                 document.getElementById('configModal').style.display = 'none';
@@ -931,6 +935,7 @@
                     headerBackgroundColorHex: this.config.headerBackgroundColorHex || '#ffffff',
                     titlePosition: this.config.titlePosition || 'top',
                     fontSize: '', headerFontSize: '', headerSymbolSize: this.config.headerSymbolSize || '', headerHeight: '', width: '', height: '', paddingX: '',
+                    columns: '', 
                     gridVert: this.config.gridVert !== false, gridHorz: this.config.gridHorz !== false,
                     labels: [this.createLabel()]
                 });
@@ -958,7 +963,7 @@
             fillEmptyLabels(groupId, doRender = true) {
                 const group = this.groups.find(g => g.id === groupId);
                 if(group) {
-                    const cols = this.config.columns;
+                    const cols = group.columns ? parseInt(group.columns) : this.config.columns;
                     const remainder = group.labels.length % cols;
                     if(remainder !== 0) {
                         const needed = cols - remainder;
@@ -1032,7 +1037,8 @@
                     id: Date.now() + Math.random(), text: '', symbolL: '--', symbolC: '--', symbolR: '--',
                     isBold: this.config.isBold || false, isUnderline: this.config.isUnderline || false,
                     textColorHex: this.config.textColorHex, backgroundColorHex: this.config.backgroundColorHex,
-                    customFontSize: '', customSymbolSize: '' 
+                    customFontSize: '', customSymbolSize: '',
+                    customWidth: ''
                 };
             },
 
@@ -1078,6 +1084,7 @@
                             headerBackgroundColorHex: this.config.headerBackgroundColorHex || '#ffffff',
                             titlePosition: this.config.titlePosition || 'top',
                             fontSize: '', headerFontSize: '', headerSymbolSize: this.config.headerSymbolSize || '', headerHeight: '', width: '', height: '', paddingX: '',
+                            columns: '',
                             gridVert: this.config.gridVert !== false, gridHorz: this.config.gridHorz !== false,
                             labels: []
                         };
@@ -1148,6 +1155,7 @@
                             headerBackgroundColorHex: this.config.headerBackgroundColorHex || '#ffffff',
                             titlePosition: barPosition,
                             fontSize: '', headerFontSize: '', headerSymbolSize: this.config.headerSymbolSize || '', headerHeight: '', width: '', height: '', paddingX: '',
+                            columns: '',
                             gridVert: this.config.gridVert !== false, gridHorz: this.config.gridHorz !== false,
                             labels: []
                         };
@@ -1258,6 +1266,7 @@
                         if (data.groups) {
                             data.groups.forEach(g => {
                                 if(g.paddingX === undefined) g.paddingX = '';
+                                if(g.columns === undefined) g.columns = ''; // Fallback für alte Versionen
                                 if(g.headerSymbolColorHex === undefined) {
                                     g.headerSymbolColorHex = g.headerTextColorHex || '#000000';
                                 }
@@ -1269,6 +1278,7 @@
                                 g.labels.forEach(l => {
                                     if(l.symbolC === undefined) l.symbolC = '--';
                                     if(l.customSymbolSize === undefined) l.customSymbolSize = '';
+                                    if(l.customWidth === undefined) l.customWidth = ''; // Fallback für alte Versionen
                                 });
                             });
                             this.groups = data.groups;
@@ -1344,6 +1354,7 @@
                                     <div style="width: 100%; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px; margin-top: 5px; font-weight: bold; font-size: 12px; color: var(--primary);">TASTEN (PANEL STANDARD)</div>
                                     <div class="form-group"><label>Breite:</label><input type="number" placeholder="Global" value="${group.width || ''}" oninput="app.updateData('group', ${group.id}, null, 'width', this.value)" style="width: 55px;"></div>
                                     <div class="form-group"><label>Höhe:</label><input type="number" placeholder="Global" value="${group.height || ''}" oninput="app.updateData('group', ${group.id}, null, 'height', this.value)" style="width: 55px;"></div>
+                                    <div class="form-group"><label>Spalten:</label><input type="number" placeholder="Global" value="${group.columns || ''}" oninput="app.updateData('group', ${group.id}, null, 'columns', this.value)" style="width: 55px;" title="Spaltenzahl nur für dieses Panel anpassen"></div>
                                     <div class="form-group"><label>Text Farbe:</label><select onchange="app.updateData('group', ${group.id}, null, 'textColorHex', this.value)">${getColorOptions(group.textColorHex)}</select></div>
                                     <div class="form-group"><label>Hintergrund:</label><select onchange="app.updateData('group', ${group.id}, null, 'backgroundColorHex', this.value)">${getColorOptions(group.backgroundColorHex)}</select></div>
                                     <div class="form-group"><label>Rahmen:</label><select onchange="app.updateData('group', ${group.id}, null, 'borderColorHex', this.value)">${getColorOptions(group.borderColorHex || this.config.borderColorHex)}</select></div>
@@ -1400,6 +1411,7 @@
                                             <div class="form-group"><label>Sym Mitte:</label><select class="symbol-select" onchange="app.updateData('label', ${group.id}, ${label.id}, 'symbolC', this.value)">${renderDropdown(label.symbolC || '--')}</select></div>
                                             <div class="form-group" title="Wenn leer, wird Panel/Global Größe genutzt"><label>Text Größe:</label><input type="number" placeholder="Auto" value="${label.customFontSize || ''}" oninput="app.updateData('label', ${group.id}, ${label.id}, 'customFontSize', this.value)"></div>
                                             <div class="form-group" title="Wenn leer, wird Panel/Global Größe genutzt"><label>Sym. Größe:</label><input type="number" placeholder="Auto" value="${label.customSymbolSize || ''}" oninput="app.updateData('label', ${group.id}, ${label.id}, 'customSymbolSize', this.value)"></div>
+                                            <div class="form-group" title="Wenn leer, wird Panel/Global Breite genutzt"><label>Breite:</label><input type="number" placeholder="Auto" value="${label.customWidth || ''}" oninput="app.updateData('label', ${group.id}, ${label.id}, 'customWidth', this.value)" style="width: 60px;"></div>
                                             <div class="form-group"><label>Text:</label><select onchange="app.updateData('label', ${group.id}, ${label.id}, 'textColorHex', this.value)">${getColorOptions(label.textColorHex)}</select></div>
                                             <div class="form-group"><label>HG:</label><select onchange="app.updateData('label', ${group.id}, ${label.id}, 'backgroundColorHex', this.value)">${getColorOptions(label.backgroundColorHex)}</select></div>
                                             <select onchange="app.applyPreset(${group.id}, ${label.id}, this.value); this.value=''">
@@ -1434,6 +1446,7 @@
                     const pWidth = group.width || width;
                     const pHeight = group.height || height;
                     const pHeaderHeight = (group.headerHeight !== undefined && group.headerHeight !== '') ? group.headerHeight : (headerHeight !== '' ? headerHeight : pHeight);
+                    const pColumns = group.columns ? parseInt(group.columns) : parseInt(columns);
 
                     const pBorderCol = group.borderColorHex || borderColorHex || '#000000';
                     const pHeadSize = group.headerFontSize || headerFontSize;
@@ -1445,7 +1458,34 @@
                     const hC = group.headerCenter !== undefined ? group.headerCenter : '';
                     const hR = group.headerRight || '';
 
-                    let groupHtml = `<div class="preview-panel" style="--preview-border: ${pBorderCol}; width: ${columns * pWidth}mm;">`;
+                    // Panel Gesamtbreite dynamisch berechnen anhand der ersten Zeile
+                    let panelTotalWidth = 0;
+                    const referenceCols = Math.min(group.labels.length, pColumns);
+                    for(let i=0; i < pColumns; i++) {
+                        if (group.labels[i]) {
+                            panelTotalWidth += parseFloat(group.labels[i].customWidth || pWidth);
+                        } else {
+                            panelTotalWidth += parseFloat(pWidth);
+                        }
+                    }
+
+                    // Pre-Pass: Berechne visuelle Zeilen für korrekte Rahmensetzung (Grid/Flexbox Support)
+                    let visualRows = [];
+                    let currentRow = [];
+                    let curW = 0;
+                    group.labels.forEach(label => {
+                        const w = parseFloat(label.customWidth || pWidth);
+                        if (curW + w > panelTotalWidth + 0.1 && currentRow.length > 0) {
+                            visualRows.push(currentRow);
+                            currentRow = [];
+                            curW = 0;
+                        }
+                        currentRow.push({ label, width: w });
+                        curW += w;
+                    });
+                    if (currentRow.length > 0) visualRows.push(currentRow);
+
+                    let groupHtml = `<div class="preview-panel" style="--preview-border: ${pBorderCol}; width: ${panelTotalWidth}mm;">`;
                     
                     let barHtml = '';
                     if (hL.trim() !== "" || hC.trim() !== "" || hR.trim() !== "" || (group.headerSymbolL && group.headerSymbolL !== '--') || (group.headerSymbolC && group.headerSymbolC !== '--') || (group.headerSymbolR && group.headerSymbolR !== '--')) {
@@ -1474,38 +1514,42 @@
                     
                     if (group.titlePosition !== 'bottom') groupHtml += barHtml;
                     
-                    groupHtml += `<div class="preview-grid" style="grid-template-columns: repeat(${columns}, ${pWidth}mm);">`;
+                    groupHtml += `<div class="preview-grid" style="width: ${panelTotalWidth}mm;">`;
 
                     const vertStyle = group.gridVert ? `1px solid ${pBorderCol}` : 'none';
                     const horzStyle = group.gridHorz ? `1px solid ${pBorderCol}` : 'none';
 
-                    group.labels.forEach((label, index) => {
-                        const styleFontW = label.isBold ? 'bold' : 'normal';
-                        const styleTextD = label.isUnderline ? 'underline' : 'none';
-                        const actFontSize = label.customFontSize ? label.customFontSize : pFontSize;
+                    visualRows.forEach((rowItems, rowIndex) => {
+                        const isLastRow = (rowIndex === visualRows.length - 1);
                         
-                        const actSymSize = label.customSymbolSize ? label.customSymbolSize : (globalLabelSymSize ? globalLabelSymSize : actFontSize);
-                        
-                        const isLastCol = (index % columns) === (columns - 1);
-                        const isLastRow = Math.floor(index / columns) === Math.floor((group.labels.length - 1) / columns);
+                        rowItems.forEach((item, colIndex) => {
+                            const label = item.label;
+                            const actWidth = item.width;
+                            const isLastCol = (colIndex === rowItems.length - 1);
 
-                        const currentVertStyle = isLastCol ? 'none' : vertStyle;
-                        const currentHorzStyle = isLastRow ? 'none' : horzStyle;
-                        
-                        const symLeftHTML = (label.symbolL && label.symbolL !== '--' && label.symbolL !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actSymSize}px; padding-left: ${padX}mm; padding-right: 2px;">${renderSymbol(label.symbolL)}</span>` : '';
-                        const symCenterHTML = (label.symbolC && label.symbolC !== '--' && label.symbolC !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actSymSize}px; padding-right: 2px;">${renderSymbol(label.symbolC)}</span>` : '';
-                        const symRightHTML = (label.symbolR && label.symbolR !== '--' && label.symbolR !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actSymSize}px; padding-right: ${padX}mm; padding-left: 2px;">${renderSymbol(label.symbolR)}</span>` : '';
+                            const styleFontW = label.isBold ? 'bold' : 'normal';
+                            const styleTextD = label.isUnderline ? 'underline' : 'none';
+                            const actFontSize = label.customFontSize ? label.customFontSize : pFontSize;
+                            const actSymSize = label.customSymbolSize ? label.customSymbolSize : (globalLabelSymSize ? globalLabelSymSize : actFontSize);
+                            
+                            const currentVertStyle = isLastCol ? 'none' : vertStyle;
+                            const currentHorzStyle = isLastRow ? 'none' : horzStyle;
+                            
+                            const symLeftHTML = (label.symbolL && label.symbolL !== '--' && label.symbolL !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actSymSize}px; padding-left: ${padX}mm; padding-right: 2px;">${renderSymbol(label.symbolL)}</span>` : '';
+                            const symCenterHTML = (label.symbolC && label.symbolC !== '--' && label.symbolC !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actSymSize}px; padding-right: 2px;">${renderSymbol(label.symbolC)}</span>` : '';
+                            const symRightHTML = (label.symbolR && label.symbolR !== '--' && label.symbolR !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${actSymSize}px; padding-right: ${padX}mm; padding-left: 2px;">${renderSymbol(label.symbolR)}</span>` : '';
 
-                    groupHtml += `
-                        <div class="preview-label" style="
-                            width: ${pWidth}mm; height: ${pHeight}mm; 
-                            background-color: ${label.backgroundColorHex}; color: ${label.textColorHex}; 
-                            border-right: ${currentVertStyle}; border-bottom: ${currentHorzStyle};">
-                            ${symLeftHTML}
-                            <span class="preview-label-text" style="font-size: ${actFontSize}px; font-weight: ${styleFontW}; text-decoration: ${styleTextD};">${symCenterHTML}${label.text}</span>
-                            ${symRightHTML}
-                        </div>
-                    `;
+                            groupHtml += `
+                                <div class="preview-label" style="
+                                    width: ${actWidth}mm; height: ${pHeight}mm; 
+                                    background-color: ${label.backgroundColorHex}; color: ${label.textColorHex}; 
+                                    border-right: ${currentVertStyle}; border-bottom: ${currentHorzStyle};">
+                                    ${symLeftHTML}
+                                    <span class="preview-label-text" style="font-size: ${actFontSize}px; font-weight: ${styleFontW}; text-decoration: ${styleTextD};">${symCenterHTML}${label.text}</span>
+                                    ${symRightHTML}
+                                </div>
+                            `;
+                        });
                     });
 
                     groupHtml += `</div>`;
