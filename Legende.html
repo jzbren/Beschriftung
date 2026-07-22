@@ -24,11 +24,13 @@
             print-color-adjust: exact; 
         }
 
-        .toolbar button img {
+        .toolbar button img, .icon-btn svg {
             width: 16px; 
             height: 16px; 
             filter: brightness(0) invert(1); 
         }
+        
+        .icon-btn svg { filter: none; fill: currentColor; }
 
         .toolbar { background: var(--dark); padding: 10px 20px; color: white; display: flex; gap: 10px; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 100; flex-shrink: 0; flex-wrap: wrap;}
         .toolbar button { background: var(--gray); color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px; transition: 0.2s; display: flex; align-items: center; gap: 5px;}
@@ -53,15 +55,18 @@
 
         .legend-body { padding: 15px; }
         
-        .row-item { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; background: #fafafa; padding: 6px; border: 1px solid #ddd; border-radius: 4px; }
+        .row-item { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; background: #fafafa; padding: 6px; border: 1px solid #ddd; border-radius: 4px; transition: background-color 0.2s;}
+        .row-item.is-heading { background: #eef5ff; border-color: #b8d4f5; }
         .row-item input[type="text"] { padding: 6px; border: 1px solid #ccc; border-radius: 4px; height: 32px; font-size: 13px; }
         .row-item input.col-left { width: 120px; font-weight: bold; }
         .row-item input.col-right { flex: 1; }
+        .row-item input.heading-input { flex: 1; font-weight: bold; font-size: 14px; color: var(--primary); border-color: #a0c4eb;}
 
         .icon-btn { background: none; border: none; cursor: pointer; font-size: 16px; padding: 5px; color: var(--gray); border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;}
-        .icon-btn:hover { background: #eee; color: var(--dark); }
+        .icon-btn:hover { background: #e0e0e0; color: var(--dark); }
         .icon-btn.delete { color: var(--danger); }
         .icon-btn.duplicate { color: var(--success); }
+        .icon-btn.pagebreak.active { background: var(--danger); color: white; }
         .icon-btn img { width: 16px; height: 16px; opacity: 0.6; transition: 0.2s; pointer-events: none; }
         .icon-btn:hover img { opacity: 1; }
         .icon-btn.delete:hover img { filter: invert(27%) sepia(91%) saturate(5353%) hue-rotate(349deg) brightness(92%) contrast(93%); }
@@ -117,6 +122,18 @@
         .preview-col-left { width: 50px; font-weight: bold; color: #000; flex-shrink: 0; min-height: 18px; text-align: left;}
         .preview-col-right { flex: 1; color: #222; overflow: hidden; text-overflow: ellipsis; min-height: 18px; }
 
+        .preview-heading-row {
+            font-weight: bold;
+            font-size: 13px;
+            color: #000;
+            background-color: #f0f0f0;
+            padding: 3px 5px;
+            margin-top: 6px;
+            margin-bottom: 2px;
+            border-left: 3px solid var(--primary);
+            width: 100%;
+        }
+
         /* Adressbalken und Soforthilfe am Ende der Seite */
         .preview-footer {
             margin-top: auto; 
@@ -157,7 +174,7 @@
 <body>
 
     <div class="toolbar">
-        <div class="toolbar-title">Legenden Generator V1.0</div>
+        <div class="toolbar-title">Legenden Generator V1.1</div>
         
         <div style="display: flex; align-items: center; gap: 5px;">
             <label style="font-size: 13px; font-weight: bold;">Format:</label>
@@ -180,25 +197,25 @@
         </div>
 
         <button class="btn-success" onclick="app.addSection()">
-            <img src="icons/Plus.svg"> Abschnitt
+            <img src="icons/Plus.svg" onerror="this.style.display='none'; this.nextSibling.textContent='+'"> Abschnitt
         </button>
         <button class="btn-info" onclick="document.getElementById('csvModal').style.display = 'flex'">
-            <img src="icons/CSV-Datei.svg"> CSV Import
+            <img src="icons/CSV-Datei.svg" onerror="this.style.display='none'"> CSV Import
         </button>
         <button onclick="app.saveData()">
-            <img src="icons/Download.svg"> Speichern
+            <img src="icons/Download.svg" onerror="this.style.display='none'"> Speichern
         </button>
         <button onclick="document.getElementById('fileInput').click()">
-            <img src="icons/Hochladen.svg"> Öffnen
+            <img src="icons/Hochladen.svg" onerror="this.style.display='none'"> Öffnen
         </button>
         <input type="file" id="fileInput" style="display: none" accept=".RSKLegende" onchange="app.loadData(event)">
         
         <div style="margin-left: auto; display: flex; gap: 10px;">
             <button onclick="window.print()">
-                <img src="icons/Drucken.svg"> Drucken
+                <img src="icons/Drucken.svg" onerror="this.style.display='none'"> Drucken
             </button>
             <button class="btn-danger" onclick="app.resetAll()">
-                <img src="icons/Radierer.svg"> Neu
+                <img src="icons/Radierer.svg" onerror="this.style.display='none'"> Neu
             </button>
         </div>
     </div>
@@ -224,6 +241,11 @@
     </div>
 
     <script>
+    const SVGs = {
+        pageBreak: `<svg viewBox="0 0 24 24"><path d="M4 19h16v2H4zM4 3h16v2H4zm5 4h6v4h3l-6 5-6-5h3z"/></svg>`,
+        heading: `<svg viewBox="0 0 24 24"><path d="M5 4v3h5.5v12h3V7H19V4z"/></svg>`
+    };
+
     function renderRSKLogo() {
         return `<div class="preview-logo-container">
                     <span class="preview-logo"></span>
@@ -275,9 +297,9 @@
             if(this.sections.length === 0) {
                 this.addSection();
                 this.sections[0].rows = [
-                    { id: 1, left: "F01", right: "sowieso" },
-                    { id: 2, left: "F02", right: "sowieso" },
-                    { id: 3, left: "F15", right: "sowieso" }
+                    { id: 1, type: "row", left: "F01", right: "Licht Wohnzimmer", pageBreak: false },
+                    { id: 2, type: "heading", text: "Küche", pageBreak: false },
+                    { id: 3, type: "row", left: "F02", right: "Steckdosen Küche", pageBreak: false }
                 ];
             }
             document.getElementById('pageFormatSelect').value = this.format;
@@ -301,7 +323,7 @@
                 title: "Legende: HV Allgemein",
                 subtitle: "Strasse, Geschoss, Wohnung",
                 backupFuse: "Vorsicherung: ab HV F5",
-                rows: [{ id: Date.now()+1, left: "F01", right: "Beschreibung..." }]
+                rows: [{ id: Date.now()+1, type: "row", left: "F01", right: "Beschreibung...", pageBreak: false }]
             });
             this.render();
         },
@@ -316,7 +338,15 @@
         addRow(secId) {
             const sec = this.sections.find(s => s.id === secId);
             if(sec) {
-                sec.rows.push({ id: Date.now(), left: "", right: "" });
+                sec.rows.push({ id: Date.now(), type: "row", left: "", right: "", pageBreak: false });
+                this.render();
+            }
+        },
+
+        addHeading(secId) {
+            const sec = this.sections.find(s => s.id === secId);
+            if(sec) {
+                sec.rows.push({ id: Date.now(), type: "heading", text: "", pageBreak: false });
                 this.render();
             }
         },
@@ -335,7 +365,22 @@
                 const orig = sec.rows.find(r => r.id === rowId);
                 if(orig) {
                     const idx = sec.rows.indexOf(orig);
-                    sec.rows.splice(idx + 1, 0, { id: Date.now(), left: orig.left, right: orig.right });
+                    let newRow = { id: Date.now(), type: orig.type, pageBreak: orig.pageBreak };
+                    if(orig.type === 'heading') newRow.text = orig.text;
+                    else { newRow.left = orig.left; newRow.right = orig.right; }
+                    
+                    sec.rows.splice(idx + 1, 0, newRow);
+                    this.render();
+                }
+            }
+        },
+
+        togglePageBreak(secId, rowId) {
+            const sec = this.sections.find(s => s.id === secId);
+            if(sec) {
+                const row = sec.rows.find(r => r.id === rowId);
+                if(row) {
+                    row.pageBreak = !row.pageBreak;
                     this.render();
                 }
             }
@@ -377,7 +422,7 @@
                 if(parts.length === 1) left = '';
 
                 if(left || right) {
-                    newRows.push({ id: Date.now() + Math.random(), left: left, right: right });
+                    newRows.push({ id: Date.now() + Math.random(), type: "row", left: left, right: right, pageBreak: false });
                 }
             });
 
@@ -420,6 +465,14 @@
                         this.columns = parsed.columns || 1;
                         this.sections = parsed.sections || [];
                     }
+                    // Rückwärtskompatibilität für alte Speicherstände anpassen
+                    this.sections.forEach(sec => {
+                        sec.rows.forEach(r => {
+                            if(!r.type) r.type = "row";
+                            if(r.pageBreak === undefined) r.pageBreak = false;
+                        });
+                    });
+
                     this.init();
                 } catch (err) {
                     alert("Fehler beim Laden der Datei.");
@@ -446,7 +499,6 @@
             editor.innerHTML = '';
 
             this.sections.forEach(sec => {
-                // Fallback für ältere gespeicherte Daten ohne backupFuse
                 if(sec.backupFuse === undefined) sec.backupFuse = "";
 
                 const card = document.createElement('div');
@@ -459,20 +511,33 @@
                             <input type="text" value="${sec.backupFuse}" placeholder="Vorsicherung (z.B. Vorsicherung: ab HV F5)" oninput="app.updateSecData(${sec.id}, 'backupFuse', this.value)">
                         </div>
                         <div style="display: flex; gap: 5px;">
-                            <button class="icon-btn" onclick="app.addRow(${sec.id})" title="Zeile hinzufügen"><img src="icons/Plus.svg"></button>
-                            <button class="icon-btn delete" onclick="app.removeSection(${sec.id})" title="Abschnitt löschen"><img src="icons/Papierkorb.svg"></button>
+                            <button class="icon-btn" onclick="app.addRow(${sec.id})" title="Zeile hinzufügen"><img src="icons/Plus.svg" onerror="this.style.display='none'; this.nextSibling.textContent='+'"></button>
+                            <button class="icon-btn" onclick="app.addHeading(${sec.id})" title="Überschrift hinzufügen">${SVGs.heading}</button>
+                            <button class="icon-btn delete" onclick="app.removeSection(${sec.id})" title="Abschnitt löschen"><img src="icons/Papierkorb.svg" onerror="this.style.display='none'; this.nextSibling.textContent='X'"></button>
                         </div>
                     </div>
                     <div class="legend-body">
                         <div id="rows-container-${sec.id}">
-                            ${sec.rows.map(row => `
-                                <div class="row-item">
-                                    <input type="text" class="col-left" value="${row.left}" placeholder="Kürzel (F01)" oninput="app.updateRowData(${sec.id}, ${row.id}, 'left', this.value)">
-                                    <input type="text" class="col-right" value="${row.right}" placeholder="Beschreibung..." oninput="app.updateRowData(${sec.id}, ${row.id}, 'right', this.value)">
-                                    <button class="icon-btn duplicate" onclick="app.duplicateRow(${sec.id}, ${row.id})" title="Duplizieren"><img src="icons/Dublizieren.svg"></button>
-                                    <button class="icon-btn delete" onclick="app.removeRow(${sec.id}, ${row.id})" title="Löschen"><img src="icons/Papierkorb.svg"></button>
+                            ${sec.rows.map(row => {
+                                let contentHtml = '';
+                                if(row.type === 'heading') {
+                                    contentHtml = `<input type="text" class="heading-input" value="${row.text || ''}" placeholder="Zwischenüberschrift..." oninput="app.updateRowData(${sec.id}, ${row.id}, 'text', this.value)">`;
+                                } else {
+                                    contentHtml = `
+                                        <input type="text" class="col-left" value="${row.left || ''}" placeholder="Kürzel (F01)" oninput="app.updateRowData(${sec.id}, ${row.id}, 'left', this.value)">
+                                        <input type="text" class="col-right" value="${row.right || ''}" placeholder="Beschreibung..." oninput="app.updateRowData(${sec.id}, ${row.id}, 'right', this.value)">
+                                    `;
+                                }
+
+                                return `
+                                <div class="row-item ${row.type === 'heading' ? 'is-heading' : ''}">
+                                    <button class="icon-btn pagebreak ${row.pageBreak ? 'active' : ''}" onclick="app.togglePageBreak(${sec.id}, ${row.id})" title="Seitenumbruch vor diesem Element erzwingen">${SVGs.pageBreak}</button>
+                                    ${contentHtml}
+                                    <button class="icon-btn duplicate" onclick="app.duplicateRow(${sec.id}, ${row.id})" title="Duplizieren"><img src="icons/Dublizieren.svg" onerror="this.style.display='none'; this.nextSibling.textContent='D'"></button>
+                                    <button class="icon-btn delete" onclick="app.removeRow(${sec.id}, ${row.id})" title="Löschen"><img src="icons/Papierkorb.svg" onerror="this.style.display='none'; this.nextSibling.textContent='-'"></button>
                                 </div>
-                            `).join('')}
+                                `;
+                            }).join('')}
                         </div>
                     </div>
                 `;
@@ -504,41 +569,76 @@
             else if (this.format === 'A5_landscape') maxRowsPerCol = 10;
 
             this.sections.forEach(sec => {
-                let rowsPerSlice = maxRowsPerCol * this.columns;
                 
-                for (let i = 0; i < sec.rows.length; i += rowsPerSlice) {
-                    let pageRows = sec.rows.slice(i, i + rowsPerSlice);
-                    
+                // Intelligenter Page-Builder (anstatt starrem Slicing)
+                let pagesData = [];
+                let currentPage = { cols: Array.from({ length: this.columns }, () => []) };
+                let currentColumnIndex = 0;
+                let currentRowsInColumn = 0;
+
+                sec.rows.forEach((item, index) => {
+                    // Prüfen ob manueller Seitenumbruch gefordert ist (aber nicht beim allerersten Element)
+                    if (item.pageBreak && index !== 0) {
+                        pagesData.push(currentPage);
+                        currentPage = { cols: Array.from({ length: this.columns }, () => []) };
+                        currentColumnIndex = 0;
+                        currentRowsInColumn = 0;
+                    }
+
+                    // Prüfen ob aktuelle Spalte voll ist
+                    if (currentRowsInColumn >= maxRowsPerCol) {
+                        currentColumnIndex++;
+                        currentRowsInColumn = 0;
+                        // Prüfen ob Seite voll ist
+                        if (currentColumnIndex >= this.columns) {
+                            pagesData.push(currentPage);
+                            currentPage = { cols: Array.from({ length: this.columns }, () => []) };
+                            currentColumnIndex = 0;
+                        }
+                    }
+
+                    // Element in aktuelle Spalte einfügen
+                    currentPage.cols[currentColumnIndex].push(item);
+
+                    // Eine Überschrift nimmt kalkulatorisch etwas mehr Platz ein, damit sie nicht ganz unten klebt
+                    currentRowsInColumn += (item.type === 'heading' ? 1.5 : 1);
+                });
+                
+                // Letzte Seite hinzufügen, falls sie Inhalt hat
+                if (currentPage.cols.some(c => c.length > 0)) {
+                    pagesData.push(currentPage);
+                }
+
+                // Render die berechneten Seiten
+                pagesData.forEach((pageData, pageIndex) => {
                     const page = document.createElement('div');
                     page.className = 'page-preview';
                     page.style.width = width;
                     page.style.minHeight = height;
                     page.style.padding = padding;
 
-                    let colsData = Array.from({ length: this.columns }, () => []);
-                    pageRows.forEach((r, idx) => {
-                        let targetCol = Math.floor(idx / maxRowsPerCol);
-                        if (targetCol >= this.columns) targetCol = this.columns - 1;
-                        colsData[targetCol].push(r);
-                    });
-
                     let columnsHtml = '';
-                    colsData.forEach(colRows => {
+                    pageData.cols.forEach(colRows => {
                         let colRowsHtml = '';
                         colRows.forEach(r => {
-                            let leftVal = (r.left !== undefined && r.left !== '') ? r.left : '&nbsp;';
-                            let rightVal = (r.right !== undefined && r.right !== '') ? r.right : '&nbsp;';
-                            colRowsHtml += `<div class="preview-row">
-                                                <div class="preview-col-left">${leftVal}</div>
-                                                <div class="preview-col-right">${rightVal}</div>
-                                           </div>`;
+                            if (r.type === 'heading') {
+                                let textVal = (r.text !== undefined && r.text !== '') ? r.text : '&nbsp;';
+                                colRowsHtml += `<div class="preview-row preview-heading-row">${textVal}</div>`;
+                            } else {
+                                let leftVal = (r.left !== undefined && r.left !== '') ? r.left : '&nbsp;';
+                                let rightVal = (r.right !== undefined && r.right !== '') ? r.right : '&nbsp;';
+                                colRowsHtml += `<div class="preview-row">
+                                                    <div class="preview-col-left">${leftVal}</div>
+                                                    <div class="preview-col-right">${rightVal}</div>
+                                                </div>`;
+                            }
                         });
                         columnsHtml += `<div class="preview-single-column">${colRowsHtml}</div>`;
                     });
 
-                    // Auf Seite 1 (i === 0) kommt Titel, Untertitel und Vorsicherung, ab Seite 2 wird der Block angepasst
+                    // Kopfzeilen nur auf der ersten Seite des Abschnitts
                     let titleHtml = '';
-                    if (i === 0) {
+                    if (pageIndex === 0) {
                         let backupFuseHtml = sec.backupFuse ? `<div class="preview-backup-fuse">${sec.backupFuse}</div>` : '';
                         titleHtml = `
                             <div class="preview-title">${sec.title}</div>
@@ -560,7 +660,7 @@
                         ${renderFooter()}
                     `;
                     preview.appendChild(page);
-                }
+                });
             });
         }
     };
