@@ -86,15 +86,17 @@
 
         .preview-header { margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 12px; }
         
-        /* Perfekt ausgerichteter Header mit rotem Logo über Filter */
+        /* Neues Maskierungs-Verfahren für das Logo */
         .preview-logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; margin-left: 0; }
-        .preview-logo { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        /* Der Filter erzwingt das genaue Rot #dc3545, unabhängig von der Originalfarbe der SVG */
-        .preview-logo svg { 
-            width: 100%; 
-            height: 100%; 
-            display: block; 
-            filter: invert(27%) sepia(91%) saturate(5353%) hue-rotate(349deg) brightness(92%) contrast(93%);
+        
+        .preview-logo { 
+            width: 44px; 
+            height: 44px; 
+            display: inline-block; 
+            flex-shrink: 0; 
+            background-color: var(--danger); 
+            -webkit-mask: url('icons/RSK.svg') no-repeat center / contain; 
+            mask: url('icons/RSK.svg') no-repeat center / contain; 
         }
         
         .preview-logo-text { font-size: 11px; font-weight: bold; letter-spacing: 2.5px; color: #444; text-transform: uppercase; line-height: 1.15; display: flex; flex-direction: column; justify-content: center; margin-top: 2px;}
@@ -111,7 +113,7 @@
 
         /* Adressbalken und Soforthilfe am Ende der Seite */
         .preview-footer {
-            margin-top: auto; /* Drückt den Footer immer ganz nach unten */
+            margin-top: auto; 
             width: 100%;
             padding-top: 15px;
         }
@@ -214,9 +216,10 @@
     </div>
 
     <script>
+    // Maskierung analog zum funktionierenden Beschriftungs-Tool anwenden
     function renderRSKLogo() {
         return `<div class="preview-logo-container">
-                    <span class="preview-logo"><svg viewBox="0 0 100 100"><use href="icons/RSK.svg#Layer_1"></use></svg></span>
+                    <span class="preview-logo"></span>
                     <div class="preview-logo-text">RSK<br><span style="font-size: 7.5px; font-weight: normal; color: #666;">ELEKTRO</span></div>
                 </div>`;
     }
