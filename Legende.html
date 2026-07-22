@@ -1,0 +1,430 @@
+<!DOCTYPE html><html lang="de"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legende Generator</title>
+    
+    <style>
+        :root {
+            --primary: #0056b3;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --dark: #343a40;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --bg: #f4f4f9;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body { 
+            margin: 0; padding: 0; background-color: var(--bg); display: flex; flex-direction: column; height: 100vh; overflow: hidden; 
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact; 
+        }
+
+        .toolbar button img {
+            width: 16px; 
+            height: 16px; 
+            filter: brightness(0) invert(1); 
+        }
+
+        .toolbar { background: var(--dark); padding: 10px 20px; color: white; display: flex; gap: 10px; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 100; flex-shrink: 0; flex-wrap: wrap;}
+        .toolbar button { background: var(--gray); color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px; transition: 0.2s; display: flex; align-items: center; gap: 5px;}
+        .toolbar button:hover { filter: brightness(1.1); }
+        .toolbar button.btn-success { background: var(--success); }
+        .toolbar button.btn-info { background: var(--info); }
+        .toolbar button.btn-danger { background: var(--danger); }
+        .toolbar select { padding: 8px; border-radius: 4px; border: none; background: var(--gray); color: white; font-size: 14px; cursor: pointer; }
+        .toolbar-title { font-weight: bold; margin-right: auto; font-size: 18px; }
+
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        
+        .editor-area { width: 45%; background: white; border-right: 1px solid #ddd; overflow-y: auto; padding: 20px; position: relative;}
+        .preview-area { width: 55%; background: var(--bg); padding: 30px; overflow: auto; display: flex; flex-direction: column; align-items: center; }
+
+        .legend-card { border: 1px solid var(--primary); border-radius: 8px; margin-bottom: 20px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .legend-header { background: #e9f2fb; padding: 10px 15px; border-bottom: 1px solid var(--primary); display: flex; justify-content: space-between; align-items: center; border-radius: 8px 8px 0 0; gap: 10px;}
+        
+        .legend-header-inputs { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+        .legend-header-inputs input { font-size: 13px; border: 1px solid #ccc; padding: 6px; border-radius: 4px; width: 100%; }
+        .legend-header-inputs input.main-title { font-weight: bold; font-size: 14px; color: var(--primary); }
+
+        .legend-body { padding: 15px; }
+        
+        .row-item { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; background: #fafafa; padding: 6px; border: 1px solid #ddd; border-radius: 4px; }
+        .row-item input[type="text"] { padding: 6px; border: 1px solid #ccc; border-radius: 4px; height: 32px; font-size: 13px; }
+        .row-item input.col-left { width: 120px; font-weight: bold; }
+        .row-item input.col-right { flex: 1; }
+
+        .icon-btn { background: none; border: none; cursor: pointer; font-size: 16px; padding: 5px; color: var(--gray); border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;}
+        .icon-btn:hover { background: #eee; color: var(--dark); }
+        .icon-btn.delete { color: var(--danger); }
+        .icon-btn.duplicate { color: var(--success); }
+        .icon-btn img { width: 16px; height: 16px; opacity: 0.6; transition: 0.2s; pointer-events: none; }
+        .icon-btn:hover img { opacity: 1; }
+        .icon-btn.delete:hover img { filter: invert(27%) sepia(91%) saturate(5353%) hue-rotate(349deg) brightness(92%) contrast(93%); }
+        .icon-btn.duplicate:hover img { filter: invert(48%) sepia(87%) saturate(1251%) hue-rotate(85deg) brightness(99%) contrast(89%); }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 10000; }
+        .modal { background: white; padding: 25px; border-radius: 8px; width: 550px; max-width: 90%; box-shadow: 0 5px 15px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto;}
+        .modal h3 { margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid var(--primary); padding-bottom: 5px;}
+        .modal-footer { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #eee; padding-top: 15px;}
+        .modal-footer button { padding: 8px 15px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold;}
+        .btn-cancel { background: #ddd; }
+        .btn-cancel:hover { background: #ccc; }
+        .btn-confirm { background: var(--primary); color: white; }
+        .btn-confirm:hover { background: #004494; }
+
+        /* Dynamische Papier-Vorschau */
+        .page-preview {
+            background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border-radius: 4px;
+            display: flex; flex-direction: column; position: relative; margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        .preview-header { margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 12px; }
+        .preview-logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .preview-logo { width: 45px; height: 45px; color: var(--primary); }
+        .preview-logo-text { font-size: 10px; font-weight: bold; letter-spacing: 2px; color: #555; text-transform: uppercase; line-height: 1.1; }
+        
+        .preview-title { font-size: 16px; font-weight: bold; text-decoration: underline; margin-bottom: 4px; color: #000; }
+        .preview-subtitle { font-size: 13px; font-weight: bold; text-decoration: underline; color: #333; margin-bottom: 15px; }
+
+        .preview-list { display: flex; flex-direction: column; gap: 5px; }
+        .preview-row { display: flex; font-size: 12.5px; line-height: 1.35; }
+        .preview-col-left { width: 80px; font-weight: bold; color: #000; }
+        .preview-col-right { flex: 1; color: #222; }
+
+        @media print {
+            body { display: block; overflow: visible; background: white; }
+            .toolbar, .editor-area, .modal-overlay { display: none !important; }
+            .main-container { display: block; }
+            .preview-area { width: 100%; padding: 0; background: white; overflow: visible; display: block; }
+            .page-preview { box-shadow: none; margin: 0; width: 100% !important; height: auto !important; page-break-after: always; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toolbar">
+        <div class="toolbar-title">Legenden Generator V1.1</div>
+        
+        <div style="display: flex; align-items: center; gap: 5px;">
+            <label style="font-size: 13px; font-weight: bold;">Format:</label>
+            <select id="pageFormatSelect" onchange="app.changeFormat(this.value)">
+                <option value="A4_portrait">A4 Hochformat</option>
+                <option value="A4_landscape">A4 Querformat</option>
+                <option value="A5_portrait">A5 Hochformat</option>
+                <option value="A5_landscape">A5 Querformat</option>
+            </select>
+        </div>
+
+        <button class="btn-success" onclick="app.addSection()">
+            <img src="icons/Plus.svg"> Abschnitt
+        </button>
+        <button class="btn-info" onclick="document.getElementById('csvModal').style.display = 'flex'">
+            <img src="icons/CSV-Datei.svg"> CSV Import
+        </button>
+        <button onclick="app.saveData()">
+            <img src="icons/Download.svg"> Speichern
+        </button>
+        <button onclick="document.getElementById('fileInput').click()">
+            <img src="icons/Hochladen.svg"> Öffnen
+        </button>
+        <input type="file" id="fileInput" style="display: none" accept=".RSKLegende" onchange="app.loadData(event)">
+        
+        <div style="margin-left: auto; display: flex; gap: 10px;">
+            <button onclick="window.print()">
+                <img src="icons/Drucken.svg"> Drucken
+            </button>
+            <button class="btn-danger" onclick="app.resetAll()">
+                <img src="icons/Radierer.svg"> Neu
+            </button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="editor-area" id="editorArea"></div>
+        <div class="preview-area" id="previewArea"></div>
+    </div>
+
+    <!-- CSV Import Modal -->
+    <div class="modal-overlay" id="csvModal">
+        <div class="modal" style="width: 600px;">
+            <h3>Excel / CSV Legenden Import</h3>
+            <p style="font-size: 13px; color: #666; margin-top: -10px;">Kopiere deine zwei Spalten ( Kürzel & Text ) aus Excel hier hinein (getrennt mit Tabulator oder Semikolon).</p>
+            
+            <textarea id="csvDataInput" style="width: 100%; height: 200px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace;" placeholder="F01&#09;Wohnzimmer Licht&#10;F02&#09;Küche Deckenlampe"></textarea>
+            
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="document.getElementById('csvModal').style.display = 'none'">Abbrechen</button>
+                <button class="btn-confirm" onclick="app.runCSVImport()">In neuen Abschnitt importieren</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function renderRSKLogo() {
+        return `<div class="preview-logo-container">
+                    <span class="preview-logo"><svg viewBox="0 0 100 100" style="width: 40px; height: 40px; fill: currentColor;"><use href="icons/RSK.svg#Layer_1"></use></svg></span>
+                    <div class="preview-logo-text">RSK<br><span style="font-size: 7px; font-weight: normal;">ELEKTRO</span></div>
+                </div>`;
+    }
+
+    const app = {
+        format: 'A4_portrait',
+        sections: [],
+
+        init() {
+            if(this.sections.length === 0) {
+                this.addSection();
+                this.sections[0].rows = [
+                    { id: 1, left: "F01", right: "sowieso" },
+                    { id: 2, left: "F02", right: "sowieso" },
+                    { id: 3, left: "F15", right: "sowieso" }
+                ];
+            }
+            document.getElementById('pageFormatSelect').value = this.format;
+            this.render();
+        },
+
+        changeFormat(fmt) {
+            this.format = fmt;
+            this.renderPreviewOnly();
+        },
+
+        addSection() {
+            this.sections.push({
+                id: Date.now(),
+                title: "Legende: HV Allgemein",
+                subtitle: "Strasse, Geschoss, Wohnung",
+                rows: [{ id: Date.now()+1, left: "F01", right: "Beschreibung..." }]
+            });
+            this.render();
+        },
+
+        removeSection(id) {
+            if(confirm("Abschnitt wirklich löschen?")) {
+                this.sections = this.sections.filter(s => s.id !== id);
+                this.render();
+            }
+        },
+
+        addRow(secId) {
+            const sec = this.sections.find(s => s.id === secId);
+            if(sec) {
+                sec.rows.push({ id: Date.now(), left: "", right: "" });
+                this.render();
+            }
+        },
+
+        removeRow(secId, rowId) {
+            const sec = this.sections.find(s => s.id === secId);
+            if(sec) {
+                sec.rows = sec.rows.filter(r => r.id !== rowId);
+                this.render();
+            }
+        },
+
+        duplicateRow(secId, rowId) {
+            const sec = this.sections.find(s => s.id === secId);
+            if(sec) {
+                const orig = sec.rows.find(r => r.id === rowId);
+                if(orig) {
+                    const idx = sec.rows.indexOf(orig);
+                    sec.rows.splice(idx + 1, 0, { id: Date.now(), left: orig.left, right: orig.right });
+                    this.render();
+                }
+            }
+        },
+
+        updateSecData(secId, field, val) {
+            const sec = this.sections.find(s => s.id === secId);
+            if(sec) {
+                sec[field] = val;
+                this.renderPreviewOnly();
+            }
+        },
+
+        updateRowData(secId, rowId, field, val) {
+            const sec = this.sections.find(s => s.id === secId);
+            if(sec) {
+                const row = sec.rows.find(r => r.id === rowId);
+                if(row) {
+                    row[field] = val;
+                    this.renderPreviewOnly();
+                }
+            }
+        },
+
+        runCSVImport() {
+            const raw = document.getElementById('csvDataInput').value.trim();
+            if(!raw) { alert("Bitte Daten einfügen!"); return; }
+
+            const lines = raw.split('\n');
+            const newRows = [];
+
+            lines.forEach(line => {
+                let parts = line.split('\t');
+                if(parts.length < 2) parts = line.split(';');
+                if(parts.length < 2) parts = line.split(',');
+                
+                let left = parts[0] ? parts[0].trim() : '';
+                let right = parts[1] ? parts[1].trim() : left;
+                if(parts.length === 1) left = '';
+
+                if(left || right) {
+                    newRows.push({ id: Date.now() + Math.random(), left: left, right: right });
+                }
+            });
+
+            if(newRows.length > 0) {
+                this.sections.push({
+                    id: Date.now(),
+                    title: "Legende: Import",
+                    subtitle: "Objekt / Verteiler",
+                    rows: newRows
+                });
+            }
+
+            document.getElementById('csvModal').style.display = 'none';
+            document.getElementById('csvDataInput').value = '';
+            this.render();
+        },
+
+        saveData() {
+            const data = { format: this.format, sections: this.sections };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "layout.RSKLegende";
+            a.click();
+        },
+
+        loadData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if(Array.isArray(parsed)) {
+                        this.sections = parsed; // Abwärtskompatibel
+                    } else {
+                        this.format = parsed.format || 'A4_portrait';
+                        this.sections = parsed.sections || [];
+                    }
+                    this.init();
+                } catch (err) {
+                    alert("Fehler beim Laden der Datei.");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        },
+
+        resetAll() {
+            if(confirm("Alle Einträge löschen?")) {
+                this.sections = [];
+                this.init();
+            }
+        },
+
+        render() {
+            this.renderEditor();
+            this.renderPreviewOnly();
+        },
+
+        renderEditor() {
+            const editor = document.getElementById('editorArea');
+            editor.innerHTML = '';
+
+            this.sections.forEach(sec => {
+                const card = document.createElement('div');
+                card.className = 'legend-card';
+                card.innerHTML = `
+                    <div class="legend-header">
+                        <div class="legend-header-inputs">
+                            <input type="text" class="main-title" value="${sec.title}" placeholder="Titel (z.B. Legende: HV)" oninput="app.updateSecData(${sec.id}, 'title', this.value)">
+                            <input type="text" value="${sec.subtitle}" placeholder="Untertitel (z.B. Adresse / Ort)" oninput="app.updateSecData(${sec.id}, 'subtitle', this.value)">
+                        </div>
+                        <div style="display: flex; gap: 5px;">
+                            <button class="icon-btn" onclick="app.addRow(${sec.id})" title="Zeile hinzufügen"><img src="icons/Plus.svg"></button>
+                            <button class="icon-btn delete" onclick="app.removeSection(${sec.id})" title="Abschnitt löschen"><img src="icons/Papierkorb.svg"></button>
+                        </div>
+                    </div>
+                    <div class="legend-body">
+                        <div id="rows-container-${sec.id}">
+                            ${sec.rows.map(row => `
+                                <div class="row-item">
+                                    <input type="text" class="col-left" value="${row.left}" placeholder="Kürzel (F01)" oninput="app.updateRowData(${sec.id}, ${row.id}, 'left', this.value)">
+                                    <input type="text" class="col-right" value="${row.right}" placeholder="Beschreibung..." oninput="app.updateRowData(${sec.id}, ${row.id}, 'right', this.value)">
+                                    <button class="icon-btn duplicate" onclick="app.duplicateRow(${sec.id}, ${row.id})" title="Duplizieren"><img src="icons/Dublizieren.svg"></button>
+                                    <button class="icon-btn delete" onclick="app.removeRow(${sec.id}, ${row.id})" title="Löschen"><img src="icons/Papierkorb.svg"></button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                editor.appendChild(card);
+            });
+        },
+
+        renderPreviewOnly() {
+            const preview = document.getElementById('previewArea');
+            preview.innerHTML = '';
+
+            // Maße für CSS-Vorschau und @page Druck
+            let width = '210mm', height = '297mm', padding = '15mm';
+            if (this.format === 'A4_landscape') { width = '297mm'; height = '210mm'; }
+            else if (this.format === 'A5_portrait') { width = '148mm'; height = '210mm'; padding = '12mm'; }
+            else if (this.format === 'A5_landscape') { width = '210mm'; height = '148mm'; padding = '10mm'; }
+
+            // Globales Druckformat dynamisch via style tag anpassen
+            let styleTag = document.getElementById('print-format-style');
+            if(!styleTag) {
+                styleTag = document.createElement('style');
+                styleTag.id = 'print-format-style';
+                document.head.appendChild(styleTag);
+            }
+            const printSize = (this.format.includes('landscape')) ? 'A4 landscape' : 'A4 portrait'; // Passt sich an
+            const cssPrintFmt = this.format.replace('_', ' '); // z.B. A4 portrait / A5 landscape
+            styleTag.innerHTML = `@media print { @page { size: ${cssPrintFmt}; margin: 0; } }`;
+
+            this.sections.forEach(sec => {
+                const page = document.createElement('div');
+                page.className = 'page-preview';
+                page.style.width = width;
+                page.style.minHeight = height;
+                page.style.padding = padding;
+                
+                let rowsHtml = '';
+                sec.rows.forEach(r => {
+                    rowsHtml += `<div class="preview-row">
+                                    <div class="preview-col-left">${r.left}</div>
+                                    <div class="preview-col-right">${r.right}</div>
+                                 </div>`;
+                });
+
+                page.innerHTML = `
+                    <div class="preview-header">
+                        ${renderRSKLogo()}
+                        <div class="preview-title">${sec.title}</div>
+                        <div class="preview-subtitle">${sec.subtitle}</div>
+                    </div>
+                    <div class="preview-list">
+                        ${rowsHtml}
+                    </div>
+                `;
+                preview.appendChild(page);
+            });
+        }
+    };
+
+    window.onload = () => app.init();
+    </script>
+</body>
+</html>
