@@ -85,8 +85,8 @@
         }
 
         .preview-header { margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 12px; }
-        .preview-logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-        .preview-logo { width: 45px; height: 45px; color: var(--primary); }
+        .preview-logo-container { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .preview-logo { width: 36px; height: 36px; color: #dc3545; display: flex; align-items: center; }
         .preview-logo-text { font-size: 10px; font-weight: bold; letter-spacing: 2px; color: #555; text-transform: uppercase; line-height: 1.1; }
         
         .preview-title { font-size: 16px; font-weight: bold; text-decoration: underline; margin-bottom: 4px; color: #000; }
@@ -109,7 +109,7 @@
 <body>
 
     <div class="toolbar">
-        <div class="toolbar-title">Legenden Generator V1.1</div>
+        <div class="toolbar-title">Legenden Generator V1.2</div>
         
         <div style="display: flex; align-items: center; gap: 5px;">
             <label style="font-size: 13px; font-weight: bold;">Format:</label>
@@ -168,7 +168,7 @@
     <script>
     function renderRSKLogo() {
         return `<div class="preview-logo-container">
-                    <span class="preview-logo"><svg viewBox="0 0 100 100" style="width: 40px; height: 40px; fill: currentColor;"><use href="icons/RSK.svg#Layer_1"></use></svg></span>
+                    <span class="preview-logo"><svg viewBox="0 0 100 100" style="width: 36px; height: 36px; fill: currentColor;"><use href="icons/RSK.svg#Layer_1"></use></svg></span>
                     <div class="preview-logo-text">RSK<br><span style="font-size: 7px; font-weight: normal;">ELEKTRO</span></div>
                 </div>`;
     }
@@ -312,7 +312,7 @@
                 try {
                     const parsed = JSON.parse(e.target.result);
                     if(Array.isArray(parsed)) {
-                        this.sections = parsed; // Abwärtskompatibel
+                        this.sections = parsed;
                     } else {
                         this.format = parsed.format || 'A4_portrait';
                         this.sections = parsed.sections || [];
@@ -377,21 +377,18 @@
             const preview = document.getElementById('previewArea');
             preview.innerHTML = '';
 
-            // Maße für CSS-Vorschau und @page Druck
             let width = '210mm', height = '297mm', padding = '15mm';
             if (this.format === 'A4_landscape') { width = '297mm'; height = '210mm'; }
             else if (this.format === 'A5_portrait') { width = '148mm'; height = '210mm'; padding = '12mm'; }
             else if (this.format === 'A5_landscape') { width = '210mm'; height = '148mm'; padding = '10mm'; }
 
-            // Globales Druckformat dynamisch via style tag anpassen
             let styleTag = document.getElementById('print-format-style');
             if(!styleTag) {
                 styleTag = document.createElement('style');
                 styleTag.id = 'print-format-style';
                 document.head.appendChild(styleTag);
             }
-            const printSize = (this.format.includes('landscape')) ? 'A4 landscape' : 'A4 portrait'; // Passt sich an
-            const cssPrintFmt = this.format.replace('_', ' '); // z.B. A4 portrait / A5 landscape
+            const cssPrintFmt = this.format.replace('_', ' ');
             styleTag.innerHTML = `@media print { @page { size: ${cssPrintFmt}; margin: 0; } }`;
 
             this.sections.forEach(sec => {
