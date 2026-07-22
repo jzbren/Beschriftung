@@ -82,12 +82,11 @@
             background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border-radius: 4px;
             display: flex; flex-direction: column; position: relative; margin-bottom: 20px;
             box-sizing: border-box; overflow: hidden;
-            padding: 5mm 5mm 5mm 5mm !important; /* Papierrand aussen auf 0 setzen, damit der Footer absolut bündig sitzt */
+            padding: 5mm 5mm 5mm 5mm !important; 
         }
 
-        /* Neuer Container nur für den oberen Inhalt mit eigenem Abstand */
         .page-content {
-            padding: 5mm 15mm 10mm 15mm; /* Oben, Rechts, Unten, Links für den Inhalt */
+            padding: 5mm 15mm 10mm 15mm; 
             display: flex;
             flex-direction: column;
             flex: 1;
@@ -95,8 +94,7 @@
 
         .preview-header { margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 12px; }
         
-        /* Neues Maskierungs-Verfahren für das Logo */
-        .preview-logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; margin-top: 0; margin-left: 0; }
+        .preview-logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; margin-left: 0; }
         
         .preview-logo { 
             width: 120px; 
@@ -125,7 +123,7 @@
             margin-top: auto; 
             width: 100%;
             padding-top: 15px;
-            padding-left: 10mm; /* Hier bestimmst du, wie weit nach rechts der gesamte Block rückt */
+            padding-left: 10mm; 
             padding-right: 10mm;
         }
         .footer-columns {
@@ -160,7 +158,7 @@
 <body>
 
     <div class="toolbar">
-        <div class="toolbar-title">Legenden Generator V1.0</div>
+        <div class="toolbar-title">Legenden Generator V1.1</div>
         
         <div style="display: flex; align-items: center; gap: 5px;">
             <label style="font-size: 13px; font-weight: bold;">Format:</label>
@@ -227,15 +225,12 @@
     </div>
 
     <script>
-    // Maskierung analog zum funktionierenden Beschriftungs-Tool anwenden
     function renderRSKLogo() {
         return `<div class="preview-logo-container">
                     <span class="preview-logo"></span>
-                    
                 </div>`;
     }
 
-    // HTML Vorlage für den statischen Adressbalken
     function renderFooter() {
         return `
             <div class="preview-footer">
@@ -498,7 +493,6 @@
             const cssPrintFmt = this.format.replace('_', ' ');
             styleTag.innerHTML = `@media print { @page { size: ${cssPrintFmt}; margin: 0; } }`;
 
-            // Max rows leicht reduziert, damit der neue Fussbereich Platz hat
             let maxRowsPerCol = 34;
             if (this.format === 'A4_landscape') maxRowsPerCol = 18;
             else if (this.format === 'A5_portrait') maxRowsPerCol = 20;
@@ -537,19 +531,27 @@
                         columnsHtml += `<div class="preview-single-column">${colRowsHtml}</div>`;
                     });
 
+                    // Auf Seite 1 (i === 0) kommt Titel und Untertitel, ab Seite 2 wird der Block weggelassen
+                    let titleHtml = '';
+                    if (i === 0) {
+                        titleHtml = `
+                            <div class="preview-title">${sec.title}</div>
+                            <div class="preview-subtitle">${sec.subtitle}</div>
+                        `;
+                    }
+
                     page.innerHTML = `
                         <div class="page-content">
                             <div class="preview-header">
                                 ${renderRSKLogo()}
-                                <div class="preview-title">${sec.title}${i > 0 ? ' (Fortsetzung)' : ''}</div>
-                                <div class="preview-subtitle">${sec.subtitle}</div>
+                                ${titleHtml}
                             </div>
                             <div class="preview-columns-container" style="grid-template-columns: repeat(${this.columns}, 1fr);">
                                 ${columnsHtml}
                             </div>
                         </div>
                         ${renderFooter()}
-                    `;;
+                    `;
                     preview.appendChild(page);
                 }
             });
