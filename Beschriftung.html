@@ -150,7 +150,7 @@
 <body>
 
     <div class="toolbar">
-        <div class="toolbar-title">Beschriftung V1.1</div>
+        <div class="toolbar-title">Beschriftung V1.2</div>
         <button class="btn-success" onclick="app.addPanel()">
             <img src="icons/Plus.svg"> Panel
         </button>
@@ -217,6 +217,7 @@
                 <div class="form-group"><label>Sym R:</label><select id="cfgHeaderSymbolR" class="symbol-select" onchange="app.updateConfig()"></select></div>
                 
                 <div class="form-group"><label>Textgröße:</label><input type="number" id="cfgHeaderFontSize" onchange="app.updateConfig()"></div>
+                <div class="form-group"><label>Sym. Größe:</label><input type="number" id="cfgHeaderSymbolSize" onchange="app.updateConfig()" placeholder="Auto"></div>
                 <div class="form-group"><label>Position:</label>
                     <select id="cfgTitlePosition" onchange="app.updateConfig()">
                         <option value="top">Oben</option>
@@ -775,7 +776,7 @@
 
         const app = {
             config: {
-                width: 35, height: 5, columns: 7, fontSize: 12, headerFontSize: 16, 
+                width: 35, height: 5, columns: 7, fontSize: 12, headerFontSize: 16, headerSymbolSize: '', 
                 paddingX: 3, 
                 textColorHex: '#000000', backgroundColorHex: '#ffffff', borderColorHex: '#000000',
                 headerSymbolL: '--', headerSymbolR: '--',
@@ -793,6 +794,7 @@
                 document.getElementById('cfgCols').value = this.config.columns;
                 document.getElementById('cfgFontSize').value = this.config.fontSize;
                 document.getElementById('cfgHeaderFontSize').value = this.config.headerFontSize;
+                document.getElementById('cfgHeaderSymbolSize').value = this.config.headerSymbolSize || '';
                 document.getElementById('cfgPaddingX').value = this.config.paddingX !== undefined ? this.config.paddingX : 1;
                 
                 document.getElementById('cfgHeaderSymbolL').innerHTML = renderDropdown(this.config.headerSymbolL || '--');
@@ -839,6 +841,7 @@
                 this.config.columns = parseInt(document.getElementById('cfgCols').value) || 3;
                 this.config.fontSize = parseInt(document.getElementById('cfgFontSize').value) || 12;
                 this.config.headerFontSize = parseInt(document.getElementById('cfgHeaderFontSize').value) || 16;
+                this.config.headerSymbolSize = document.getElementById('cfgHeaderSymbolSize').value ? parseInt(document.getElementById('cfgHeaderSymbolSize').value) : '';
                 this.config.paddingX = parseFloat(document.getElementById('cfgPaddingX').value) || 0;
                 
                 this.config.headerSymbolL = document.getElementById('cfgHeaderSymbolL').value;
@@ -879,6 +882,7 @@
                     g.titlePosition = this.config.titlePosition;
                     g.fontSize = this.config.fontSize;
                     g.headerFontSize = this.config.headerFontSize;
+                    g.headerSymbolSize = this.config.headerSymbolSize;
                     g.paddingX = this.config.paddingX; 
                     g.gridVert = this.config.gridVert;
                     g.gridHorz = this.config.gridHorz;
@@ -905,7 +909,7 @@
                     headerSymbolColorHex: this.config.headerSymbolColorHex || this.config.headerTextColorHex || '#000000',
                     headerBackgroundColorHex: this.config.headerBackgroundColorHex || '#ffffff',
                     titlePosition: this.config.titlePosition || 'top',
-                    fontSize: '', headerFontSize: '', paddingX: '',
+                    fontSize: '', headerFontSize: '', headerSymbolSize: this.config.headerSymbolSize || '', paddingX: '',
                     gridVert: this.config.gridVert !== false, gridHorz: this.config.gridHorz !== false,
                     labels: [this.createLabel()]
                 });
@@ -1046,7 +1050,7 @@
                             headerSymbolColorHex: this.config.headerSymbolColorHex || this.config.headerTextColorHex || '#000000',
                             headerBackgroundColorHex: this.config.headerBackgroundColorHex || '#ffffff',
                             titlePosition: this.config.titlePosition || 'top',
-                            fontSize: '', headerFontSize: '', paddingX: '',
+                            fontSize: '', headerFontSize: '', headerSymbolSize: this.config.headerSymbolSize || '', paddingX: '',
                             gridVert: this.config.gridVert !== false, gridHorz: this.config.gridHorz !== false,
                             labels: []
                         };
@@ -1114,7 +1118,7 @@
                             headerSymbolColorHex: this.config.headerSymbolColorHex || this.config.headerTextColorHex || '#000000',
                             headerBackgroundColorHex: this.config.headerBackgroundColorHex || '#ffffff',
                             titlePosition: barPosition,
-                            fontSize: '', headerFontSize: '', paddingX: '',
+                            fontSize: '', headerFontSize: '', headerSymbolSize: this.config.headerSymbolSize || '', paddingX: '',
                             gridVert: this.config.gridVert !== false, gridHorz: this.config.gridHorz !== false,
                             labels: []
                         };
@@ -1293,6 +1297,7 @@
                                     <div class="form-group"><label>Symbol Farbe:</label><select onchange="app.updateData('group', ${group.id}, null, 'headerSymbolColorHex', this.value)">${getColorOptions(group.headerSymbolColorHex || group.headerTextColorHex || this.config.headerTextColorHex || '#000000')}</select></div>
                                     <div class="form-group"><label>HG:</label><select onchange="app.updateData('group', ${group.id}, null, 'headerBackgroundColorHex', this.value)">${getColorOptions(group.headerBackgroundColorHex || this.config.headerBackgroundColorHex || '#ffffff')}</select></div>
                                     <div class="form-group"><label>Größe:</label><input type="number" placeholder="Global" value="${group.headerFontSize || ''}" oninput="app.updateData('group', ${group.id}, null, 'headerFontSize', this.value)" style="width: 55px;"></div>
+                                    <div class="form-group"><label>Sym-Größe:</label><input type="number" placeholder="Auto" value="${group.headerSymbolSize || ''}" oninput="app.updateData('group', ${group.id}, null, 'headerSymbolSize', this.value)" style="width: 55px;"></div>
 
                                     <div style="width: 100%; border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-bottom: 5px; margin-top: 5px; font-weight: bold; font-size: 12px; color: var(--primary);">TASTEN (PANEL STANDARD)</div>
                                     <div class="form-group"><label>Text Farbe:</label><select onchange="app.updateData('group', ${group.id}, null, 'textColorHex', this.value)">${getColorOptions(group.textColorHex)}</select></div>
@@ -1394,9 +1399,12 @@
                         const hTextColor = group.headerTextColorHex || this.config.headerTextColorHex || '#000000';
                         const hSymbolColor = group.headerSymbolColorHex || group.headerTextColorHex || this.config.headerSymbolColorHex || this.config.headerTextColorHex || '#000000';
                         const hBgColor = group.headerBackgroundColorHex || this.config.headerBackgroundColorHex || '#ffffff';
-                        
-                        const symLeftHTML = (group.headerSymbolL && group.headerSymbolL !== '--' && group.headerSymbolL !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${pHeadSize}px; color: ${hSymbolColor}; padding-right: 5px;">${renderSymbol(group.headerSymbolL)}</span>` : '';
-                        const symRightHTML = (group.headerSymbolR && group.headerSymbolR !== '--' && group.headerSymbolR !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${pHeadSize}px; color: ${hSymbolColor}; padding-left: 5px;">${renderSymbol(group.headerSymbolR)}</span>` : '';
+
+                        // NEU: Separate Symbolgröße berechnen (Fallback auf globale Symbolgröße -> dann auf Textgröße)
+                        const pHeadSymSize = group.headerSymbolSize || this.config.headerSymbolSize || pHeadSize;
+
+                        const symLeftHTML = (group.headerSymbolL && group.headerSymbolL !== '--' && group.headerSymbolL !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${pHeadSymSize}px; color: ${hSymbolColor}; padding-right: 5px;">${renderSymbol(group.headerSymbolL)}</span>` : '';
+                        const symRightHTML = (group.headerSymbolR && group.headerSymbolR !== '--' && group.headerSymbolR !== '') ? `<span style="display:inline-flex; align-items:center; height:100%; font-size: ${pHeadSymSize}px; color: ${hSymbolColor}; padding-left: 5px;">${renderSymbol(group.headerSymbolR)}</span>` : '';
 
                         let innerColumns = '';
                         if (hL.trim() === "" && hR.trim() === "" && !symLeftHTML && !symRightHTML) {
@@ -1408,7 +1416,8 @@
                         const barBorderTop = (group.titlePosition === 'bottom' && group.gridHorz) ? `1px solid ${pBorderCol}` : 'none';
                         const barBorderBottom = (group.titlePosition !== 'bottom' && group.gridHorz) ? `1px solid ${pBorderCol}` : 'none';
 
-                        barHtml = `<div class="preview-panel-bar" style="height: ${height}mm; background-color: ${hBgColor}; color: ${hTextColor}; font-size: ${pHeadSize}px; border-top: ${barBorderTop}; border-bottom: ${barBorderBottom};">${innerColumns}</div>`;
+                        // NEU: padding: 0 ${padX}mm; sorgt dafür, dass die Kopfzeile exakt denselben Randabstand hat wie die Etiketten darunter!
+                        barHtml = `<div class="preview-panel-bar" style="height: ${height}mm; background-color: ${hBgColor}; color: ${hTextColor}; font-size: ${pHeadSize}px; border-top: ${barBorderTop}; border-bottom: ${barBorderBottom}; padding: 0 ${padX}mm;">${innerColumns}</div>`;
                     }
                     
                     if (group.titlePosition !== 'bottom') groupHtml += barHtml;
