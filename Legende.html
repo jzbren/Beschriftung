@@ -26,7 +26,7 @@
 
         .toolbar button img {
             width: 16px; 
-            height: 36px; 
+            height: 16px; 
             filter: brightness(0) invert(1); 
         }
 
@@ -86,12 +86,13 @@
 
         .preview-header { margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 12px; }
         
-        /* Streng ausgerichteter Header mit garantiert rotem Logo */
-        .preview-logo-container { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-        .preview-logo { width: 34px; height: 34px; color: #dc3545; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        /* Perfekt ausgerichteter Header mit grösserem, rotem Logo */
+        .preview-logo-container { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .preview-logo { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: #dc3545; }
         .preview-logo svg { width: 100%; height: 100%; fill: #dc3545 !important; display: block; }
         .preview-logo svg * { fill: #dc3545 !important; }
-        .preview-logo-text { font-size: 10px; font-weight: bold; letter-spacing: 2px; color: #555; text-transform: uppercase; line-height: 1.15; display: flex; flex-direction: column; justify-content: center; }
+        
+        .preview-logo-text { font-size: 11px; font-weight: bold; letter-spacing: 2.5px; color: #444; text-transform: uppercase; line-height: 1.15; display: flex; flex-direction: column; justify-content: center; }
         
         .preview-title { font-size: 16px; font-weight: bold; text-decoration: underline; margin-bottom: 4px; color: #000; }
         .preview-subtitle { font-size: 13px; font-weight: bold; text-decoration: underline; color: #333; margin-bottom: 15px; }
@@ -99,7 +100,6 @@
         .preview-columns-container { display: grid; gap: 20px; flex: 1; align-content: start; }
         .preview-single-column { display: flex; flex-direction: column; gap: 5px; }
 
-        /* Einheitliche Zeilenhöhe auch bei leeren Feldern */
         .preview-row { display: flex; font-size: 12.5px; line-height: 1.35; min-height: 18px; break-inside: avoid; page-break-inside: avoid; }
         .preview-col-left { width: 70px; font-weight: bold; color: #000; flex-shrink: 0; min-height: 18px; }
         .preview-col-right { flex: 1; color: #222; overflow: hidden; text-overflow: ellipsis; min-height: 18px; }
@@ -116,7 +116,7 @@
 <body>
 
     <div class="toolbar">
-        <div class="toolbar-title">Legenden Generator V1.5</div>
+        <div class="toolbar-title">Legenden Generator V1.6</div>
         
         <div style="display: flex; align-items: center; gap: 5px;">
             <label style="font-size: 13px; font-weight: bold;">Format:</label>
@@ -185,8 +185,8 @@
     <script>
     function renderRSKLogo() {
         return `<div class="preview-logo-container">
-                    <span class="preview-logo"><svg viewBox="0 0 100 100"><use href="icons/RSK.svg#Layer_1"></use></svg></span>
-                    <div class="preview-logo-text">RSK<br><span style="font-size: 7px; font-weight: normal;">ELEKTRO</span></div>
+                    <span class="preview-logo"><svg viewBox="0 0 100 100" style="fill: #dc3545;"><use href="icons/RSK.svg#Layer_1" style="fill: #dc3545;"></use></svg></span>
+                    <div class="preview-logo-text">RSK<br><span style="font-size: 7.5px; font-weight: normal; color: #666;">ELEKTRO</span></div>
                 </div>`;
     }
 
