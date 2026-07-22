@@ -76,13 +76,21 @@
         .btn-cancel:hover { background: #ccc; }
         .btn-confirm { background: var(--primary); color: white; }
         .btn-confirm:hover { background: #004494; }
-
+        
         /* Dynamische Papier-Vorschau */
         .page-preview {
             background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border-radius: 4px;
             display: flex; flex-direction: column; position: relative; margin-bottom: 20px;
             box-sizing: border-box; overflow: hidden;
-            padding: 0mm 0mm 0mm 0mm !important;
+            padding: 0 !important; /* Papierrand aussen auf 0 setzen, damit der Footer absolut bündig sitzt */
+        }
+
+        /* Neuer Container nur für den oberen Inhalt mit eigenem Abstand */
+        .page-content {
+            padding: 15mm 15mm 10mm 15mm; /* Oben, Rechts, Unten, Links für den Inhalt */
+            display: flex;
+            flex-direction: column;
+            flex: 1;
         }
 
         .preview-header { margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 12px; }
@@ -150,7 +158,7 @@
 <body>
 
     <div class="toolbar">
-        <div class="toolbar-title">Legenden Generator V1.1</div>
+        <div class="toolbar-title">Legenden Generator V1.0</div>
         
         <div style="display: flex; align-items: center; gap: 5px;">
             <label style="font-size: 13px; font-weight: bold;">Format:</label>
@@ -528,16 +536,18 @@
                     });
 
                     page.innerHTML = `
-                        <div class="preview-header">
-                            ${renderRSKLogo()}
-                            <div class="preview-title">${sec.title}${i > 0 ? ' (Fortsetzung)' : ''}</div>
-                            <div class="preview-subtitle">${sec.subtitle}</div>
-                        </div>
-                        <div class="preview-columns-container" style="grid-template-columns: repeat(${this.columns}, 1fr);">
-                            ${columnsHtml}
+                        <div class="page-content">
+                            <div class="preview-header">
+                                ${renderRSKLogo()}
+                                <div class="preview-title">${sec.title}${i > 0 ? ' (Fortsetzung)' : ''}</div>
+                                <div class="preview-subtitle">${sec.subtitle}</div>
+                            </div>
+                            <div class="preview-columns-container" style="grid-template-columns: repeat(${this.columns}, 1fr);">
+                                ${columnsHtml}
+                            </div>
                         </div>
                         ${renderFooter()}
-                    `;
+                    `;;
                     preview.appendChild(page);
                 }
             });
