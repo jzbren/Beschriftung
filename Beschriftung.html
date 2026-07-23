@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="de"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beschriftung</title>
+    <title>Beschriftung 1</title>
     
     <style>
         :root {
@@ -166,10 +166,15 @@
 
         /* Druck-Anpassung */
         @media print {
-            body { display: block; overflow: visible; background: white; }
+            body { 
+                display: block; 
+                overflow: visible !important; 
+                height: auto !important; /* WICHTIG: Erlaubt dem Body, länger als 1 Seite zu werden */
+                background: white; 
+            }
             .toolbar, .editor-area, .modal-overlay { display: none !important; }
-            .main-container { display: block; }
-            .preview-area { width: 100%; padding: 0; display: flex; flex-direction: column; align-items: flex-start; background: white; overflow: visible; }
+            .main-container { display: block; overflow: visible !important; height: auto !important; }
+            .preview-area { width: 100%; padding: 0; display: flex; flex-direction: column; align-items: flex-start; background: white; overflow: visible !important; height: auto !important; }
             .preview-wrapper { box-shadow: none; padding: 0; border: none; margin: 0; width: 100%; min-width: 100%; }
             .preview-wrapper.layout-grid { justify-content: flex-start; }
             .preview-wrapper.layout-grid:not(.with-gap) { padding-top: 1px !important; padding-left: 1px !important; }
@@ -181,8 +186,10 @@
             }
             body.print-icons .modal-overlay#iconModalOverlay { 
                 display: block !important; 
-                position: static; 
+                position: static !important; /* Löst das Fenster aus der fixierten Position */
                 background: white; 
+                height: auto !important;
+                overflow: visible !important;
             }
             body.print-icons .modal-overlay#iconModalOverlay .modal { 
                 width: 100%; 
@@ -191,16 +198,20 @@
                 border: none; 
                 padding: 0; 
                 margin: 0; 
+                max-height: none !important; /* Hebt die maximale Höhe (90vh) auf */
+                height: auto !important;
+                overflow: visible !important; /* Zwingt den Browser, den gesamten Inhalt anzuzeigen */
             }
             body.print-icons #iconModalContent { 
                 max-height: none !important; 
+                height: auto !important;
                 overflow: visible !important; 
             }
             body.print-icons .modal-footer { 
                 display: none !important; 
             }
             .icon-card { 
-                page-break-inside: avoid; 
+                page-break-inside: avoid; /* Verhindert, dass ein Icon auf 2 Seiten zerschnitten wird */
                 break-inside: avoid; 
             }
             h4 { 
