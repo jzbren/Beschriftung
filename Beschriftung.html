@@ -138,6 +138,33 @@
             filter: invert(48%) sepia(87%) saturate(1251%) hue-rotate(85deg) brightness(99%) contrast(89%);
         }
 
+        /* --- Styles für Icon Übersicht --- */
+        .icon-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
+            gap: 10px; 
+            margin-bottom: 20px; 
+        }
+        .icon-card { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            border: 1px solid #ddd; 
+            padding: 8px; 
+            border-radius: 6px; 
+            font-size: 13px;
+            background: #fafafa;
+        }
+        .icon-card span.icon-wrapper { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            width: 24px; 
+            height: 24px; 
+            color: var(--primary); 
+        }
+
+        /* Druck-Anpassung */
         @media print {
             body { display: block; overflow: visible; background: white; }
             .toolbar, .editor-area, .modal-overlay { display: none !important; }
@@ -146,6 +173,40 @@
             .preview-wrapper { box-shadow: none; padding: 0; border: none; margin: 0; width: 100%; min-width: 100%; }
             .preview-wrapper.layout-grid { justify-content: flex-start; }
             .preview-wrapper.layout-grid:not(.with-gap) { padding-top: 1px !important; padding-left: 1px !important; }
+
+            /* Spezifische Anpassungen für Icon Übersicht im Druck */
+            body.print-icons .main-container, 
+            body.print-icons .toolbar { 
+                display: none !important; 
+            }
+            body.print-icons .modal-overlay#iconModalOverlay { 
+                display: block !important; 
+                position: static; 
+                background: white; 
+            }
+            body.print-icons .modal-overlay#iconModalOverlay .modal { 
+                width: 100%; 
+                max-width: 100%; 
+                box-shadow: none; 
+                border: none; 
+                padding: 0; 
+                margin: 0; 
+            }
+            body.print-icons #iconModalContent { 
+                max-height: none !important; 
+                overflow: visible !important; 
+            }
+            body.print-icons .modal-footer { 
+                display: none !important; 
+            }
+            .icon-card { 
+                page-break-inside: avoid; 
+                break-inside: avoid; 
+            }
+            h4 { 
+                page-break-after: avoid; 
+                break-after: avoid; 
+            }
         }
     </style>
 </head>
@@ -154,34 +215,37 @@
     <div class="toolbar">
         <div class="toolbar-title">Beschriftung V1.5</div>
         <button class="btn-success" onclick="app.addPanel()">
-            <img src="icons/Plus.svg"> Panel
+            <img src="icons/Plus.svg" onerror="this.style.display='none'"> Panel
         </button>
         <button class="btn-info" onclick="app.fillAllEmptyLabels()" title="Füllt in allen Panels leere Tasten auf">
-            <img src="icons/Auffuellen.svg"> Alle Auffüllen
+            <img src="icons/Auffuellen.svg" onerror="this.style.display='none'"> Alle Auffüllen
         </button>
         <button class="btn-info" onclick="document.getElementById('generatorModal').style.display = 'flex'">
-            <img src="icons/Generator-Zahlen.svg"> Auto-Nr
+            <img src="icons/Generator-Zahlen.svg" onerror="this.style.display='none'"> Auto-Nr
         </button>
         <button class="btn-info" onclick="document.getElementById('csvModal').style.display = 'flex'">
-            <img src="icons/CSV-Datei.svg"> CSV Import
+            <img src="icons/CSV-Datei.svg" onerror="this.style.display='none'"> CSV Import
+        </button>
+        <button class="btn-info" onclick="app.showIconOverview()">
+            Icon Übersicht
         </button>
         <button onclick="document.getElementById('configModal').style.display = 'flex'">
-            <img src="icons/Einstellungen.svg"> Layout
+            <img src="icons/Einstellungen.svg" onerror="this.style.display='none'"> Layout
         </button>
         <button onclick="app.saveData()">
-            <img src="icons/Download.svg"> Speichern
+            <img src="icons/Download.svg" onerror="this.style.display='none'"> Speichern
         </button>
         <button onclick="document.getElementById('fileInput').click()">
-            <img src="icons/Hochladen.svg"> Öffnen
+            <img src="icons/Hochladen.svg" onerror="this.style.display='none'"> Öffnen
         </button>
         <input type="file" id="fileInput" style="display: none" accept=".ServiceProBeschriftung" onchange="app.loadData(event)">
         
         <div style="margin-left: auto; display: flex; gap: 10px;">
             <button onclick="window.print()">
-                <img src="icons/Drucken.svg"> Drucken
+                <img src="icons/Drucken.svg" onerror="this.style.display='none'"> Drucken
             </button>
             <button class="btn-danger" onclick="app.resetAll()">
-                <img src="icons/Radierer.svg"> Löschen
+                <img src="icons/Radierer.svg" onerror="this.style.display='none'"> Löschen
             </button>
         </div>
     </div>
@@ -393,6 +457,25 @@
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="document.getElementById('generatorModal').style.display = 'none'">Abbrechen</button>
                 <button class="btn-confirm" onclick="app.runGenerator()">Generieren</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Icon Übersicht -->
+    <div class="modal-overlay" id="iconModalOverlay">
+        <div class="modal" style="width: 900px; max-width: 95%;">
+            <h3>Verfügbare Symbole</h3>
+            <p style="font-size: 13px; color: #666; margin-top: -10px;">Eine Übersicht aller Icons. Du kannst diese Liste auch ausdrucken.</p>
+            
+            <div id="iconModalContent" style="max-height: 65vh; overflow-y: auto; padding-right: 10px;">
+                <!-- Wird per JavaScript gefüllt -->
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="app.closeIconOverview()">Schließen</button>
+                <button class="btn-confirm" onclick="app.printIconOverview()" style="display: flex; align-items: center; gap: 8px;">
+                    <img src="icons/Drucken.svg" style="width: 16px; height: 16px; filter: invert(1);"> Drucken
+                </button>
             </div>
         </div>
     </div>
@@ -1199,6 +1282,50 @@
                 document.getElementById('generatorModal').style.display = 'none';
                 this.render();
             },
+
+            // --- NEUE FUNKTIONEN FÜR ICON ÜBERSICHT ---
+            showIconOverview() {
+                const content = document.getElementById('iconModalContent');
+                let html = '';
+                
+                for (const [category, symbols] of Object.entries(groupedSymbols)) {
+                    if (category === "Allgemein") continue; // Nichts-Kategorie überspringen
+                    
+                    html += `<h4 style="margin-top: 20px; margin-bottom: 10px; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px;">${category}</h4>`;
+                    html += `<div class="icon-grid">`;
+                    
+                    symbols.forEach(s => {
+                        if (s.val && s.val !== '--') {
+                            html += `
+                            <div class="icon-card">
+                                <span class="icon-wrapper">${renderSymbol(s.val)}</span>
+                                <span style="word-break: break-word; line-height: 1.2;">${s.name}</span>
+                            </div>`;
+                        }
+                    });
+                    
+                    html += `</div>`;
+                }
+                
+                content.innerHTML = html;
+                document.getElementById('iconModalOverlay').style.display = 'flex';
+            },
+
+            closeIconOverview() {
+                document.getElementById('iconModalOverlay').style.display = 'none';
+            },
+
+            printIconOverview() {
+                // Fügt eine temporäre Klasse hinzu, die den Druck-Style aktiviert
+                document.body.classList.add('print-icons');
+                window.print();
+                
+                // Entfernt die Klasse wieder, sobald der Druckdialog geschlossen wird
+                setTimeout(() => {
+                    document.body.classList.remove('print-icons');
+                }, 500);
+            },
+            // --- ENDE NEUE FUNKTIONEN ---
 
             toggleSettings(id) {
                 const el = document.getElementById('settings-' + id);
