@@ -269,15 +269,5 @@ const hardwareConfigList = [
         image: "Tree-to-Air.jpg",
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"],
         io: []
-    },
-    {
-        id: "feller_taster_universell",
-        name: "Feller Universaltaster (Dumm)",
-        image: "",
-        fields: ["Artikelnummer", "Bezeichnung"],
-        io: [
-            { id: "KONTAKT_1", label: "Schliesser 1", type: "out" },
-            { id: "KONTAKT_2", label: "Schliesser 2", type: "out" }
-        ]
     }
 ];
