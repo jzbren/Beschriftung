@@ -6,76 +6,128 @@ const iconConfigList = [
         io: []
     },
     {
-        file: "Schaltericon.png",
-        label: "Deckenleuchte",
+        file: "Drehschalter-Hand-Auto.png",
+        label: "Drehschalter Hand-Auto",
         io: [
-            { id: "TA_EIN", label: "Taster (TA)", type: "in" },
-            { id: "LI_AUS", label: "Licht (Relais)", type: "out" }
+            { id: "TA_HAND_AUTO", label: "Hand/Auto Schalter", type: "in" }
         ]
     },
     {
-        file: "Fenster-Auf.svg",
-        label: "Storen / Fenster Auf",
+        file: "Raumthermostaat.png",
+        label: "Raumthermostat",
+        io: [
+            { id: "TEMP_IN", label: "Temperatur Ist", type: "out" },
+            { id: "HEIZ_OUT", label: "Heizung Ventil", type: "out" }
+        ]
+    },
+    {
+        file: "SCH3.png",
+        label: "SCH 3 (Schalter 1-fach)",
+        io: [
+            { id: "TA_1", label: "Taster / Schalter", type: "in" },
+            { id: "LI_1", label: "Licht / Relais", type: "out" }
+        ]
+    },
+    {
+        file: "SCH3-3.png",
+        label: "SCH 3-3 (Schalter 2-fach)",
+        io: [
+            { id: "TA_1", label: "Taster Oben", type: "in" },
+            { id: "LI_1", label: "Licht Oben", type: "out" },
+            { id: "TA_2", label: "Taster Unten", type: "in" },
+            { id: "LI_2", label: "Licht Unten", type: "out" }
+        ]
+    },
+    {
+        file: "SCH3-3-T13.png",
+        label: "SCH 3-3 + T13 (Kombi Schalter & Steckdose)",
+        io: [
+            { id: "TA_1", label: "Taster / Schalter", type: "in" },
+            { id: "LI_1", label: "Licht / Relais", type: "out" },
+            { id: "SE_1", label: "Steckdose Messung", type: "out" }
+        ]
+    },
+    {
+        file: "SCH3-Bel.png",
+        label: "SCH 3 mit Beleuchtung",
+        io: [
+            { id: "TA_1", label: "Taster", type: "in" },
+            { id: "LI_1", label: "Licht / Relais", type: "out" },
+            { id: "LED_CTRL", label: "Orientierungslicht", type: "out" }
+        ]
+    },
+    {
+        file: "SCH3T13.png",
+        label: "SCH 3 + T13 (Kombi Schalter/Steckdose)",
+        io: [
+            { id: "TA_1", label: "Taster", type: "in" },
+            { id: "LI_1", label: "Licht / Relais", type: "out" }
+        ]
+    },
+    {
+        file: "Sonnerie.png",
+        label: "Sonnerie / Klingel",
+        io: [
+            { id: "TA_KLINGEL", label: "Klingeltaster", type: "in" },
+            { id: "GONG_OUT", label: "Gong / Signal", type: "out" }
+        ]
+    },
+    {
+        file: "Storenschalter-1-Kanal.png",
+        label: "Storenschalter 1-Kanal",
         io: [
             { id: "TA_AUF", label: "Taster Auf", type: "in" },
-            { id: "MO_AUF", label: "Motor Auf", type: "out" }
-        ]
-    },
-    {
-        file: "Fenster-Zu.svg",
-        label: "Storen / Fenster Zu",
-        io: [
             { id: "TA_AB", label: "Taster Ab", type: "in" },
+            { id: "MO_AUF", label: "Motor Auf", type: "out" },
             { id: "MO_AB", label: "Motor Ab", type: "out" }
         ]
     },
     {
-        file: "Abwesend.svg",
-        label: "Abwesend (Zentral-Aus)",
+        file: "Storenschalter-2-Kanal.png",
+        label: "Storenschalter 2-Kanal",
         io: [
-            { id: "TA_ZENTRAL", label: "Taster", type: "in" }
+            { id: "TA_K1_AUF", label: "K1 Auf", type: "in" },
+            { id: "TA_K1_AB", label: "K1 Ab", type: "in" },
+            { id: "TA_K2_AUF", label: "K2 Auf", type: "in" },
+            { id: "TA_K2_AB", label: "K2 Ab", type: "in" },
+            { id: "MO_K1", label: "Motor K1", type: "out" },
+            { id: "MO_K2", label: "Motor K2", type: "out" }
         ]
     },
     {
-        file: "Fan-Stufe-1.svg",
-        label: "Lüftung (Allgemein)",
+        file: "T13.png",
+        label: "T13 Steckdose",
         io: [
-            { id: "TA_LUEFTUNG", label: "Taster Fan", type: "in" },
-            { id: "MO_LUEFTUNG", label: "Lüfter Motor", type: "out" }
+            { id: "POWER_MON", label: "Energiemessung", type: "out" }
         ]
     },
-    
-    // Einfache Icons ohne vordefinierte IOs
-    { file: "Access-Point-Unifi.svg", label: "Access Point Unifi", io: [] },
-    { file: "Access-Point.svg", label: "Access Point", io: [] },
-    { file: "Akku-Laden.svg", label: "Akku Laden", io: [] },
-    { file: "Akku.svg", label: "Akku", io: [] },
-    { file: "Auffuellen.svg", label: "Auffüllen", io: [] },
-    { file: "Auto.svg", label: "Auto", io: [] },
-    { file: "Baum.svg", label: "Baum / Garten", io: [] },
-    { file: "Bewegung.svg", label: "Bewegungsmelder", io: [{ id: "BWM_IN", label: "Bewegung", type: "in" }] },
-    { file: "Bluetooth-Aus.svg", label: "Bluetooth Aus", io: [] },
-    { file: "Bluetooth-Ein.svg", label: "Bluetooth Ein", io: [] },
-    { file: "CSV-Datei.svg", label: "CSV Datei", io: [] },
-    { file: "Download.svg", label: "Download", io: [] },
-    { file: "Drucken.svg", label: "Drucken", io: [] },
-    { file: "Drucker-Aus.svg", label: "Drucker Aus", io: [] },
-    { file: "Dublizieren.svg", label: "Duplizieren", io: [] },
-    { file: "Einstellungen.svg", label: "Einstellungen", io: [] },
-    { file: "Entrigeln.svg", label: "Entriegeln", io: [] },
-    { file: "Fan-Aus.svg", label: "Fan Aus", io: [] },
-    { file: "Fan-Langsamer.svg", label: "Fan Langsamer", io: [] },
-    { file: "Fan-Schneller.svg", label: "Fan Schneller", io: [] },
-    { file: "Fan-Stufe-2.svg", label: "Fan Stufe 2", io: [] },
-    { file: "Fan-Stufe-3.svg", label: "Fan Stufe 3", io: [] },
-    { file: "Farbpalette-Aus.svg", label: "Farbpalette Aus", io: [] },
-    { file: "Farbpalette.svg", label: "Farbpalette", io: [] },
-    { file: "Farbwahl.svg", label: "Farbwahl", io: [] },
-    { file: "Fierwall-Schild.svg", label: "Firewall Schild", io: [] },
-    { file: "Fierwall.svg", label: "Firewall", io: [] },
-    { file: "Fisch.svg", label: "Fisch (Aquarium)", io: [] },
-    { file: "Flamme.svg", label: "Heizung / Flamme", io: [{ id: "TEMP_OUT", label: "Ventil", type: "out" }] },
-    { file: "Foerwaertsspuelen-Fein-Doppelt.svg", label: "Vorwärts", io: [] }
+    {
+        file: "Universaltaster-1-x2.png",
+        label: "Universaltaster 1x2",
+        io: [
+            { id: "TA_1", label: "Taste Links", type: "in" },
+            { id: "TA_2", label: "Taste Rechts", type: "in" }
+        ]
+    },
+    {
+        file: "Universaltaster-3-2.png",
+        label: "Universaltaster 3-2",
+        io: [
+            { id: "TA_1", label: "Taste Reihe 1", type: "in" },
+            { id: "TA_2", label: "Taste Reihe 2", type: "in" },
+            { id: "TA_3", label: "Taste Reihe 3", type: "in" }
+        ]
+    },
+    {
+        file: "Universaltaster-2-x2.png",
+        label: "Universaltaster 2x2",
+        io: [
+            { id: "TA_1", label: "Oben Links", type: "in" },
+            { id: "TA_2", label: "Oben Rechts", type: "in" },
+            { id: "TA_3", label: "Unten Links", type: "in" },
+            { id: "TA_4", label: "Unten Rechts", type: "in" }
+        ]
+    }
 ];
 
 // --- HARDWARE KOMPONENTEN KONFIGURATION ---
