@@ -1,205 +1,1103 @@
-// --- ICONS & SCHALTERTYPEN KONFIGURATION ---
-const iconConfigList = [
-    {
-        file: "",
-        label: "--- Leerplatz ---",
-        group: "Allgemein",
-        io: []
-    },
-    {
-        file: "Drehschalter-Hand-Auto.png",
-        label: "Drehschalter Hand-Auto",
-        group: "Schalter & Taster",
-        io: [
-            { id: "TA_HAND_AUTO", label: "Hand/Auto Schalter", type: "in" }
-        ]
-    },
-    {
-        file: "Raumthermostaat.png",
-        label: "Raumthermostat",
-        group: "Thermostate & Sensoren",
-        io: [
-            { id: "TEMP_IN", label: "Temperatur Ist", type: "out" },
-            { id: "HEIZ_OUT", label: "Heizung Ventil", type: "out" }
-        ]
-    },
-    {
-        file: "SCH3.png",
-        label: "SCH 3 (Schalter 1-fach)",
-        group: "Licht & Relais",
-        io: [
-            { id: "TA_1", label: "Taster / Schalter", type: "in" },
-            { id: "LI_1", label: "Licht / Relais", type: "out" }
-        ]
-    },
-    {
-        file: "SCH3-3.png",
-        label: "SCH 3-3 (Schalter 2-fach)",
-        group: "Licht & Relais",
-        io: [
-            { id: "TA_1", label: "Taster Oben", type: "in" },
-            { id: "LI_1", label: "Licht Oben", type: "out" },
-            { id: "TA_2", label: "Taster Unten", type: "in" },
-            { id: "LI_2", label: "Licht Unten", type: "out" }
-        ]
-    },
-    {
-        file: "SCH3-3-T13.png",
-        label: "SCH 3-3 + T13 (Kombi Schalter & Steckdose)",
-        group: "Licht & Relais",
-        io: [
-            { id: "TA_1", label: "Taster / Schalter", type: "in" },
-            { id: "LI_1", label: "Licht / Relais", type: "out" },
-            { id: "SE_1", label: "Steckdose Messung", type: "out" }
-        ]
-    },
-    {
-        file: "SCH3-Bel.png",
-        label: "SCH 3 mit Beleuchtung",
-        group: "Licht & Relais",
-        io: [
-            { id: "TA_1", label: "Taster", type: "in" },
-            { id: "LI_1", label: "Licht / Relais", type: "out" },
-            { id: "LED_CTRL", label: "Orientierungslicht", type: "out" }
-        ]
-    },
-    {
-        file: "SCH3T13.png",
-        label: "SCH 3 + T13 (Kombi Schalter/Steckdose)",
-        group: "Licht & Relais",
-        io: [
-            { id: "TA_1", label: "Taster", type: "in" },
-            { id: "LI_1", label: "Licht / Relais", type: "out" }
-        ]
-    },
-    {
-        file: "Sonnerie.png",
-        label: "Sonnerie / Klingel",
-        group: "Signalisierung",
-        io: [
-            { id: "TA_KLINGEL", label: "Klingeltaster", type: "in" },
-            { id: "GONG_OUT", label: "Gong / Signal", type: "out" }
-        ]
-    },
-    {
-        file: "Storenschalter-1-Kanal.png",
-        label: "Storenschalter 1-Kanal",
-        group: "Storen & Jalousien",
-        io: [
-            { id: "TA_AUF", label: "Taster Auf", type: "in" },
-            { id: "TA_AB", label: "Taster Ab", type: "in" },
-            { id: "MO_AUF", label: "Motor Auf", type: "out" },
-            { id: "MO_AB", label: "Motor Ab", type: "out" }
-        ]
-    },
-    {
-        file: "Storenschalter-2-Kanal.png",
-        label: "Storenschalter 2-Kanal",
-        group: "Storen & Jalousien",
-        io: [
-            { id: "TA_K1_AUF", label: "K1 Auf", type: "in" },
-            { id: "TA_K1_AB", label: "K1 Ab", type: "in" },
-            { id: "TA_K2_AUF", label: "K2 Auf", type: "in" },
-            { id: "TA_K2_AB", label: "K2 Ab", type: "in" },
-            { id: "MO_K1", label: "Motor K1", type: "out" },
-            { id: "MO_K2", label: "Motor K2", type: "out" }
-        ]
-    },
-    {
-        file: "T13.png",
-        label: "T13 Steckdose",
-        group: "Steckdosen",
-        io: [
-            { id: "POWER_MON", label: "Energiemessung", type: "out" }
-        ]
-    },
-    {
-        file: "Universaltaster-1x2.png",
-        label: "Universaltaster 1x2",
-        group: "Schalter & Taster",
-        io: [
-            { id: "TA_1", label: "Taste Links", type: "in" },
-            { id: "TA_2", label: "Taste Rechts", type: "in" }
-        ]
-    },
-    {
-        file: "Universaltaster-3-2.png",
-        label: "Universaltaster 3-2",
-        group: "Schalter & Taster",
-        io: [
-            { id: "TA_1", label: "Taste Reihe 1", type: "in" },
-            { id: "TA_2", label: "Taste Reihe 2", type: "in" },
-            { id: "TA_3", label: "Taste Reihe 3", type: "in" }
-        ]
-    },
-    {
-        file: "Universaltaster-2x2.png",
-        label: "Universaltaster 2x2",
-        group: "Schalter & Taster",
-        io: [
-            { id: "TA_1", label: "Oben Links", type: "in" },
-            { id: "TA_2", label: "Oben Rechts", type: "in" },
-            { id: "TA_3", label: "Unten Links", type: "in" },
-            { id: "TA_4", label: "Unten Rechts", type: "in" }
-        ]
-    }
-];
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ServiceProDetail Konfigurator</title>
+    <script src="icons.js"></script>
+    <style>
+        :root {
+            --feller-white: #f7f9f9;
+            --feller-border: #d1d5db;
+            --primary: #0f766e;
+            --primary-hover: #0d9488;
+            --danger: #ef4444;
+            --bg-color: #f3f4f6;
+            --text-color: #1f2937;
+            --panel-bg: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #1f2937;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 15px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        .sidebar h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            border-bottom: 1px solid #374151;
+            padding-bottom: 10px;
+        }
+        .detail-list {
+            flex: 1;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .detail-item {
+            padding: 10px;
+            background: #374151;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .detail-item:hover { background: #4b5563; }
+        .detail-item.active {
+            background: var(--primary);
+            border-left: 4px solid #34d399;
+        }
+        .delete-btn {
+            background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 1.1rem;
+        }
+        .delete-btn:hover { color: #f87171; }
+        
+        .sidebar-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .sidebar-btn:hover { background: var(--primary-hover); }
 
-// --- HARDWARE KOMPONENTEN KONFIGURATION ---
-const hardwareConfigList = [
-    {
-        id: "lox_nano_di_tree",
-        name: "Loxone Nano DI Tree",
-        image: "SCH3.png", // Test-Bild (Pfad entsprechend anpassen)
-        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"],
-        io: [
-            { id: "DI_1", label: "DI 1", type: "in" },
-            { id: "DI_2", label: "DI 2", type: "in" },
-            { id: "DI_3", label: "DI 3", type: "in" },
-            { id: "DI_4", label: "DI 4", type: "in" },
-            { id: "DI_5", label: "DI 5", type: "in" },
-            { id: "DI_6", label: "DI 6", type: "in" }
-        ]
-    },
-    {
-        id: "lox_nano_2_relay",
-        name: "Loxone Nano 2 Relay Tree",
-        image: "", 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"],
-        io: [
-            { id: "I_1", label: "I1 (Eingang)", type: "in" },
-            { id: "I_2", label: "I2 (Eingang)", type: "in" },
-            { id: "I_3", label: "I3 (Eingang)", type: "in" },
-            { id: "I_4", label: "I4 (Eingang)", type: "in" },
-            { id: "I_5", label: "I5 (Eingang)", type: "in" },
-            { id: "I_6", label: "I6 (Eingang)", type: "in" },
-            { id: "O_1", label: "Relais 1", type: "out" },
-            { id: "O_2", label: "Relais 2", type: "out" }
-        ]
-    },
-    {
-        id: "lox_touch_tree",
-        name: "Loxone Touch Tree",
-        image: "",
-        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"],
-        io: [
-            { id: "T_1", label: "Taste 1 (Oben Links)", type: "in" },
-            { id: "T_2", label: "Taste 2 (Unten Links)", type: "in" },
-            { id: "T_3", label: "Taste 3 (Mitte)", type: "in" },
-            { id: "T_4", label: "Taste 4 (Oben Rechts)", type: "in" },
-            { id: "T_5", label: "Taste 5 (Unten Rechts)", type: "in" },
-            { id: "TEMP", label: "Temperatur", type: "out" },
-            { id: "HUM", label: "Feuchte", type: "out" }
-        ]
-    },
-    {
-        id: "feller_taster_universell",
-        name: "Feller Universaltaster (Dumm)",
-        image: "",
-        fields: ["Artikelnummer", "Bezeichnung"],
-        io: [
-            { id: "KONTAKT_1", label: "Schliesser 1", type: "out" },
-            { id: "KONTAKT_2", label: "Schliesser 2", type: "out" }
-        ]
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 20px 40px;
+        }
+        .top-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: var(--panel-bg);
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .top-bar-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        .top-bar input[type="text"] {
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: 1px solid transparent;
+            padding: 5px;
+            background: transparent;
+            width: 350px;
+        }
+        .top-bar input[type="text"].location-input {
+            font-size: 0.95rem;
+            font-weight: normal;
+            color: #475569;
+            width: 450px;
+        }
+        .top-bar input[type="text"]:hover, .top-bar input[type="text"]:focus {
+            border-bottom: 1px solid var(--feller-border);
+            outline: none;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        button.btn {
+            background: white; border: 1px solid #d1d5db; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem;
+        }
+        button.btn:hover { background: #f3f4f6; }
+        button.btn.primary { background: var(--primary); color: white; border: none; }
+        button.btn.primary:hover { background: var(--primary-hover); }
+
+        /* Workspace Grid */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .pane {
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .pane h3 { margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; }
+
+        /* Switch Visualizer */
+        .visualizer-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 250px;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        .switch-frame {
+            background-color: var(--feller-white);
+            border: 2px solid #e5e7eb;
+            padding: 20px;
+            border-radius: 6px;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.05), inset 0 0 10px rgba(255,255,255,1);
+            display: grid;
+            gap: 2px;
+            background-image: linear-gradient(145deg, #ffffff, #f0f0f0);
+        }
+        .switch-slot {
+            background-color: var(--feller-white);
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            position: relative;
+            overflow: hidden;
+        }
+        .switch-slot img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: fill; 
+            padding: 0; 
+            box-sizing: border-box;
+            opacity: 0.85; 
+        }
+        .slot-badge { position: absolute; top: 4px; left: 4px; font-size: 9px; color: #9ca3af; z-index: 2; }
+
+        /* Forms */
+        .form-group { display: flex; margin-bottom: 10px; align-items: center; }
+        .form-group label { width: 120px; font-size: 0.85rem; font-weight: 500; color: #475569; }
+        .form-group input, .form-group select { flex: 1; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.9rem; }
+        .slot-form { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
+        .slot-form h4 { margin: 0 0 10px 0; color: var(--primary); }
+
+        /* Custom Searchable Dropdown */
+        .custom-select {
+            position: relative;
+            flex: 1;
+            font-family: inherit;
+        }
+        .select-selected {
+            background-color: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 6px 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .select-items {
+            position: absolute;
+            background-color: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 99;
+            margin-top: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .icon-search {
+            width: calc(100% - 16px) !important;
+            margin: 8px;
+            padding: 6px;
+            box-sizing: border-box;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 3px;
+        }
+        .icon-group-label {
+            padding: 6px 10px;
+            background: #f1f5f9;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+        .icon-option {
+            padding: 8px 10px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .icon-option:last-child { border-bottom: none; }
+        .icon-option:hover { background-color: #f3f4f6; }
+
+        .io-section { margin-top: 10px; }
+        .io-complex-row {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            padding: 10px;
+        }
+        .io-header {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #334155;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 6px;
+        }
+        .io-type {
+            font-size: 0.7rem;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-right: 8px;
+            text-transform: uppercase;
+        }
+        .io-type.in { background: #dbeafe; color: #1e3a8a; }
+        .io-type.out { background: #fce7f3; color: #9d174d; }
+        
+        .io-fields-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .io-fields-grid input {
+            padding: 5px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .io-full-width { grid-column: 1 / -1; }
+
+        /* Hardware Editor Layout (Mit Bild links im Ordner icons-schalter/) */
+        .hardware-list { margin-top: 20px; }
+        .hw-card {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+            display: grid;
+            grid-template-columns: 130px 1fr;
+            gap: 15px;
+            align-items: start;
+        }
+        .hw-card-image img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 4px;
+            background: #fff;
+        }
+        .hw-card-body {
+            position: relative;
+        }
+        .hw-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+        .hw-card-header h4 { margin: 0; font-size: 1.1rem; }
+        .hw-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+
+        /* ==================== DRUCK-STILE ==================== */
+        @media print {
+            body { 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+                background: white;
+                height: auto; 
+                overflow: visible; 
+            }
+            .sidebar, .top-bar, .action-buttons, .no-print, .delete-btn { 
+                display: none !important; 
+            }
+            .main-content { 
+                padding: 0; 
+                overflow: visible; 
+            }
+            .pane { 
+                box-shadow: none; 
+                border: none; 
+                padding: 0; 
+                margin-bottom: 0;
+            }
+            .workspace { display: block; }
+            
+            .print-detail-page {
+                page-break-after: always;
+                page-break-inside: avoid;
+            }
+            .print-detail-page:last-child { page-break-after: auto; }
+
+            .print-header-block {
+                margin-bottom: 25px;
+            }
+            .print-header-block h2 {
+                margin: 0 0 2px 0;
+                font-size: 1.4rem;
+                color: #1f2937;
+            }
+            .print-header-block p {
+                margin: 0;
+                color: #475569;
+                font-size: 0.9rem;
+            }
+
+            .print-slot-container {
+                display: grid;
+                grid-template-columns: 160px 1fr;
+                gap: 30px;
+                align-items: start;
+                margin-bottom: 30px;
+                page-break-inside: avoid;
+            }
+            .print-slot-image img {
+                width: 100%;
+                height: auto;
+                max-height: 260px;
+                object-fit: contain;
+                border: 1px solid #e2e8f0;
+                border-radius: 4px;
+                padding: 4px;
+                background: #fff;
+            }
+            .print-io-item {
+                margin-bottom: 15px;
+                font-size: 0.85rem;
+                page-break-inside: avoid;
+            }
+            .print-io-line {
+                display: flex;
+                margin-bottom: 2px;
+            }
+            .print-io-label {
+                width: 110px;
+                font-weight: 500;
+                color: #475569;
+            }
+            .print-io-val {
+                flex: 1;
+                color: #1f2937;
+            }
+
+            .print-hw-container {
+                display: grid;
+                grid-template-columns: 130px 1fr;
+                gap: 25px;
+                align-items: start;
+                margin-top: 25px;
+                padding-top: 15px;
+                border-top: 1px solid #e2e8f0;
+                page-break-inside: avoid;
+            }
+            .print-hw-image img {
+                width: 100%;
+                height: auto;
+                object-fit: contain;
+                border: 1px solid #e2e8f0;
+                border-radius: 4px;
+                padding: 4px;
+                background: #fff;
+            }
+            .print-hw-header-title {
+                font-weight: bold;
+                font-size: 0.95rem;
+                margin-bottom: 5px;
+                color: #1f2937;
+            }
+            .print-hw-meta-row {
+                display: flex;
+                margin-bottom: 2px;
+                font-size: 0.85rem;
+            }
+            .print-hw-meta-label {
+                width: 110px;
+                color: #475569;
+            }
+            .print-hw-meta-val {
+                flex: 1;
+                color: #1f2937;
+                font-weight: 500;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>ServiceProDetails</h2>
+        <div class="detail-list" id="detail-list"></div>
+        <button class="sidebar-btn" onclick="addNewDetail()">+ Neues Detail</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="top-bar-row">
+                <input type="text" id="project-name" value="Schalterdetail EFH Odermatt" onchange="updateProjectField('projectName', this.value)">
+                <div class="action-buttons">
+                    <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
+                    <button class="btn" onclick="document.getElementById('file-input').click()">📂 Öffnen</button>
+                    <button class="btn primary" onclick="exportProject()">💾 Speichern</button>
+                    <button class="btn" onclick="printAllDetails()">🖨️ Alles Drucken (Komplett)</button>
+                    <button class="btn" onclick="printCurrentDetail()">🖨️ Aktuelles Detail</button>
+                </div>
+            </div>
+            <div class="top-bar-row">
+                <input type="text" class="location-input" id="project-location" value="" placeholder="Standort eingeben (z.B. Hagrain 8, 6213 Knutwil)" onchange="updateProjectField('location', this.value)">
+            </div>
+        </div>
+
+        <div id="workspace-container"></div>
+        
+        <div id="print-all-container" style="display: none;"></div>
+        <div id="print-single-container" style="display: none;"></div>
+    </div>
+
+<script>
+    let projectData = {
+        projectName: "Schalterdetail EFH Odermatt",
+        location: "",
+        details: []
+    };
+    let activeDetailId = null;
+
+    document.addEventListener("click", function (e) {
+        document.querySelectorAll('.select-items').forEach(item => {
+            item.style.display = 'none';
+        });
+    });
+
+    window.onload = () => {
+        if (projectData.details.length === 0) {
+            addNewDetail();
+        } else {
+            renderApp();
+        }
+    };
+
+    function generateId() {
+        return Math.random().toString(36).substr(2, 9);
     }
-];
+
+    function addNewDetail() {
+        const newDetail = {
+            id: generateId(),
+            name: `Detail ${projectData.details.length + 1}`,
+            layout: "2x2",
+            slots: {},
+            hardware: []
+        };
+        projectData.details.push(newDetail);
+        activeDetailId = newDetail.id;
+        renderApp();
+    }
+
+    function selectDetail(id) {
+        activeDetailId = id;
+        renderApp();
+    }
+
+    function deleteDetail(id, event) {
+        event.stopPropagation();
+        if(confirm("Möchtest du dieses Detail wirklich löschen?")) {
+            projectData.details = projectData.details.filter(d => d.id !== id);
+            if(projectData.details.length > 0) {
+                activeDetailId = projectData.details[0].id;
+            } else {
+                addNewDetail();
+                return;
+            }
+            renderApp();
+        }
+    }
+
+    function updateProjectField(field, value) {
+        projectData[field] = value;
+    }
+
+    function updateActiveDetailField(field, value) {
+        const detail = projectData.details.find(d => d.id === activeDetailId);
+        if (detail) {
+            detail[field] = value;
+            if (field === 'layout' || field === 'name') renderApp();
+        }
+    }
+
+    function renderApp() {
+        document.getElementById('project-name').value = projectData.projectName;
+        document.getElementById('project-location').value = projectData.location || '';
+        renderSidebar();
+        renderWorkspace();
+    }
+
+    function renderSidebar() {
+        const list = document.getElementById('detail-list');
+        list.innerHTML = '';
+        projectData.details.forEach(detail => {
+            const div = document.createElement('div');
+            div.className = `detail-item ${detail.id === activeDetailId ? 'active' : ''}`;
+            div.onclick = () => selectDetail(detail.id);
+            div.innerHTML = `
+                <span>${detail.name}</span>
+                <button class="delete-btn" onclick="deleteDetail('${detail.id}', event)">×</button>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function renderWorkspace() {
+        const container = document.getElementById('workspace-container');
+        const detail = projectData.details.find(d => d.id === activeDetailId);
+        
+        if (!detail) {
+            container.innerHTML = '<p>Kein Detail ausgewählt.</p>';
+            return;
+        }
+
+        const [rows, cols] = detail.layout.split('x').map(Number);
+        const totalSlots = rows * cols;
+
+        for(let i=1; i<=totalSlots; i++) {
+            if(!detail.slots[`slot-${i}`]) {
+                detail.slots[`slot-${i}`] = { iconFile: '', ioData: {} };
+            }
+        }
+        
+        if(!detail.hardware) detail.hardware = [];
+
+        const hwOptionsHtml = (typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : []).map(hw => 
+            `<option value="${hw.id}">${hw.name}</option>`
+        ).join('');
+
+        let html = `
+            <div class="workspace">
+                <div>
+                    <div class="pane">
+                        <div class="form-group">
+                            <label>Detail Name:</label>
+                            <input type="text" value="${detail.name}" onchange="updateActiveDetailField('name', this.value)">
+                        </div>
+                        <div class="form-group no-print">
+                            <label>Layout:</label>
+                            <select onchange="updateActiveDetailField('layout', this.value)">
+                                <option value="1x1" ${detail.layout==='1x1'?'selected':''}>1 x 1</option>
+                                <option value="2x1" ${detail.layout==='2x1'?'selected':''}>2 x 1 (Vertikal)</option>
+                                <option value="1x2" ${detail.layout==='1x2'?'selected':''}>1 x 2 (Horizontal)</option>
+                                <option value="2x2" ${detail.layout==='2x2'?'selected':''}>2 x 2</option>
+                                <option value="3x2" ${detail.layout==='3x2'?'selected':''}>3 x 2</option>
+                                <option value="4x2" ${detail.layout==='4x2'?'selected':''}>4 x 2</option>
+                                <option value="3x3" ${detail.layout==='3x3'?'selected':''}>3 x 3</option>
+                            </select>
+                        </div>
+                        
+                        <div class="visualizer-container">
+                            <div class="switch-frame" style="grid-template-columns: repeat(${cols}, 80px); grid-template-rows: repeat(${rows}, 80px);">
+                                ${generateVisualizerHtml(detail, rows, cols)}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="pane" style="margin-top: 20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3>Hardware Komponenten</h3>
+                            <div class="no-print" style="display:flex; gap:10px;">
+                                <select id="new-hw-select">${hwOptionsHtml}</select>
+                                <button class="btn primary" onclick="addHardwareComponent()">+ Hinzufügen</button>
+                            </div>
+                        </div>
+                        <div class="hardware-list">
+                            ${generateHardwareHtml(detail)}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pane">
+                    <h3>Schalter Belegungen</h3>
+                    <div class="slots-container">
+                        ${generateSlotsHtml(detail, totalSlots)}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = html;
+        updatePrintContainers();
+    }
+
+    function generateVisualizerHtml(detail, rows, cols) {
+        let html = '';
+        let count = 1;
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                const slot = detail.slots[`slot-${count}`];
+                const iconPath = slot.iconFile ? `icons-schalter/${slot.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23e5e7eb" stroke-width="1"><circle cx="12" cy="12" r="10"></circle></svg>';
+                html += `
+                    <div class="switch-slot">
+                        <span class="slot-badge">${count}</span>
+                        <img src="${iconPath}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;%23ff9999&quot; stroke-width=&quot;2&quot;><line x1=&quot;18&quot; y1=&quot;6&quot; x2=&quot;6&quot; y2=&quot;18&quot;></line><line x1=&quot;6&quot; y1=&quot;6&quot; x2=&quot;18&quot; y2=&quot;18&quot;></line></svg>'">
+                    </div>
+                `;
+                count++;
+            }
+        }
+        return html;
+    }
+
+    function renderCustomIconDropdown(slotNum, currentIcon) {
+        const iconList = (typeof iconConfigList !== 'undefined' ? iconConfigList : []);
+        const currentDef = iconList.find(ic => ic.file === currentIcon) || iconList[0];
+        const selectedLabel = currentDef ? (currentDef.label || currentDef.file || '--- Kein Icon ---') : '--- Kein Icon ---';
+
+        const groups = {};
+        iconList.forEach(ic => {
+            const g = ic.group || "Sonstige";
+            if (!groups[g]) groups[g] = [];
+            groups[g].push(ic);
+        });
+
+        let listHtml = '';
+        for (const groupName in groups) {
+            listHtml += `<div class="icon-group-label">${groupName}</div>`;
+            groups[groupName].forEach(ic => {
+                const label = ic.label || ic.file || '--- Kein Icon ---';
+                listHtml += `<div class="icon-option" data-label="${label.toLowerCase()}" onclick="selectIconDropdown('${slotNum}', '${ic.file}', event)">${label}</div>`;
+            });
+        }
+
+        return `
+            <div class="custom-select" onclick="toggleDropdown('${slotNum}', event)">
+                <div class="select-selected">${selectedLabel} <span>▼</span></div>
+                <div class="select-items" id="dropdown-${slotNum}" style="display:none;" onclick="event.stopPropagation()">
+                    <input type="text" class="icon-search" placeholder="Suchen..." onkeyup="filterDropdown('${slotNum}', this.value)" onclick="event.stopPropagation()">
+                    <div class="icon-list" id="icon-list-${slotNum}">
+                        ${listHtml}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function toggleDropdown(slotNum, event) {
+        event.stopPropagation();
+        document.querySelectorAll('.select-items').forEach(dd => {
+            if (dd.id !== `dropdown-${slotNum}`) dd.style.display = 'none';
+        });
+        const dd = document.getElementById(`dropdown-${slotNum}`);
+        dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+        if(dd.style.display === 'block'){
+            dd.querySelector('.icon-search').focus();
+        }
+    }
+
+    function filterDropdown(slotNum, term) {
+        const search = term.toLowerCase();
+        const list = document.getElementById(`icon-list-${slotNum}`);
+        const options = list.querySelectorAll('.icon-option');
+        options.forEach(opt => {
+            opt.style.display = opt.getAttribute('data-label').includes(search) ? 'block' : 'none';
+        });
+    }
+
+    function selectIconDropdown(slotNum, iconFile, event) {
+        event.stopPropagation();
+        document.getElementById(`dropdown-${slotNum}`).style.display = 'none';
+        updateSlotIcon(slotNum, iconFile);
+    }
+
+    function getIOObject(slot, ioId) {
+        let val = slot.ioData[ioId];
+        if (typeof val === 'string') {
+            return { bezeichnung: val, gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
+        }
+        return val || { bezeichnung: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
+    }
+
+    function generateSlotsHtml(detail, totalSlots) {
+        let html = '';
+        for(let i=1; i<=totalSlots; i++) {
+            const slot = detail.slots[`slot-${i}`];
+            const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
+            
+            let ioHtml = '';
+            if(iconDef && iconDef.io && iconDef.io.length > 0) {
+                let ioRows = iconDef.io.map(io => {
+                    const data = getIOObject(slot, io.id);
+                    const ioTypeText = io.type === 'in' ? 'Eingang' : 'Ausgang';
+                    return `
+                        <div class="io-complex-row">
+                            <div class="io-header">
+                                <span class="io-type ${io.type}">${ioTypeText}</span> 
+                                ${io.label}
+                            </div>
+                            <div class="io-fields-grid">
+                                <input type="text" placeholder="Bezeichnung" value="${data.bezeichnung}" onchange="updateSlotIOField('${i}', '${io.id}', 'bezeichnung', this.value)">
+                                <input type="text" placeholder="Gruppe" value="${data.gruppe}" onchange="updateSlotIOField('${i}', '${io.id}', 'gruppe', this.value)">
+                                <input type="text" placeholder="Eingabegerät" value="${data.eingabegerat}" onchange="updateSlotIOField('${i}', '${io.id}', 'eingabegerat', this.value)">
+                                <input type="text" placeholder="Funktion" value="${data.funktion}" onchange="updateSlotIOField('${i}', '${io.id}', 'funktion', this.value)">
+                                <input type="text" class="io-full-width" placeholder="Bemerkung" value="${data.bemerkung}" onchange="updateSlotIOField('${i}', '${io.id}', 'bemerkung', this.value)">
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                ioHtml = `<div class="io-section">${ioRows}</div>`;
+            }
+
+            const printVisibilityClass = slot.iconFile ? '' : 'no-print';
+            html += `
+                <div class="slot-form ${printVisibilityClass}">
+                    <h4>Platz ${i}</h4>
+                    <div class="form-group no-print">
+                        <label>Icon / Typ</label>
+                        ${renderCustomIconDropdown(i, slot.iconFile)}
+                    </div>
+                    ${ioHtml}
+                </div>
+            `;
+        }
+        return html;
+    }
+
+    function updateSlotIcon(slotNum, iconFile) {
+        const detail = projectData.details.find(d => d.id === activeDetailId);
+        detail.slots[`slot-${slotNum}`].iconFile = iconFile;
+        renderWorkspace(); 
+    }
+
+    function updateSlotIOField(slotNum, ioId, field, value) {
+        const detail = projectData.details.find(d => d.id === activeDetailId);
+        if(!detail.slots[`slot-${slotNum}`].ioData) {
+            detail.slots[`slot-${slotNum}`].ioData = {};
+        }
+        let currentData = detail.slots[`slot-${slotNum}`].ioData[ioId];
+        if (typeof currentData === 'string') {
+            currentData = { bezeichnung: currentData, gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
+        } else if (!currentData) {
+            currentData = { bezeichnung: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
+        }
+        currentData[field] = value;
+        detail.slots[`slot-${slotNum}`].ioData[ioId] = currentData;
+    }
+
+    // --- HARDWARE KOMPONENTEN ---
+    function addHardwareComponent() {
+        const select = document.getElementById('new-hw-select');
+        const hwId = select.value;
+        if(!hwId) return;
+        const hwConfig = hardwareConfigList.find(h => h.id === hwId);
+        if(!hwConfig) return;
+
+        const detail = projectData.details.find(d => d.id === activeDetailId);
+        const ioMapping = {};
+        if(hwConfig.io) hwConfig.io.forEach(io => { ioMapping[io.id] = ""; });
+        const fieldsData = {};
+        if(hwConfig.fields) hwConfig.fields.forEach(f => { fieldsData[f] = ""; });
+
+        detail.hardware.push({
+            instanceId: generateId(),
+            configId: hwConfig.id,
+            fields: fieldsData,
+            mappings: ioMapping
+        });
+        renderWorkspace();
+    }
+
+    function removeHardware(instanceId) {
+        if(confirm("Komponente entfernen?")) {
+            const detail = projectData.details.find(d => d.id === activeDetailId);
+            detail.hardware = detail.hardware.filter(h => h.instanceId !== instanceId);
+            renderWorkspace();
+        }
+    }
+
+    function updateHwField(instanceId, field, value) {
+        const detail = projectData.details.find(d => d.id === activeDetailId);
+        const hw = detail.hardware.find(h => h.instanceId === instanceId);
+        hw.fields[field] = value;
+    }
+
+    function updateHwMapping(instanceId, ioId, value) {
+        const detail = projectData.details.find(d => d.id === activeDetailId);
+        const hw = detail.hardware.find(h => h.instanceId === instanceId);
+        hw.mappings[ioId] = value;
+    }
+
+    function generateHardwareHtml(detail) {
+        if(!detail.hardware || detail.hardware.length === 0) {
+            return '<p style="color:#64748b; font-size:0.9rem;" class="no-print">Noch keine Komponenten zugewiesen.</p>';
+        }
+
+        let html = '';
+        detail.hardware.forEach(hw => {
+            const config = hardwareConfigList.find(c => c.id === hw.configId);
+            if(!config) return;
+
+            let fieldsHtml = '';
+            if(config.fields) {
+                config.fields.forEach(f => {
+                    fieldsHtml += `
+                        <div class="form-group" style="margin-bottom:5px;">
+                            <label style="width:100px;">${f}</label>
+                            <input type="text" value="${hw.fields[f] || ''}" onchange="updateHwField('${hw.instanceId}', '${f}', this.value)">
+                        </div>
+                    `;
+                });
+            }
+
+            let inputsHtml = '';
+            let outputsHtml = '';
+            if(config.io) {
+                config.io.forEach(io => {
+                    const row = `
+                        <div class="form-group" style="margin-bottom:5px;">
+                            <label style="width:110px; font-size:0.85rem;">${io.label}</label>
+                            <input type="text" value="${hw.mappings[io.id] || ''}" placeholder="Zuweisung..." onchange="updateHwMapping('${hw.instanceId}', '${io.id}', this.value)">
+                        </div>
+                    `;
+                    if(io.type === 'in') inputsHtml += row;
+                    if(io.type === 'out') outputsHtml += row;
+                });
+            }
+
+            // Korrekter Pfad zum Ordner icons-schalter/ für die Hardware-Bilder
+            let hwImageTag = config.image ? `<div class="hw-card-image"><img src="icons-schalter/${config.image}"></div>` : '<div></div>';
+
+            html += `
+                <div class="hw-card">
+                    ${hwImageTag}
+                    <div class="hw-card-body">
+                        <div class="hw-card-header">
+                            <h4>${config.name}</h4>
+                            <button class="delete-btn" onclick="removeHardware('${hw.instanceId}')">×</button>
+                        </div>
+                        ${fieldsHtml}
+                        <div class="hw-io-grid">
+                            ${inputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5>Eingänge</h5>${inputsHtml}</div>` : '<div></div>'}
+                            ${outputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5>Ausgänge</h5>${outputsHtml}</div>` : '<div></div>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        return html;
+    }
+
+    // --- DRUCK GENERATOREN ---
+    function buildDetailPrintHtml(detail) {
+        let slotsHtml = '';
+        const [rows, cols] = detail.layout.split('x').map(Number);
+        const totalSlots = rows * cols;
+
+        for(let i=1; i<=totalSlots; i++) {
+            const slot = detail.slots[`slot-${i}`];
+            if(!slot || !slot.iconFile) continue;
+
+            const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
+            let printIoRows = '';
+
+            if(iconDef && iconDef.io) {
+                iconDef.io.forEach(io => {
+                    const data = getIOObject(slot, io.id);
+                    printIoRows += `
+                        <div class="print-io-item">
+                            <div class="print-io-line"><span class="print-io-label">Bezeichnung</span><span class="print-io-val">${data.bezeichnung}</span></div>
+                            <div class="print-io-line"><span class="print-io-label">Gruppe</span><span class="print-io-val">${data.gruppe}</span></div>
+                            <div class="print-io-line"><span class="print-io-label">Art</span><span class="print-io-val">${io.label}</span></div>
+                            <div class="print-io-line"><span class="print-io-label">Eingabegerät</span><span class="print-io-val">${data.eingabegerat}</span></div>
+                            <div class="print-io-line"><span class="print-io-label">Funktion</span><span class="print-io-val">${data.funktion}</span></div>
+                            <div class="print-io-line"><span class="print-io-label">Bemerkung</span><span class="print-io-val">${data.bemerkung}</span></div>
+                        </div>
+                    `;
+                });
+            }
+
+            slotsHtml += `
+                <div class="print-slot-container">
+                    <div class="print-slot-image">
+                        <img src="icons-schalter/${slot.iconFile}">
+                    </div>
+                    <div class="print-slot-details">
+                        ${printIoRows}
+                    </div>
+                </div>
+            `;
+        }
+
+        let hwHtml = '';
+        if(detail.hardware) {
+            detail.hardware.forEach(hw => {
+                const config = hardwareConfigList.find(c => c.id === hw.configId);
+                if(!config) return;
+
+                let printFieldsHtml = '';
+                if(config.fields) {
+                    config.fields.forEach(f => {
+                        printFieldsHtml += `
+                            <div class="print-hw-meta-row">
+                                <span class="print-hw-meta-label">${f}</span>
+                                <span class="print-hw-meta-val">${hw.fields[f] || ''}</span>
+                            </div>
+                        `;
+                    });
+                }
+
+                let hwIoRows = '';
+                if(config.io) {
+                    config.io.forEach(io => {
+                        const assignedVal = hw.mappings[io.id] || '';
+                        hwIoRows += `
+                            <div class="print-hw-meta-row">
+                                <span style="width: 50px; color: #475569;">${io.label}</span>
+                                <span style="flex: 1; color: #1f2937;">${assignedVal}</span>
+                            </div>
+                        `;
+                    });
+                }
+
+                // Auch im Druck den Pfad icons-schalter/ verwenden
+                let printHwImageTag = config.image ? `<div class="print-hw-image"><img src="icons-schalter/${config.image}"></div>` : '<div></div>';
+                
+                hwHtml += `
+                    <div class="print-hw-container">
+                        ${printHwImageTag}
+                        <div>
+                            <div class="print-hw-header-title">${config.name}</div>
+                            ${printFieldsHtml}
+                            <div style="margin-top: 10px;">
+                                ${hwIoRows}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        return `
+            <div class="print-detail-page">
+                <div class="print-header-block">
+                    <h2>${projectData.projectName}</h2>
+                    ${projectData.location ? `<p>${projectData.location}</p>` : ''}
+                </div>
+                <h3 style="font-size: 1.1rem; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 20px;">${detail.name}</h3>
+                ${slotsHtml}
+                ${hwHtml}
+            </div>
+        `;
+    }
+
+    function updatePrintContainers() {
+        const allContainer = document.getElementById('print-all-container');
+        let allHtml = '';
+        projectData.details.forEach(detail => {
+            allHtml += buildDetailPrintHtml(detail);
+        });
+        allContainer.innerHTML = allHtml;
+
+        const singleContainer = document.getElementById('print-single-container');
+        const activeDetail = projectData.details.find(d => d.id === activeDetailId);
+        if(activeDetail) {
+            singleContainer.innerHTML = buildDetailPrintHtml(activeDetail);
+        } else {
+            singleContainer.innerHTML = '';
+        }
+    }
+
+    function printAllDetails() {
+        updatePrintContainers();
+        const mainContent = document.getElementById('workspace-container');
+        const allContainer = document.getElementById('print-all-container');
+        const singleContainer = document.getElementById('print-single-container');
+        
+        mainContent.style.display = 'none';
+        allContainer.style.display = 'block';
+        singleContainer.style.display = 'none';
+        
+        window.print();
+        
+        mainContent.style.display = 'block';
+        allContainer.style.display = 'none';
+    }
+
+    function printCurrentDetail() {
+        updatePrintContainers();
+        const mainContent = document.getElementById('workspace-container');
+        const allContainer = document.getElementById('print-all-container');
+        const singleContainer = document.getElementById('print-single-container');
+        
+        mainContent.style.display = 'none';
+        allContainer.style.display = 'none';
+        singleContainer.style.display = 'block';
+        
+        window.print();
+        
+        mainContent.style.display = 'block';
+        singleContainer.style.display = 'none';
+    }
+
+    function exportProject() {
+        const dataStr = JSON.stringify(projectData, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = (projectData.projectName.replace(/[^a-z0-9]/gi, '_').toLowerCase() || "projekt") + ".ServiceProDetail";
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function importProject(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if(!file.name.endsWith('.ServiceProDetail')) {
+            alert("Bitte eine gültige .ServiceProDetail Datei auswählen!");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const parsed = JSON.parse(e.target.result);
+                if(parsed && parsed.details) {
+                    projectData = parsed;
+                    if(!projectData.location) projectData.location = "";
+                    if(projectData.details.length > 0) {
+                        activeDetailId = projectData.details[0].id;
+                    }
+                    renderApp();
+                } else {
+                    alert("Dateiformat ungültig!");
+                }
+            } catch (err) {
+                alert("Fehler beim Laden der Datei.");
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    }
+</script>
+</body>
+</html>
