@@ -129,6 +129,9 @@ const iconConfigList = [
         io: [
             { id: "TA_1", label: "Taste Reihe 1", type: "in" },
             { id: "TA_2", label: "Taste Reihe 2", type: "in" },
+            { id: "TA_3", label: "Taste Reihe 3", type: "in" },
+            { id: "TA_1", label: "Taste Reihe 1", type: "in" },
+            { id: "TA_2", label: "Taste Reihe 2", type: "in" },
             { id: "TA_3", label: "Taste Reihe 3", type: "in" }
         ]
     },
