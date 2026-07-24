@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ServiceProDetail Konfigurator</title>
-    <!-- Externe Konfigurationsdatei laden (Icons) -->
+    <!-- Externe Konfigurationsdatei laden (Icons & Hardware) -->
     <script src="icons.js"></script>
     <style>
         :root {
@@ -81,9 +81,6 @@
             width: 100%;
         }
         .sidebar-btn:hover { background: var(--primary-hover); }
-        .sidebar-btn.outline {
-            background: transparent; border: 1px solid var(--primary); margin-top: 5px;
-        }
 
         /* Main Content */
         .main-content {
@@ -178,7 +175,7 @@
             width: 100%; 
             height: 100%; 
             object-fit: contain; 
-            padding: 15%; /* Damit es wie ein Schalter-Symbol aussieht */
+            padding: 15%; 
             box-sizing: border-box;
             opacity: 0.85; 
         }
@@ -226,14 +223,17 @@
         }
         .io-type.in { background: #dbeafe; color: #1e3a8a; }
         .io-type.out { background: #fce7f3; color: #9d174d; }
-        
-        .io-row input {
-            flex: 1;
-            padding: 4px 8px;
-            border: 1px solid #d1d5db;
-            border-radius: 3px;
-            font-size: 0.85rem;
+        .io-row input { flex: 1; padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 3px; font-size: 0.85rem; }
+
+        /* Hardware Components */
+        .hardware-list { margin-top: 20px; }
+        .hw-card {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
         }
+        .hw-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+        .hw-card-header h4 { margin: 0; font-size: 1.1rem; }
+        .hw-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
 
         /* Print Styles */
         @media print {
@@ -280,7 +280,6 @@
     };
     let activeDetailId = null;
 
-    // --- INITIALISIERUNG ---
     window.onload = () => {
         if (projectData.details.length === 0) {
             addNewDetail();
@@ -300,7 +299,8 @@
             name: `Detail ${projectData.details.length + 1}`,
             location: "",
             layout: "2x2",
-            slots: {}
+            slots: {},
+            hardware: [] // Hardware-Array wieder hinzugefügt
         };
         projectData.details.push(newDetail);
         activeDetailId = newDetail.id;
@@ -384,15 +384,23 @@
                 };
             }
         }
+        
+        // Sicherstellen, dass hardware Array existiert (für alte Files)
+        if(!detail.hardware) detail.hardware = [];
 
         // Icon Options
         const iconOptionsHtml = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).map(iconDef => 
             `<option value="${iconDef.file}">${iconDef.label || iconDef.file || '--- Kein Icon ---'}</option>`
         ).join('');
+        
+        // Hardware Options
+        const hwOptionsHtml = (typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : []).map(hw => 
+            `<option value="${hw.id}">${hw.name}</option>`
+        ).join('');
 
         let html = `
             <div class="workspace">
-                <!-- Linke Seite: Visualizer -->
+                <!-- Linke Seite: Visualizer & Hardware -->
                 <div>
                     <div class="pane">
                         <div class="form-group">
@@ -421,11 +429,25 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Hardware Komponenten Bereich -->
+                    <div class="pane" style="margin-top: 20px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3>Hardware Komponenten</h3>
+                            <div style="display:flex; gap:10px;">
+                                <select id="new-hw-select">${hwOptionsHtml}</select>
+                                <button class="btn primary" onclick="addHardwareComponent()">+ Hinzufügen</button>
+                            </div>
+                        </div>
+                        <div class="hardware-list">
+                            ${generateHardwareHtml(detail)}
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Rechte Seite: Slot Data -->
                 <div class="pane">
-                    <h3>Schalter & Belegungen</h3>
+                    <h3>Schalter Belegungen</h3>
                     <div class="slots-container">
                         ${generateSlotsHtml(detail, totalSlots, iconOptionsHtml)}
                     </div>
@@ -435,7 +457,6 @@
 
         container.innerHTML = html;
         
-        // Select-Werte nach Render setzen
         for(let i=1; i<=totalSlots; i++) {
             const slot = detail.slots[`slot-${i}`];
             const selectEl = document.getElementById(`select-icon-${i}`);
@@ -451,7 +472,6 @@
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
                 const slot = detail.slots[`slot-${count}`];
-                // Wenn kein Icon gewählt, zeigen wir ein transparentes 1x1 png oder ein ganz blasses Platzhalter-SVG
                 const iconPath = slot.iconFile ? `icons/${slot.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23e5e7eb" stroke-width="1"><circle cx="12" cy="12" r="10"></circle></svg>';
                 html += `
                     <div class="switch-slot">
@@ -469,8 +489,6 @@
         let html = '';
         for(let i=1; i<=totalSlots; i++) {
             const slot = detail.slots[`slot-${i}`];
-            
-            // Finde Icon-Definition in der JS-Datei, um die I/O Felder zu generieren
             const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
             
             let ioHtml = '';
@@ -526,7 +544,6 @@
     function updateSlotIcon(slotNum, iconFile) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
         detail.slots[`slot-${slotNum}`].iconFile = iconFile;
-        // Wenn das Icon wechselt, müssen wir re-rendern, damit die korrekten I/Os angezeigt werden.
         renderWorkspace(); 
     }
 
@@ -536,6 +553,107 @@
             detail.slots[`slot-${slotNum}`].ioData = {};
         }
         detail.slots[`slot-${slotNum}`].ioData[ioId] = value;
+    }
+
+    // --- HARDWARE KOMPONENTEN ---
+    function addHardwareComponent() {
+        const select = document.getElementById('new-hw-select');
+        const hwId = select.value;
+        if(!hwId) return;
+        
+        const hwConfig = hardwareConfigList.find(h => h.id === hwId);
+        if(!hwConfig) return;
+
+        const detail = projectData.details.find(d => d.id === activeDetailId);
+        
+        const ioMapping = {};
+        if(hwConfig.io) hwConfig.io.forEach(io => { ioMapping[io.id] = ""; });
+        
+        const fieldsData = {};
+        if(hwConfig.fields) hwConfig.fields.forEach(f => { fieldsData[f] = ""; });
+
+        detail.hardware.push({
+            instanceId: generateId(),
+            configId: hwConfig.id,
+            fields: fieldsData,
+            mappings: ioMapping
+        });
+        
+        renderWorkspace();
+    }
+
+    function removeHardware(instanceId) {
+        if(confirm("Komponente entfernen?")) {
+            const detail = projectData.details.find(d => d.id === activeDetailId);
+            detail.hardware = detail.hardware.filter(h => h.instanceId !== instanceId);
+            renderWorkspace();
+        }
+    }
+
+    function updateHwField(instanceId, field, value) {
+        const detail = projectData.details.find(d => d.id === activeDetailId);
+        const hw = detail.hardware.find(h => h.instanceId === instanceId);
+        hw.fields[field] = value;
+    }
+
+    function updateHwMapping(instanceId, ioId, value) {
+        const detail = projectData.details.find(d => d.id === activeDetailId);
+        const hw = detail.hardware.find(h => h.instanceId === instanceId);
+        hw.mappings[ioId] = value;
+    }
+
+    function generateHardwareHtml(detail) {
+        if(!detail.hardware || detail.hardware.length === 0) {
+            return '<p style="color:#64748b; font-size:0.9rem;">Noch keine Komponenten zugewiesen.</p>';
+        }
+
+        let html = '';
+        detail.hardware.forEach(hw => {
+            const config = hardwareConfigList.find(c => c.id === hw.configId);
+            if(!config) return;
+
+            let fieldsHtml = '';
+            if(config.fields) {
+                config.fields.forEach(f => {
+                    fieldsHtml += `
+                        <div class="form-group" style="margin-bottom:5px;">
+                            <label style="width:100px;">${f}</label>
+                            <input type="text" value="${hw.fields[f] || ''}" onchange="updateHwField('${hw.instanceId}', '${f}', this.value)">
+                        </div>
+                    `;
+                });
+            }
+
+            let inputsHtml = '';
+            let outputsHtml = '';
+            if(config.io) {
+                config.io.forEach(io => {
+                    const row = `
+                        <div class="form-group" style="margin-bottom:5px;">
+                            <label style="width:110px; font-size:0.8rem;">${io.label}</label>
+                            <input type="text" value="${hw.mappings[io.id] || ''}" placeholder="Zuweisung..." onchange="updateHwMapping('${hw.instanceId}', '${io.id}', this.value)">
+                        </div>
+                    `;
+                    if(io.type === 'in') inputsHtml += row;
+                    if(io.type === 'out') outputsHtml += row;
+                });
+            }
+
+            html += `
+                <div class="hw-card">
+                    <div class="hw-card-header">
+                        <h4>${config.name}</h4>
+                        <button class="delete-btn" onclick="removeHardware('${hw.instanceId}')">×</button>
+                    </div>
+                    ${fieldsHtml}
+                    <div class="hw-io-grid">
+                        ${inputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5>Eingänge (IN)</h5>${inputsHtml}</div>` : '<div></div>'}
+                        ${outputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5>Ausgänge (OUT)</h5>${outputsHtml}</div>` : '<div></div>'}
+                    </div>
+                </div>
+            `;
+        });
+        return html;
     }
 
     // --- DATEI I/O (.ServiceProDetail) ---
