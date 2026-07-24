@@ -297,10 +297,27 @@
         }
         .io-full-width { grid-column: 1 / -1; }
 
+        /* Hardware Editor Layout (Mit Bild links) */
         .hardware-list { margin-top: 20px; }
         .hw-card {
             background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px;
             border-left: 4px solid var(--primary);
+            display: grid;
+            grid-template-columns: 130px 1fr;
+            gap: 15px;
+            align-items: start;
+        }
+        .hw-card-image img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 4px;
+            background: #fff;
+        }
+        .hw-card-body {
+            position: relative;
         }
         .hw-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
         .hw-card-header h4 { margin: 0; font-size: 1.1rem; }
@@ -867,16 +884,21 @@
                 });
             }
 
+            let hwImageTag = config.image ? `<div class="hw-card-image"><img src="${config.image}"></div>` : '<div></div>';
+
             html += `
                 <div class="hw-card">
-                    <div class="hw-card-header">
-                        <h4>${config.name}</h4>
-                        <button class="delete-btn" onclick="removeHardware('${hw.instanceId}')">×</button>
-                    </div>
-                    ${fieldsHtml}
-                    <div class="hw-io-grid">
-                        ${inputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5>Eingänge</h5>${inputsHtml}</div>` : '<div></div>'}
-                        ${outputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5>Ausgänge</h5>${outputsHtml}</div>` : '<div></div>'}
+                    ${hwImageTag}
+                    <div class="hw-card-body">
+                        <div class="hw-card-header">
+                            <h4>${config.name}</h4>
+                            <button class="delete-btn" onclick="removeHardware('${hw.instanceId}')">×</button>
+                        </div>
+                        ${fieldsHtml}
+                        <div class="hw-io-grid">
+                            ${inputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5>Eingänge</h5>${inputsHtml}</div>` : '<div></div>'}
+                            ${outputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5>Ausgänge</h5>${outputsHtml}</div>` : '<div></div>'}
+                        </div>
                     </div>
                 </div>
             `;
