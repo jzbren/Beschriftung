@@ -1,96 +1,83 @@
-// --- ICONS KONFIGURATION ---
-const iconConfigList = [
-    "", // Leere Option
-    "Abwesend.svg",
-    "Access-Point-Unifi.svg",
-    "Access-Point.svg",
-    "Akku-Laden.svg",
-    "Akku.svg",
-    "Auffuellen.svg",
-    "Auto.svg",
-    "Baum.svg",
-    "Bewegung.svg",
-    "Bluetooth-Aus.svg",
-    "Bluetooth-Ein.svg",
-    "CSV-Datei.svg",
-    "Deckenleuchte.svg",
-    "Download.svg",
-    "Drucken.svg",
-    "Drucker-Aus.svg",
-    "Dublizieren.svg",
-    "Einstellungen.svg",
-    "Entrigeln.svg",
-    "Fan-Aus.svg",
-    "Fan-Langsamer.svg",
-    "Fan-Schneller.svg",
-    "Fan-Stufe-1.svg",
-    "Fan-Stufe-2.svg",
-    "Fan-Stufe-3.svg",
-    "Farbpalette-Aus.svg",
-    "Farbpalette.svg",
-    "Farbwahl.svg",
-    "Fenster-Auf.svg",
-    "Fenster-Zu.svg",
-    "Fierwall-Schild.svg",
-    "Fierwall.svg",
-    "Fisch.svg",
-    "Flamme.svg",
-    "Foerwaertsspuelen-Fein-Doppelt.svg"
-];
+// --- ICONS & SCHALTERTYPEN KONFIGURATION ---
+// Hier definierst du deine SVG-Icons und welche Ein- und Ausgänge (io) 
+// in der Eingabemaske rechts erscheinen sollen, wenn dieses Icon gewählt wird.
+// type: "in" (Eingang, z.B. Taster), type: "out" (Ausgang, z.B. Lampe/Store)
 
-// --- HARDWARE KOMPONENTEN KONFIGURATION ---
-// Hier definierst du, welche Geräte im System verfügbar sind, 
-// welche Meta-Felder (fields) sie haben und welche Ein-/Ausgänge (io) existieren.
-const hardwareConfigList = [
+const iconConfigList = [
     {
-        id: "lox_nano_di_tree",
-        name: "Loxone Nano DI Tree",
-        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"],
+        file: "",
+        label: "--- Leerplatz ---",
+        io: []
+    },
+    {
+        file: "Deckenleuchte.svg",
+        label: "Deckenleuchte",
         io: [
-            { id: "DI_1", label: "DI 1", type: "in" },
-            { id: "DI_2", label: "DI 2", type: "in" },
-            { id: "DI_3", label: "DI 3", type: "in" },
-            { id: "DI_4", label: "DI 4", type: "in" },
-            { id: "DI_5", label: "DI 5", type: "in" },
-            { id: "DI_6", label: "DI 6", type: "in" }
+            { id: "TA_EIN", label: "Taster (TA)", type: "in" },
+            { id: "LI_AUS", label: "Licht (Relais)", type: "out" }
         ]
     },
     {
-        id: "lox_nano_2_relay",
-        name: "Loxone Nano 2 Relay Tree",
-        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"],
+        file: "Fenster-Auf.svg",
+        label: "Storen / Fenster Auf",
         io: [
-            { id: "I_1", label: "I1 (Eingang)", type: "in" },
-            { id: "I_2", label: "I2 (Eingang)", type: "in" },
-            { id: "I_3", label: "I3 (Eingang)", type: "in" },
-            { id: "I_4", label: "I4 (Eingang)", type: "in" },
-            { id: "I_5", label: "I5 (Eingang)", type: "in" },
-            { id: "I_6", label: "I6 (Eingang)", type: "in" },
-            { id: "O_1", label: "Relais 1", type: "out" },
-            { id: "O_2", label: "Relais 2", type: "out" }
+            { id: "TA_AUF", label: "Taster Auf", type: "in" },
+            { id: "MO_AUF", label: "Motor Auf", type: "out" }
         ]
     },
     {
-        id: "lox_touch_tree",
-        name: "Loxone Touch Tree",
-        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"],
+        file: "Fenster-Zu.svg",
+        label: "Storen / Fenster Zu",
         io: [
-            { id: "T_1", label: "Taste 1 (Oben Links)", type: "in" },
-            { id: "T_2", label: "Taste 2 (Unten Links)", type: "in" },
-            { id: "T_3", label: "Taste 3 (Mitte)", type: "in" },
-            { id: "T_4", label: "Taste 4 (Oben Rechts)", type: "in" },
-            { id: "T_5", label: "Taste 5 (Unten Rechts)", type: "in" },
-            { id: "TEMP", label: "Temperatur", type: "out" },
-            { id: "HUM", label: "Feuchte", type: "out" }
+            { id: "TA_AB", label: "Taster Ab", type: "in" },
+            { id: "MO_AB", label: "Motor Ab", type: "out" }
         ]
     },
     {
-        id: "feller_taster_universell",
-        name: "Feller Universaltaster (Dumm)",
-        fields: ["Artikelnummer", "Bezeichnung"],
+        file: "Abwesend.svg",
+        label: "Abwesend (Zentral-Aus)",
         io: [
-            { id: "KONTAKT_1", label: "Schliesser 1", type: "out" },
-            { id: "KONTAKT_2", label: "Schliesser 2", type: "out" }
+            { id: "TA_ZENTRAL", label: "Taster", type: "in" }
         ]
-    }
+    },
+    {
+        file: "Fan-Stufe-1.svg",
+        label: "Lüftung (Allgemein)",
+        io: [
+            { id: "TA_LUEFTUNG", label: "Taster Fan", type: "in" },
+            { id: "MO_LUEFTUNG", label: "Lüfter Motor", type: "out" }
+        ]
+    },
+    
+    // Einfache Icons ohne vordefinierte IOs (als Fallback/Erweiterung)
+    { file: "Access-Point-Unifi.svg", label: "Access Point Unifi", io: [] },
+    { file: "Access-Point.svg", label: "Access Point", io: [] },
+    { file: "Akku-Laden.svg", label: "Akku Laden", io: [] },
+    { file: "Akku.svg", label: "Akku", io: [] },
+    { file: "Auffuellen.svg", label: "Auffüllen", io: [] },
+    { file: "Auto.svg", label: "Auto", io: [] },
+    { file: "Baum.svg", label: "Baum / Garten", io: [] },
+    { file: "Bewegung.svg", label: "Bewegungsmelder", io: [{ id: "BWM_IN", label: "Bewegung", type: "in" }] },
+    { file: "Bluetooth-Aus.svg", label: "Bluetooth Aus", io: [] },
+    { file: "Bluetooth-Ein.svg", label: "Bluetooth Ein", io: [] },
+    { file: "CSV-Datei.svg", label: "CSV Datei", io: [] },
+    { file: "Download.svg", label: "Download", io: [] },
+    { file: "Drucken.svg", label: "Drucken", io: [] },
+    { file: "Drucker-Aus.svg", label: "Drucker Aus", io: [] },
+    { file: "Dublizieren.svg", label: "Duplizieren", io: [] },
+    { file: "Einstellungen.svg", label: "Einstellungen", io: [] },
+    { file: "Entrigeln.svg", label: "Entriegeln", io: [] },
+    { file: "Fan-Aus.svg", label: "Fan Aus", io: [] },
+    { file: "Fan-Langsamer.svg", label: "Fan Langsamer", io: [] },
+    { file: "Fan-Schneller.svg", label: "Fan Schneller", io: [] },
+    { file: "Fan-Stufe-2.svg", label: "Fan Stufe 2", io: [] },
+    { file: "Fan-Stufe-3.svg", label: "Fan Stufe 3", io: [] },
+    { file: "Farbpalette-Aus.svg", label: "Farbpalette Aus", io: [] },
+    { file: "Farbpalette.svg", label: "Farbpalette", io: [] },
+    { file: "Farbwahl.svg", label: "Farbwahl", io: [] },
+    { file: "Fierwall-Schild.svg", label: "Firewall Schild", io: [] },
+    { file: "Fierwall.svg", label: "Firewall", io: [] },
+    { file: "Fisch.svg", label: "Fisch (Aquarium)", io: [] },
+    { file: "Flamme.svg", label: "Heizung / Flamme", io: [{ id: "TEMP_OUT", label: "Ventil", type: "out" }] },
+    { file: "Foerwaertsspuelen-Fein-Doppelt.svg", label: "Vorwärts", io: [] }
 ];
