@@ -153,7 +153,7 @@ const hardwareConfigList = [
     {
         id: "lox_nano_di_tree",
         name: "Loxone Nano DI Tree",
-        image: "SCH3.png", // Test-Bild (Pfad entsprechend anpassen)
+        image: "DI-Tree.jpg",
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"],
         io: [
             { id: "DI_1", label: "DI 1", type: "in" },
@@ -167,7 +167,7 @@ const hardwareConfigList = [
     {
         id: "lox_nano_2_relay",
         name: "Loxone Nano 2 Relay Tree",
-        image: "", 
+        image: "Nano-2-Relay.jpg", 
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"],
         io: [
             { id: "I_1", label: "I1 (Eingang)", type: "in" },
@@ -181,18 +181,86 @@ const hardwareConfigList = [
         ]
     },
     {
-        id: "lox_touch_tree",
-        name: "Loxone Touch Tree",
-        image: "",
-        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"],
+        id: "lox_nano_dimmer_air",
+        name: "Loxone Nano Dimmer Air",
+        image: "Nano-Dimmer-Air.jpg",
+        fields: ["S.-Nr.", "Geräte-Bez.", "Montagehöhe"],
         io: [
-            { id: "T_1", label: "Taste 1 (Oben Links)", type: "in" },
-            { id: "T_2", label: "Taste 2 (Unten Links)", type: "in" },
-            { id: "T_3", label: "Taste 3 (Mitte)", type: "in" },
-            { id: "T_4", label: "Taste 4 (Oben Rechts)", type: "in" },
-            { id: "T_5", label: "Taste 5 (Unten Rechts)", type: "in" },
+            { id: "I_1", label: "I1", type: "in" },
+            { id: "I_2", label: "I2", type: "in" },
+            { id: "O_1", label: "Dimmer", type: "out" }
+        ]
+    },
+    {
+        id: "lox_nano_io_air",
+        name: "Loxone Nano IO Air",
+        image: "Nano-IO-Air.jpg",
+        fields: ["S.-Nr.", "Geräte-Bez."],
+        io: [
+            { id: "I_1", label: "I1", type: "in" },
+            { id: "I_2", label: "I2", type: "in" },
+            { id: "O_1", label: "Relais 1", type: "out" },
+            { id: "O_2", label: "Relais 2", type: "out" }
+        ]
+    },
+    {
+        id: "lox_motor_controller_tree",
+        name: "Loxone Motor Controller Tree",
+        image: "Motor-Controller-Tree.jpg",
+        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"],
+        io: [
+            { id: "I_1", label: "I1", type: "in" },
+            { id: "I_2", label: "I2", type: "in" },
+            { id: "O_1", label: "Motor Auf/Ab", type: "out" }
+        ]
+    },
+    {
+        id: "lox_motor_controller_air",
+        name: "Loxone Motor Controller Air",
+        image: "Motor-Controller-Air.jpg",
+        fields: ["S.-Nr.", "Geräte-Bez."],
+        io: [
+            { id: "I_1", label: "I1", type: "in" },
+            { id: "I_2", label: "I2", type: "in" },
+            { id: "O_1", label: "Motor Auf/Ab", type: "out" }
+        ]
+    },
+    {
+        id: "lox_storenaktor_air",
+        name: "Loxone Storenaktor Air",
+        image: "Storenaktor-Air.jpg",
+        fields: ["S.-Nr.", "Geräte-Bez."],
+        io: [
+            { id: "O_1", label: "Storen", type: "out" }
+        ]
+    },
+    {
+        id: "lox_dali_air",
+        name: "Loxone DALI Air",
+        image: "Dali-Air.jpg",
+        fields: ["S.-Nr.", "Geräte-Bez."],
+        io: [
+            { id: "DALI_OUT", label: "DALI Bus", type: "out" }
+        ]
+    },
+    {
+        id: "lox_wetterstation",
+        name: "Loxone Wetterstation",
+        image: "Wetterstation.jpg",
+        fields: ["S.-Nr.", "Geräte-Bez.", "Montagehöhe"],
+        io: [
+            { id: "WIND", label: "Wind", type: "out" },
             { id: "TEMP", label: "Temperatur", type: "out" },
-            { id: "HUM", label: "Feuchte", type: "out" }
+            { id: "HELL", label: "Helligkeit", type: "out" }
+        ]
+    },
+    {
+        id: "lox_stellenantrieb",
+        name: "Loxone Stellenantrieb",
+        image: "Stellenantrieb.jpg",
+        fields: ["S.-Nr.", "Geräte-Bez."],
+        io: [
+            { id: "VALVE", label: "Ventil", type: "out" }
         ]
     },
     {
@@ -200,9 +268,7 @@ const hardwareConfigList = [
         name: "Tree to Air Bridge",
         image: "Tree-to-Air.jpg",
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"],
-        io: [
-            
-        ]
+        io: []
     },
     {
         id: "feller_taster_universell",
