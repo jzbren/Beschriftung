@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ServiceProDetail Konfigurator</title>
-    <!-- Externe Konfigurationsdatei laden (Icons und Hardware) -->
+    <!-- Externe Konfigurationsdatei laden (Icons) -->
     <script src="icons.js"></script>
     <style>
         :root {
@@ -167,12 +167,22 @@
             background-color: var(--feller-white);
             border: 1px solid #d1d5db;
             border-radius: 3px;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative;
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            position: relative;
+            overflow: hidden;
         }
-        .switch-slot img { width: 32px; height: 32px; opacity: 0.8; }
-        .switch-slot .slot-text { font-size: 10px; color: #4b5563; margin-top: 8px; text-align: center; width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
-        .slot-badge { position: absolute; top: 4px; left: 4px; font-size: 9px; color: #9ca3af; }
+        .switch-slot img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; 
+            padding: 15%; /* Damit es wie ein Schalter-Symbol aussieht */
+            box-sizing: border-box;
+            opacity: 0.85; 
+        }
+        .slot-badge { position: absolute; top: 4px; left: 4px; font-size: 9px; color: #9ca3af; z-index: 2; }
 
         /* Forms */
         .form-group { display: flex; margin-bottom: 10px; align-items: center; }
@@ -181,19 +191,50 @@
         .slot-form { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
         .slot-form h4 { margin: 0 0 10px 0; color: var(--primary); }
 
-        /* Hardware Components */
-        .hardware-list { margin-top: 20px; }
-        .hw-card {
-            background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px;
-            border-left: 4px solid var(--primary);
+        .io-section { 
+            margin-top: 15px; 
+            padding-top: 15px; 
+            border-top: 1px dashed #cbd5e1; 
         }
-        .hw-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
-        .hw-card-header h4 { margin: 0; font-size: 1.1rem; }
+        .io-section h5 { 
+            margin: 0 0 10px 0; 
+            color: #0f766e; 
+            font-size: 0.85rem; 
+            text-transform: uppercase; 
+        }
+        .io-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            background: #fff;
+            padding: 6px 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+        }
+        .io-row span.io-label {
+            width: 100px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #475569;
+        }
+        .io-row span.io-type {
+            font-size: 0.7rem;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-right: 10px;
+            text-transform: uppercase;
+        }
+        .io-type.in { background: #dbeafe; color: #1e3a8a; }
+        .io-type.out { background: #fce7f3; color: #9d174d; }
         
-        .io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-        .io-section { background: #f8fafc; padding: 10px; border-radius: 4px; }
-        .io-section h5 { margin: 0 0 10px 0; color: #64748b; font-size: 0.85rem; text-transform: uppercase; }
-        
+        .io-row input {
+            flex: 1;
+            padding: 4px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            font-size: 0.85rem;
+        }
+
         /* Print Styles */
         @media print {
             .sidebar, .top-bar .action-buttons { display: none !important; }
@@ -219,7 +260,6 @@
         <div class="top-bar">
             <input type="text" id="project-name" value="Neues Projekt" onchange="updateProjectName(this.value)">
             <div class="action-buttons">
-                <!-- Verstecktes File Input für Laden -->
                 <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
                 <button class="btn" onclick="document.getElementById('file-input').click()">📂 Öffnen (.ServiceProDetail)</button>
                 <button class="btn primary" onclick="exportProject()">💾 Speichern (.ServiceProDetail)</button>
@@ -260,8 +300,7 @@
             name: `Detail ${projectData.details.length + 1}`,
             location: "",
             layout: "2x2",
-            slots: {},
-            hardware: []
+            slots: {}
         };
         projectData.details.push(newDetail);
         activeDetailId = newDetail.id;
@@ -337,23 +376,23 @@
         // Sicherstellen, dass Slots existieren
         for(let i=1; i<=totalSlots; i++) {
             if(!detail.slots[`slot-${i}`]) {
-                detail.slots[`slot-${i}`] = { bezeichnung: '', icon: '', gruppe: '', art: 'TA', eingabegeraet: '', funktion: '' };
+                detail.slots[`slot-${i}`] = { 
+                    bezeichnung: '', 
+                    iconFile: '', 
+                    gruppe: '', 
+                    ioData: {} 
+                };
             }
         }
 
         // Icon Options
-        const iconOptions = (typeof iconConfigList !== 'undefined' ? iconConfigList : [""]).map(icon => 
-            `<option value="${icon}">${icon || '--- Kein Icon ---'}</option>`
-        ).join('');
-
-        // Hardware Options
-        const hwOptions = (typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : []).map(hw => 
-            `<option value="${hw.id}">${hw.name}</option>`
+        const iconOptionsHtml = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).map(iconDef => 
+            `<option value="${iconDef.file}">${iconDef.label || iconDef.file || '--- Kein Icon ---'}</option>`
         ).join('');
 
         let html = `
             <div class="workspace">
-                <!-- Linke Seite: Visualizer & HW -->
+                <!-- Linke Seite: Visualizer -->
                 <div>
                     <div class="pane">
                         <div class="form-group">
@@ -382,26 +421,13 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="pane" style="margin-top: 20px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <h3>Hardware Komponenten</h3>
-                            <div style="display:flex; gap:10px;">
-                                <select id="new-hw-select">${hwOptions}</select>
-                                <button class="btn primary" onclick="addHardwareComponent()">+ Hinzufügen</button>
-                            </div>
-                        </div>
-                        <div class="hardware-list">
-                            ${generateHardwareHtml(detail)}
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Rechte Seite: Slot Data -->
                 <div class="pane">
-                    <h3>Schalter Belegungen</h3>
+                    <h3>Schalter & Belegungen</h3>
                     <div class="slots-container">
-                        ${generateSlotsHtml(detail, totalSlots, iconOptions)}
+                        ${generateSlotsHtml(detail, totalSlots, iconOptionsHtml)}
                     </div>
                 </div>
             </div>
@@ -413,7 +439,9 @@
         for(let i=1; i<=totalSlots; i++) {
             const slot = detail.slots[`slot-${i}`];
             const selectEl = document.getElementById(`select-icon-${i}`);
-            if(selectEl && slot.icon) selectEl.value = slot.icon;
+            if(selectEl && slot.iconFile) {
+                selectEl.value = slot.iconFile;
+            }
         }
     }
 
@@ -423,12 +451,12 @@
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
                 const slot = detail.slots[`slot-${count}`];
-                const iconPath = slot.icon ? `icons/${slot.icon}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ccc" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>';
+                // Wenn kein Icon gewählt, zeigen wir ein transparentes 1x1 png oder ein ganz blasses Platzhalter-SVG
+                const iconPath = slot.iconFile ? `icons/${slot.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23e5e7eb" stroke-width="1"><circle cx="12" cy="12" r="10"></circle></svg>';
                 html += `
                     <div class="switch-slot">
                         <span class="slot-badge">${count}</span>
                         <img src="${iconPath}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;%23ff9999&quot; stroke-width=&quot;2&quot;><line x1=&quot;18&quot; y1=&quot;6&quot; x2=&quot;6&quot; y2=&quot;18&quot;></line><line x1=&quot;6&quot; y1=&quot;6&quot; x2=&quot;18&quot; y2=&quot;18&quot;></line></svg>'">
-                        <div class="slot-text">${slot.bezeichnung || 'Leer'}</div>
                     </div>
                 `;
                 count++;
@@ -437,37 +465,53 @@
         return html;
     }
 
-    function generateSlotsHtml(detail, totalSlots, iconOptions) {
+    function generateSlotsHtml(detail, totalSlots, iconOptionsHtml) {
         let html = '';
         for(let i=1; i<=totalSlots; i++) {
             const slot = detail.slots[`slot-${i}`];
+            
+            // Finde Icon-Definition in der JS-Datei, um die I/O Felder zu generieren
+            const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
+            
+            let ioHtml = '';
+            if(iconDef && iconDef.io && iconDef.io.length > 0) {
+                let ioRows = iconDef.io.map(io => {
+                    const val = slot.ioData[io.id] || '';
+                    return `
+                        <div class="io-row">
+                            <span class="io-type ${io.type}">${io.type}</span>
+                            <span class="io-label">${io.label}</span>
+                            <input type="text" placeholder="Zuweisung..." value="${val}" onchange="updateSlotIO('${i}', '${io.id}', this.value)">
+                        </div>
+                    `;
+                }).join('');
+                
+                ioHtml = `
+                    <div class="io-section">
+                        <h5>Ein- / Ausgänge für Symbol</h5>
+                        ${ioRows}
+                    </div>
+                `;
+            }
+
             html += `
                 <div class="slot-form">
                     <h4>Platz ${i}</h4>
                     <div class="form-group">
                         <label>Bezeichnung</label>
-                        <input type="text" value="${slot.bezeichnung}" onchange="updateSlot('${i}', 'bezeichnung', this.value)">
-                    </div>
-                    <div class="form-group">
-                        <label>Icon</label>
-                        <select id="select-icon-${i}" onchange="updateSlot('${i}', 'icon', this.value)">${iconOptions}</select>
+                        <input type="text" value="${slot.bezeichnung || ''}" onchange="updateSlot('${i}', 'bezeichnung', this.value)" placeholder="z.B. Licht Spots Küche">
                     </div>
                     <div class="form-group">
                         <label>Gruppe</label>
-                        <input type="text" value="${slot.gruppe}" onchange="updateSlot('${i}', 'gruppe', this.value)">
+                        <input type="text" value="${slot.gruppe || ''}" onchange="updateSlot('${i}', 'gruppe', this.value)">
                     </div>
                     <div class="form-group">
-                        <label>Art</label>
-                        <input type="text" value="${slot.art}" onchange="updateSlot('${i}', 'art', this.value)">
+                        <label>Icon / Schaltertyp</label>
+                        <select id="select-icon-${i}" onchange="updateSlotIcon('${i}', this.value)">
+                            ${iconOptionsHtml}
+                        </select>
                     </div>
-                    <div class="form-group">
-                        <label>Eingabegerät</label>
-                        <input type="text" value="${slot.eingabegeraet}" onchange="updateSlot('${i}', 'eingabegeraet', this.value)" placeholder="z.B. EG.1.04.1 DI1">
-                    </div>
-                    <div class="form-group">
-                        <label>Funktion</label>
-                        <input type="text" value="${slot.funktion}" onchange="updateSlot('${i}', 'funktion', this.value)" placeholder="z.B. Auf/Ab, Tipp">
-                    </div>
+                    ${ioHtml}
                 </div>
             `;
         }
@@ -477,118 +521,21 @@
     function updateSlot(slotNum, field, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
         detail.slots[`slot-${slotNum}`][field] = value;
-        if(field === 'bezeichnung' || field === 'icon') {
-            renderWorkspace(); // re-render to update visualizer
-        }
     }
 
-    // --- HARDWARE KOMPONENTEN ---
-    function addHardwareComponent() {
-        const select = document.getElementById('new-hw-select');
-        const hwId = select.value;
-        if(!hwId) return;
-        
-        const hwConfig = hardwareConfigList.find(h => h.id === hwId);
-        if(!hwConfig) return;
-
+    function updateSlotIcon(slotNum, iconFile) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
-        
-        // Initiales leeres Mapping für alle IOs
-        const ioMapping = {};
-        if(hwConfig.io) {
-            hwConfig.io.forEach(io => { ioMapping[io.id] = ""; });
-        }
-        
-        // Initiale Felder
-        const fieldsData = {};
-        if(hwConfig.fields) {
-            hwConfig.fields.forEach(f => { fieldsData[f] = ""; });
-        }
-
-        detail.hardware.push({
-            instanceId: generateId(),
-            configId: hwConfig.id,
-            fields: fieldsData,
-            mappings: ioMapping
-        });
-        
-        renderWorkspace();
+        detail.slots[`slot-${slotNum}`].iconFile = iconFile;
+        // Wenn das Icon wechselt, müssen wir re-rendern, damit die korrekten I/Os angezeigt werden.
+        renderWorkspace(); 
     }
 
-    function removeHardware(instanceId) {
-        if(confirm("Komponente entfernen?")) {
-            const detail = projectData.details.find(d => d.id === activeDetailId);
-            detail.hardware = detail.hardware.filter(h => h.instanceId !== instanceId);
-            renderWorkspace();
-        }
-    }
-
-    function updateHwField(instanceId, field, value) {
+    function updateSlotIO(slotNum, ioId, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
-        const hw = detail.hardware.find(h => h.instanceId === instanceId);
-        hw.fields[field] = value;
-    }
-
-    function updateHwMapping(instanceId, ioId, value) {
-        const detail = projectData.details.find(d => d.id === activeDetailId);
-        const hw = detail.hardware.find(h => h.instanceId === instanceId);
-        hw.mappings[ioId] = value;
-    }
-
-    function generateHardwareHtml(detail) {
-        if(!detail.hardware || detail.hardware.length === 0) {
-            return '<p style="color:#64748b; font-size:0.9rem;">Noch keine Komponenten zugewiesen.</p>';
+        if(!detail.slots[`slot-${slotNum}`].ioData) {
+            detail.slots[`slot-${slotNum}`].ioData = {};
         }
-
-        let html = '';
-        detail.hardware.forEach(hw => {
-            const config = hardwareConfigList.find(c => c.id === hw.configId);
-            if(!config) return;
-
-            // Generate Fields (S.Nr etc)
-            let fieldsHtml = '';
-            if(config.fields) {
-                config.fields.forEach(f => {
-                    fieldsHtml += `
-                        <div class="form-group" style="margin-bottom:5px;">
-                            <label style="width:100px;">${f}</label>
-                            <input type="text" value="${hw.fields[f] || ''}" onchange="updateHwField('${hw.instanceId}', '${f}', this.value)">
-                        </div>
-                    `;
-                });
-            }
-
-            // Generate I/O Mappings
-            let inputsHtml = '';
-            let outputsHtml = '';
-            if(config.io) {
-                config.io.forEach(io => {
-                    const row = `
-                        <div class="form-group" style="margin-bottom:5px;">
-                            <label style="width:110px; font-size:0.8rem;">${io.label}</label>
-                            <input type="text" value="${hw.mappings[io.id] || ''}" placeholder="Zuweisung..." onchange="updateHwMapping('${hw.instanceId}', '${io.id}', this.value)">
-                        </div>
-                    `;
-                    if(io.type === 'in') inputsHtml += row;
-                    if(io.type === 'out') outputsHtml += row;
-                });
-            }
-
-            html += `
-                <div class="hw-card">
-                    <div class="hw-card-header">
-                        <h4>${config.name}</h4>
-                        <button class="delete-btn" onclick="removeHardware('${hw.instanceId}')">×</button>
-                    </div>
-                    ${fieldsHtml}
-                    <div class="io-grid">
-                        ${inputsHtml ? `<div class="io-section"><h5>Eingänge (IN)</h5>${inputsHtml}</div>` : '<div></div>'}
-                        ${outputsHtml ? `<div class="io-section"><h5>Ausgänge (OUT)</h5>${outputsHtml}</div>` : '<div></div>'}
-                    </div>
-                </div>
-            `;
-        });
-        return html;
+        detail.slots[`slot-${slotNum}`].ioData[ioId] = value;
     }
 
     // --- DATEI I/O (.ServiceProDetail) ---
@@ -598,7 +545,6 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        // Speichern als .ServiceProDetail
         a.download = (projectData.projectName.replace(/[^a-z0-9]/gi, '_').toLowerCase() || "projekt") + ".ServiceProDetail";
         a.click();
         URL.revokeObjectURL(url);
@@ -608,7 +554,6 @@
         const file = event.target.files[0];
         if (!file) return;
         
-        // Validiere Dateiendung
         if(!file.name.endsWith('.ServiceProDetail')) {
             alert("Bitte eine gültige .ServiceProDetail Datei auswählen!");
             return;
@@ -632,11 +577,8 @@
             }
         };
         reader.readAsText(file);
-        // Input zurücksetzen damit gleiche Datei nochmal geladen werden kann
         event.target.value = '';
     }
-
 </script>
-
 </body>
 </html>
