@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator 1</title>
+    <title>ServiceProDetail Konfigurator</title>
     <!-- Externe Konfigurationsdatei laden (Icons & Hardware) -->
     <script src="icons.js"></script>
     <style>
@@ -246,9 +246,7 @@
 
         /* Detailed I/O Section */
         .io-section { 
-            margin-top: 15px; 
-            padding-top: 15px; 
-            border-top: 1px dashed #cbd5e1; 
+            margin-top: 10px;
         }
         .io-section h5 { 
             margin: 0 0 10px 0; 
@@ -313,10 +311,46 @@
 
         /* Print Styles */
         @media print {
-            .sidebar, .top-bar .action-buttons { display: none !important; }
-            .main-content { padding: 0; overflow: visible; }
-            body { height: auto; overflow: visible; background: white; }
-            .pane { box-shadow: none; border: none; padding: 0; }
+            body { 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+                background: white;
+                height: auto; 
+                overflow: visible; 
+            }
+            .sidebar, .top-bar .action-buttons, .no-print, .delete-btn { 
+                display: none !important; 
+            }
+            .main-content { 
+                padding: 0; 
+                overflow: visible; 
+            }
+            .pane { 
+                box-shadow: none; 
+                border: none; 
+                padding: 0; 
+                margin-bottom: 20px;
+                page-break-inside: avoid;
+            }
+            .workspace {
+                display: block; /* Untereinander auf A4 */
+            }
+            .io-complex-row {
+                page-break-inside: avoid; /* Verhindert, dass ein Anschluss über 2 Seiten gebrochen wird */
+            }
+            /* Eingabefelder im Druck dezenter machen */
+            input, select {
+                border: 1px solid #e2e8f0 !important;
+            }
+            input::placeholder {
+                color: transparent !important;
+            }
+            .top-bar {
+                box-shadow: none;
+                border-bottom: 2px solid #cbd5e1;
+                border-radius: 0;
+                padding-left: 0;
+            }
         }
     </style>
 </head>
@@ -458,9 +492,7 @@
         for(let i=1; i<=totalSlots; i++) {
             if(!detail.slots[`slot-${i}`]) {
                 detail.slots[`slot-${i}`] = { 
-                    bezeichnung: '', 
                     iconFile: '', 
-                    gruppe: '', 
                     ioData: {} 
                 };
             }
@@ -484,7 +516,7 @@
                             <label>Standort/Info:</label>
                             <input type="text" value="${detail.location || ''}" onchange="updateActiveDetailField('location', this.value)" placeholder="z.B. Hagrain 8, 6213 Knutwil">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group no-print">
                             <label>Layout:</label>
                             <select onchange="updateActiveDetailField('layout', this.value)">
                                 <option value="1x1" ${detail.layout==='1x1'?'selected':''}>1 x 1</option>
@@ -506,7 +538,7 @@
                     <div class="pane" style="margin-top: 20px;">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <h3>Hardware Komponenten</h3>
-                            <div style="display:flex; gap:10px;">
+                            <div class="no-print" style="display:flex; gap:10px;">
                                 <select id="new-hw-select">${hwOptionsHtml}</select>
                                 <button class="btn primary" onclick="addHardwareComponent()">+ Hinzufügen</button>
                             </div>
@@ -548,13 +580,11 @@
         return html;
     }
 
-    // Erzeugt das Custom Dropdown für Icons
     function renderCustomIconDropdown(slotNum, currentIcon) {
         const iconList = (typeof iconConfigList !== 'undefined' ? iconConfigList : []);
         const currentDef = iconList.find(ic => ic.file === currentIcon) || iconList[0];
         const selectedLabel = currentDef ? (currentDef.label || currentDef.file || '--- Kein Icon ---') : '--- Kein Icon ---';
 
-        // Gruppen strukturieren
         const groups = {};
         iconList.forEach(ic => {
             const g = ic.group || "Sonstige";
@@ -584,7 +614,6 @@
         `;
     }
 
-    // JS Logic für Custom Dropdown
     function toggleDropdown(slotNum, event) {
         event.stopPropagation();
         const allDropdowns = document.querySelectorAll('.select-items');
@@ -618,7 +647,6 @@
         updateSlotIcon(slotNum, iconFile);
     }
 
-    // Helper für Rückwärtskompatibilität und Strukturierung der IO-Daten
     function getIOObject(slot, ioId) {
         let val = slot.ioData[ioId];
         if (typeof val === 'string') {
@@ -637,10 +665,13 @@
             if(iconDef && iconDef.io && iconDef.io.length > 0) {
                 let ioRows = iconDef.io.map(io => {
                     const data = getIOObject(slot, io.id);
+                    // Umwandlung in/out zu Eingang/Ausgang
+                    const ioTypeText = io.type === 'in' ? 'Eingang' : 'Ausgang';
+                    
                     return `
                         <div class="io-complex-row">
                             <div class="io-header">
-                                <span class="io-type ${io.type}">${io.type}</span> 
+                                <span class="io-type ${io.type}">${ioTypeText}</span> 
                                 ${io.label}
                             </div>
                             <div class="io-fields-grid">
@@ -656,24 +687,18 @@
                 
                 ioHtml = `
                     <div class="io-section">
-                        <h5>Detaillierte Ein- / Ausgänge</h5>
                         ${ioRows}
                     </div>
                 `;
             }
 
+            // Wenn kein Icon zugewiesen ist, wird der Platz im Druck komplett unsichtbar
+            const printVisibilityClass = slot.iconFile ? '' : 'no-print';
+
             html += `
-                <div class="slot-form">
+                <div class="slot-form ${printVisibilityClass}">
                     <h4>Platz ${i}</h4>
-                    <div class="form-group">
-                        <label>Bezeichnung</label>
-                        <input type="text" value="${slot.bezeichnung || ''}" onchange="updateSlot('${i}', 'bezeichnung', this.value)" placeholder="z.B. Licht Spots Küche">
-                    </div>
-                    <div class="form-group">
-                        <label>Gruppe</label>
-                        <input type="text" value="${slot.gruppe || ''}" onchange="updateSlot('${i}', 'gruppe', this.value)">
-                    </div>
-                    <div class="form-group">
+                    <div class="form-group no-print">
                         <label>Icon / Typ</label>
                         ${renderCustomIconDropdown(i, slot.iconFile)}
                     </div>
@@ -682,11 +707,6 @@
             `;
         }
         return html;
-    }
-
-    function updateSlot(slotNum, field, value) {
-        const detail = projectData.details.find(d => d.id === activeDetailId);
-        detail.slots[`slot-${slotNum}`][field] = value;
     }
 
     function updateSlotIcon(slotNum, iconFile) {
@@ -703,7 +723,6 @@
         
         let currentData = detail.slots[`slot-${slotNum}`].ioData[ioId];
         
-        // Migration, falls es noch ein einfacher String ist
         if (typeof currentData === 'string') {
             currentData = { bezeichnung: currentData, gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
         } else if (!currentData) {
@@ -763,7 +782,7 @@
 
     function generateHardwareHtml(detail) {
         if(!detail.hardware || detail.hardware.length === 0) {
-            return '<p style="color:#64748b; font-size:0.9rem;">Noch keine Komponenten zugewiesen.</p>';
+            return '<p style="color:#64748b; font-size:0.9rem;" class="no-print">Noch keine Komponenten zugewiesen.</p>';
         }
 
         let html = '';
@@ -806,8 +825,8 @@
                     </div>
                     ${fieldsHtml}
                     <div class="hw-io-grid">
-                        ${inputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5>Eingänge (IN)</h5>${inputsHtml}</div>` : '<div></div>'}
-                        ${outputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5>Ausgänge (OUT)</h5>${outputsHtml}</div>` : '<div></div>'}
+                        ${inputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5>Eingänge</h5>${inputsHtml}</div>` : '<div></div>'}
+                        ${outputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5>Ausgänge</h5>${outputsHtml}</div>` : '<div></div>'}
                     </div>
                 </div>
             `;
@@ -857,3 +876,5 @@
         event.target.value = '';
     }
 </script>
+</body>
+</html>
