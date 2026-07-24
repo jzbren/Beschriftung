@@ -245,15 +245,7 @@
         .icon-option:hover { background-color: #f3f4f6; }
 
         /* Detailed I/O Section */
-        .io-section { 
-            margin-top: 10px;
-        }
-        .io-section h5 { 
-            margin: 0 0 10px 0; 
-            color: #0f766e; 
-            font-size: 0.85rem; 
-            text-transform: uppercase; 
-        }
+        .io-section { margin-top: 10px; }
         .io-complex-row {
             background: #fff;
             border: 1px solid #e2e8f0;
@@ -309,7 +301,7 @@
         .hw-card-header h4 { margin: 0; font-size: 1.1rem; }
         .hw-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
 
-        /* Print Styles */
+        /* Print Styles - Kompaktes Layout wie im Referenzbild */
         @media print {
             body { 
                 -webkit-print-color-adjust: exact; 
@@ -329,27 +321,97 @@
                 box-shadow: none; 
                 border: none; 
                 padding: 0; 
-                margin-bottom: 20px;
-                page-break-inside: avoid;
+                margin-bottom: 25px;
             }
             .workspace {
-                display: block; /* Untereinander auf A4 */
+                display: block;
             }
-            .io-complex-row {
-                page-break-inside: avoid; /* Verhindert, dass ein Anschluss über 2 Seiten gebrochen wird */
+            
+            /* Jedes Detail bekommt beim Drucken einen sauberen Seitenumbruch (ausser das letzte) */
+            .print-detail-page {
+                page-break-after: always;
+                page-break-inside: avoid;
             }
-            /* Eingabefelder im Druck dezenter machen */
-            input, select {
-                border: 1px solid #e2e8f0 !important;
+            .print-detail-page:last-child {
+                page-break-after: auto;
             }
-            input::placeholder {
-                color: transparent !important;
+
+            /* Kompaktes Schalter-Layout beim Drucken: Bild links, Details rechts */
+            .print-slot-container {
+                display: grid;
+                grid-template-columns: 180px 1fr;
+                gap: 20px;
+                align-items: start;
+                margin-bottom: 25px;
+                page-break-inside: avoid;
             }
-            .top-bar {
-                box-shadow: none;
-                border-bottom: 2px solid #cbd5e1;
-                border-radius: 0;
-                padding-left: 0;
+            .print-slot-image img {
+                width: 100%;
+                height: auto;
+                max-height: 280px;
+                object-fit: contain;
+                border: 1px solid #e2e8f0;
+                border-radius: 4px;
+                padding: 5px;
+                background: #fff;
+            }
+            .print-io-item {
+                margin-bottom: 15px;
+                font-size: 0.85rem;
+                border-bottom: 1px dotted #cbd5e1;
+                padding-bottom: 10px;
+                page-break-inside: avoid;
+            }
+            .print-io-line {
+                display: flex;
+                margin-bottom: 3px;
+            }
+            .print-io-label {
+                width: 110px;
+                font-weight: 600;
+                color: #475569;
+            }
+            .print-io-val {
+                flex: 1;
+                color: #1f2937;
+            }
+
+            /* Kompaktes Hardware-Layout beim Drucken: Bild links, I/Os rechts */
+            .print-hw-container {
+                display: grid;
+                grid-template-columns: 140px 1fr;
+                gap: 20px;
+                align-items: start;
+                margin-bottom: 25px;
+                page-break-inside: avoid;
+                border: 1px solid #cbd5e1;
+                padding: 15px;
+                border-radius: 6px;
+            }
+            .print-hw-image img {
+                width: 100%;
+                height: auto;
+                object-fit: contain;
+                border: 1px solid #e2e8f0;
+                border-radius: 4px;
+                padding: 4px;
+                background: #fff;
+            }
+
+            .print-header-block {
+                border-bottom: 2px solid #0f766e;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+            }
+            .print-header-block h2 {
+                margin: 0 0 5px 0;
+                font-size: 1.5rem;
+                color: #1f2937;
+            }
+            .print-header-block p {
+                margin: 0;
+                color: #64748b;
+                font-size: 0.95rem;
             }
         }
     </style>
@@ -359,38 +421,36 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <h2>ServiceProDetails</h2>
-        <div class="detail-list" id="detail-list">
-            <!-- Dynamisch gefüllt -->
-        </div>
+        <div class="detail-list" id="detail-list"></div>
         <button class="sidebar-btn" onclick="addNewDetail()">+ Neues Detail</button>
     </div>
 
     <!-- Main Content -->
     <div class="main-content">
         <div class="top-bar">
-            <input type="text" id="project-name" value="Neues Projekt" onchange="updateProjectName(this.value)">
+            <input type="text" id="project-name" value="Schalterdetail EFH Odermatt" onchange="updateProjectName(this.value)">
             <div class="action-buttons">
                 <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
                 <button class="btn" onclick="document.getElementById('file-input').click()">📂 Öffnen</button>
                 <button class="btn primary" onclick="exportProject()">💾 Speichern</button>
-                <button class="btn" onclick="window.print()">🖨️ PDF / Drucken</button>
+                <button class="btn" onclick="printAllDetails()">🖨️ Alles Drucken (Komplett)</button>
+                <button class="btn" onclick="window.print()">🖨️ Aktuelles Detail</button>
             </div>
         </div>
 
-        <div id="workspace-container">
-            <!-- Wird dynamisch gefüllt basierend auf aktivem Detail -->
-        </div>
+        <div id="workspace-container"></div>
+        
+        <!-- Unsichtbarer Container für den Gesamtdruck aller Details -->
+        <div id="print-all-container" style="display: none;"></div>
     </div>
 
 <script>
-    // --- DATENSTRUKTUR ---
     let projectData = {
-        projectName: "Neues Projekt",
+        projectName: "Schalterdetail EFH Odermatt",
         details: []
     };
     let activeDetailId = null;
 
-    // Globale Event-Listener um offene Dropdowns zu schliessen
     document.addEventListener("click", function (e) {
         document.querySelectorAll('.select-items').forEach(item => {
             item.style.display = 'none';
@@ -409,7 +469,6 @@
         return Math.random().toString(36).substr(2, 9);
     }
 
-    // --- APP LOGIK ---
     function addNewDetail() {
         const newDetail = {
             id: generateId(),
@@ -455,7 +514,6 @@
         }
     }
 
-    // --- RENDERING ---
     function renderApp() {
         document.getElementById('project-name').value = projectData.projectName;
         renderSidebar();
@@ -491,10 +549,7 @@
 
         for(let i=1; i<=totalSlots; i++) {
             if(!detail.slots[`slot-${i}`]) {
-                detail.slots[`slot-${i}`] = { 
-                    iconFile: '', 
-                    ioData: {} 
-                };
+                detail.slots[`slot-${i}`] = { iconFile: '', ioData: {} };
             }
         }
         
@@ -525,6 +580,7 @@
                                 <option value="2x2" ${detail.layout==='2x2'?'selected':''}>2 x 2</option>
                                 <option value="3x2" ${detail.layout==='3x2'?'selected':''}>3 x 2</option>
                                 <option value="4x2" ${detail.layout==='4x2'?'selected':''}>4 x 2</option>
+                                <option value="3x3" ${detail.layout==='3x3'?'selected':''}>3 x 3</option>
                             </select>
                         </div>
                         
@@ -559,6 +615,7 @@
         `;
 
         container.innerHTML = html;
+        updatePrintAllContainer();
     }
 
     function generateVisualizerHtml(detail, rows, cols) {
@@ -616,8 +673,7 @@
 
     function toggleDropdown(slotNum, event) {
         event.stopPropagation();
-        const allDropdowns = document.querySelectorAll('.select-items');
-        allDropdowns.forEach(dd => {
+        document.querySelectorAll('.select-items').forEach(dd => {
             if (dd.id !== `dropdown-${slotNum}`) dd.style.display = 'none';
         });
         const dd = document.getElementById(`dropdown-${slotNum}`);
@@ -631,13 +687,8 @@
         const search = term.toLowerCase();
         const list = document.getElementById(`icon-list-${slotNum}`);
         const options = list.querySelectorAll('.icon-option');
-        
         options.forEach(opt => {
-            if (opt.getAttribute('data-label').includes(search)) {
-                opt.style.display = 'block';
-            } else {
-                opt.style.display = 'none';
-            }
+            opt.style.display = opt.getAttribute('data-label').includes(search) ? 'block' : 'none';
         });
     }
 
@@ -665,9 +716,7 @@
             if(iconDef && iconDef.io && iconDef.io.length > 0) {
                 let ioRows = iconDef.io.map(io => {
                     const data = getIOObject(slot, io.id);
-                    // Umwandlung in/out zu Eingang/Ausgang
                     const ioTypeText = io.type === 'in' ? 'Eingang' : 'Ausgang';
-                    
                     return `
                         <div class="io-complex-row">
                             <div class="io-header">
@@ -684,17 +733,10 @@
                         </div>
                     `;
                 }).join('');
-                
-                ioHtml = `
-                    <div class="io-section">
-                        ${ioRows}
-                    </div>
-                `;
+                ioHtml = `<div class="io-section">${ioRows}</div>`;
             }
 
-            // Wenn kein Icon zugewiesen ist, wird der Platz im Druck komplett unsichtbar
             const printVisibilityClass = slot.iconFile ? '' : 'no-print';
-
             html += `
                 <div class="slot-form ${printVisibilityClass}">
                     <h4>Platz ${i}</h4>
@@ -720,15 +762,12 @@
         if(!detail.slots[`slot-${slotNum}`].ioData) {
             detail.slots[`slot-${slotNum}`].ioData = {};
         }
-        
         let currentData = detail.slots[`slot-${slotNum}`].ioData[ioId];
-        
         if (typeof currentData === 'string') {
             currentData = { bezeichnung: currentData, gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
         } else if (!currentData) {
             currentData = { bezeichnung: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
         }
-
         currentData[field] = value;
         detail.slots[`slot-${slotNum}`].ioData[ioId] = currentData;
     }
@@ -738,15 +777,12 @@
         const select = document.getElementById('new-hw-select');
         const hwId = select.value;
         if(!hwId) return;
-        
         const hwConfig = hardwareConfigList.find(h => h.id === hwId);
         if(!hwConfig) return;
 
         const detail = projectData.details.find(d => d.id === activeDetailId);
-        
         const ioMapping = {};
         if(hwConfig.io) hwConfig.io.forEach(io => { ioMapping[io.id] = ""; });
-        
         const fieldsData = {};
         if(hwConfig.fields) hwConfig.fields.forEach(f => { fieldsData[f] = ""; });
 
@@ -756,7 +792,6 @@
             fields: fieldsData,
             mappings: ioMapping
         });
-        
         renderWorkspace();
     }
 
@@ -808,7 +843,7 @@
                 config.io.forEach(io => {
                     const row = `
                         <div class="form-group" style="margin-bottom:5px;">
-                            <label style="width:110px; font-size:0.8rem;">${io.label}</label>
+                            <label style="width:110px; font-size:0.85rem;">${io.label}</label>
                             <input type="text" value="${hw.mappings[io.id] || ''}" placeholder="Zuweisung..." onchange="updateHwMapping('${hw.instanceId}', '${io.id}', this.value)">
                         </div>
                     `;
@@ -834,6 +869,116 @@
         return html;
     }
 
+    // --- GESAMTPRUCK GENERATOR ---
+    function updatePrintAllContainer() {
+        const container = document.getElementById('print-all-container');
+        let allHtml = '';
+
+        projectData.details.forEach(detail => {
+            let slotsHtml = '';
+            const [rows, cols] = detail.layout.split('x').map(Number);
+            const totalSlots = rows * cols;
+
+            for(let i=1; i<=totalSlots; i++) {
+                const slot = detail.slots[`slot-${i}`];
+                if(!slot || !slot.iconFile) continue;
+
+                const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
+                let printIoRows = '';
+
+                if(iconDef && iconDef.io) {
+                    iconDef.io.forEach(io => {
+                        const data = getIOObject(slot, io.id);
+                        const ioTypeText = io.type === 'in' ? 'Eingang' : 'Ausgang';
+                        printIoRows += `
+                            <div class="print-io-item">
+                                <div class="print-io-line"><span class="print-io-label">Bezeichnung</span><span class="print-io-val">${data.bezeichnung}</span></div>
+                                <div class="print-io-line"><span class="print-io-label">Gruppe</span><span class="print-io-val">${data.gruppe}</span></div>
+                                <div class="print-io-line"><span class="print-io-label">Art</span><span class="print-io-val">${ioTypeText} (${io.label})</span></div>
+                                <div class="print-io-line"><span class="print-io-label">Eingabegerät</span><span class="print-io-val">${data.eingabegerat}</span></div>
+                                <div class="print-io-line"><span class="print-io-label">Funktion</span><span class="print-io-val">${data.funktion}</span></div>
+                                <div class="print-io-line"><span class="print-io-label">Bemerkung</span><span class="print-io-val">${data.bemerkung}</span></div>
+                            </div>
+                        `;
+                    });
+                }
+
+                slotsHtml += `
+                    <div class="print-slot-container">
+                        <div class="print-slot-image">
+                            <img src="icons-schalter/${slot.iconFile}">
+                        </div>
+                        <div class="print-slot-details">
+                            ${printIoRows}
+                        </div>
+                    </div>
+                `;
+            }
+
+            let hwHtml = '';
+            if(detail.hardware) {
+                detail.hardware.forEach(hw => {
+                    const config = hardwareConfigList.find(c => c.id === hw.configId);
+                    if(!config) return;
+
+                    let printFieldsHtml = '';
+                    if(config.fields) {
+                        config.fields.forEach(f => {
+                            printFieldsHtml += `<div class="print-io-line"><span class="print-io-label">${f}</span><span class="print-io-val">${hw.fields[f] || ''}</span></div>`;
+                        });
+                    }
+
+                    let printIoTable = '';
+                    if(config.io) {
+                        config.io.forEach(io => {
+                            const val = hw.mappings[io.id] || '';
+                            printIoTable += `<div class="print-io-line"><span class="print-io-label">${io.label}</span><span class="print-io-val">${val}</span></div>`;
+                        });
+                    }
+
+                    let printHwImageTag = config.image ? `<div class="print-hw-image"><img src="${config.image}"></div>` : '';
+                    hwHtml += `
+                        <div class="print-hw-container">
+                            ${printHwImageTag}
+                            <div>
+                                <h4 style="margin:0 0 10px 0; font-size:1rem; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">${config.name}</h4>
+                                ${printFieldsHtml}
+                                <div style="margin-top: 8px;">${printIoTable}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            allHtml += `
+                <div class="print-detail-page">
+                    <div class="print-header-block">
+                        <h2>${projectData.projectName}</h2>
+                        <p>${detail.name} ${detail.location ? ' - ' + detail.location : ''}</p>
+                    </div>
+                    ${slotsHtml}
+                    ${hwHtml}
+                </div>
+            `;
+        });
+
+        container.innerHTML = allHtml;
+    }
+
+    function printAllDetails() {
+        updatePrintAllContainer();
+        const mainContent = document.getElementById('workspace-container');
+        const printContainer = document.getElementById('print-all-container');
+        
+        mainContent.style.display = 'none';
+        printContainer.style.display = 'block';
+        
+        window.print();
+        
+        mainContent.style.display = 'block';
+        printContainer.style.display = 'none';
+    }
+
     // --- DATEI I/O (.ServiceProDetail) ---
     function exportProject() {
         const dataStr = JSON.stringify(projectData, null, 2);
@@ -849,12 +994,10 @@
     function importProject(event) {
         const file = event.target.files[0];
         if (!file) return;
-        
         if(!file.name.endsWith('.ServiceProDetail')) {
             alert("Bitte eine gültige .ServiceProDetail Datei auswählen!");
             return;
         }
-
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
@@ -869,7 +1012,7 @@
                     alert("Dateiformat ungültig!");
                 }
             } catch (err) {
-                alert("Fehler beim Laden der Datei. Ist die JSON-Struktur intakt?");
+                alert("Fehler beim Laden der Datei.");
             }
         };
         reader.readAsText(file);
