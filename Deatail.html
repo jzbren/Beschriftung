@@ -1,10 +1,11 @@
-
 html_content = """<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schalterdetail Konfigurator</title>
+    <!-- Externe Konfigurationsdatei laden -->
+    <script src="icons.js"></script>
     <style>
         :root {
             --feller-white: #f7f9f9;
@@ -160,12 +161,28 @@ html_content = """<!DOCTYPE html>
             font-weight: 500;
             color: #475569;
         }
-        .form-group input {
+        .form-group input, .form-group select {
             flex: 1;
             padding: 5px 8px;
         }
-        .form-group input.icon-input {
-            font-family: monospace;
+        .icon-picker-container {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            gap: 10px;
+        }
+        .icon-preview-small {
+            width: 24px;
+            height: 24px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .icon-preview-small img {
+            max-width: 16px;
+            max-height: 16px;
         }
     </style>
 </head>
@@ -204,7 +221,14 @@ html_content = """<!DOCTYPE html>
 </div>
 
 <script>
-    // Konfiguration der Platzhalter-Daten (ähnlich zu Loxone Tree Setup)
+    // Überprüfen ob icons.js geladen wurde, ansonsten Fallback
+    const iconsList = typeof iconConfigList !== 'undefined' ? iconConfigList : [
+        "", 
+        "Deckenleuchte.svg", 
+        "Abwesend.svg", 
+        "Einstellungen.svg"
+    ];
+
     const slotData = {};
 
     function generateLayout() {
@@ -249,8 +273,7 @@ html_content = """<!DOCTYPE html>
                 
                 const img = document.createElement('img');
                 img.id = `img-${slotId}`;
-                // Fallback Icon, wenn keines gesetzt ist, sonst laden wir es aus dem Ordner 'icons'
-                img.src = slotData[slotId].icon ? `icons/${slotData[slotId].icon}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>';
+                img.src = getIconPath(slotData[slotId].icon);
                 
                 const text = document.createElement('div');
                 text.className = 'slot-text';
@@ -266,11 +289,15 @@ html_content = """<!DOCTYPE html>
                 const formDiv = document.createElement('div');
                 formDiv.className = 'slot-form';
                 
-                // Bestimme die Position für die Überschrift (z.B. "Reihe Links, Oben")
                 let positionLabel = `Schalter ${count}`;
                 if (cols == 2) {
                     positionLabel = (c === 0 ? "Links " : "Rechts ") + (r === 0 ? "Oben" : (r === 1 ? "Unten" : `Reihe ${r+1}`));
                 }
+
+                // Dropdown Optionen generieren
+                const optionsHtml = iconsList.map(icon => 
+                    `<option value="${icon}" ${slotData[slotId].icon === icon ? 'selected' : ''}>${icon || '--- Kein Icon ---'}</option>`
+                ).join('');
 
                 formDiv.innerHTML = `
                     <h3>Platz ${count}: ${positionLabel}</h3>
@@ -279,8 +306,15 @@ html_content = """<!DOCTYPE html>
                         <input type="text" value="${slotData[slotId].bezeichnung}" onkeyup="updateData('${slotId}', 'bezeichnung', this.value)" placeholder="z.B. Licht Spots Küche">
                     </div>
                     <div class="form-group">
-                        <label>Icon (SVG-Name)</label>
-                        <input type="text" class="icon-input" value="${slotData[slotId].icon}" onkeyup="updateData('${slotId}', 'icon', this.value)" placeholder="z.B. Deckenleuchte.svg">
+                        <label>Icon</label>
+                        <div class="icon-picker-container">
+                            <div class="icon-preview-small">
+                                <img id="preview-img-${slotId}" src="${getIconPath(slotData[slotId].icon)}" alt="">
+                            </div>
+                            <select onchange="updateData('${slotId}', 'icon', this.value)">
+                                ${optionsHtml}
+                            </select>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Gruppe</label>
@@ -306,29 +340,34 @@ html_content = """<!DOCTYPE html>
         }
     }
 
+    function getIconPath(iconName) {
+        if (!iconName || iconName.trim() === '') {
+            return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>';
+        }
+        return `icons/${iconName.trim()}`;
+    }
+
     function updateData(slotId, field, value) {
         slotData[slotId][field] = value;
         
-        // Live Update des Visualizers
         if (field === 'bezeichnung') {
             document.getElementById(`text-${slotId}`).innerText = value || 'Leer';
         }
         if (field === 'icon') {
-            const img = document.getElementById(`img-${slotId}`);
-            if (value.trim() !== '') {
-                // Erwartet, dass die SVGs im relativen Ordner "icons/" liegen
-                img.src = `icons/${value.trim()}`;
-                img.onerror = function() {
-                    // Fallback, falls Icon nicht gefunden wird
-                    this.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ff9999" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-                };
-            } else {
-                img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>';
-            }
+            const mainImg = document.getElementById(`img-${slotId}`);
+            const previewImg = document.getElementById(`preview-img-${slotId}`);
+            const path = getIconPath(value);
+            
+            mainImg.src = path;
+            previewImg.src = path;
+            
+            // Fallback bei nicht gefundenem Bild
+            mainImg.onerror = previewImg.onerror = function() {
+                this.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ff9999" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+            };
         }
     }
 
-    // Initiale Ausführung beim Laden der Seite
     window.onload = generateLayout;
 </script>
 
@@ -336,7 +375,54 @@ html_content = """<!DOCTYPE html>
 </html>
 """
 
-with open("Schalter_Konfigurator.html", "w", encoding="utf-8") as f:
+js_content = """// Diese Datei dient als "Textdokument" zur einfachen Erweiterung der Icons.
+// Trage hier einfach neue SVG-Dateinamen ein (in Anführungszeichen und mit Komma getrennt).
+// Achte darauf, dass die Datei genau "icons.js" heisst und im gleichen Ordner liegt.
+
+const iconConfigList = [
+    "", // Leere Option (für keinen Icon)
+    "Abwesend.svg",
+    "Access-Point-Unifi.svg",
+    "Access-Point.svg",
+    "Akku-Laden.svg",
+    "Akku.svg",
+    "Auffuellen.svg",
+    "Auto.svg",
+    "Baum.svg",
+    "Bewegung.svg",
+    "Bluetooth-Aus.svg",
+    "Bluetooth-Ein.svg",
+    "CSV-Datei.svg",
+    "Deckenleuchte.svg",
+    "Download.svg",
+    "Drucken.svg",
+    "Drucker-Aus.svg",
+    "Dublizieren.svg",
+    "Einstellungen.svg",
+    "Entrigeln.svg",
+    "Fan-Aus.svg",
+    "Fan-Langsamer.svg",
+    "Fan-Schneller.svg",
+    "Fan-Stufe-1.svg",
+    "Fan-Stufe-2.svg",
+    "Fan-Stufe-3.svg",
+    "Farbpalette-Aus.svg",
+    "Farbpalette.svg",
+    "Farbwahl.svg",
+    "Fenster-Auf.svg",
+    "Fenster-Zu.svg",
+    "Fierwall-Schild.svg",
+    "Fierwall.svg",
+    "Fisch.svg",
+    "Flamme.svg",
+    "Foerwaertsspuelen-Fein-Doppelt.svg"
+];
+"""
+
+with open("Schalter_Konfigurator-v2.html", "w", encoding="utf-8") as f:
     f.write(html_content)
 
-print("File generated successfully: Schalter_Konfigurator.html")
+with open("icons.js", "w", encoding="utf-8") as f:
+    f.write(js_content)
+
+print("Files generated successfully: Schalter_Konfigurator-v2.html and icons.js")
