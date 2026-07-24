@@ -196,6 +196,15 @@ const hardwareConfigList = [
         ]
     },
     {
+        id: "lox_tree_to_air",
+        name: "Tree to Air Bridge,
+        image: "Tree-to-Air.jpg",
+        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"],
+        io: [
+            
+        ]
+    },
+    {
         id: "feller_taster_universell",
         name: "Feller Universaltaster (Dumm)",
         image: "",
