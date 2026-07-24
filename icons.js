@@ -150,6 +150,7 @@ const hardwareConfigList = [
     {
         id: "lox_nano_di_tree",
         name: "Loxone Nano DI Tree",
+        image: "SCH3.png", // Test-Bild (Pfad entsprechend anpassen)
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"],
         io: [
             { id: "DI_1", label: "DI 1", type: "in" },
@@ -163,6 +164,7 @@ const hardwareConfigList = [
     {
         id: "lox_nano_2_relay",
         name: "Loxone Nano 2 Relay Tree",
+        image: "", 
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"],
         io: [
             { id: "I_1", label: "I1 (Eingang)", type: "in" },
@@ -178,6 +180,7 @@ const hardwareConfigList = [
     {
         id: "lox_touch_tree",
         name: "Loxone Touch Tree",
+        image: "",
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"],
         io: [
             { id: "T_1", label: "Taste 1 (Oben Links)", type: "in" },
@@ -192,6 +195,7 @@ const hardwareConfigList = [
     {
         id: "feller_taster_universell",
         name: "Feller Universaltaster (Dumm)",
+        image: "",
         fields: ["Artikelnummer", "Bezeichnung"],
         io: [
             { id: "KONTAKT_1", label: "Schliesser 1", type: "out" },
