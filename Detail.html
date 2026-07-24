@@ -188,6 +188,63 @@
         .slot-form { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
         .slot-form h4 { margin: 0 0 10px 0; color: var(--primary); }
 
+        /* Custom Searchable Dropdown */
+        .custom-select {
+            position: relative;
+            flex: 1;
+            font-family: inherit;
+        }
+        .select-selected {
+            background-color: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 6px 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .select-items {
+            position: absolute;
+            background-color: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 99;
+            margin-top: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .icon-search {
+            width: calc(100% - 16px) !important;
+            margin: 8px;
+            padding: 6px;
+            box-sizing: border-box;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 3px;
+        }
+        .icon-group-label {
+            padding: 6px 10px;
+            background: #f1f5f9;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+        .icon-option {
+            padding: 8px 10px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .icon-option:last-child { border-bottom: none; }
+        .icon-option:hover { background-color: #f3f4f6; }
+
+        /* Detailed I/O Section */
         .io-section { 
             margin-top: 15px; 
             padding-top: 15px; 
@@ -199,31 +256,50 @@
             font-size: 0.85rem; 
             text-transform: uppercase; 
         }
-        .io-row {
+        .io-complex-row {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            padding: 10px;
+        }
+        .io-header {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
-            background: #fff;
-            padding: 6px 10px;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
-        }
-        .io-row span.io-label {
-            width: 100px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: bold;
-            color: #475569;
+            color: #334155;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 6px;
         }
-        .io-row span.io-type {
+        .io-type {
             font-size: 0.7rem;
             padding: 2px 5px;
             border-radius: 3px;
-            margin-right: 10px;
+            margin-right: 8px;
             text-transform: uppercase;
         }
         .io-type.in { background: #dbeafe; color: #1e3a8a; }
         .io-type.out { background: #fce7f3; color: #9d174d; }
-        .io-row input { flex: 1; padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 3px; font-size: 0.85rem; }
+        
+        .io-fields-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .io-fields-grid input {
+            padding: 5px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .io-fields-grid input::placeholder { color: #94a3b8; }
+        .io-full-width {
+            grid-column: 1 / -1;
+        }
 
         /* Hardware Components */
         .hardware-list { margin-top: 20px; }
@@ -261,8 +337,8 @@
             <input type="text" id="project-name" value="Neues Projekt" onchange="updateProjectName(this.value)">
             <div class="action-buttons">
                 <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
-                <button class="btn" onclick="document.getElementById('file-input').click()">📂 Öffnen (.ServiceProDetail)</button>
-                <button class="btn primary" onclick="exportProject()">💾 Speichern (.ServiceProDetail)</button>
+                <button class="btn" onclick="document.getElementById('file-input').click()">📂 Öffnen</button>
+                <button class="btn primary" onclick="exportProject()">💾 Speichern</button>
                 <button class="btn" onclick="window.print()">🖨️ PDF / Drucken</button>
             </div>
         </div>
@@ -279,6 +355,13 @@
         details: []
     };
     let activeDetailId = null;
+
+    // Globale Event-Listener um offene Dropdowns zu schliessen
+    document.addEventListener("click", function (e) {
+        document.querySelectorAll('.select-items').forEach(item => {
+            item.style.display = 'none';
+        });
+    });
 
     window.onload = () => {
         if (projectData.details.length === 0) {
@@ -300,7 +383,7 @@
             location: "",
             layout: "2x2",
             slots: {},
-            hardware: [] // Hardware-Array wieder hinzugefügt
+            hardware: []
         };
         projectData.details.push(newDetail);
         activeDetailId = newDetail.id;
@@ -369,11 +452,9 @@
             return;
         }
 
-        // Layout Berechnung
         const [rows, cols] = detail.layout.split('x').map(Number);
         const totalSlots = rows * cols;
 
-        // Sicherstellen, dass Slots existieren
         for(let i=1; i<=totalSlots; i++) {
             if(!detail.slots[`slot-${i}`]) {
                 detail.slots[`slot-${i}`] = { 
@@ -385,22 +466,14 @@
             }
         }
         
-        // Sicherstellen, dass hardware Array existiert (für alte Files)
         if(!detail.hardware) detail.hardware = [];
 
-        // Icon Options
-        const iconOptionsHtml = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).map(iconDef => 
-            `<option value="${iconDef.file}">${iconDef.label || iconDef.file || '--- Kein Icon ---'}</option>`
-        ).join('');
-        
-        // Hardware Options
         const hwOptionsHtml = (typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : []).map(hw => 
             `<option value="${hw.id}">${hw.name}</option>`
         ).join('');
 
         let html = `
             <div class="workspace">
-                <!-- Linke Seite: Visualizer & Hardware -->
                 <div>
                     <div class="pane">
                         <div class="form-group">
@@ -430,7 +503,6 @@
                         </div>
                     </div>
                     
-                    <!-- Hardware Komponenten Bereich -->
                     <div class="pane" style="margin-top: 20px;">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <h3>Hardware Komponenten</h3>
@@ -445,25 +517,16 @@
                     </div>
                 </div>
 
-                <!-- Rechte Seite: Slot Data -->
                 <div class="pane">
                     <h3>Schalter Belegungen</h3>
                     <div class="slots-container">
-                        ${generateSlotsHtml(detail, totalSlots, iconOptionsHtml)}
+                        ${generateSlotsHtml(detail, totalSlots)}
                     </div>
                 </div>
             </div>
         `;
 
         container.innerHTML = html;
-        
-        for(let i=1; i<=totalSlots; i++) {
-            const slot = detail.slots[`slot-${i}`];
-            const selectEl = document.getElementById(`select-icon-${i}`);
-            if(selectEl && slot.iconFile) {
-                selectEl.value = slot.iconFile;
-            }
-        }
     }
 
     function generateVisualizerHtml(detail, rows, cols) {
@@ -485,7 +548,86 @@
         return html;
     }
 
-    function generateSlotsHtml(detail, totalSlots, iconOptionsHtml) {
+    // Erzeugt das Custom Dropdown für Icons
+    function renderCustomIconDropdown(slotNum, currentIcon) {
+        const iconList = (typeof iconConfigList !== 'undefined' ? iconConfigList : []);
+        const currentDef = iconList.find(ic => ic.file === currentIcon) || iconList[0];
+        const selectedLabel = currentDef ? (currentDef.label || currentDef.file || '--- Kein Icon ---') : '--- Kein Icon ---';
+
+        // Gruppen strukturieren
+        const groups = {};
+        iconList.forEach(ic => {
+            const g = ic.group || "Sonstige";
+            if (!groups[g]) groups[g] = [];
+            groups[g].push(ic);
+        });
+
+        let listHtml = '';
+        for (const groupName in groups) {
+            listHtml += `<div class="icon-group-label">${groupName}</div>`;
+            groups[groupName].forEach(ic => {
+                const label = ic.label || ic.file || '--- Kein Icon ---';
+                listHtml += `<div class="icon-option" data-label="${label.toLowerCase()}" onclick="selectIconDropdown('${slotNum}', '${ic.file}', event)">${label}</div>`;
+            });
+        }
+
+        return `
+            <div class="custom-select" onclick="toggleDropdown('${slotNum}', event)">
+                <div class="select-selected">${selectedLabel} <span>▼</span></div>
+                <div class="select-items" id="dropdown-${slotNum}" style="display:none;" onclick="event.stopPropagation()">
+                    <input type="text" class="icon-search" placeholder="Suchen..." onkeyup="filterDropdown('${slotNum}', this.value)" onclick="event.stopPropagation()">
+                    <div class="icon-list" id="icon-list-${slotNum}">
+                        ${listHtml}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // JS Logic für Custom Dropdown
+    function toggleDropdown(slotNum, event) {
+        event.stopPropagation();
+        const allDropdowns = document.querySelectorAll('.select-items');
+        allDropdowns.forEach(dd => {
+            if (dd.id !== `dropdown-${slotNum}`) dd.style.display = 'none';
+        });
+        const dd = document.getElementById(`dropdown-${slotNum}`);
+        dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+        if(dd.style.display === 'block'){
+            dd.querySelector('.icon-search').focus();
+        }
+    }
+
+    function filterDropdown(slotNum, term) {
+        const search = term.toLowerCase();
+        const list = document.getElementById(`icon-list-${slotNum}`);
+        const options = list.querySelectorAll('.icon-option');
+        
+        options.forEach(opt => {
+            if (opt.getAttribute('data-label').includes(search)) {
+                opt.style.display = 'block';
+            } else {
+                opt.style.display = 'none';
+            }
+        });
+    }
+
+    function selectIconDropdown(slotNum, iconFile, event) {
+        event.stopPropagation();
+        document.getElementById(`dropdown-${slotNum}`).style.display = 'none';
+        updateSlotIcon(slotNum, iconFile);
+    }
+
+    // Helper für Rückwärtskompatibilität und Strukturierung der IO-Daten
+    function getIOObject(slot, ioId) {
+        let val = slot.ioData[ioId];
+        if (typeof val === 'string') {
+            return { bezeichnung: val, gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
+        }
+        return val || { bezeichnung: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
+    }
+
+    function generateSlotsHtml(detail, totalSlots) {
         let html = '';
         for(let i=1; i<=totalSlots; i++) {
             const slot = detail.slots[`slot-${i}`];
@@ -494,19 +636,27 @@
             let ioHtml = '';
             if(iconDef && iconDef.io && iconDef.io.length > 0) {
                 let ioRows = iconDef.io.map(io => {
-                    const val = slot.ioData[io.id] || '';
+                    const data = getIOObject(slot, io.id);
                     return `
-                        <div class="io-row">
-                            <span class="io-type ${io.type}">${io.type}</span>
-                            <span class="io-label">${io.label}</span>
-                            <input type="text" placeholder="Zuweisung..." value="${val}" onchange="updateSlotIO('${i}', '${io.id}', this.value)">
+                        <div class="io-complex-row">
+                            <div class="io-header">
+                                <span class="io-type ${io.type}">${io.type}</span> 
+                                ${io.label}
+                            </div>
+                            <div class="io-fields-grid">
+                                <input type="text" placeholder="Bezeichnung" value="${data.bezeichnung}" onchange="updateSlotIOField('${i}', '${io.id}', 'bezeichnung', this.value)">
+                                <input type="text" placeholder="Gruppe" value="${data.gruppe}" onchange="updateSlotIOField('${i}', '${io.id}', 'gruppe', this.value)">
+                                <input type="text" placeholder="Eingabegerät" value="${data.eingabegerat}" onchange="updateSlotIOField('${i}', '${io.id}', 'eingabegerat', this.value)">
+                                <input type="text" placeholder="Funktion" value="${data.funktion}" onchange="updateSlotIOField('${i}', '${io.id}', 'funktion', this.value)">
+                                <input type="text" class="io-full-width" placeholder="Bemerkung" value="${data.bemerkung}" onchange="updateSlotIOField('${i}', '${io.id}', 'bemerkung', this.value)">
+                            </div>
                         </div>
                     `;
                 }).join('');
                 
                 ioHtml = `
                     <div class="io-section">
-                        <h5>Ein- / Ausgänge für Symbol</h5>
+                        <h5>Detaillierte Ein- / Ausgänge</h5>
                         ${ioRows}
                     </div>
                 `;
@@ -524,10 +674,8 @@
                         <input type="text" value="${slot.gruppe || ''}" onchange="updateSlot('${i}', 'gruppe', this.value)">
                     </div>
                     <div class="form-group">
-                        <label>Icon / Schaltertyp</label>
-                        <select id="select-icon-${i}" onchange="updateSlotIcon('${i}', this.value)">
-                            ${iconOptionsHtml}
-                        </select>
+                        <label>Icon / Typ</label>
+                        ${renderCustomIconDropdown(i, slot.iconFile)}
                     </div>
                     ${ioHtml}
                 </div>
@@ -547,12 +695,23 @@
         renderWorkspace(); 
     }
 
-    function updateSlotIO(slotNum, ioId, value) {
+    function updateSlotIOField(slotNum, ioId, field, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
         if(!detail.slots[`slot-${slotNum}`].ioData) {
             detail.slots[`slot-${slotNum}`].ioData = {};
         }
-        detail.slots[`slot-${slotNum}`].ioData[ioId] = value;
+        
+        let currentData = detail.slots[`slot-${slotNum}`].ioData[ioId];
+        
+        // Migration, falls es noch ein einfacher String ist
+        if (typeof currentData === 'string') {
+            currentData = { bezeichnung: currentData, gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
+        } else if (!currentData) {
+            currentData = { bezeichnung: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
+        }
+
+        currentData[field] = value;
+        detail.slots[`slot-${slotNum}`].ioData[ioId] = currentData;
     }
 
     // --- HARDWARE KOMPONENTEN ---
@@ -698,5 +857,3 @@
         event.target.value = '';
     }
 </script>
-</body>
-</html>
