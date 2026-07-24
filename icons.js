@@ -6,7 +6,7 @@ const iconConfigList = [
         io: []
     },
     {
-        file: "Deckenleuchte.svg",
+        file: "Schaltericon.png",
         label: "Deckenleuchte",
         io: [
             { id: "TA_EIN", label: "Taster (TA)", type: "in" },
