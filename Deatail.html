@@ -1,1 +1,342 @@
 
+html_content = """<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schalterdetail Konfigurator</title>
+    <style>
+        :root {
+            --feller-white: #f7f9f9;
+            --feller-border: #d1d5db;
+            --primary: #0f766e;
+            --bg-color: #f3f4f6;
+            --text-color: #1f2937;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--text-color);
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        select, input, button {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        button:hover {
+            background-color: #0d9488;
+        }
+        .main-workspace {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+        
+        /* Feller EDIZIOdue Style Visualizer */
+        .visualizer-pane {
+            background: #ffffff;
+            padding: 40px;
+            border: 1px dashed #cbd5e1;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            min-width: 300px;
+        }
+        .switch-frame {
+            background-color: var(--feller-white);
+            border: 2px solid #e5e7eb;
+            padding: 20px;
+            border-radius: 6px;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.05), inset 0 0 10px rgba(255,255,255,1);
+            display: grid;
+            gap: 2px;
+            background-image: linear-gradient(145deg, #ffffff, #f0f0f0);
+        }
+        .switch-slot {
+            background-color: var(--feller-white);
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: relative;
+            transition: all 0.2s;
+        }
+        .switch-slot:hover {
+            border-color: #9ca3af;
+        }
+        .switch-slot img {
+            width: 32px;
+            height: 32px;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+        .switch-slot .slot-text {
+            font-size: 10px;
+            color: #4b5563;
+            margin-top: 8px;
+            text-align: center;
+            width: 90%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+        }
+        .slot-badge {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            font-size: 9px;
+            color: #9ca3af;
+        }
+
+        /* Data Entry Panel */
+        .data-pane {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        .slot-form {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+        }
+        .slot-form h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            color: var(--primary);
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        .form-group {
+            display: flex;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+        .form-group label {
+            width: 110px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #475569;
+        }
+        .form-group input {
+            flex: 1;
+            padding: 5px 8px;
+        }
+        .form-group input.icon-input {
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Schalterdetail & Layout Konfigurator</h1>
+        <div class="controls">
+            <label for="layout-select">Layout wählen:</label>
+            <select id="layout-select" onchange="generateLayout()">
+                <option value="1x1">1 x 1</option>
+                <option value="2x1">2 x 1 (Vertikal)</option>
+                <option value="1x2">1 x 2 (Horizontal)</option>
+                <option value="2x2" selected>2 x 2</option>
+                <option value="3x2">3 x 2</option>
+                <option value="4x2">4 x 2</option>
+            </select>
+            <button onclick="window.print()">Als PDF drucken / Speichern</button>
+        </div>
+    </div>
+
+    <div class="main-workspace">
+        <!-- Visualizer -->
+        <div class="visualizer-pane">
+            <div class="switch-frame" id="switch-frame">
+                <!-- Slots generated via JS -->
+            </div>
+        </div>
+
+        <!-- Data Entry Tables -->
+        <div class="data-pane" id="data-pane">
+            <!-- Forms generated via JS -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // Konfiguration der Platzhalter-Daten (ähnlich zu Loxone Tree Setup)
+    const slotData = {};
+
+    function generateLayout() {
+        const layout = document.getElementById('layout-select').value;
+        const [rows, cols] = layout.split('x').map(Number);
+        
+        const frame = document.getElementById('switch-frame');
+        const dataPane = document.getElementById('data-pane');
+        
+        // CSS Grid für den Rahmen anpassen
+        frame.style.gridTemplateColumns = `repeat(${cols}, 80px)`;
+        frame.style.gridTemplateRows = `repeat(${rows}, 80px)`;
+        
+        frame.innerHTML = '';
+        dataPane.innerHTML = '';
+
+        let count = 1;
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                const slotId = `slot-${count}`;
+                
+                // Init data if not exists
+                if (!slotData[slotId]) {
+                    slotData[slotId] = {
+                        bezeichnung: '',
+                        icon: '',
+                        gruppe: '',
+                        art: 'TA',
+                        eingabegeraet: '',
+                        funktion: ''
+                    };
+                }
+
+                // --- 1. Visualizer Slot bauen ---
+                const slotDiv = document.createElement('div');
+                slotDiv.className = 'switch-slot';
+                slotDiv.id = `vis-${slotId}`;
+                
+                const badge = document.createElement('span');
+                badge.className = 'slot-badge';
+                badge.innerText = count;
+                
+                const img = document.createElement('img');
+                img.id = `img-${slotId}`;
+                // Fallback Icon, wenn keines gesetzt ist, sonst laden wir es aus dem Ordner 'icons'
+                img.src = slotData[slotId].icon ? `icons/${slotData[slotId].icon}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>';
+                
+                const text = document.createElement('div');
+                text.className = 'slot-text';
+                text.id = `text-${slotId}`;
+                text.innerText = slotData[slotId].bezeichnung || 'Leer';
+
+                slotDiv.appendChild(badge);
+                slotDiv.appendChild(img);
+                slotDiv.appendChild(text);
+                frame.appendChild(slotDiv);
+
+                // --- 2. Input Formular bauen ---
+                const formDiv = document.createElement('div');
+                formDiv.className = 'slot-form';
+                
+                // Bestimme die Position für die Überschrift (z.B. "Reihe Links, Oben")
+                let positionLabel = `Schalter ${count}`;
+                if (cols == 2) {
+                    positionLabel = (c === 0 ? "Links " : "Rechts ") + (r === 0 ? "Oben" : (r === 1 ? "Unten" : `Reihe ${r+1}`));
+                }
+
+                formDiv.innerHTML = `
+                    <h3>Platz ${count}: ${positionLabel}</h3>
+                    <div class="form-group">
+                        <label>Bezeichnung</label>
+                        <input type="text" value="${slotData[slotId].bezeichnung}" onkeyup="updateData('${slotId}', 'bezeichnung', this.value)" placeholder="z.B. Licht Spots Küche">
+                    </div>
+                    <div class="form-group">
+                        <label>Icon (SVG-Name)</label>
+                        <input type="text" class="icon-input" value="${slotData[slotId].icon}" onkeyup="updateData('${slotId}', 'icon', this.value)" placeholder="z.B. Deckenleuchte.svg">
+                    </div>
+                    <div class="form-group">
+                        <label>Gruppe</label>
+                        <input type="text" value="${slotData[slotId].gruppe}" onkeyup="updateData('${slotId}', 'gruppe', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Art</label>
+                        <input type="text" value="${slotData[slotId].art}" onkeyup="updateData('${slotId}', 'art', this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>Eingabegerät</label>
+                        <input type="text" value="${slotData[slotId].eingabegeraet}" onkeyup="updateData('${slotId}', 'eingabegeraet', this.value)" placeholder="z.B. EG.1.04.1 DI1">
+                    </div>
+                    <div class="form-group">
+                        <label>Funktion</label>
+                        <input type="text" value="${slotData[slotId].funktion}" onkeyup="updateData('${slotId}', 'funktion', this.value)" placeholder="z.B. E/A oder Auf/Ab">
+                    </div>
+                `;
+                dataPane.appendChild(formDiv);
+
+                count++;
+            }
+        }
+    }
+
+    function updateData(slotId, field, value) {
+        slotData[slotId][field] = value;
+        
+        // Live Update des Visualizers
+        if (field === 'bezeichnung') {
+            document.getElementById(`text-${slotId}`).innerText = value || 'Leer';
+        }
+        if (field === 'icon') {
+            const img = document.getElementById(`img-${slotId}`);
+            if (value.trim() !== '') {
+                // Erwartet, dass die SVGs im relativen Ordner "icons/" liegen
+                img.src = `icons/${value.trim()}`;
+                img.onerror = function() {
+                    // Fallback, falls Icon nicht gefunden wird
+                    this.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ff9999" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+                };
+            } else {
+                img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>';
+            }
+        }
+    }
+
+    // Initiale Ausführung beim Laden der Seite
+    window.onload = generateLayout;
+</script>
+
+</body>
+</html>
+"""
+
+with open("Schalter_Konfigurator.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print("File generated successfully: Schalter_Konfigurator.html")
