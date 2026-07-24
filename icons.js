@@ -297,7 +297,7 @@
         }
         .io-full-width { grid-column: 1 / -1; }
 
-        /* Hardware Editor Layout (Mit Bild links im Ordner icons-schalter/) */
+        /* Hardware Editor Layout (Mit Bild links) */
         .hardware-list { margin-top: 20px; }
         .hw-card {
             background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px;
@@ -884,8 +884,8 @@
                 });
             }
 
-            // Korrekter Pfad zum Ordner icons-schalter/ für die Hardware-Bilder
-            let hwImageTag = config.image ? `<div class="hw-card-image"><img src="icons-schalter/${config.image}"></div>` : '<div></div>';
+            // Hardware-Bild mit Pfad icons-schalter/ und Fallback bei Fehlern
+            let hwImageTag = config.image ? `<div class="hw-card-image"><img src="icons-schalter/${config.image}" onerror="this.style.display='none'"></div>` : '<div></div>';
 
             html += `
                 <div class="hw-card">
@@ -979,7 +979,7 @@
                     });
                 }
 
-                // Auch im Druck den Pfad icons-schalter/ verwenden
+                // Auch im Druck-Generator den Pfad icons-schalter/ korrigiert
                 let printHwImageTag = config.image ? `<div class="print-hw-image"><img src="icons-schalter/${config.image}"></div>` : '<div></div>';
                 
                 hwHtml += `
