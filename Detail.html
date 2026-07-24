@@ -191,7 +191,6 @@
             box-sizing: border-box;
             opacity: 0.85; 
         }
-        /* Badge oben/mittig */
         .slot-badge { 
             position: absolute; 
             top: 2px; 
@@ -270,24 +269,24 @@
             background: #fff;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
-            margin-bottom: 12px;
-            padding: 10px;
+            margin-bottom: 10px;
+            padding: 8px;
         }
         .io-header {
             display: flex;
             align-items: center;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: bold;
             color: #334155;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 6px;
+            padding-bottom: 4px;
         }
         .io-type {
-            font-size: 0.7rem;
-            padding: 2px 5px;
+            font-size: 0.65rem;
+            padding: 2px 4px;
             border-radius: 3px;
-            margin-right: 8px;
+            margin-right: 6px;
             text-transform: uppercase;
         }
         .io-type.in { background: #dbeafe; color: #1e3a8a; }
@@ -295,20 +294,19 @@
         
         .io-fields-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            grid-template-columns: 1fr;
+            gap: 5px;
         }
         .io-fields-grid input {
-            padding: 5px 8px;
+            padding: 4px 6px;
             border: 1px solid #d1d5db;
             border-radius: 4px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             width: 100%;
             box-sizing: border-box;
         }
-        .io-full-width { grid-column: 1 / -1; }
 
-        /* Hardware Editor Layout (Mit Bild links) */
+        /* Hardware Editor Layout */
         .hardware-list { margin-top: 20px; }
         .hw-card {
             background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px;
@@ -365,40 +363,40 @@
             .print-detail-page:last-child { page-break-after: auto; }
 
             .print-header-block {
-                margin-bottom: 10px;
+                margin-bottom: 8px;
                 border-bottom: 2px solid #0f766e;
-                padding-bottom: 6px;
+                padding-bottom: 4px;
             }
             .print-header-block h2 {
                 margin: 0 0 2px 0;
-                font-size: 1.3rem;
+                font-size: 1.2rem;
                 color: #1f2937;
             }
             .print-header-block p {
                 margin: 0;
                 color: #475569;
-                font-size: 0.85rem;
+                font-size: 0.8rem;
             }
 
             .print-section-title {
-                font-size: 0.95rem;
+                font-size: 0.9rem;
                 font-weight: bold;
                 color: #0f766e;
                 border-bottom: 1px solid #cbd5e1;
-                padding-bottom: 3px;
-                margin: 12px 0 8px 0;
+                padding-bottom: 2px;
+                margin: 10px 0 6px 0;
             }
 
-            /* Druck Schalter Layout Vorschau kompakt */
+            /* Druck Schalter Layout Vorschau ultra-Kompakt */
             .print-visualizer-wrapper {
                 display: flex;
                 justify-content: center;
-                margin-bottom: 10px;
+                margin-bottom: 8px;
             }
             .print-switch-frame {
                 background-color: var(--feller-white);
                 border: 2px solid #e5e7eb;
-                padding: 8px;
+                padding: 6px;
                 border-radius: 6px;
                 display: grid;
                 gap: 2px;
@@ -413,8 +411,8 @@
                 align-items: center;
                 position: relative;
                 overflow: hidden;
-                width: 55px;
-                height: 55px;
+                width: 48px;
+                height: 48px;
             }
             .print-switch-slot img { 
                 width: 100%; 
@@ -426,72 +424,79 @@
                 top: 2px; 
                 left: 50%; 
                 transform: translateX(-50%); 
-                font-size: 8px; 
+                font-size: 7px; 
                 color: #9ca3af; 
             }
 
-            /* Druck Schalter Belegungen kompakt */
+            /* 2-Spaltiges Layout für Schalter Belegungen im Druck */
+            .print-slots-grid-2col {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                align-items: start;
+            }
+
             .print-slot-item-block {
                 background: #f8fafc;
                 border: 1px solid #e2e8f0;
                 border-radius: 6px;
-                padding: 8px;
-                margin-bottom: 8px;
+                padding: 6px;
+                margin-bottom: 6px;
                 page-break-inside: avoid;
             }
             .print-slot-item-title {
                 font-weight: bold;
-                font-size: 0.85rem;
+                font-size: 0.8rem;
                 color: var(--primary);
                 margin-bottom: 4px;
+                border-bottom: 1px solid #e2e8f0;
+                padding-bottom: 2px;
             }
             .print-io-item {
-                margin-bottom: 6px;
-                font-size: 0.78rem;
+                margin-bottom: 4px;
+                font-size: 0.75rem;
                 background: #fff;
                 border: 1px solid #e2e8f0;
                 border-radius: 4px;
-                padding: 6px;
+                padding: 5px;
             }
             .print-io-header {
                 font-weight: bold;
                 color: #334155;
-                margin-bottom: 4px;
-                font-size: 0.75rem;
+                margin-bottom: 3px;
+                font-size: 0.7rem;
                 text-transform: uppercase;
                 border-bottom: 1px solid #f1f5f9;
                 padding-bottom: 2px;
             }
-            .print-io-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 2px 10px;
-            }
             .print-io-line {
                 display: flex;
+                margin-bottom: 2px;
             }
             .print-io-label {
-                width: 90px;
+                width: 75px;
                 color: #475569;
+                font-size: 0.7rem;
             }
             .print-io-val {
                 flex: 1;
                 color: #1f2937;
                 font-weight: 500;
+                font-size: 0.75rem;
             }
 
             /* Druck Hardware Komponenten kompakt */
             .print-hw-container {
                 display: grid;
-                grid-template-columns: 90px 1fr;
-                gap: 12px;
+                grid-template-columns: 80px 1fr;
+                gap: 10px;
                 align-items: start;
                 background: #fff;
                 border: 1px solid #e2e8f0;
                 border-left: 4px solid var(--primary);
                 border-radius: 6px;
-                padding: 8px;
-                margin-bottom: 8px;
+                padding: 6px;
+                margin-bottom: 6px;
                 page-break-inside: avoid;
             }
             .print-hw-image img {
@@ -500,35 +505,33 @@
                 object-fit: contain;
                 border: 1px solid #e2e8f0;
                 border-radius: 4px;
-                padding: 3px;
+                padding: 2px;
                 background: #fff;
             }
             .print-hw-header-title {
                 font-weight: bold;
-                font-size: 0.85rem;
-                margin-bottom: 4px;
+                font-size: 0.8rem;
+                margin-bottom: 3px;
                 color: #1f2937;
                 border-bottom: 1px solid #f1f5f9;
                 padding-bottom: 2px;
             }
-            .print-hw-meta-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 2px 10px;
-                margin-bottom: 4px;
-                font-size: 0.78rem;
+            .print-hw-meta-row {
+                display: flex;
+                margin-bottom: 2px;
+                font-size: 0.73rem;
             }
             .print-hw-io-grid {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                gap: 10px;
+                gap: 8px;
                 margin-top: 4px;
                 border-top: 1px solid #f1f5f9;
-                padding-top: 4px;
+                padding-top: 3px;
             }
             .print-hw-io-subcol h6 {
                 margin: 0 0 2px 0;
-                font-size: 0.7rem;
+                font-size: 0.68rem;
                 text-transform: uppercase;
                 color: #64748b;
             }
@@ -1017,13 +1020,14 @@
 
         let printVisualizerHtml = `
             <div class="print-visualizer-wrapper">
-                <div class="print-switch-frame" style="grid-template-columns: repeat(${cols}, 55px); grid-template-rows: repeat(${rows}, 55px);">
+                <div class="print-switch-frame" style="grid-template-columns: repeat(${cols}, 48px); grid-template-rows: repeat(${rows}, 48px);">
                     ${printVisualizerSlots}
                 </div>
             </div>
         `;
 
-        let slotsHtml = '';
+        // Plätze in Paare (Zeilen) aufteilen für 2-spaltige Anordnung im Druck (Linke Hälfte = ungerade / Platz 1, 3...; Rechte Hälfte = gerade / Platz 2, 4...)
+        let slotBlocks = [];
         for(let i=1; i<=totalSlots; i++) {
             const slot = detail.slots[`slot-${i}`];
             if(!slot || !slot.iconFile) continue;
@@ -1039,22 +1043,33 @@
                     printIoRows += `
                         <div class="print-io-item">
                             <div class="print-io-header">${ioTypeText}: ${io.label}</div>
-                            <div class="print-io-grid">
-                                <div class="print-io-line"><span class="print-io-label">Bezeichnung</span><span class="print-io-val">${data.bezeichnung || ''}</span></div>
-                                <div class="print-io-line"><span class="print-io-label">Gruppe</span><span class="print-io-val">${data.gruppe || ''}</span></div>
-                                <div class="print-io-line"><span class="print-io-label">Eingabegerät</span><span class="print-io-val">${data.eingabegerat || ''}</span></div>
-                                <div class="print-io-line"><span class="print-io-label">Funktion</span><span class="print-io-val">${data.funktion || ''}</span></div>
-                                <div class="print-io-line" style="grid-column: 1 / -1;"><span class="print-io-label">Bemerkung</span><span class="print-io-val">${data.bemerkung || ''}</span></div>
-                            </div>
+                            <div class="print-io-line"><span class="print-io-label">Bezeichnung:</span><span class="print-io-val">${data.bezeichnung || ''}</span></div>
+                            <div class="print-io-line"><span class="print-io-label">Gruppe:</span><span class="print-io-val">${data.gruppe || ''}</span></div>
+                            <div class="print-io-line"><span class="print-io-label">Eingabegerät:</span><span class="print-io-val">${data.eingabegerat || ''}</span></div>
+                            <div class="print-io-line"><span class="print-io-label">Funktion:</span><span class="print-io-val">${data.funktion || ''}</span></div>
+                            <div class="print-io-line"><span class="print-io-label">Bemerkung:</span><span class="print-io-val">${data.bemerkung || ''}</span></div>
                         </div>
                     `;
                 });
             }
 
-            slotsHtml += `
+            slotBlocks.push(`
                 <div class="print-slot-item-block">
                     <div class="print-slot-item-title">Platz ${i} – ${slotTitle}</div>
                     ${printIoRows}
+                </div>
+            `);
+        }
+
+        // Paarweise Anordnung in Zeilen zu je 2 Spalten
+        let slotsGridHtml = '';
+        for (let i = 0; i < slotBlocks.length; i += 2) {
+            let leftBlock = slotBlocks[i];
+            let rightBlock = slotBlocks[i+1] || '<div></div>';
+            slotsGridHtml += `
+                <div class="print-slots-grid-2col">
+                    ${leftBlock}
+                    ${rightBlock}
                 </div>
             `;
         }
@@ -1070,9 +1085,9 @@
                 if(config.fields && config.fields.length > 0) {
                     config.fields.forEach(f => {
                         printFieldsHtml += `
-                            <div class="print-hw-meta-row" style="display:flex; margin-bottom:2px;">
-                                <span class="print-hw-meta-label" style="width:90px; color:#475569;">${f}</span>
-                                <span class="print-hw-meta-val" style="flex:1; color:#1f2937; font-weight:500;">${hw.fields[f] || ''}</span>
+                            <div class="print-hw-meta-row">
+                                <span style="width:75px; color:#475569;">${f}:</span>
+                                <span style="flex:1; color:#1f2937; font-weight:500;">${hw.fields[f] || ''}</span>
                             </div>
                         `;
                     });
@@ -1084,8 +1099,8 @@
                     config.io.forEach(io => {
                         const assignedVal = hw.mappings[io.id] || '';
                         const row = `
-                            <div style="display:flex; margin-bottom:2px; font-size:0.75rem;">
-                                <span style="width:40px; color:#475569;">${io.label}</span>
+                            <div style="display:flex; margin-bottom:2px; font-size:0.7rem;">
+                                <span style="width:35px; color:#475569;">${io.label}:</span>
                                 <span style="flex:1; color:#1f2937; font-weight:500;">${assignedVal}</span>
                             </div>
                         `;
@@ -1101,7 +1116,7 @@
                         ${printHwImageTag}
                         <div>
                             <div class="print-hw-header-title">${config.name}</div>
-                            ${printFieldsHtml ? `<div style="margin-bottom:4px;">${printFieldsHtml}</div>` : ''}
+                            ${printFieldsHtml ? `<div style="margin-bottom:3px;">${printFieldsHtml}</div>` : ''}
                             <div class="print-hw-io-grid">
                                 <div class="print-hw-io-subcol">
                                     ${inputsHtml ? `<h6>Eingänge</h6>${inputsHtml}` : ''}
@@ -1134,7 +1149,7 @@
                 ${printVisualizerHtml}
 
                 <div class="print-section-title">Schalter Belegungen</div>
-                ${slotsHtml}
+                ${slotsGridHtml}
 
                 ${hwHtml}
             </div>
