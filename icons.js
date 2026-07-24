@@ -102,7 +102,7 @@ const iconConfigList = [
         ]
     },
     {
-        file: "Universaltaster-1-x2.png",
+        file: "Universaltaster-1x2.png",
         label: "Universaltaster 1x2",
         io: [
             { id: "TA_1", label: "Taste Links", type: "in" },
@@ -119,7 +119,7 @@ const iconConfigList = [
         ]
     },
     {
-        file: "Universaltaster-2-x2.png",
+        file: "Universaltaster-2x2.png",
         label: "Universaltaster 2x2",
         io: [
             { id: "TA_1", label: "Oben Links", type: "in" },
