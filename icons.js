@@ -17,39 +17,63 @@ const iconConfigList = [
     { file: "Universaltaster-2x2.png", label: "Universaltaster 2x2", group: "Schalter & Taster", io: [{ id: "TA_1", label: "Oben Links", type: "in" }, { id: "TA_2", label: "Oben Rechts", type: "in" }, { id: "TA_3", label: "Unten Links", type: "in" }, { id: "TA_4", label: "Unten Rechts", type: "in" }] }
 ];
 
+
 // --- HARDWARE KOMPONENTEN KONFIGURATION ---
 const hardwareConfigList = [
+    // --- TREE GERÄTE (SLAVES) ---
     { id: "lox_nano_di_tree", name: "Loxone Nano DI Tree", image: "DI-Tree.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], io: [{ id: "DI_1", label: "DI 1", type: "in" }, { id: "DI_2", label: "DI 2", type: "in" }, { id: "DI_3", label: "DI 3", type: "in" }, { id: "DI_4", label: "DI 4", type: "in" }, { id: "DI_5", label: "DI 5", type: "in" }, { id: "DI_6", label: "DI 6", type: "in" }] },
     { id: "lox_nano_2_relay", name: "Loxone Nano 2 Relay Tree", image: "Nano-2-Relay.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], io: [{ id: "I_1", label: "I1", type: "in" }, { id: "I_2", label: "I2", type: "in" }, { id: "I_3", label: "I3", type: "in" }, { id: "I_4", label: "I4", type: "in" }, { id: "I_5", label: "I5", type: "in" }, { id: "I_6", label: "I6", type: "in" }, { id: "O_1", label: "Relais 1", type: "out" }, { id: "O_2", label: "Relais 2", type: "out" }] },
-    { id: "lox_nano_dimmer_air", name: "Loxone Nano Dimmer Air", image: "Nano-Dimmer-Air.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Montagehöhe"], io: [{ id: "I_1", label: "I1", type: "in" }, { id: "I_2", label: "I2", type: "in" }, { id: "O_1", label: "Dimmer", type: "out" }] },
-    { id: "lox_nano_io_air", name: "Loxone Nano IO Air", image: "Nano-IO-Air.jpg", fields: ["S.-Nr.", "Geräte-Bez."], io: [{ id: "I_1", label: "I1", type: "in" }, { id: "I_2", label: "I2", type: "in" }, { id: "O_1", label: "Relais 1", type: "out" }, { id: "O_2", label: "Relais 2", type: "out" }] },
     { id: "lox_motor_controller_tree", name: "Loxone Motor Controller Tree", image: "Motor-Controller-Tree.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], io: [{ id: "I_1", label: "I1", type: "in" }, { id: "I_2", label: "I2", type: "in" }, { id: "O_1", label: "Motor Auf/Ab", type: "out" }] },
-    { id: "lox_motor_controller_air", name: "Loxone Motor Controller Air", image: "Motor-Controller-Air.jpg", fields: ["S.-Nr.", "Geräte-Bez."], io: [{ id: "I_1", label: "I1", type: "in" }, { id: "I_2", label: "I2", type: "in" }, { id: "O_1", label: "Motor Auf/Ab", type: "out" }] },
-    { id: "lox_storenaktor_air", name: "Loxone Storenaktor Air", image: "Storenaktor-Air.jpg", fields: ["S.-Nr.", "Geräte-Bez."], io: [{ id: "O_1", label: "Storen", type: "out" }] },
     
-    // HIER DIE NEUE BUS-LOGIK FÜR DALI AIR
+    // --- AIR GERÄTE (SLAVES) -> "Air Link" hinzugefügt ---
+    { id: "lox_nano_dimmer_air", name: "Loxone Nano Dimmer Air", image: "Nano-Dimmer-Air.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Montagehöhe", "Air Link"], io: [{ id: "I_1", label: "I1", type: "in" }, { id: "I_2", label: "I2", type: "in" }, { id: "O_1", label: "Dimmer", type: "out" }] },
+    { id: "lox_nano_io_air", name: "Loxone Nano IO Air", image: "Nano-IO-Air.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], io: [{ id: "I_1", label: "I1", type: "in" }, { id: "I_2", label: "I2", type: "in" }, { id: "O_1", label: "Relais 1", type: "out" }, { id: "O_2", label: "Relais 2", type: "out" }] },
+    { id: "lox_motor_controller_air", name: "Loxone Motor Controller Air", image: "Motor-Controller-Air.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], io: [{ id: "I_1", label: "I1", type: "in" }, { id: "I_2", label: "I2", type: "in" }, { id: "O_1", label: "Motor Auf/Ab", type: "out" }] },
+    { id: "lox_storenaktor_air", name: "Loxone Storenaktor Air", image: "Storenaktor-Air.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], io: [{ id: "O_1", label: "Storen", type: "out" }] },
+
+    // --- DALI GERÄTE (SLAVES) -> Neu hinzugefügt zum Testen ---
+    { id: "lox_dali_rgbw", name: "Loxone DALI RGBW Dimmer", image: "Dali-Dimmer.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "DALI Bus"], io: [{ id: "O_1", label: "RGBW Licht", type: "out" }] },
+
+    // --- MASTER GERÄTE (Stellen die Bus-Verbindungen bereit) ---
     { 
         id: "lox_dali_air", 
         name: "Loxone DALI Air", 
         image: "Dali-Air.jpg", 
-        fields: ["S.-Nr.", "Geräte-Bez."], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], // DALI Air ist selbst auch ein Air-Slave!
         io: [
             { id: "DALI_OUT", label: "DALI Geräte (Max 10)", type: "bus", max: 10 }
         ] 
     },
-    // BEISPIEL: TREE EXTENSION MIT 2 BRANCHES (je 50 Geräte)
     { 
         id: "lox_tree_extension", 
         name: "Loxone Tree Extension", 
         image: "Tree-Extension.jpg", 
-        fields: ["S.-Nr.", "Geräte-Bez."], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
         io: [
             { id: "TREE_LEFT", label: "Tree Ast Links", type: "bus", max: 50 },
             { id: "TREE_RIGHT", label: "Tree Ast Rechts", type: "bus", max: 50 }
         ] 
     },
+    { 
+        id: "lox_air_base", 
+        name: "Loxone Air Base Extension", 
+        image: "Air-Base.jpg", 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
+        io: [
+            { id: "AIR_OUT", label: "Air Geräte (Max 128)", type: "bus", max: 128 }
+        ] 
+    },
+    { 
+        id: "lox_tree_to_air", 
+        name: "Tree to Air Bridge", 
+        image: "Tree-to-Air.jpg", 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"], // Ist ein Tree-Slave...
+        io: [
+            { id: "AIR_OUT", label: "Air Geräte (Max 49)", type: "bus", max: 49 } // ...und ein Air-Master!
+        ] 
+    },
 
-    { id: "lox_wetterstation", name: "Loxone Wetterstation", image: "Wetterstation.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Montagehöhe"], io: [{ id: "WIND", label: "Wind", type: "out" }, { id: "TEMP", label: "Temperatur", type: "out" }, { id: "HELL", label: "Helligkeit", type: "out" }] },
-    { id: "lox_stellenantrieb", name: "Loxone Stellenantrieb", image: "Stellenantrieb.jpg", fields: ["S.-Nr.", "Geräte-Bez."], io: [{ id: "VALVE", label: "Ventil", type: "out" }] },
-    { id: "lox_tree_to_air", name: "Tree to Air Bridge", image: "Tree-to-Air.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"], io: [] }
+    // --- SONSTIGE ---
+    { id: "lox_wetterstation", name: "Loxone Wetterstation Tree", image: "Wetterstation.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"], io: [{ id: "WIND", label: "Wind", type: "out" }, { id: "TEMP", label: "Temperatur", type: "out" }, { id: "HELL", label: "Helligkeit", type: "out" }] },
+    { id: "lox_stellenantrieb", name: "Loxone Stellenantrieb Tree", image: "Stellenantrieb.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], io: [{ id: "VALVE", label: "Ventil", type: "out" }] }
 ];
