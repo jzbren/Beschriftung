@@ -12,6 +12,7 @@
             --primary: #0f766e;
             --primary-hover: #0d9488;
             --danger: #ef4444;
+            --danger-hover: #dc2626;
             --bg-color: #f3f4f6;
             --text-color: #1f2937;
             --panel-bg: #ffffff;
@@ -88,13 +89,17 @@
         .top-bar input[type="text"] { font-size: 1.2rem; font-weight: bold; border: 1px solid transparent; padding: 5px; background: transparent; width: 350px; }
         .top-bar input[type="text"].location-input { font-size: 0.95rem; font-weight: normal; color: #475569; width: 450px; margin-left: 55px; }
         .top-bar input[type="text"]:hover, .top-bar input[type="text"]:focus { border-bottom: 1px solid var(--feller-border); outline: none; }
-        .action-buttons { display: flex; gap: 10px; }
+        .action-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+        
         button.btn { background: white; border: 1px solid #d1d5db; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; }
         button.btn img { width: 16px; height: 16px; }
         button.btn:hover { background: #f3f4f6; }
         button.btn.primary { background: var(--primary); color: white; border: none; }
         button.btn.primary img { filter: invert(1); }
         button.btn.primary:hover { background: var(--primary-hover); }
+        
+        button.btn.danger { background: white; border: 1px solid #fca5a5; color: var(--danger); }
+        button.btn.danger:hover { background: #fef2f2; border-color: var(--danger); }
 
         /* Workspace Grid */
         .workspace { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -215,6 +220,7 @@
                 </div>
                 <div class="action-buttons">
                     <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
+                    <button class="btn danger" onclick="resetProject()"><img src="icons/radierer.svg" alt="Neu anfangen"> Neu anfangen</button>
                     <button class="btn" onclick="document.getElementById('file-input').click()"><img src="icons/Hochladen.svg" alt="Öffnen"> Öffnen</button>
                     <button class="btn primary" onclick="exportProject()"><img src="icons/Download.svg" alt="Speichern"> Speichern</button>
                     <button class="btn" onclick="printAllDetails()"><img src="icons/Drucken.svg" alt="Drucken"> Alles Drucken</button>
@@ -275,6 +281,19 @@
     
     function toggleSidebar() { 
         document.getElementById('sidebar').classList.toggle('collapsed'); 
+    }
+
+    function resetProject() {
+        if(confirm("Möchtest du wirklich das gesamte Projekt löschen und ganz von vorne anfangen? Alle nicht gespeicherten Daten gehen verloren.")) {
+            localStorage.removeItem(LOCAL_STORAGE_KEY);
+            projectData = {
+                projectName: "Neues Projekt",
+                location: "",
+                details: []
+            };
+            activeDetailId = null;
+            addNewDetail();
+        }
     }
 
     // Generiert die globalen Referenzlisten für Autovervollständigung mit erzwungener Geräte-Bezeichnung
@@ -620,7 +639,6 @@
         const hw = detail.hardware.find(h => h.instanceId === instanceId); 
         hw.fields[field] = value; 
         
-        // Wenn sich die Geräte-Bezeichnung ändert, App sofort neu rendern, damit globale Datalists (Autovervollständigung) aktualisiert werden
         if(field === 'Geräte-Bez.') {
             renderApp();
         } else {
