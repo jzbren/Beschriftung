@@ -41,133 +41,36 @@
             flex-shrink: 0;
             box-sizing: border-box;
         }
-        .sidebar.collapsed {
-            margin-left: calc(-1 * var(--sidebar-width));
-        }
-        .sidebar h2 {
-            margin-top: 0;
-            font-size: 1.2rem;
-            border-bottom: 1px solid #374151;
-            padding-bottom: 10px;
-        }
-        .detail-list {
-            flex: 1;
-            overflow-y: auto;
-            margin-top: 10px;
-        }
+        .sidebar.collapsed { margin-left: calc(-1 * var(--sidebar-width)); }
+        .sidebar h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #374151; padding-bottom: 10px; }
+        .detail-list { flex: 1; overflow-y: auto; margin-top: 10px; }
         .detail-item {
-            padding: 10px;
-            background: #374151;
-            margin-bottom: 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 10px; background: #374151; margin-bottom: 8px; border-radius: 4px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
         }
         .detail-item:hover { background: #4b5563; }
-        .detail-item.active {
-            background: var(--primary);
-            border-left: 4px solid #34d399;
-        }
+        .detail-item.active { background: var(--primary); border-left: 4px solid #34d399; }
         
-        .sidebar-actions {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .icon-btn {
-            background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center;
-        }
-        .icon-btn img {
-            width: 16px; height: 16px; opacity: 0.7; transition: opacity 0.2s; filter: invert(1);
-        }
+        .sidebar-actions { display: flex; align-items: center; gap: 5px; }
+        .icon-btn { background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; }
+        .icon-btn img { width: 16px; height: 16px; opacity: 0.7; transition: opacity 0.2s; filter: invert(1); }
         .icon-btn:hover img { opacity: 1; }
-        .delete-btn {
-            background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 1.1rem; padding: 0 4px;
-        }
+        .delete-btn { background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 1.1rem; padding: 0 4px; }
         .delete-btn:hover { color: #f87171; }
-
-        .sidebar-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-            width: 100%;
-        }
+        .sidebar-btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; }
         .sidebar-btn:hover { background: var(--primary-hover); }
 
         /* Main Content */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            padding: 20px 40px;
-            min-width: 0;
-        }
-        .top-bar {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            background: var(--panel-bg);
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-        .top-bar-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-        }
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .toggle-sidebar-btn {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #475569;
-            padding: 0 5px;
-        }
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px 40px; min-width: 0; }
+        .top-bar { display: flex; flex-direction: column; gap: 10px; background: var(--panel-bg); padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .top-bar-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .toggle-sidebar-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #475569; padding: 0 5px; }
         .toggle-sidebar-btn:hover { color: var(--primary); }
-        
-        .top-bar input[type="text"] {
-            font-size: 1.2rem;
-            font-weight: bold;
-            border: 1px solid transparent;
-            padding: 5px;
-            background: transparent;
-            width: 350px;
-        }
-        .top-bar input[type="text"].location-input {
-            font-size: 0.95rem;
-            font-weight: normal;
-            color: #475569;
-            width: 450px;
-            margin-left: 35px; /* Offset for hamburger menu */
-        }
-        .top-bar input[type="text"]:hover, .top-bar input[type="text"]:focus {
-            border-bottom: 1px solid var(--feller-border);
-            outline: none;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        button.btn {
-            background: white; border: 1px solid #d1d5db; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem;
-            display: flex; align-items: center; gap: 6px;
-        }
+        .top-bar input[type="text"] { font-size: 1.2rem; font-weight: bold; border: 1px solid transparent; padding: 5px; background: transparent; width: 350px; }
+        .top-bar input[type="text"].location-input { font-size: 0.95rem; font-weight: normal; color: #475569; width: 450px; margin-left: 35px; }
+        .top-bar input[type="text"]:hover, .top-bar input[type="text"]:focus { border-bottom: 1px solid var(--feller-border); outline: none; }
+        .action-buttons { display: flex; gap: 10px; }
+        button.btn { background: white; border: 1px solid #d1d5db; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; }
         button.btn img { width: 16px; height: 16px; }
         button.btn:hover { background: #f3f4f6; }
         button.btn.primary { background: var(--primary); color: white; border: none; }
@@ -175,79 +78,20 @@
         button.btn.primary:hover { background: var(--primary-hover); }
 
         /* Workspace Grid */
-        .workspace {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .pane {
-            background: var(--panel-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
+        .workspace { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .pane { background: var(--panel-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .pane h3 { margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; }
 
         /* Switch Visualizer */
-        .visualizer-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 250px;
-            background: #f8fafc;
-            border: 1px dashed #cbd5e1;
-            border-radius: 6px;
-            margin-bottom: 15px;
-        }
-        .switch-frame {
-            background-color: var(--feller-white);
-            border: 2px solid #e5e7eb;
-            padding: 20px;
-            border-radius: 6px;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.05), inset 0 0 10px rgba(255,255,255,1);
-            display: grid;
-            gap: 2px;
-            background-image: linear-gradient(145deg, #ffffff, #f0f0f0);
-        }
-        .switch-slot {
-            background-color: var(--feller-white);
-            border: 1px solid #d1d5db;
-            border-radius: 3px;
-            display: flex; 
-            justify-content: center; 
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
-            position: relative;
-            overflow: hidden;
-            width: 80px;
-            height: 80px;
-            cursor: grab;
-        }
+        .visualizer-container { display: flex; justify-content: center; align-items: center; min-height: 250px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; margin-bottom: 15px; }
+        .switch-frame { background-color: var(--feller-white); border: 2px solid #e5e7eb; padding: 20px; border-radius: 6px; box-shadow: 2px 2px 10px rgba(0,0,0,0.05), inset 0 0 10px rgba(255,255,255,1); display: grid; gap: 2px; background-image: linear-gradient(145deg, #ffffff, #f0f0f0); }
+        .switch-slot { background-color: var(--feller-white); border: 1px solid #d1d5db; border-radius: 3px; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative; overflow: hidden; width: 80px; height: 80px; cursor: grab; }
         .switch-slot:active { cursor: grabbing; }
         .switch-slot.drag-over { border: 2px solid var(--primary); opacity: 0.7; }
-        
-        .switch-slot img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: fill; 
-            padding: 0; 
-            box-sizing: border-box;
-            opacity: 0.85; 
-            pointer-events: none; /* Prevents image from interfering with drag and drop */
-        }
-        .slot-badge { 
-            position: absolute; 
-            top: 2px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            font-size: 9px; 
-            color: #9ca3af; 
-            z-index: 2; 
-            pointer-events: none;
-        }
+        .switch-slot img { width: 100%; height: 100%; object-fit: fill; padding: 0; box-sizing: border-box; opacity: 0.85; pointer-events: none; }
+        .slot-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #9ca3af; z-index: 2; pointer-events: none; }
 
-        /* Forms */
+        /* Forms & Fields */
         .form-group { display: flex; margin-bottom: 10px; align-items: center; }
         .form-group label { width: 120px; font-size: 0.85rem; font-weight: 500; color: #475569; }
         .form-group input, .form-group select { flex: 1; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.9rem; }
@@ -256,18 +100,10 @@
 
         /* Custom Searchable Dropdown */
         .custom-select { position: relative; flex: 1; font-family: inherit; }
-        .select-selected {
-            background-color: #fff; border: 1px solid #d1d5db; border-radius: 4px; padding: 6px 8px; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-        }
-        .select-items {
-            position: absolute; background-color: #fff; border: 1px solid #d1d5db; border-radius: 4px; top: 100%; left: 0; right: 0; z-index: 99; margin-top: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto;
-        }
-        .icon-search {
-            width: calc(100% - 16px) !important; margin: 8px; padding: 6px; box-sizing: border-box; border: 1px solid #cbd5e1 !important; border-radius: 3px;
-        }
-        .icon-group-label {
-            padding: 6px 10px; background: #f1f5f9; font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase;
-        }
+        .select-selected { background-color: #fff; border: 1px solid #d1d5db; border-radius: 4px; padding: 6px 8px; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .select-items { position: absolute; background-color: #fff; border: 1px solid #d1d5db; border-radius: 4px; top: 100%; left: 0; right: 0; z-index: 99; margin-top: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto; }
+        .icon-search { width: calc(100% - 16px) !important; margin: 8px; padding: 6px; box-sizing: border-box; border: 1px solid #cbd5e1 !important; border-radius: 3px; }
+        .icon-group-label { padding: 6px 10px; background: #f1f5f9; font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase; }
         .icon-option { padding: 8px 10px; font-size: 0.9rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
         .icon-option:last-child { border-bottom: none; }
         .icon-option:hover { background-color: #f3f4f6; }
@@ -278,15 +114,15 @@
         .io-type { font-size: 0.65rem; padding: 2px 4px; border-radius: 3px; margin-right: 6px; text-transform: uppercase; }
         .io-type.in { background: #dbeafe; color: #1e3a8a; }
         .io-type.out { background: #fce7f3; color: #9d174d; }
+        .io-type.bus { background: #fef08a; color: #854d0e; }
 
-        .io-fields-grid { display: grid; grid-template-columns: 1fr; gap: 5px; }
+        .io-fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
         .io-fields-grid input { padding: 4px 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.8rem; width: 100%; box-sizing: border-box; }
+        .io-fields-grid .io-full-width { grid-column: 1 / -1; }
 
         /* Hardware Editor Layout */
         .hardware-list { margin-top: 20px; }
-        .hw-card {
-            background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--primary); display: grid; grid-template-columns: 130px 1fr; gap: 15px; align-items: start;
-        }
+        .hw-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--primary); display: grid; grid-template-columns: 130px 1fr; gap: 15px; align-items: start; }
         .hw-card-image img { width: 100%; height: auto; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; padding: 4px; background: #fff; }
         .hw-card-body { position: relative; }
         .hw-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
@@ -325,6 +161,8 @@
             .print-hw-meta-row { display: flex; margin-bottom: 2px; font-size: 0.73rem; }
             .print-hw-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; border-top: 1px solid #f1f5f9; padding-top: 3px; }
             .print-hw-io-subcol h6 { margin: 0 0 2px 0; font-size: 0.68rem; text-transform: uppercase; color: #64748b; }
+            .print-bus-list { padding-left: 5px; border-left: 2px solid #cbd5e1; margin-top: 2px; }
+            .print-bus-item { font-size: 0.7rem; color: #1f2937; margin-bottom: 2px; }
         }
     </style>
 </head>
@@ -375,137 +213,80 @@
     let activeDetailId = null;
     let draggedSlotNum = null;
 
-    // Tastaturkürzel (Shortcuts) einrichten
     document.addEventListener('keydown', function(e) {
         if (e.ctrlKey || e.metaKey) {
-            if (e.key.toLowerCase() === 's') {
-                e.preventDefault();
-                exportProject(); // Shortcut zum Speichern/Export
-            } else if (e.key.toLowerCase() === 'p') {
-                e.preventDefault();
-                printCurrentDetail(); // Shortcut zum Drucken
-            }
+            if (e.key.toLowerCase() === 's') { e.preventDefault(); exportProject(); }
+            else if (e.key.toLowerCase() === 'p') { e.preventDefault(); printCurrentDetail(); }
         }
     });
 
     document.addEventListener("click", function (e) {
-        document.querySelectorAll('.select-items').forEach(item => {
-            item.style.display = 'none';
-        });
+        document.querySelectorAll('.select-items').forEach(item => { item.style.display = 'none'; });
     });
 
     window.onload = () => {
-        // Lokale Daten beim Start laden
         const savedData = loadFromLocal();
         if (savedData && savedData.details && savedData.details.length > 0) {
             projectData = savedData;
             activeDetailId = projectData.details[0].id;
             renderApp();
         } else {
-            if (projectData.details.length === 0) {
-                addNewDetail();
-            } else {
-                renderApp();
-            }
+            if (projectData.details.length === 0) addNewDetail(); else renderApp();
         }
     };
 
-    function saveToLocal() {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(projectData));
-    }
-
+    function saveToLocal() { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(projectData)); }
     function loadFromLocal() {
         const data = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (data) {
-            try { return JSON.parse(data); } catch(e) { console.error(e); }
-        }
+        if (data) { try { return JSON.parse(data); } catch(e) { console.error(e); } }
         return null;
     }
-
-    function generateId() {
-        return Math.random().toString(36).substr(2, 9);
-    }
-
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('collapsed');
-    }
+    function generateId() { return Math.random().toString(36).substr(2, 9); }
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
 
     function addNewDetail() {
-        const newDetail = {
-            id: generateId(),
-            name: `Detail ${projectData.details.length + 1}`,
-            layout: "2x2",
-            slots: {},
-            hardware: []
-        };
-        projectData.details.push(newDetail);
-        activeDetailId = newDetail.id;
-        renderApp();
+        const newDetail = { id: generateId(), name: `Detail ${projectData.details.length + 1}`, layout: "2x2", slots: {}, hardware: [] };
+        projectData.details.push(newDetail); activeDetailId = newDetail.id; renderApp();
     }
 
     function duplicateDetail(id, event) {
         event.stopPropagation();
         const detailToCopy = projectData.details.find(d => d.id === id);
         if (detailToCopy) {
-            const newDetail = JSON.parse(JSON.stringify(detailToCopy)); // Deep copy
-            newDetail.id = generateId();
-            newDetail.name = newDetail.name + " (Kopie)";
-            
-            // Hardware IDs erneuern, damit sie eigenständig bleiben
-            if (newDetail.hardware) {
-                newDetail.hardware.forEach(hw => hw.instanceId = generateId());
-            }
-            
-            projectData.details.push(newDetail);
-            activeDetailId = newDetail.id;
-            renderApp();
+            const newDetail = JSON.parse(JSON.stringify(detailToCopy));
+            newDetail.id = generateId(); newDetail.name = newDetail.name + " (Kopie)";
+            if (newDetail.hardware) newDetail.hardware.forEach(hw => hw.instanceId = generateId());
+            projectData.details.push(newDetail); activeDetailId = newDetail.id; renderApp();
         }
     }
 
-    function selectDetail(id) {
-        activeDetailId = id;
-        renderApp();
-    }
+    function selectDetail(id) { activeDetailId = id; renderApp(); }
 
     function deleteDetail(id, event) {
         event.stopPropagation();
         if(confirm("Möchtest du dieses Detail wirklich löschen?")) {
             projectData.details = projectData.details.filter(d => d.id !== id);
-            if(projectData.details.length > 0) {
-                activeDetailId = projectData.details[0].id;
-            } else {
-                addNewDetail();
-                return;
-            }
+            if(projectData.details.length > 0) activeDetailId = projectData.details[0].id;
+            else { addNewDetail(); return; }
             renderApp();
         }
     }
 
-    function updateProjectField(field, value) {
-        projectData[field] = value;
-        saveToLocal();
-    }
+    function updateProjectField(field, value) { projectData[field] = value; saveToLocal(); }
 
     function updateActiveDetailField(field, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
-        if (detail) {
-            detail[field] = value;
-            if (field === 'layout' || field === 'name') renderApp();
-            else saveToLocal();
-        }
+        if (detail) { detail[field] = value; if (field === 'layout' || field === 'name') renderApp(); else saveToLocal(); }
     }
 
     function renderApp() {
         document.getElementById('project-name').value = projectData.projectName;
         document.getElementById('project-location').value = projectData.location || '';
-        renderSidebar();
-        renderWorkspace();
-        saveToLocal();
+        renderSidebar(); renderWorkspace(); saveToLocal();
     }
 
     function renderSidebar() {
-        const list = document.getElementById('detail-list');
-        list.innerHTML = '';
+        const list = document.getElementById('detail-list'); list.innerHTML = '';
         projectData.details.forEach(detail => {
             const div = document.createElement('div');
             div.className = `detail-item ${detail.id === activeDetailId ? 'active' : ''}`;
@@ -521,39 +302,19 @@
         });
     }
 
-    // --- DRAG & DROP FÜR SLOTS ---
-    function handleDragStart(e, slotNum) {
-        draggedSlotNum = slotNum;
-        e.dataTransfer.effectAllowed = 'move';
-        // Unsichtbares Datenobjekt für Firefox Kompatibilität
-        e.dataTransfer.setData('text/plain', slotNum); 
-    }
-
-    function handleDragOver(e) {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        e.currentTarget.classList.add('drag-over');
-    }
-
-    function handleDragLeave(e) {
-        e.currentTarget.classList.remove('drag-over');
-    }
-
+    // --- DRAG & DROP ---
+    function handleDragStart(e, slotNum) { draggedSlotNum = slotNum; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', slotNum); }
+    function handleDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; e.currentTarget.classList.add('drag-over'); }
+    function handleDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
     function handleDrop(e, targetSlotNum) {
-        e.preventDefault();
-        e.currentTarget.classList.remove('drag-over');
+        e.preventDefault(); e.currentTarget.classList.remove('drag-over');
         if (draggedSlotNum && draggedSlotNum !== targetSlotNum) {
             const detail = projectData.details.find(d => d.id === activeDetailId);
-            
-            // Erstelle Slots, falls sie noch nicht existieren
             if (!detail.slots[`slot-${targetSlotNum}`]) detail.slots[`slot-${targetSlotNum}`] = { iconFile: '', ioData: {} };
             if (!detail.slots[`slot-${draggedSlotNum}`]) detail.slots[`slot-${draggedSlotNum}`] = { iconFile: '', ioData: {} };
-
-            // Belegungen tauschen (Deep Copy)
             const temp = JSON.parse(JSON.stringify(detail.slots[`slot-${targetSlotNum}`]));
             detail.slots[`slot-${targetSlotNum}`] = JSON.parse(JSON.stringify(detail.slots[`slot-${draggedSlotNum}`]));
             detail.slots[`slot-${draggedSlotNum}`] = temp;
-            
             renderApp();
         }
         draggedSlotNum = null;
@@ -562,26 +323,14 @@
     function renderWorkspace() {
         const container = document.getElementById('workspace-container');
         const detail = projectData.details.find(d => d.id === activeDetailId);
-        
-        if (!detail) {
-            container.innerHTML = '<p>Kein Detail ausgewählt.</p>';
-            return;
-        }
+        if (!detail) { container.innerHTML = '<p>Kein Detail ausgewählt.</p>'; return; }
 
         const [rows, cols] = detail.layout.split('x').map(Number);
         const totalSlots = rows * cols;
-
-        for(let i=1; i<=totalSlots; i++) {
-            if(!detail.slots[`slot-${i}`]) {
-                detail.slots[`slot-${i}`] = { iconFile: '', ioData: {} };
-            }
-        }
-        
+        for(let i=1; i<=totalSlots; i++) { if(!detail.slots[`slot-${i}`]) detail.slots[`slot-${i}`] = { iconFile: '', ioData: {} }; }
         if(!detail.hardware) detail.hardware = [];
 
-        const hwOptionsHtml = (typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : []).map(hw => 
-            `<option value="${hw.id}">${hw.name}</option>`
-        ).join('');
+        const hwOptionsHtml = (typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : []).map(hw => `<option value="${hw.id}">${hw.name}</option>`).join('');
 
         let html = `
             <div class="workspace">
@@ -603,14 +352,12 @@
                                 <option value="3x3" ${detail.layout==='3x3'?'selected':''}>3 x 3</option>
                             </select>
                         </div>
-                        
                         <div class="visualizer-container">
                             <div class="switch-frame" style="grid-template-columns: repeat(${cols}, 80px); grid-template-rows: repeat(${rows}, 80px);">
                                 ${generateVisualizerHtml(detail, rows, cols)}
                             </div>
                         </div>
                     </div>
-                    
                     <div class="pane" style="margin-top: 20px;">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <h3>Hardware Komponenten</h3>
@@ -624,7 +371,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="pane">
                     <h3>Schalter Belegungen</h3>
                     <div class="slots-container">
@@ -633,27 +379,17 @@
                 </div>
             </div>
         `;
-
-        container.innerHTML = html;
-        updatePrintContainers();
+        container.innerHTML = html; updatePrintContainers();
     }
 
     function generateVisualizerHtml(detail, rows, cols) {
-        let html = '';
-        let count = 1;
+        let html = ''; let count = 1;
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
                 const slot = detail.slots[`slot-${count}`];
                 const iconPath = slot.iconFile ? `icons-schalter/${slot.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23e5e7eb" stroke-width="1"><circle cx="12" cy="12" r="10"></circle></svg>';
-                
-                // Füge Drag & Drop Attribute hinzu
                 html += `
-                    <div class="switch-slot" 
-                         draggable="true" 
-                         ondragstart="handleDragStart(event, ${count})" 
-                         ondragover="handleDragOver(event)" 
-                         ondragleave="handleDragLeave(event)"
-                         ondrop="handleDrop(event, ${count})">
+                    <div class="switch-slot" draggable="true" ondragstart="handleDragStart(event, ${count})" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, ${count})">
                         <span class="slot-badge">${count}</span>
                         <img src="${iconPath}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;%23ff9999&quot; stroke-width=&quot;2&quot;><line x1=&quot;18&quot; y1=&quot;6&quot; x2=&quot;6&quot; y2=&quot;18&quot;></line><line x1=&quot;6&quot; y1=&quot;6&quot; x2=&quot;18&quot; y2=&quot;18&quot;></line></svg>'">
                     </div>
@@ -668,14 +404,8 @@
         const iconList = (typeof iconConfigList !== 'undefined' ? iconConfigList : []);
         const currentDef = iconList.find(ic => ic.file === currentIcon) || iconList[0];
         const selectedLabel = currentDef ? (currentDef.label || currentDef.file || '--- Kein Icon ---') : '--- Kein Icon ---';
-
         const groups = {};
-        iconList.forEach(ic => {
-            const g = ic.group || "Sonstige";
-            if (!groups[g]) groups[g] = [];
-            groups[g].push(ic);
-        });
-
+        iconList.forEach(ic => { const g = ic.group || "Sonstige"; if (!groups[g]) groups[g] = []; groups[g].push(ic); });
         let listHtml = '';
         for (const groupName in groups) {
             listHtml += `<div class="icon-group-label">${groupName}</div>`;
@@ -684,60 +414,33 @@
                 listHtml += `<div class="icon-option" data-label="${label.toLowerCase()}" onclick="selectIconDropdown('${slotNum}', '${ic.file}', event)">${label}</div>`;
             });
         }
-
         return `
             <div class="custom-select" onclick="toggleDropdown('${slotNum}', event)">
                 <div class="select-selected">${selectedLabel} <span>▼</span></div>
                 <div class="select-items" id="dropdown-${slotNum}" style="display:none;" onclick="event.stopPropagation()">
                     <input type="text" class="icon-search" placeholder="Suchen..." onkeyup="filterDropdown('${slotNum}', this.value)" onclick="event.stopPropagation()">
-                    <div class="icon-list" id="icon-list-${slotNum}">
-                        ${listHtml}
-                    </div>
+                    <div class="icon-list" id="icon-list-${slotNum}">${listHtml}</div>
                 </div>
             </div>
         `;
     }
 
     function toggleDropdown(slotNum, event) {
-        event.stopPropagation();
-        document.querySelectorAll('.select-items').forEach(dd => {
-            if (dd.id !== `dropdown-${slotNum}`) dd.style.display = 'none';
-        });
-        const dd = document.getElementById(`dropdown-${slotNum}`);
-        const isOpening = dd.style.display !== 'block';
-        
+        event.stopPropagation(); document.querySelectorAll('.select-items').forEach(dd => { if (dd.id !== `dropdown-${slotNum}`) dd.style.display = 'none'; });
+        const dd = document.getElementById(`dropdown-${slotNum}`); const isOpening = dd.style.display !== 'block';
         dd.style.display = isOpening ? 'block' : 'none';
-        
-        // Automatischer Fokus auf die Suche beim Öffnen
-        if (isOpening) {
-            setTimeout(() => {
-                const searchInput = dd.querySelector('.icon-search');
-                if (searchInput) searchInput.focus();
-            }, 50);
-        }
+        if (isOpening) { setTimeout(() => { const searchInput = dd.querySelector('.icon-search'); if (searchInput) searchInput.focus(); }, 50); }
     }
-
     function filterDropdown(slotNum, term) {
-        const search = term.toLowerCase();
-        const list = document.getElementById(`icon-list-${slotNum}`);
-        const options = list.querySelectorAll('.icon-option');
-        options.forEach(opt => {
-            opt.style.display = opt.getAttribute('data-label').includes(search) ? 'block' : 'none';
-        });
+        const search = term.toLowerCase(); const list = document.getElementById(`icon-list-${slotNum}`);
+        list.querySelectorAll('.icon-option').forEach(opt => { opt.style.display = opt.getAttribute('data-label').includes(search) ? 'block' : 'none'; });
     }
-
-    function selectIconDropdown(slotNum, iconFile, event) {
-        event.stopPropagation();
-        document.getElementById(`dropdown-${slotNum}`).style.display = 'none';
-        updateSlotIcon(slotNum, iconFile);
-    }
+    function selectIconDropdown(slotNum, iconFile, event) { event.stopPropagation(); document.getElementById(`dropdown-${slotNum}`).style.display = 'none'; updateSlotIcon(slotNum, iconFile); }
 
     function getIOObject(slot, ioId) {
         let val = slot.ioData[ioId];
-        if (typeof val === 'string') {
-            return { bezeichnung: val, gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
-        }
-        return val || { bezeichnung: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
+        if (typeof val === 'string') return { bezeichnung: val, art: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
+        return val || { bezeichnung: '', art: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
     }
 
     function generateSlotsHtml(detail, totalSlots) {
@@ -745,7 +448,6 @@
         for(let i=1; i<=totalSlots; i++) {
             const slot = detail.slots[`slot-${i}`];
             const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
-            
             let ioHtml = '';
             if(iconDef && iconDef.io && iconDef.io.length > 0) {
                 let ioRows = iconDef.io.map(io => {
@@ -753,12 +455,10 @@
                     const ioTypeText = io.type === 'in' ? 'Eingang' : 'Ausgang';
                     return `
                         <div class="io-complex-row">
-                            <div class="io-header">
-                                <span class="io-type ${io.type}">${ioTypeText}</span> 
-                                ${io.label}
-                            </div>
+                            <div class="io-header"><span class="io-type ${io.type}">${ioTypeText}</span> ${io.label}</div>
                             <div class="io-fields-grid">
                                 <input type="text" placeholder="Bezeichnung" value="${data.bezeichnung}" onchange="updateSlotIOField('${i}', '${io.id}', 'bezeichnung', this.value)">
+                                <input type="text" placeholder="Art. (z.B. Taster)" value="${data.art}" onchange="updateSlotIOField('${i}', '${io.id}', 'art', this.value)">
                                 <input type="text" placeholder="Gruppe" value="${data.gruppe}" onchange="updateSlotIOField('${i}', '${io.id}', 'gruppe', this.value)">
                                 <input type="text" placeholder="Eingabegerät" value="${data.eingabegerat}" onchange="updateSlotIOField('${i}', '${io.id}', 'eingabegerat', this.value)">
                                 <input type="text" placeholder="Funktion" value="${data.funktion}" onchange="updateSlotIOField('${i}', '${io.id}', 'funktion', this.value)">
@@ -769,7 +469,6 @@
                 }).join('');
                 ioHtml = `<div class="io-section">${ioRows}</div>`;
             }
-
             const printVisibilityClass = slot.iconFile ? '' : 'no-print';
             html += `
                 <div class="slot-form ${printVisibilityClass}">
@@ -785,112 +484,114 @@
         return html;
     }
 
-    function updateSlotIcon(slotNum, iconFile) {
-        const detail = projectData.details.find(d => d.id === activeDetailId);
-        detail.slots[`slot-${slotNum}`].iconFile = iconFile;
-        renderApp(); 
-    }
+    function updateSlotIcon(slotNum, iconFile) { const detail = projectData.details.find(d => d.id === activeDetailId); detail.slots[`slot-${slotNum}`].iconFile = iconFile; renderApp(); }
 
     function updateSlotIOField(slotNum, ioId, field, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
-        if(!detail.slots[`slot-${slotNum}`].ioData) {
-            detail.slots[`slot-${slotNum}`].ioData = {};
-        }
+        if(!detail.slots[`slot-${slotNum}`].ioData) detail.slots[`slot-${slotNum}`].ioData = {};
         let currentData = detail.slots[`slot-${slotNum}`].ioData[ioId];
-        if (typeof currentData === 'string') {
-            currentData = { bezeichnung: currentData, gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
-        } else if (!currentData) {
-            currentData = { bezeichnung: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
-        }
-        currentData[field] = value;
-        detail.slots[`slot-${slotNum}`].ioData[ioId] = currentData;
-        saveToLocal();
+        if (typeof currentData === 'string') currentData = { bezeichnung: currentData, art: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
+        else if (!currentData) currentData = { bezeichnung: '', art: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
+        currentData[field] = value; detail.slots[`slot-${slotNum}`].ioData[ioId] = currentData; saveToLocal();
     }
 
     // --- HARDWARE KOMPONENTEN ---
     function addHardwareComponent() {
-        const select = document.getElementById('new-hw-select');
-        const hwId = select.value;
-        if(!hwId) return;
-        const hwConfig = hardwareConfigList.find(h => h.id === hwId);
-        if(!hwConfig) return;
-
+        const hwId = document.getElementById('new-hw-select').value; if(!hwId) return;
+        const hwConfig = hardwareConfigList.find(h => h.id === hwId); if(!hwConfig) return;
         const detail = projectData.details.find(d => d.id === activeDetailId);
         const ioMapping = {};
-        if(hwConfig.io) hwConfig.io.forEach(io => { ioMapping[io.id] = ""; });
+        if(hwConfig.io) hwConfig.io.forEach(io => { ioMapping[io.id] = (io.type === 'bus') ? [] : ""; });
         const fieldsData = {};
         if(hwConfig.fields) hwConfig.fields.forEach(f => { fieldsData[f] = ""; });
-
-        detail.hardware.push({
-            instanceId: generateId(),
-            configId: hwConfig.id,
-            fields: fieldsData,
-            mappings: ioMapping
-        });
+        detail.hardware.push({ instanceId: generateId(), configId: hwConfig.id, fields: fieldsData, mappings: ioMapping });
         renderApp();
     }
 
     function removeHardware(instanceId) {
         if(confirm("Komponente entfernen?")) {
             const detail = projectData.details.find(d => d.id === activeDetailId);
-            detail.hardware = detail.hardware.filter(h => h.instanceId !== instanceId);
-            renderApp();
+            detail.hardware = detail.hardware.filter(h => h.instanceId !== instanceId); renderApp();
         }
     }
 
     function updateHwField(instanceId, field, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
-        const hw = detail.hardware.find(h => h.instanceId === instanceId);
-        hw.fields[field] = value;
-        saveToLocal();
+        const hw = detail.hardware.find(h => h.instanceId === instanceId); hw.fields[field] = value; saveToLocal();
     }
 
     function updateHwMapping(instanceId, ioId, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
+        const hw = detail.hardware.find(h => h.instanceId === instanceId); hw.mappings[ioId] = value; saveToLocal();
+    }
+    
+    function addHwBusMapping(instanceId, ioId) {
+        const detail = projectData.details.find(d => d.id === activeDetailId);
         const hw = detail.hardware.find(h => h.instanceId === instanceId);
-        hw.mappings[ioId] = value;
-        saveToLocal();
+        if(!Array.isArray(hw.mappings[ioId])) hw.mappings[ioId] = [];
+        hw.mappings[ioId].push("");
+        renderApp();
+    }
+    
+    function updateHwBusMapping(instanceId, ioId, index, value) {
+        const detail = projectData.details.find(d => d.id === activeDetailId);
+        const hw = detail.hardware.find(h => h.instanceId === instanceId);
+        if(Array.isArray(hw.mappings[ioId]) && hw.mappings[ioId].length > index) {
+            hw.mappings[ioId][index] = value;
+            saveToLocal();
+        }
+    }
+
+    function removeHwBusMapping(instanceId, ioId, index) {
+        const detail = projectData.details.find(d => d.id === activeDetailId);
+        const hw = detail.hardware.find(h => h.instanceId === instanceId);
+        if(Array.isArray(hw.mappings[ioId])) {
+            hw.mappings[ioId].splice(index, 1);
+            renderApp();
+        }
     }
 
     function generateHardwareHtml(detail) {
-        if(!detail.hardware || detail.hardware.length === 0) {
-            return '<p style="color:#64748b; font-size:0.9rem;" class="no-print">Noch keine Komponenten zugewiesen.</p>';
-        }
-
+        if(!detail.hardware || detail.hardware.length === 0) return '<p style="color:#64748b; font-size:0.9rem;" class="no-print">Noch keine Komponenten zugewiesen.</p>';
         let html = '';
         detail.hardware.forEach(hw => {
-            const config = hardwareConfigList.find(c => c.id === hw.configId);
-            if(!config) return;
-
+            const config = hardwareConfigList.find(c => c.id === hw.configId); if(!config) return;
             let fieldsHtml = '';
             if(config.fields) {
                 config.fields.forEach(f => {
-                    fieldsHtml += `
-                        <div class="form-group" style="margin-bottom:5px;">
-                            <label style="width:100px;">${f}</label>
-                            <input type="text" value="${hw.fields[f] || ''}" onchange="updateHwField('${hw.instanceId}', '${f}', this.value)">
-                        </div>
-                    `;
+                    fieldsHtml += `<div class="form-group" style="margin-bottom:5px;"><label style="width:100px;">${f}</label><input type="text" value="${hw.fields[f] || ''}" onchange="updateHwField('${hw.instanceId}', '${f}', this.value)"></div>`;
                 });
             }
-
-            let inputsHtml = '';
-            let outputsHtml = '';
+            let inputsHtml = ''; let outputsHtml = ''; let busesHtml = '';
             if(config.io) {
                 config.io.forEach(io => {
-                    const row = `
-                        <div class="form-group" style="margin-bottom:5px;">
-                            <label style="width:110px; font-size:0.85rem;">${io.label}</label>
-                            <input type="text" value="${hw.mappings[io.id] || ''}" placeholder="Zuweisung..." onchange="updateHwMapping('${hw.instanceId}', '${io.id}', this.value)">
-                        </div>
-                    `;
-                    if(io.type === 'in') inputsHtml += row;
-                    if(io.type === 'out') outputsHtml += row;
+                    if (io.type === 'bus') {
+                        let items = Array.isArray(hw.mappings[io.id]) ? hw.mappings[io.id] : [];
+                        let itemsHtml = items.map((val, idx) => `
+                            <div style="display:flex; gap:5px; margin-bottom:4px; align-items:center;">
+                                <span style="font-size:0.8rem; color:#64748b; width:20px;">${idx+1}.</span>
+                                <input type="text" value="${val}" placeholder="Name / Gerät" onchange="updateHwBusMapping('${hw.instanceId}', '${io.id}', ${idx}, this.value)">
+                                <button class="delete-btn" onclick="removeHwBusMapping('${hw.instanceId}', '${io.id}', ${idx})">×</button>
+                            </div>
+                        `).join('');
+                        let addBtn = (!io.max || items.length < io.max) ? `<button class="btn" style="padding:2px 5px; font-size:0.75rem;" onclick="addHwBusMapping('${hw.instanceId}', '${io.id}')">+ Gerät</button>` : `<span style="font-size:0.75rem; color:#ef4444;">Max. erreicht (${io.max})</span>`;
+                        busesHtml += `
+                            <div style="margin-top:10px; background:#f8fafc; padding:10px; border-radius:4px; border:1px solid #e2e8f0;">
+                                <div style="font-size:0.85rem; font-weight:bold; margin-bottom:8px; color:#1e293b;">${io.label}</div>
+                                <div>${itemsHtml}</div>
+                                <div style="margin-top:6px;">${addBtn}</div>
+                            </div>
+                        `;
+                    } else {
+                        const row = `<div class="form-group" style="margin-bottom:5px;"><label style="width:110px; font-size:0.85rem;">${io.label}</label><input type="text" value="${hw.mappings[io.id] || ''}" placeholder="Zuweisung..." onchange="updateHwMapping('${hw.instanceId}', '${io.id}', this.value)"></div>`;
+                        if(io.type === 'in') inputsHtml += row;
+                        if(io.type === 'out') outputsHtml += row;
+                    }
                 });
             }
 
             let hwImageTag = config.image ? `<div class="hw-card-image"><img src="icons-schalter/${config.image}"></div>` : '<div></div>';
-
+            
             html += `
                 <div class="hw-card">
                     ${hwImageTag}
@@ -904,6 +605,7 @@
                             ${inputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5>Eingänge</h5>${inputsHtml}</div>` : '<div></div>'}
                             ${outputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5>Ausgänge</h5>${outputsHtml}</div>` : '<div></div>'}
                         </div>
+                        ${busesHtml ? `<div class="io-section" style="margin-top:10px;"><h5>Bus-Verbindungen</h5>${busesHtml}</div>` : ''}
                     </div>
                 </div>
             `;
@@ -922,28 +624,16 @@
                 let slotIdx = (r * cols) + c + 1;
                 const slot = detail.slots[`slot-${slotIdx}`];
                 const iconPath = (slot && slot.iconFile) ? `icons-schalter/${slot.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23e5e7eb" stroke-width="1"><circle cx="12" cy="12" r="10"></circle></svg>';
-                printVisualizerSlots += `
-                    <div class="print-switch-slot">
-                        <span class="print-slot-badge">${slotIdx}</span>
-                        <img src="${iconPath}">
-                    </div>
-                `;
+                printVisualizerSlots += `<div class="print-switch-slot"><span class="print-slot-badge">${slotIdx}</span><img src="${iconPath}"></div>`;
             }
         }
 
-        let printVisualizerHtml = `
-            <div class="print-visualizer-wrapper">
-                <div class="print-switch-frame" style="grid-template-columns: repeat(${cols}, 48px); grid-template-rows: repeat(${rows}, 48px);">
-                    ${printVisualizerSlots}
-                </div>
-            </div>
-        `;
+        let printVisualizerHtml = `<div class="print-visualizer-wrapper"><div class="print-switch-frame" style="grid-template-columns: repeat(${cols}, 48px); grid-template-rows: repeat(${rows}, 48px);">${printVisualizerSlots}</div></div>`;
 
         let slotBlocks = [];
         for(let i=1; i<=totalSlots; i++) {
             const slot = detail.slots[`slot-${i}`];
             if(!slot || !slot.iconFile) continue;
-
             const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
             const slotTitle = iconDef ? (iconDef.label || slot.iconFile) : `Platz ${i}`;
             
@@ -956,6 +646,7 @@
                         <div class="print-io-item">
                             <div class="print-io-header">${ioTypeText}: ${io.label}</div>
                             <div class="print-io-line"><span class="print-io-label">Bezeichnung:</span><span class="print-io-val">${data.bezeichnung || ''}</span></div>
+                            ${data.art ? `<div class="print-io-line"><span class="print-io-label">Art:</span><span class="print-io-val">${data.art}</span></div>` : ''}
                             <div class="print-io-line"><span class="print-io-label">Gruppe:</span><span class="print-io-val">${data.gruppe || ''}</span></div>
                             <div class="print-io-line"><span class="print-io-label">Eingabegerät:</span><span class="print-io-val">${data.eingabegerat || ''}</span></div>
                             <div class="print-io-line"><span class="print-io-label">Funktion:</span><span class="print-io-val">${data.funktion || ''}</span></div>
@@ -964,64 +655,48 @@
                     `;
                 });
             }
-
-            slotBlocks.push(`
-                <div class="print-slot-item-block">
-                    <div class="print-slot-item-title">Platz ${i} – ${slotTitle}</div>
-                    ${printIoRows}
-                </div>
-            `);
+            slotBlocks.push(`<div class="print-slot-item-block"><div class="print-slot-item-title">Platz ${i} – ${slotTitle}</div>${printIoRows}</div>`);
         }
 
         let slotsGridHtml = '';
         for (let i = 0; i < slotBlocks.length; i += 2) {
-            let leftBlock = slotBlocks[i];
-            let rightBlock = slotBlocks[i+1] || '<div></div>';
-            slotsGridHtml += `
-                <div class="print-slots-grid-2col">
-                    ${leftBlock}
-                    ${rightBlock}
-                </div>
-            `;
+            slotsGridHtml += `<div class="print-slots-grid-2col">${slotBlocks[i]}${slotBlocks[i+1] || '<div></div>'}</div>`;
         }
 
         let hwHtml = '';
         if(detail.hardware && detail.hardware.length > 0) {
             let hwCardsHtml = '';
             detail.hardware.forEach(hw => {
-                const config = hardwareConfigList.find(c => c.id === hw.configId);
-                if(!config) return;
-
+                const config = hardwareConfigList.find(c => c.id === hw.configId); if(!config) return;
                 let printFieldsHtml = '';
                 if(config.fields && config.fields.length > 0) {
-                    config.fields.forEach(f => {
-                        printFieldsHtml += `
-                            <div class="print-hw-meta-row">
-                                <span style="width:75px; color:#475569;">${f}:</span>
-                                <span style="flex:1; color:#1f2937; font-weight:500;">${hw.fields[f] || ''}</span>
-                            </div>
-                        `;
-                    });
+                    config.fields.forEach(f => { printFieldsHtml += `<div class="print-hw-meta-row"><span style="width:75px; color:#475569;">${f}:</span><span style="flex:1; color:#1f2937; font-weight:500;">${hw.fields[f] || ''}</span></div>`; });
                 }
 
-                let inputsHtml = '';
-                let outputsHtml = '';
+                let inputsHtml = ''; let outputsHtml = ''; let busesHtml = '';
                 if(config.io) {
                     config.io.forEach(io => {
-                        const assignedVal = hw.mappings[io.id] || '';
-                        const row = `
-                            <div style="display:flex; margin-bottom:2px; font-size:0.7rem;">
-                                <span style="width:35px; color:#475569;">${io.label}:</span>
-                                <span style="flex:1; color:#1f2937; font-weight:500;">${assignedVal}</span>
-                            </div>
-                        `;
-                        if(io.type === 'in') inputsHtml += row;
-                        if(io.type === 'out') outputsHtml += row;
+                        if (io.type === 'bus') {
+                            let items = Array.isArray(hw.mappings[io.id]) ? hw.mappings[io.id] : [];
+                            if(items.length > 0) {
+                                let busItems = items.map((val, idx) => `<div class="print-bus-item">${idx+1}. ${val}</div>`).join('');
+                                busesHtml += `
+                                    <div style="margin-top: 5px;">
+                                        <div style="font-size:0.7rem; font-weight:bold; color:#475569;">${io.label}</div>
+                                        <div class="print-bus-list">${busItems}</div>
+                                    </div>
+                                `;
+                            }
+                        } else {
+                            const assignedVal = hw.mappings[io.id] || '';
+                            const row = `<div style="display:flex; margin-bottom:2px; font-size:0.7rem;"><span style="width:35px; color:#475569;">${io.label}:</span><span style="flex:1; color:#1f2937; font-weight:500;">${assignedVal}</span></div>`;
+                            if(io.type === 'in') inputsHtml += row;
+                            if(io.type === 'out') outputsHtml += row;
+                        }
                     });
                 }
 
                 let printHwImageTag = config.image ? `<div class="print-hw-image"><img src="icons-schalter/${config.image}"></div>` : '<div></div>';
-                
                 hwCardsHtml += `
                     <div class="print-hw-container">
                         ${printHwImageTag}
@@ -1029,111 +704,62 @@
                             <div class="print-hw-header-title">${config.name}</div>
                             ${printFieldsHtml ? `<div style="margin-bottom:3px;">${printFieldsHtml}</div>` : ''}
                             <div class="print-hw-io-grid">
-                                <div class="print-hw-io-subcol">
-                                    ${inputsHtml ? `<h6>Eingänge</h6>${inputsHtml}` : ''}
-                                </div>
-                                <div class="print-hw-io-subcol">
-                                    ${outputsHtml ? `<h6>Ausgänge</h6>${outputsHtml}` : ''}
-                                </div>
+                                <div class="print-hw-io-subcol">${inputsHtml ? `<h6>Eingänge</h6>${inputsHtml}` : ''}</div>
+                                <div class="print-hw-io-subcol">${outputsHtml ? `<h6>Ausgänge</h6>${outputsHtml}` : ''}</div>
                             </div>
+                            ${busesHtml}
                         </div>
                     </div>
                 `;
             });
-
-            if(hwCardsHtml) {
-                hwHtml = `
-                    <div class="print-section-title">Hardware Komponenten</div>
-                    ${hwCardsHtml}
-                `;
-            }
+            if(hwCardsHtml) hwHtml = `<div class="print-section-title">Hardware Komponenten</div>${hwCardsHtml}`;
         }
 
         return `
             <div class="print-detail-page">
-                <div class="print-header-block">
-                    <h2>${projectData.projectName}</h2>
-                    ${projectData.location ? `<p>${projectData.location}</p>` : ''}
-                </div>
-                
+                <div class="print-header-block"><h2>${projectData.projectName}</h2>${projectData.location ? `<p>${projectData.location}</p>` : ''}</div>
                 <div class="print-section-title">${detail.name}</div>
                 ${printVisualizerHtml}
-
                 <div class="print-section-title">Schalter Belegungen</div>
                 ${slotsGridHtml}
-
                 ${hwHtml}
             </div>
         `;
     }
 
     function updatePrintContainers() {
-        const allContainer = document.getElementById('print-all-container');
-        let allHtml = '';
-        projectData.details.forEach(detail => {
-            allHtml += buildDetailPrintHtml(detail);
-        });
+        const allContainer = document.getElementById('print-all-container'); let allHtml = '';
+        projectData.details.forEach(detail => { allHtml += buildDetailPrintHtml(detail); });
         allContainer.innerHTML = allHtml;
-
         const singleContainer = document.getElementById('print-single-container');
         const activeDetail = projectData.details.find(d => d.id === activeDetailId);
-        if(activeDetail) {
-            singleContainer.innerHTML = buildDetailPrintHtml(activeDetail);
-        } else {
-            singleContainer.innerHTML = '';
-        }
+        singleContainer.innerHTML = activeDetail ? buildDetailPrintHtml(activeDetail) : '';
     }
 
     function printAllDetails() {
         updatePrintContainers();
-        const mainContent = document.getElementById('workspace-container');
-        const allContainer = document.getElementById('print-all-container');
-        const singleContainer = document.getElementById('print-single-container');
-        
-        mainContent.style.display = 'none';
-        allContainer.style.display = 'block';
-        singleContainer.style.display = 'none';
-        
+        const mainContent = document.getElementById('workspace-container'); const allContainer = document.getElementById('print-all-container'); const singleContainer = document.getElementById('print-single-container');
+        mainContent.style.display = 'none'; allContainer.style.display = 'block'; singleContainer.style.display = 'none';
         window.print();
-        
-        mainContent.style.display = 'block';
-        allContainer.style.display = 'none';
+        mainContent.style.display = 'block'; allContainer.style.display = 'none';
     }
 
     function printCurrentDetail() {
         updatePrintContainers();
-        const mainContent = document.getElementById('workspace-container');
-        const allContainer = document.getElementById('print-all-container');
-        const singleContainer = document.getElementById('print-single-container');
-        
-        mainContent.style.display = 'none';
-        allContainer.style.display = 'none';
-        singleContainer.style.display = 'block';
-        
+        const mainContent = document.getElementById('workspace-container'); const allContainer = document.getElementById('print-all-container'); const singleContainer = document.getElementById('print-single-container');
+        mainContent.style.display = 'none'; allContainer.style.display = 'none'; singleContainer.style.display = 'block';
         window.print();
-        
-        mainContent.style.display = 'block';
-        singleContainer.style.display = 'none';
+        mainContent.style.display = 'block'; singleContainer.style.display = 'none';
     }
 
     function exportProject() {
-        const dataStr = JSON.stringify(projectData, null, 2);
-        const blob = new Blob([dataStr], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = (projectData.projectName.replace(/[^a-z0-9]/gi, '_').toLowerCase() || "projekt") + ".ServiceProDetail";
-        a.click();
-        URL.revokeObjectURL(url);
+        const dataStr = JSON.stringify(projectData, null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob);
+        const a = document.createElement("a"); a.href = url; a.download = (projectData.projectName.replace(/[^a-z0-9]/gi, '_').toLowerCase() || "projekt") + ".ServiceProDetail"; a.click(); URL.revokeObjectURL(url);
     }
 
     function importProject(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        if(!file.name.endsWith('.ServiceProDetail')) {
-            alert("Bitte eine gültige .ServiceProDetail Datei auswählen!");
-            return;
-        }
+        const file = event.target.files[0]; if (!file) return;
+        if(!file.name.endsWith('.ServiceProDetail')) { alert("Bitte eine gültige .ServiceProDetail Datei auswählen!"); return; }
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
@@ -1141,19 +767,12 @@
                 if(parsed && parsed.details) {
                     projectData = parsed;
                     if(!projectData.location) projectData.location = "";
-                    if(projectData.details.length > 0) {
-                        activeDetailId = projectData.details[0].id;
-                    }
+                    if(projectData.details.length > 0) activeDetailId = projectData.details[0].id;
                     renderApp();
-                } else {
-                    alert("Dateiformat ungültig!");
-                }
-            } catch (err) {
-                alert("Fehler beim Laden der Datei.");
-            }
+                } else alert("Dateiformat ungültig!");
+            } catch (err) { alert("Fehler beim Laden der Datei."); }
         };
-        reader.readAsText(file);
-        event.target.value = '';
+        reader.readAsText(file); event.target.value = '';
     }
 </script>
 </body>
