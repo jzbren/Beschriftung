@@ -277,12 +277,14 @@
         document.getElementById('sidebar').classList.toggle('collapsed'); 
     }
 
-    // Generiert die globalen Referenzlisten für Autovervollständigung
+    // Generiert die globalen Referenzlisten für Autovervollständigung mit erzwungener Geräte-Bezeichnung
     function generateGlobalDatalists() {
         let busNodes = ''; 
         let hwIos = ''; 
         let switches = ''; 
         let hwDevices = '';
+
+        projectData.details.fields = projectData.details.fields || [];
 
         projectData.details.forEach(detail => {
             // Schalter erfassen
@@ -297,13 +299,13 @@
                 }
             }
 
-            // Hardware & Busse erfassen
+            // Hardware & Busse erfassen (Geräte-Bezeichnung wird zwingend mitgeführt)
             if(detail.hardware) {
                 detail.hardware.forEach(hw => {
                     const config = hardwareConfigList.find(c => c.id === hw.configId);
                     if(config) {
-                        const customName = hw.fields['Geräte-Bez.'] ? hw.fields['Geräte-Bez.'] : '';
-                        const hwName = customName ? `${config.name} (${customName})` : config.name;
+                        const devBez = hw.fields['Geräte-Bez.'] ? hw.fields['Geräte-Bez.'] : 'Unbenannt';
+                        const hwName = `${config.name} (${devBez})`;
                         
                         hwDevices += `<option value="[${detail.name}] ${hwName}"></option>`;
 
@@ -384,7 +386,6 @@
         const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
 
         projectData.details.forEach(detail => {
-            // Suchfilter
             if(searchTerm && !detail.name.toLowerCase().includes(searchTerm)) return;
 
             const div = document.createElement('div');
@@ -616,7 +617,15 @@
 
     function updateHwField(instanceId, field, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
-        const hw = detail.hardware.find(h => h.instanceId === instanceId); hw.fields[field] = value; saveToLocal();
+        const hw = detail.hardware.find(h => h.instanceId === instanceId); 
+        hw.fields[field] = value; 
+        
+        // Wenn sich die Geräte-Bezeichnung ändert, App sofort neu rendern, damit globale Datalists (Autovervollständigung) aktualisiert werden
+        if(field === 'Geräte-Bez.') {
+            renderApp();
+        } else {
+            saveToLocal();
+        }
     }
 
     function updateHwMapping(instanceId, ioId, value) {
@@ -658,7 +667,6 @@
             let fieldsHtml = '';
             if(config.fields) {
                 config.fields.forEach(f => {
-                    // Wenn das Feld nach Bus, Ast oder Bridge klingt, Datalist anhängen
                     let listAttr = '';
                     const fLower = f.toLowerCase();
                     if(fLower.includes('ast') || fLower.includes('bus') || fLower.includes('bridge') || fLower.includes('dali')) {
