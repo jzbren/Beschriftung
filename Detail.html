@@ -15,7 +15,7 @@
             --bg-color: #f3f4f6;
             --text-color: #1f2937;
             --panel-bg: #ffffff;
-            --sidebar-width: 280px;
+            --sidebar-width: 300px;
         }
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -37,21 +37,38 @@
             flex-direction: column;
             padding: 20px 15px;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            transition: margin-left 0.3s ease;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             flex-shrink: 0;
             box-sizing: border-box;
+            z-index: 100;
         }
         .sidebar.collapsed { margin-left: calc(-1 * var(--sidebar-width)); }
-        .sidebar h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #374151; padding-bottom: 10px; }
-        .detail-list { flex: 1; overflow-y: auto; margin-top: 10px; }
+        
+        .sidebar-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #374151; padding-bottom: 10px; margin-bottom: 15px;
+        }
+        .sidebar-header h2 { margin: 0; font-size: 1.2rem; }
+        
+        /* Sidebar Suche */
+        .sidebar-search { margin-bottom: 15px; }
+        .sidebar-search input {
+            width: 100%; padding: 8px 12px; border-radius: 4px; border: 1px solid #4b5563; 
+            background: #374151; color: white; box-sizing: border-box; font-size: 0.9rem;
+        }
+        .sidebar-search input::placeholder { color: #9ca3af; }
+        .sidebar-search input:focus { outline: none; border-color: #34d399; background: #4b5563; }
+
+        .detail-list { flex: 1; overflow-y: auto; }
         .detail-item {
-            padding: 10px; background: #374151; margin-bottom: 8px; border-radius: 4px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+            padding: 10px; background: #374151; margin-bottom: 8px; border-radius: 4px; cursor: pointer; 
+            display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;
         }
         .detail-item:hover { background: #4b5563; }
         .detail-item.active { background: var(--primary); border-left: 4px solid #34d399; }
         
         .sidebar-actions { display: flex; align-items: center; gap: 5px; }
-        .icon-btn { background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; }
+        .icon-btn { background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; color: white; }
         .icon-btn img { width: 16px; height: 16px; opacity: 0.7; transition: opacity 0.2s; filter: invert(1); }
         .icon-btn:hover img { opacity: 1; }
         .delete-btn { background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 1.1rem; padding: 0 4px; }
@@ -60,14 +77,16 @@
         .sidebar-btn:hover { background: var(--primary-hover); }
 
         /* Main Content */
-        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px 40px; min-width: 0; }
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px 40px; min-width: 0; transition: width 0.3s; }
         .top-bar { display: flex; flex-direction: column; gap: 10px; background: var(--panel-bg); padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .top-bar-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-        .header-left { display: flex; align-items: center; gap: 15px; }
-        .toggle-sidebar-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #475569; padding: 0 5px; }
-        .toggle-sidebar-btn:hover { color: var(--primary); }
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        
+        .toggle-sidebar-btn { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 1.2rem; cursor: pointer; color: #475569; padding: 4px 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .toggle-sidebar-btn:hover { background: #e2e8f0; color: var(--primary); }
+        
         .top-bar input[type="text"] { font-size: 1.2rem; font-weight: bold; border: 1px solid transparent; padding: 5px; background: transparent; width: 350px; }
-        .top-bar input[type="text"].location-input { font-size: 0.95rem; font-weight: normal; color: #475569; width: 450px; margin-left: 35px; }
+        .top-bar input[type="text"].location-input { font-size: 0.95rem; font-weight: normal; color: #475569; width: 450px; margin-left: 55px; }
         .top-bar input[type="text"]:hover, .top-bar input[type="text"]:focus { border-bottom: 1px solid var(--feller-border); outline: none; }
         .action-buttons { display: flex; gap: 10px; }
         button.btn { background: white; border: 1px solid #d1d5db; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; }
@@ -168,9 +187,20 @@
 </head>
 <body>
 
+    <!-- Globale Datalists für Autovervollständigung (Cross-Referencing) -->
+    <div id="global-datalists" style="display: none;"></div>
+
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
-        <h2>ServiceProDetails</h2>
+        <div class="sidebar-header">
+            <h2>ServiceProDetails</h2>
+            <button class="icon-btn toggle-sidebar-btn-inner no-print" onclick="toggleSidebar()" title="Einklappen" style="font-size: 1.5rem; padding: 0;">×</button>
+        </div>
+        
+        <div class="sidebar-search">
+            <input type="text" id="detail-search-input" placeholder="Details suchen..." onkeyup="filterDetails()">
+        </div>
+
         <div class="detail-list" id="detail-list"></div>
         <button class="sidebar-btn" onclick="addNewDetail()">+ Neues Detail</button>
     </div>
@@ -180,7 +210,7 @@
         <div class="top-bar">
             <div class="top-bar-row">
                 <div class="header-left">
-                    <button class="toggle-sidebar-btn no-print" onclick="toggleSidebar()">☰</button>
+                    <button class="toggle-sidebar-btn no-print" onclick="toggleSidebar()" title="Sidebar umschalten">☰</button>
                     <input type="text" id="project-name" value="Schalterdetail EFH Odermatt" onchange="updateProjectField('projectName', this.value)">
                 </div>
                 <div class="action-buttons">
@@ -242,7 +272,62 @@
         return null;
     }
     function generateId() { return Math.random().toString(36).substr(2, 9); }
-    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+    
+    function toggleSidebar() { 
+        document.getElementById('sidebar').classList.toggle('collapsed'); 
+    }
+
+    // Generiert die globalen Referenzlisten für Autovervollständigung
+    function generateGlobalDatalists() {
+        let busNodes = ''; 
+        let hwIos = ''; 
+        let switches = ''; 
+        let hwDevices = '';
+
+        projectData.details.forEach(detail => {
+            // Schalter erfassen
+            const [rows, cols] = detail.layout.split('x').map(Number);
+            const totalSlots = rows * cols;
+            for(let i=1; i<=totalSlots; i++) {
+                const slot = detail.slots[`slot-${i}`];
+                if(slot && slot.iconFile) {
+                    const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
+                    const slotName = iconDef ? (iconDef.label || slot.iconFile) : `Platz ${i}`;
+                    switches += `<option value="[${detail.name}] Platz ${i} - ${slotName}"></option>`;
+                }
+            }
+
+            // Hardware & Busse erfassen
+            if(detail.hardware) {
+                detail.hardware.forEach(hw => {
+                    const config = hardwareConfigList.find(c => c.id === hw.configId);
+                    if(config) {
+                        const customName = hw.fields['Geräte-Bez.'] ? hw.fields['Geräte-Bez.'] : '';
+                        const hwName = customName ? `${config.name} (${customName})` : config.name;
+                        
+                        hwDevices += `<option value="[${detail.name}] ${hwName}"></option>`;
+
+                        if(config.io) {
+                            config.io.forEach(io => {
+                                if(io.type === 'bus') {
+                                    busNodes += `<option value="[${detail.name}] ${hwName} - ${io.label}"></option>`;
+                                } else {
+                                    hwIos += `<option value="[${detail.name}] ${hwName} - ${io.label}"></option>`;
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        document.getElementById('global-datalists').innerHTML = `
+            <datalist id="global-bus-nodes">${busNodes}</datalist>
+            <datalist id="global-hw-ios">${hwIos}</datalist>
+            <datalist id="global-switches">${switches}</datalist>
+            <datalist id="global-hw-devices">${hwDevices}</datalist>
+        `;
+    }
 
     function addNewDetail() {
         const newDetail = { id: generateId(), name: `Detail ${projectData.details.length + 1}`, layout: "2x2", slots: {}, hardware: [] };
@@ -282,12 +367,26 @@
     function renderApp() {
         document.getElementById('project-name').value = projectData.projectName;
         document.getElementById('project-location').value = projectData.location || '';
-        renderSidebar(); renderWorkspace(); saveToLocal();
+        
+        generateGlobalDatalists(); // Autovervollständigung updaten
+        renderSidebarList(); // Nur die Liste updaten, damit die Suche den Fokus behält
+        renderWorkspace(); 
+        saveToLocal();
     }
 
-    function renderSidebar() {
-        const list = document.getElementById('detail-list'); list.innerHTML = '';
+    function filterDetails() { renderSidebarList(); }
+
+    function renderSidebarList() {
+        const list = document.getElementById('detail-list'); 
+        list.innerHTML = '';
+        
+        const searchInput = document.getElementById('detail-search-input');
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+
         projectData.details.forEach(detail => {
+            // Suchfilter
+            if(searchTerm && !detail.name.toLowerCase().includes(searchTerm)) return;
+
             const div = document.createElement('div');
             div.className = `detail-item ${detail.id === activeDetailId ? 'active' : ''}`;
             div.onclick = () => selectDetail(detail.id);
@@ -460,7 +559,7 @@
                                 <input type="text" placeholder="Bezeichnung" value="${data.bezeichnung}" onchange="updateSlotIOField('${i}', '${io.id}', 'bezeichnung', this.value)">
                                 <input type="text" placeholder="Art. (z.B. Taster)" value="${data.art}" onchange="updateSlotIOField('${i}', '${io.id}', 'art', this.value)">
                                 <input type="text" placeholder="Gruppe" value="${data.gruppe}" onchange="updateSlotIOField('${i}', '${io.id}', 'gruppe', this.value)">
-                                <input type="text" placeholder="Eingabegerät" value="${data.eingabegerat}" onchange="updateSlotIOField('${i}', '${io.id}', 'eingabegerat', this.value)">
+                                <input type="text" list="global-hw-ios" placeholder="Eingabegerät / Verknüpfung" value="${data.eingabegerat}" onchange="updateSlotIOField('${i}', '${io.id}', 'eingabegerat', this.value)">
                                 <input type="text" placeholder="Funktion" value="${data.funktion}" onchange="updateSlotIOField('${i}', '${io.id}', 'funktion', this.value)">
                                 <input type="text" class="io-full-width" placeholder="Bemerkung" value="${data.bemerkung}" onchange="updateSlotIOField('${i}', '${io.id}', 'bemerkung', this.value)">
                             </div>
@@ -559,7 +658,13 @@
             let fieldsHtml = '';
             if(config.fields) {
                 config.fields.forEach(f => {
-                    fieldsHtml += `<div class="form-group" style="margin-bottom:5px;"><label style="width:100px;">${f}</label><input type="text" value="${hw.fields[f] || ''}" onchange="updateHwField('${hw.instanceId}', '${f}', this.value)"></div>`;
+                    // Wenn das Feld nach Bus, Ast oder Bridge klingt, Datalist anhängen
+                    let listAttr = '';
+                    const fLower = f.toLowerCase();
+                    if(fLower.includes('ast') || fLower.includes('bus') || fLower.includes('bridge') || fLower.includes('dali')) {
+                        listAttr = 'list="global-bus-nodes"';
+                    }
+                    fieldsHtml += `<div class="form-group" style="margin-bottom:5px;"><label style="width:100px;">${f}</label><input type="text" ${listAttr} value="${hw.fields[f] || ''}" onchange="updateHwField('${hw.instanceId}', '${f}', this.value)"></div>`;
                 });
             }
             let inputsHtml = ''; let outputsHtml = ''; let busesHtml = '';
@@ -570,11 +675,11 @@
                         let itemsHtml = items.map((val, idx) => `
                             <div style="display:flex; gap:5px; margin-bottom:4px; align-items:center;">
                                 <span style="font-size:0.8rem; color:#64748b; width:20px;">${idx+1}.</span>
-                                <input type="text" value="${val}" placeholder="Name / Gerät" onchange="updateHwBusMapping('${hw.instanceId}', '${io.id}', ${idx}, this.value)">
+                                <input type="text" list="global-hw-devices" value="${val}" placeholder="Name / Gerät" onchange="updateHwBusMapping('${hw.instanceId}', '${io.id}', ${idx}, this.value)">
                                 <button class="delete-btn" onclick="removeHwBusMapping('${hw.instanceId}', '${io.id}', ${idx})">×</button>
                             </div>
                         `).join('');
-                        let addBtn = (!io.max || items.length < io.max) ? `<button class="btn" style="padding:2px 5px; font-size:0.75rem;" onclick="addHwBusMapping('${hw.instanceId}', '${io.id}')">+ Gerät</button>` : `<span style="font-size:0.75rem; color:#ef4444;">Max. erreicht (${io.max})</span>`;
+                        let addBtn = (!io.max || items.length < io.max) ? `<button class="btn" style="padding:2px 5px; font-size:0.75rem;" onclick="addHwBusMapping('${hw.instanceId}', '${io.id}')">+ Gerät hinzufügen</button>` : `<span style="font-size:0.75rem; color:#ef4444;">Max. Teilnehmer erreicht (${io.max})</span>`;
                         busesHtml += `
                             <div style="margin-top:10px; background:#f8fafc; padding:10px; border-radius:4px; border:1px solid #e2e8f0;">
                                 <div style="font-size:0.85rem; font-weight:bold; margin-bottom:8px; color:#1e293b;">${io.label}</div>
@@ -583,7 +688,7 @@
                             </div>
                         `;
                     } else {
-                        const row = `<div class="form-group" style="margin-bottom:5px;"><label style="width:110px; font-size:0.85rem;">${io.label}</label><input type="text" value="${hw.mappings[io.id] || ''}" placeholder="Zuweisung..." onchange="updateHwMapping('${hw.instanceId}', '${io.id}', this.value)"></div>`;
+                        const row = `<div class="form-group" style="margin-bottom:5px;"><label style="width:110px; font-size:0.85rem;">${io.label}</label><input type="text" list="global-switches" value="${hw.mappings[io.id] || ''}" placeholder="Zuweisung..." onchange="updateHwMapping('${hw.instanceId}', '${io.id}', this.value)"></div>`;
                         if(io.type === 'in') inputsHtml += row;
                         if(io.type === 'out') outputsHtml += row;
                     }
