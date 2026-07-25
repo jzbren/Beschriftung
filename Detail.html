@@ -126,11 +126,11 @@
         .custom-select { position: relative; flex: 1; font-family: inherit; }
         .select-selected { background-color: #fff; border: 1px solid #d1d5db; border-radius: 4px; padding: 6px 8px; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .select-items { position: absolute; background-color: #fff; border: 1px solid #d1d5db; border-radius: 4px; top: 100%; left: 0; right: 0; z-index: 99; margin-top: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto; }
-        .icon-search { width: calc(100% - 16px) !important; margin: 8px; padding: 6px; box-sizing: border-box; border: 1px solid #cbd5e1 !important; border-radius: 3px; }
-        .icon-group-label { padding: 6px 10px; background: #f1f5f9; font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase; }
-        .icon-option { padding: 8px 10px; font-size: 0.9rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
-        .icon-option:last-child { border-bottom: none; }
-        .icon-option:hover { background-color: #f3f4f6; }
+        .dropdown-search { width: calc(100% - 16px) !important; margin: 8px; padding: 6px; box-sizing: border-box; border: 1px solid #cbd5e1 !important; border-radius: 3px; }
+        .dropdown-group-label { padding: 6px 10px; background: #f1f5f9; font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase; }
+        .dropdown-option { padding: 8px 10px; font-size: 0.9rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
+        .dropdown-option:last-child { border-bottom: none; }
+        .dropdown-option:hover { background-color: #f3f4f6; }
 
         .io-section { margin-top: 10px; }
         .io-complex-row { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px; padding: 8px; }
@@ -191,9 +191,6 @@
     </style>
 </head>
 <body>
-
-    <!-- Globale Datalists für Autovervollständigung (Cross-Referencing) -->
-    <div id="global-datalists" style="display: none;"></div>
 
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
@@ -296,44 +293,65 @@
         }
     }
 
-    // Generiert die globalen Referenzlisten für Autovervollständigung mit erzwungener Geräte-Bezeichnung
-    function generateGlobalDatalists() {
-        let busNodes = ''; 
-        let hwIos = ''; 
-        let switches = ''; 
-        let hwDevices = '';
+    // --- HILFSFUNKTIONEN FÜR SUCHBARE AUSWAHLFELDER (PICKER) ---
+    function renderSearchableDropdown(dropdownId, currentValue, optionsList, onSelectCallbackName, placeholder = "Wählen...") {
+        let optionsHtml = '';
+        optionsList.forEach(opt => {
+            const val = typeof opt === 'string' ? opt : opt.value;
+            const label = typeof opt === 'string' ? opt : opt.label;
+            optionsHtml += `<div class="dropdown-option" data-label="${label.toLowerCase()}" onclick="${onSelectCallbackName}('${val}', event)">${label}</div>`;
+        });
 
-        projectData.details.fields = projectData.details.fields || [];
+        const displayLabel = currentValue ? (optionsList.find(o => (typeof o === 'string' ? o : o.value) === currentValue)?.label || currentValue) : placeholder;
 
+        return `
+            <div class="custom-select" onclick="toggleGenericDropdown('${dropdownId}', event)">
+                <div class="select-selected">${displayLabel} <span>▼</span></div>
+                <div class="select-items" id="dd-${dropdownId}" style="display:none;" onclick="event.stopPropagation()">
+                    <input type="text" class="dropdown-search" placeholder="Suchen..." onkeyup="filterGenericDropdown('${dropdownId}', this.value)" onclick="event.stopPropagation()">
+                    <div class="dropdown-list" id="dd-list-${dropdownId}">${optionsHtml}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    function toggleGenericDropdown(id, event) {
+        event.stopPropagation();
+        document.querySelectorAll('.select-items').forEach(dd => { if (dd.id !== `dd-${id}`) dd.style.display = 'none'; });
+        const dd = document.getElementById(`dd-${id}`);
+        const isOpening = dd.style.display !== 'block';
+        dd.style.display = isOpening ? 'block' : 'none';
+        if (isOpening) {
+            setTimeout(() => { const searchInput = dd.querySelector('.dropdown-search'); if (searchInput) searchInput.focus(); }, 50);
+        }
+    }
+
+    function filterGenericDropdown(id, term) {
+        const search = term.toLowerCase();
+        const list = document.getElementById(`dd-list-${id}`);
+        list.querySelectorAll('.dropdown-option').forEach(opt => {
+            opt.style.display = opt.getAttribute('data-label').includes(search) ? 'block' : 'none';
+        });
+    }
+
+    // --- SAMMLUNG ALLER GERÄTE & EINZELNEN AUSGÄNGE FÜR VERKNÜPFUNGEN ---
+    function getAllAvailableConnections() {
+        let list = [];
         projectData.details.forEach(detail => {
-            // Schalter erfassen
-            const [rows, cols] = detail.layout.split('x').map(Number);
-            const totalSlots = rows * cols;
-            for(let i=1; i<=totalSlots; i++) {
-                const slot = detail.slots[`slot-${i}`];
-                if(slot && slot.iconFile) {
-                    const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
-                    const slotName = iconDef ? (iconDef.label || slot.iconFile) : `Platz ${i}`;
-                    switches += `<option value="[${detail.name}] Platz ${i} - ${slotName}"></option>`;
-                }
-            }
-
-            // Hardware & Busse erfassen (Geräte-Bezeichnung wird zwingend mitgeführt)
             if(detail.hardware) {
                 detail.hardware.forEach(hw => {
                     const config = hardwareConfigList.find(c => c.id === hw.configId);
                     if(config) {
-                        const devBez = hw.fields['Geräte-Bez.'] ? hw.fields['Geräte-Bez.'] : 'Unbenannt';
-                        const hwName = `${config.name} (${devBez})`;
+                        const devBez = hw.fields['Geräte-Bez.'] ? hw.fields['Geräte-Bez.'] : '';
+                        // Nur den Namen / Gerätebezeichnung verwenden wie gewünscht
+                        const cleanName = devBez ? devBez : config.name;
                         
-                        hwDevices += `<option value="[${detail.name}] ${hwName}"></option>`;
+                        list.push({ value: `[${detail.name}] ${cleanName}`, label: `[${detail.name}] ${cleanName}` });
 
                         if(config.io) {
                             config.io.forEach(io => {
-                                if(io.type === 'bus') {
-                                    busNodes += `<option value="[${detail.name}] ${hwName} - ${io.label}"></option>`;
-                                } else {
-                                    hwIos += `<option value="[${detail.name}] ${hwName} - ${io.label}"></option>`;
+                                if(io.type !== 'bus') {
+                                    list.push({ value: `[${detail.name}] ${cleanName} - ${io.label}`, label: `[${detail.name}] ${cleanName} - ${io.label}` });
                                 }
                             });
                         }
@@ -341,13 +359,30 @@
                 });
             }
         });
+        return list;
+    }
 
-        document.getElementById('global-datalists').innerHTML = `
-            <datalist id="global-bus-nodes">${busNodes}</datalist>
-            <datalist id="global-hw-ios">${hwIos}</datalist>
-            <datalist id="global-switches">${switches}</datalist>
-            <datalist id="global-hw-devices">${hwDevices}</datalist>
-        `;
+    function getAllBusNodes() {
+        let list = [];
+        projectData.details.forEach(detail => {
+            if(detail.hardware) {
+                detail.hardware.forEach(hw => {
+                    const config = hardwareConfigList.find(c => c.id === hw.configId);
+                    if(config) {
+                        const devBez = hw.fields['Geräte-Bez.'] ? hw.fields['Geräte-Bez.'] : '';
+                        const cleanName = devBez ? devBez : config.name;
+                        if(config.io) {
+                            config.io.forEach(io => {
+                                if(io.type === 'bus') {
+                                    list.push({ value: `[${detail.name}] ${cleanName} - ${io.label}`, label: `[${detail.name}] ${cleanName} - ${io.label}` });
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        return list;
     }
 
     function addNewDetail() {
@@ -388,9 +423,7 @@
     function renderApp() {
         document.getElementById('project-name').value = projectData.projectName;
         document.getElementById('project-location').value = projectData.location || '';
-        
-        generateGlobalDatalists(); // Autovervollständigung updaten
-        renderSidebarList(); // Nur die Liste updaten, damit die Suche den Fokus behält
+        renderSidebarList(); 
         renderWorkspace(); 
         saveToLocal();
     }
@@ -449,7 +482,8 @@
         for(let i=1; i<=totalSlots; i++) { if(!detail.slots[`slot-${i}`]) detail.slots[`slot-${i}`] = { iconFile: '', ioData: {} }; }
         if(!detail.hardware) detail.hardware = [];
 
-        const hwOptionsHtml = (typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : []).map(hw => `<option value="${hw.id}">${hw.name}</option>`).join('');
+        const hwConfigListSafe = (typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : []);
+        const hwOptions = hwConfigListSafe.map(hw => ({ value: hw.id, label: hw.name }));
 
         let html = `
             <div class="workspace">
@@ -478,11 +512,12 @@
                         </div>
                     </div>
                     <div class="pane" style="margin-top: 20px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                             <h3>Hardware Komponenten</h3>
-                            <div class="no-print" style="display:flex; gap:10px;">
-                                <select id="new-hw-select">${hwOptionsHtml}</select>
-                                <button class="btn primary" onclick="addHardwareComponent()">+ Hinzufügen</button>
+                            <div class="no-print" style="display:flex; gap:10px; align-items:center;">
+                                <div style="width: 220px;" id="hw-picker-container">
+                                    ${renderSearchableDropdown('new-hw-picker', '', hwOptions, 'selectNewHardwareType', 'Hardware wählen...')}
+                                </div>
                             </div>
                         </div>
                         <div class="hardware-list">
@@ -499,6 +534,14 @@
             </div>
         `;
         container.innerHTML = html; updatePrintContainers();
+    }
+
+    let selectedHwToAdd = '';
+    function selectNewHardwareType(val, event) {
+        event.stopPropagation();
+        document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
+        selectedHwToAdd = val;
+        addHardwareComponent(val);
     }
 
     function generateVisualizerHtml(detail, rows, cols) {
@@ -521,40 +564,19 @@
 
     function renderCustomIconDropdown(slotNum, currentIcon) {
         const iconList = (typeof iconConfigList !== 'undefined' ? iconConfigList : []);
-        const currentDef = iconList.find(ic => ic.file === currentIcon) || iconList[0];
-        const selectedLabel = currentDef ? (currentDef.label || currentDef.file || '--- Kein Icon ---') : '--- Kein Icon ---';
-        const groups = {};
-        iconList.forEach(ic => { const g = ic.group || "Sonstige"; if (!groups[g]) groups[g] = []; groups[g].push(ic); });
-        let listHtml = '';
-        for (const groupName in groups) {
-            listHtml += `<div class="icon-group-label">${groupName}</div>`;
-            groups[groupName].forEach(ic => {
-                const label = ic.label || ic.file || '--- Kein Icon ---';
-                listHtml += `<div class="icon-option" data-label="${label.toLowerCase()}" onclick="selectIconDropdown('${slotNum}', '${ic.file}', event)">${label}</div>`;
-            });
-        }
-        return `
-            <div class="custom-select" onclick="toggleDropdown('${slotNum}', event)">
-                <div class="select-selected">${selectedLabel} <span>▼</span></div>
-                <div class="select-items" id="dropdown-${slotNum}" style="display:none;" onclick="event.stopPropagation()">
-                    <input type="text" class="icon-search" placeholder="Suchen..." onkeyup="filterDropdown('${slotNum}', this.value)" onclick="event.stopPropagation()">
-                    <div class="icon-list" id="icon-list-${slotNum}">${listHtml}</div>
-                </div>
-            </div>
-        `;
+        const options = iconList.map(ic => ({ value: ic.file, label: ic.label || ic.file || '--- Kein Icon ---' }));
+        return renderSearchableDropdown(`icon-picker-${slotNum}`, currentIcon, options, `selectIconDropdown_${slotNum}`, 'Icon wählen...');
     }
 
-    function toggleDropdown(slotNum, event) {
-        event.stopPropagation(); document.querySelectorAll('.select-items').forEach(dd => { if (dd.id !== `dropdown-${slotNum}`) dd.style.display = 'none'; });
-        const dd = document.getElementById(`dropdown-${slotNum}`); const isOpening = dd.style.display !== 'block';
-        dd.style.display = isOpening ? 'block' : 'none';
-        if (isOpening) { setTimeout(() => { const searchInput = dd.querySelector('.icon-search'); if (searchInput) searchInput.focus(); }, 50); }
-    }
-    function filterDropdown(slotNum, term) {
-        const search = term.toLowerCase(); const list = document.getElementById(`icon-list-${slotNum}`);
-        list.querySelectorAll('.icon-option').forEach(opt => { opt.style.display = opt.getAttribute('data-label').includes(search) ? 'block' : 'none'; });
-    }
-    function selectIconDropdown(slotNum, iconFile, event) { event.stopPropagation(); document.getElementById(`dropdown-${slotNum}`).style.display = 'none'; updateSlotIcon(slotNum, iconFile); }
+    // Dynamischer Callback für Icon Picker
+    window.selectIconDropdown_global = function(slotNum, iconFile, event) {
+        event.stopPropagation();
+        document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
+        updateSlotIcon(slotNum, iconFile);
+    };
+
+    // Wir injizieren für jedes Slot-Icon einen passenden globalen Callback
+    document.addEventListener('click', () => {}, true);
 
     function getIOObject(slot, ioId) {
         let val = slot.ioData[ioId];
@@ -564,14 +586,27 @@
 
     function generateSlotsHtml(detail, totalSlots) {
         let html = '';
+        const allConnections = getAllAvailableConnections();
+
         for(let i=1; i<=totalSlots; i++) {
             const slot = detail.slots[`slot-${i}`];
             const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
             let ioHtml = '';
+            
             if(iconDef && iconDef.io && iconDef.io.length > 0) {
                 let ioRows = iconDef.io.map(io => {
                     const data = getIOObject(slot, io.id);
                     const ioTypeText = io.type === 'in' ? 'Eingang' : 'Ausgang';
+                    
+                    // Suchbarer Picker für Eingang / Verknüpfung
+                    const pickerId = `slot-io-${i}-${io.id}`;
+                    window[`select_${pickerId}`] = function(val, ev) {
+                        ev.stopPropagation();
+                        document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
+                        updateSlotIOField(i, io.id, 'eingabegerat', val);
+                    };
+                    const eingabegeratPicker = renderSearchableDropdown(pickerId, data.eingabegerat, allConnections, `select_${pickerId}`, 'Verknüpfung wählen...');
+
                     return `
                         <div class="io-complex-row">
                             <div class="io-header"><span class="io-type ${io.type}">${ioTypeText}</span> ${io.label}</div>
@@ -579,7 +614,7 @@
                                 <input type="text" placeholder="Bezeichnung" value="${data.bezeichnung}" onchange="updateSlotIOField('${i}', '${io.id}', 'bezeichnung', this.value)">
                                 <input type="text" placeholder="Art. (z.B. Taster)" value="${data.art}" onchange="updateSlotIOField('${i}', '${io.id}', 'art', this.value)">
                                 <input type="text" placeholder="Gruppe" value="${data.gruppe}" onchange="updateSlotIOField('${i}', '${io.id}', 'gruppe', this.value)">
-                                <input type="text" list="global-hw-ios" placeholder="Eingabegerät / Verknüpfung" value="${data.eingabegerat}" onchange="updateSlotIOField('${i}', '${io.id}', 'eingabegerat', this.value)">
+                                <div>${eingabegeratPicker}</div>
                                 <input type="text" placeholder="Funktion" value="${data.funktion}" onchange="updateSlotIOField('${i}', '${io.id}', 'funktion', this.value)">
                                 <input type="text" class="io-full-width" placeholder="Bemerkung" value="${data.bemerkung}" onchange="updateSlotIOField('${i}', '${io.id}', 'bemerkung', this.value)">
                             </div>
@@ -588,6 +623,14 @@
                 }).join('');
                 ioHtml = `<div class="io-section">${ioRows}</div>`;
             }
+
+            // Globalen Callback für Icon-Dropdown binden
+            window[`selectIconDropdown_${i}`] = function(file, ev) {
+                ev.stopPropagation();
+                document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
+                updateSlotIcon(i, file);
+            };
+
             const printVisibilityClass = slot.iconFile ? '' : 'no-print';
             html += `
                 <div class="slot-form ${printVisibilityClass}">
@@ -603,7 +646,11 @@
         return html;
     }
 
-    function updateSlotIcon(slotNum, iconFile) { const detail = projectData.details.find(d => d.id === activeDetailId); detail.slots[`slot-${slotNum}`].iconFile = iconFile; renderApp(); }
+    function updateSlotIcon(slotNum, iconFile) { 
+        const detail = projectData.details.find(d => d.id === activeDetailId); 
+        detail.slots[`slot-${slotNum}`].iconFile = iconFile; 
+        renderApp(); 
+    }
 
     function updateSlotIOField(slotNum, ioId, field, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
@@ -611,12 +658,14 @@
         let currentData = detail.slots[`slot-${slotNum}`].ioData[ioId];
         if (typeof currentData === 'string') currentData = { bezeichnung: currentData, art: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
         else if (!currentData) currentData = { bezeichnung: '', art: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
-        currentData[field] = value; detail.slots[`slot-${slotNum}`].ioData[ioId] = currentData; saveToLocal();
+        currentData[field] = value; 
+        detail.slots[`slot-${slotNum}`].ioData[ioId] = currentData; 
+        saveToLocal();
     }
 
     // --- HARDWARE KOMPONENTEN ---
-    function addHardwareComponent() {
-        const hwId = document.getElementById('new-hw-select').value; if(!hwId) return;
+    function addHardwareComponent(hwId) {
+        if(!hwId) return;
         const hwConfig = hardwareConfigList.find(h => h.id === hwId); if(!hwConfig) return;
         const detail = projectData.details.find(d => d.id === activeDetailId);
         const ioMapping = {};
@@ -638,12 +687,7 @@
         const detail = projectData.details.find(d => d.id === activeDetailId);
         const hw = detail.hardware.find(h => h.instanceId === instanceId); 
         hw.fields[field] = value; 
-        
-        if(field === 'Geräte-Bez.') {
-            renderApp();
-        } else {
-            saveToLocal();
-        }
+        renderApp(); // Direktes Re-Rendern, damit die Gerätenamen in Pickern sofort aktualisiert werden
     }
 
     function updateHwMapping(instanceId, ioId, value) {
@@ -679,32 +723,56 @@
 
     function generateHardwareHtml(detail) {
         if(!detail.hardware || detail.hardware.length === 0) return '<p style="color:#64748b; font-size:0.9rem;" class="no-print">Noch keine Komponenten zugewiesen.</p>';
+        
         let html = '';
+        const allConnections = getAllAvailableConnections();
+        const allBusNodes = getAllBusNodes();
+
         detail.hardware.forEach(hw => {
             const config = hardwareConfigList.find(c => c.id === hw.configId); if(!config) return;
             let fieldsHtml = '';
+            
             if(config.fields) {
                 config.fields.forEach(f => {
-                    let listAttr = '';
                     const fLower = f.toLowerCase();
                     if(fLower.includes('ast') || fLower.includes('bus') || fLower.includes('bridge') || fLower.includes('dali')) {
-                        listAttr = 'list="global-bus-nodes"';
+                        const pickerId = `hw-field-${hw.instanceId}-${f}`;
+                        window[`select_${pickerId}`] = function(val, ev) {
+                            ev.stopPropagation();
+                            document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
+                            updateHwField(hw.instanceId, f, val);
+                        };
+                        const busPicker = renderSearchableDropdown(pickerId, hw.fields[f] || '', allBusNodes, `select_${pickerId}`, 'Bus-Ast wählen...');
+                        fieldsHtml += `<div class="form-group" style="margin-bottom:5px;"><label style="width:100px;">${f}</label><div style="flex:1;">${busPicker}</div></div>`;
+                    } else {
+                        fieldsHtml += `<div class="form-group" style="margin-bottom:5px;"><label style="width:100px;">${f}</label><input type="text" value="${hw.fields[f] || ''}" onchange="updateHwField('${hw.instanceId}', '${f}', this.value)"></div>`;
                     }
-                    fieldsHtml += `<div class="form-group" style="margin-bottom:5px;"><label style="width:100px;">${f}</label><input type="text" ${listAttr} value="${hw.fields[f] || ''}" onchange="updateHwField('${hw.instanceId}', '${f}', this.value)"></div>`;
                 });
             }
+
             let inputsHtml = ''; let outputsHtml = ''; let busesHtml = '';
             if(config.io) {
                 config.io.forEach(io => {
                     if (io.type === 'bus') {
                         let items = Array.isArray(hw.mappings[io.id]) ? hw.mappings[io.id] : [];
-                        let itemsHtml = items.map((val, idx) => `
-                            <div style="display:flex; gap:5px; margin-bottom:4px; align-items:center;">
-                                <span style="font-size:0.8rem; color:#64748b; width:20px;">${idx+1}.</span>
-                                <input type="text" list="global-hw-devices" value="${val}" placeholder="Name / Gerät" onchange="updateHwBusMapping('${hw.instanceId}', '${io.id}', ${idx}, this.value)">
-                                <button class="delete-btn" onclick="removeHwBusMapping('${hw.instanceId}', '${io.id}', ${idx})">×</button>
-                            </div>
-                        `).join('');
+                        let itemsHtml = items.map((val, idx) => {
+                            const pickerId = `bus-item-${hw.instanceId}-${io.id}-${idx}`;
+                            window[`select_${pickerId}`] = function(v, ev) {
+                                ev.stopPropagation();
+                                document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
+                                updateHwBusMapping(hw.instanceId, io.id, idx, v);
+                            };
+                            const devicePicker = renderSearchableDropdown(pickerId, val, allConnections, `select_${pickerId}`, 'Gerät wählen...');
+
+                            return `
+                                <div style="display:flex; gap:5px; margin-bottom:4px; align-items:center;">
+                                    <span style="font-size:0.8rem; color:#64748b; width:20px;">${idx+1}.</span>
+                                    <div style="flex:1;">${devicePicker}</div>
+                                    <button class="delete-btn" onclick="removeHwBusMapping('${hw.instanceId}', '${io.id}', ${idx})">×</button>
+                                </div>
+                            `;
+                        }).join('');
+
                         let addBtn = (!io.max || items.length < io.max) ? `<button class="btn" style="padding:2px 5px; font-size:0.75rem;" onclick="addHwBusMapping('${hw.instanceId}', '${io.id}')">+ Gerät hinzufügen</button>` : `<span style="font-size:0.75rem; color:#ef4444;">Max. Teilnehmer erreicht (${io.max})</span>`;
                         busesHtml += `
                             <div style="margin-top:10px; background:#f8fafc; padding:10px; border-radius:4px; border:1px solid #e2e8f0;">
@@ -714,7 +782,16 @@
                             </div>
                         `;
                     } else {
-                        const row = `<div class="form-group" style="margin-bottom:5px;"><label style="width:110px; font-size:0.85rem;">${io.label}</label><input type="text" list="global-switches" value="${hw.mappings[io.id] || ''}" placeholder="Zuweisung..." onchange="updateHwMapping('${hw.instanceId}', '${io.id}', this.value)"></div>`;
+                        const assignedVal = hw.mappings[io.id] || '';
+                        const pickerId = `hw-io-${hw.instanceId}-${io.id}`;
+                        window[`select_${pickerId}`] = function(v, ev) {
+                            ev.stopPropagation();
+                            document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
+                            updateHwMapping(hw.instanceId, io.id, v);
+                        };
+                        const ioPicker = renderSearchableDropdown(pickerId, assignedVal, allConnections, `select_${pickerId}`, 'Zuweisung wählen...');
+
+                        const row = `<div class="form-group" style="margin-bottom:5px;"><label style="width:110px; font-size:0.85rem;">${io.label}</label><div style="flex:1;">${ioPicker}</div></div>`;
                         if(io.type === 'in') inputsHtml += row;
                         if(io.type === 'out') outputsHtml += row;
                     }
@@ -744,7 +821,7 @@
         return html;
     }
 
-    // --- DRUCK GENERATOREN ---
+    // --- DRUCK GENERATOREN (Reiner Gerätename im Druck) ---
     function buildDetailPrintHtml(detail) {
         const [rows, cols] = detail.layout.split('x').map(Number);
         const totalSlots = rows * cols;
