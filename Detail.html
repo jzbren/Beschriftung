@@ -18,7 +18,7 @@
             }
         });
     </script>
-    
+
     <title>ServiceProDetail Konfigurator V1.0</title>
     <script src="icons.js"></script>
     <style>
@@ -61,13 +61,13 @@
             z-index: 100;
         }
         .sidebar.collapsed { margin-left: calc(-1 * var(--sidebar-width)); }
-        
+
         .sidebar-header {
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 15px;
         }
         .sidebar-header h2 { margin: 0; font-size: 1.2rem; }
-        
+
         /* Sidebar Suche */
         .sidebar-search { margin-bottom: 15px; }
         .sidebar-search input {
@@ -84,7 +84,7 @@
         }
         .detail-item:hover { background: #475569; }
         .detail-item.active { background: var(--primary); border-left: 4px solid #10b981; }
-        
+
         .sidebar-actions { display: flex; align-items: center; gap: 5px; }
         .icon-btn { background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; color: white; }
         .icon-btn img { width: 16px; height: 16px; opacity: 0.7; transition: opacity 0.2s; filter: invert(1); }
@@ -99,22 +99,22 @@
         .top-bar { display: flex; flex-direction: column; gap: 10px; background: var(--panel-bg); padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .top-bar-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .header-left { display: flex; align-items: center; gap: 10px; }
-        
+
         .toggle-sidebar-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 1.2rem; cursor: pointer; color: #475569; padding: 4px 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .toggle-sidebar-btn:hover { background: #e2e8f0; color: var(--primary); }
-        
+
         .top-bar input[type="text"] { font-size: 1.2rem; font-weight: bold; border: 1px solid transparent; padding: 5px; background: transparent; width: 350px; }
         .top-bar input[type="text"].location-input { font-size: 0.95rem; font-weight: normal; color: #475569; width: 450px; margin-left: 55px; }
         .top-bar input[type="text"]:hover, .top-bar input[type="text"]:focus { border-bottom: 1px solid var(--feller-border); outline: none; }
         .action-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
-        
+
         button.btn { background: white; border: 1px solid #d1d5db; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
         button.btn img { width: 16px; height: 16px; }
         button.btn:hover { background: #f3f4f6; }
         button.btn.primary { background: var(--primary); color: white; border: none; }
         button.btn.primary img { filter: invert(1); }
         button.btn.primary:hover { background: var(--primary-hover); }
-        
+
         button.btn.danger { background: white; border: 1px solid #fca5a5; color: var(--danger); }
         button.btn.danger:hover { background: #fef2f2; border-color: var(--danger); }
 
@@ -195,13 +195,13 @@
             .print-header-block h2 { margin: 0 0 2px 0; font-size: 1.4rem; color: #1e293b; }
             .print-header-block p { margin: 0; color: #475569; font-size: 0.9rem; }
             .print-section-title { font-size: 1rem; font-weight: bold; color: #0f766e; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px; margin: 15px 0 10px 0; }
-            
+
             .print-visualizer-wrapper { display: flex; justify-content: center; margin-bottom: 15px; }
             .print-switch-frame { background-color: #f8fafc; border: 2px solid #cbd5e1; padding: 10px; border-radius: 6px; display: grid; gap: 4px; }
             .print-switch-slot { background-color: #fff; border: 1px solid #94a3b8; border-radius: 3px; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; width: 60px; height: 60px; }
             .print-switch-slot img { width: 100%; height: 100%; object-fit: fill; }
             .print-slot-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 8px; color: #64748b; font-weight: bold; }
-            
+
             .print-slots-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: start; }
             .print-slot-item-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; margin-bottom: 10px; page-break-inside: avoid; }
             .print-slot-item-title { font-weight: bold; font-size: 0.9rem; color: var(--primary); margin-bottom: 6px; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px; }
@@ -210,7 +210,7 @@
             .print-io-line { display: flex; margin-bottom: 3px; }
             .print-io-label { width: 90px; color: #64748b; font-size: 0.75rem; }
             .print-io-val { flex: 1; color: #0f172a; font-weight: 500; font-size: 0.8rem; }
-            
+
             .print-hw-container { display: grid; grid-template-columns: 80px 1fr; gap: 12px; align-items: start; background: #fff; border: 1px solid #cbd5e1; border-left: 4px solid var(--primary); border-radius: 6px; padding: 10px; margin-bottom: 10px; page-break-inside: avoid; }
             .print-hw-image img { width: 100%; height: auto; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2px; background: #fff; }
             .print-hw-header-title { font-weight: bold; font-size: 0.95rem; margin-bottom: 5px; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px; }
@@ -219,7 +219,7 @@
             .print-hw-meta-val { flex: 1; color: #0f172a; font-weight: 500; }
             .print-hw-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; border-top: 1px solid #e2e8f0; padding-top: 6px; }
             .print-hw-io-subcol h6 { margin: 0 0 4px 0; font-size: 0.75rem; text-transform: uppercase; color: #64748b; }
-            
+
             .print-bus-container { margin-top: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 6px; }
             .print-bus-title { font-size: 0.8rem; font-weight: bold; color: #334155; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px; margin-bottom: 4px; }
             .print-bus-list { padding-left: 0; margin: 0; list-style: none; }
@@ -235,7 +235,7 @@
             <h2>ServiceProDetails</h2>
             <button class="icon-btn toggle-sidebar-btn-inner no-print" onclick="toggleSidebar()" title="Einklappen" style="font-size: 1.5rem; padding: 0;">×</button>
         </div>
-        
+
         <div class="sidebar-search">
             <input type="text" id="detail-search-input" placeholder="Details suchen..." onkeyup="filterDetails()">
         </div>
@@ -267,7 +267,7 @@
         </div>
 
         <div id="workspace-container"></div>
-        
+
         <div id="print-all-container" style="display: none;"></div>
         <div id="print-single-container" style="display: none;"></div>
     </div>
@@ -312,10 +312,9 @@
         return null;
     }
     function generateId() { return Math.random().toString(36).substr(2, 9); }
-    
-    // Bereinigt Strings für dynamische Funktionsnamen
+
     function sanitizeFnName(str) { return str.replace(/[^a-zA-Z0-9_]/g, '_'); }
-    
+
     function toggleSidebar() { 
         document.getElementById('sidebar').classList.toggle('collapsed'); 
     }
@@ -332,9 +331,9 @@
     // --- SUCHBARE AUSWAHLFELDER MIT KATEGORIEN ---
     function renderSearchableDropdown(dropdownId, currentValue, optionsList, onSelectCallbackName, placeholder = "Wählen...") {
         let optionsHtml = '';
-        
+
         const hasCategories = optionsList.some(opt => typeof opt === 'object' && opt.category);
-        
+
         if (hasCategories) {
             const groups = {};
             optionsList.forEach(opt => {
@@ -342,7 +341,7 @@
                 if (!groups[cat]) groups[cat] = [];
                 groups[cat].push(opt);
             });
-            
+
             for (const cat in groups) {
                 optionsHtml += `<div class="dropdown-group-label">${cat}</div>`;
                 groups[cat].forEach(opt => {
@@ -403,19 +402,30 @@
     }
 
     // --- IDENTIFIKATOREN UND COMPUTED BUS-LOGIK (NEU & INTELLIGENT) ---
+    
+    // Helfer für Bus-Typ-Erkennung (Smart Bus Logic)
+    function detectBusType(text) {
+        if (!text) return 'unknown';
+        const t = text.toLowerCase();
+        if (t.includes('tree')) return 'tree';
+        if (t.includes('air')) return 'air';
+        if (t.includes('dali')) return 'dali';
+        if (t.includes('link') || t.includes('loxalink')) return 'link';
+        if (t.includes('modbus')) return 'modbus';
+        if (t.includes('knx')) return 'knx';
+        return 'unknown';
+    }
 
-    // Generiert die eindeutige ID eines Slaves (Geräts)
     function getHwIdString(detail, hw) {
         const config = hardwareConfigList.find(c => c.id === hw.configId);
         return `[${detail.name}] ${hw.fields['Geräte-Bez.'] || config.name}`;
     }
 
-    // Generiert die eindeutige ID eines Master-Bus (z.B. Ast)
     function getBusIdString(detail, hw, io) {
         return `${getHwIdString(detail, hw)} - ${io.label}`;
     }
 
-    // Sucht alle Slaves im gesamten Projekt, deren Bus-Feld auf den übergebenen Master-Bus zeigt
+    // Sucht alle Slaves, auch Typenübergreifend, die an diesem BusIdString hängen
     function findSlavesForBus(busIdString) {
         let results = [];
         projectData.details.forEach(d => {
@@ -425,7 +435,7 @@
                     if(config && config.fields) {
                         config.fields.forEach(f => {
                             const fLower = f.toLowerCase();
-                            if(fLower.includes('ast') || fLower.includes('bus') || fLower.includes('bridge') || fLower.includes('dali')) {
+                            if(fLower.includes('ast') || fLower.includes('bus') || fLower.includes('bridge') || fLower.includes('dali') || fLower.includes('link')) {
                                 if(h.fields[f] === busIdString) {
                                     results.push({ detail: d, hw: h, fieldName: f, config: config });
                                 }
@@ -438,8 +448,8 @@
         return results;
     }
 
-    // Liefert alle Slaves, die prinzipiell an einen Bus angeschlossen werden können (Für das "+ Gerät" Dropdown)
-    function getAllBusSlaves() {
+    // Liefert alle Slaves gefiltert nach dem Typ des anfragenden Master-Ports (Tree, Dali, Air, etc.)
+    function getAllBusSlaves(masterBusType = null) {
         let list = [];
         projectData.details.forEach(d => {
             if(d.hardware) {
@@ -448,13 +458,17 @@
                     if(config && config.fields) {
                         config.fields.forEach(f => {
                             const fLower = f.toLowerCase();
-                            if(fLower.includes('ast') || fLower.includes('bus') || fLower.includes('bridge') || fLower.includes('dali')) {
-                                // Value ist ein Payload, um das Gerät danach direkt identifizieren zu können
-                                list.push({
-                                    value: `${d.id}|${h.instanceId}|${f}`, 
-                                    label: getHwIdString(d, h),
-                                    category: `Detail: ${d.name}`
-                                });
+                            if(fLower.includes('ast') || fLower.includes('bus') || fLower.includes('bridge') || fLower.includes('dali') || fLower.includes('link')) {
+                                const slaveType = detectBusType(f);
+                                
+                                // Nur aufnehmen, wenn kompatibel oder unbekannt
+                                if (!masterBusType || masterBusType === slaveType || masterBusType === 'unknown' || slaveType === 'unknown') {
+                                    list.push({
+                                        value: `${d.id}|${h.instanceId}|${f}`, 
+                                        label: getHwIdString(d, h),
+                                        category: `Detail: ${d.name}`
+                                    });
+                                }
                             }
                         });
                     }
@@ -464,8 +478,8 @@
         return list;
     }
 
-    // Liefert alle Master-Bus-Anschlüsse (Damit ein Slave seinen Ast wählen kann)
-    function getAllBusNodes() {
+    // Liefert alle Master-Bus-Anschlüsse gefiltert nach dem Typ des anfragenden Slaves
+    function getAllBusNodes(slaveBusType = null) {
         let list = [];
         projectData.details.forEach(detail => {
             if(detail.hardware) {
@@ -474,8 +488,13 @@
                     if(config && config.io) {
                         config.io.forEach(io => {
                             if(io.type === 'bus') {
-                                const identifier = getBusIdString(detail, hw, io);
-                                list.push({ value: identifier, label: identifier, category: `Detail: ${detail.name}` });
+                                const masterType = detectBusType(io.label);
+                                
+                                // Nur aufnehmen, wenn kompatibel oder unbekannt
+                                if (!slaveBusType || slaveBusType === masterType || slaveBusType === 'unknown' || masterType === 'unknown') {
+                                    const identifier = getBusIdString(detail, hw, io);
+                                    list.push({ value: identifier, label: identifier, category: `Detail: ${detail.name}` });
+                                }
                             }
                         });
                     }
@@ -485,11 +504,10 @@
         return list;
     }
 
-    // Global zugängliche Funktion für den Master, um einen Slave zu übernehmen
     window.assignSlaveToBus = function(payload, masterBusIdString, ev) {
         if(ev) ev.stopPropagation();
         document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
-        
+
         if(!payload) return;
         const [detailId, hwInstId, fieldName] = payload.split('|');
         const d = projectData.details.find(x => x.id === detailId);
@@ -500,7 +518,6 @@
         renderApp();
     };
 
-    // Global zugängliche Funktion für den Master, um einen Slave abzukoppeln
     window.removeSlaveFromBus = function(detailId, hwInstId, fieldName, ev) {
         if(ev) ev.stopPropagation();
         const d = projectData.details.find(x => x.id === detailId);
@@ -510,7 +527,6 @@
         }
         renderApp();
     };
-
 
     function getAllAvailableConnections() {
         let list = [];
@@ -603,7 +619,7 @@
     function renderSidebarList() {
         const list = document.getElementById('detail-list'); 
         list.innerHTML = '';
-        
+
         const searchInput = document.getElementById('detail-search-input');
         const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
 
@@ -624,7 +640,6 @@
         });
     }
 
-    // --- DRAG & DROP ---
     function handleDragStart(e, slotNum) { draggedSlotNum = slotNum; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', slotNum); }
     function handleDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; e.currentTarget.classList.add('drag-over'); }
     function handleDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
@@ -653,7 +668,6 @@
         if(!detail.hardware) detail.hardware = [];
 
         const hwConfigListSafe = (typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : []);
-        // Hardware hat standardmässig die Kategorie 'Hardware'
         const hwOptions = hwConfigListSafe.map(hw => ({ value: hw.id, label: hw.name, category: 'Hardware' }));
 
         window.selectNewHardwareType = function(val, event) {
@@ -734,7 +748,6 @@
 
     function renderCustomIconDropdown(slotNum, currentIcon) {
         const iconList = (typeof iconConfigList !== 'undefined' ? iconConfigList : []);
-        // Nutzt die 'group' aus icons.js als 'category' für das Dropdown
         const options = iconList.map(ic => ({ 
             value: ic.file, 
             label: ic.label || ic.file || '--- Kein Icon ---',
@@ -758,18 +771,22 @@
             const slot = detail.slots[`slot-${i}`];
             const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
             let ioHtml = '';
-            
+
             if(iconDef && iconDef.io && iconDef.io.length > 0) {
                 let ioRows = iconDef.io.map(io => {
                     const data = getIOObject(slot, io.id);
                     const ioTypeText = io.type === 'in' ? 'Eingang' : 'Ausgang';
-                    
+
                     const pickerId = `slot-io-${i}-${io.id}`;
                     const safeFnName = `select_` + sanitizeFnName(pickerId);
                     window[safeFnName] = function(val, ev) {
                         if(ev) ev.stopPropagation();
                         document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
                         updateSlotIOField(i, io.id, 'eingabegerat', val);
+                        
+                        // FIX: Die Oberfläche muss sich hier direkt neuladen, 
+                        // damit der neue Wert im Dropdown auch grafisch angezeigt wird!
+                        renderApp(); 
                     };
                     const eingabegeratPicker = renderSearchableDropdown(pickerId, data.eingabegerat, allConnections, safeFnName, 'Verknüpfung wählen...');
 
@@ -817,11 +834,10 @@
         renderApp(); 
     }
 
-    // 2-WEGE-SYNC FÜR SCHALTER <-> HARDWARE IN/OUT (Nicht Bus!)
     function updateSlotIOField(slotNum, ioId, field, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
         if(!detail.slots[`slot-${slotNum}`].ioData) detail.slots[`slot-${slotNum}`].ioData = {};
-        
+
         let currentData = getIOObject(detail.slots[`slot-${slotNum}`], ioId);
         const oldValue = currentData[field];
         currentData[field] = value; 
@@ -872,8 +888,6 @@
                 });
             }
         }
-        // renderApp NICHT direkt aufrufen, falls Felder Fokus verlieren. Wir speichern nur.
-        // Bei Dropdown wird renderApp explizit aufgerufen durch den Callback.
         saveToLocal();
     }
 
@@ -884,15 +898,14 @@
         const ioMapping = {};
         if(hwConfig.io) hwConfig.io.forEach(io => { ioMapping[io.id] = ""; });
         const fieldsData = {};
-        
-        // Smartes Benennen (z.B. "Nano DI Tree 1")
+
         const count = detail.hardware.filter(h => h.configId === hwId).length + 1;
-        
+
         if(hwConfig.fields) hwConfig.fields.forEach(f => { 
             if(f === 'Geräte-Bez.') fieldsData[f] = `${hwConfig.name} ${count}`;
             else fieldsData[f] = ""; 
         });
-        
+
         detail.hardware.push({ instanceId: generateId(), configId: hwConfig.id, fields: fieldsData, mappings: ioMapping });
         renderApp();
     }
@@ -909,17 +922,14 @@
         const detail = projectData.details.find(d => d.id === activeDetailId);
         const hw = detail.hardware.find(h => h.instanceId === instanceId); 
         hw.fields[field] = value; 
-        
-        // Wir aktualisieren sofort, da dies die Bus-Ansicht verändern kann
         renderApp(); 
     }
 
-    // 2-WEGE-SYNC FÜR HARDWARE -> SCHALTER (Nicht Bus!)
     function updateHwMapping(instanceId, ioId, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
         const hw = detail.hardware.find(h => h.instanceId === instanceId); 
         if(!hw) return;
-        
+
         const oldValue = hw.mappings[ioId];
         hw.mappings[ioId] = value;
 
@@ -939,7 +949,7 @@
                                 const data = getIOObject(slot, s_io.id);
                                 const bez = data.bezeichnung ? data.bezeichnung : (iconDef.label || slot.iconFile);
                                 const fullSwitchName = `[${d.name}] ${bez}`;
-                                
+
                                 if (fullSwitchName === oldValue && data.eingabegerat) {
                                     let items = data.eingabegerat.split(',').map(s => s.trim());
                                     items = items.filter(item => item !== hwInputIdentifier); 
@@ -965,7 +975,7 @@
                                 const data = getIOObject(slot, s_io.id);
                                 const bez = data.bezeichnung ? data.bezeichnung : (iconDef.label || slot.iconFile);
                                 const fullSwitchName = `[${d.name}] ${bez}`;
-                                
+
                                 if (fullSwitchName === value) {
                                     if (data.eingabegerat) {
                                         let items = data.eingabegerat.split(',').map(s => s.trim());
@@ -988,22 +998,23 @@
 
     function generateHardwareHtml(detail) {
         if(!detail.hardware || detail.hardware.length === 0) return '<p style="color:#64748b; font-size:0.9rem;" class="no-print">Noch keine Komponenten zugewiesen.</p>';
-        
+
         let html = '';
-        const allBusNodes = getAllBusNodes();
         const allSwitches = getAllAvailableSwitches();
-        const allBusSlaves = getAllBusSlaves(); // Für Dropdown bei Bus-Mastern
 
         detail.hardware.forEach(hw => {
             const config = hardwareConfigList.find(c => c.id === hw.configId); if(!config) return;
             let fieldsHtml = '';
-            
-            // RENDERING FIELDS
+
             if(config.fields) {
                 config.fields.forEach(f => {
                     const fLower = f.toLowerCase();
-                    // Wenn es ein Slave-Bus-Feld ist: Dropdown aus allBusNodes zeigen
-                    if(fLower.includes('ast') || fLower.includes('bus') || fLower.includes('bridge') || fLower.includes('dali')) {
+                    // SMART BUS FILTER FÜR SLAVES
+                    if(fLower.includes('ast') || fLower.includes('bus') || fLower.includes('bridge') || fLower.includes('dali') || fLower.includes('link')) {
+                        
+                        const slaveBusType = detectBusType(f); // Typ des benötigen Busses erkennen (Dali, Tree...)
+                        const compatibleBusNodes = getAllBusNodes(slaveBusType); // Nur passende Masternodes laden
+
                         const pickerId = `hw-field-${hw.instanceId}-${f}`;
                         const safeFnName = `select_` + sanitizeFnName(pickerId);
                         window[safeFnName] = function(val, ev) {
@@ -1011,7 +1022,7 @@
                             document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
                             updateHwField(hw.instanceId, f, val);
                         };
-                        const busPicker = renderSearchableDropdown(pickerId, hw.fields[f] || '', allBusNodes, safeFnName, 'Zugehöriger Bus...');
+                        const busPicker = renderSearchableDropdown(pickerId, hw.fields[f] || '', compatibleBusNodes, safeFnName, 'Zugehöriger Bus...');
                         fieldsHtml += `<div class="form-group" style="margin-bottom:5px;"><label style="width:110px;">${f}</label><div style="flex:1;">${busPicker}</div></div>`;
                     } else {
                         fieldsHtml += `<div class="form-group" style="margin-bottom:5px;"><label style="width:110px;">${f}</label><input type="text" value="${hw.fields[f] || ''}" onchange="updateHwField('${hw.instanceId}', '${f}', this.value)"></div>`;
@@ -1020,17 +1031,15 @@
             }
 
             let inputsHtml = ''; let outputsHtml = ''; let busesHtml = '';
-            
-            // RENDERING IOs
+
             if(config.io) {
                 config.io.forEach(io => {
                     if (io.type === 'bus') {
-                        // MASTER BUS LOGIC (Berechnet, nicht gespeichert!)
                         const busIdString = getBusIdString(detail, hw, io);
                         const connectedSlaves = findSlavesForBus(busIdString);
                         const maxLimit = io.max || null;
                         const isFull = maxLimit && (connectedSlaves.length >= maxLimit);
-                        
+
                         const badgeClass = isFull ? 'full' : 'ok';
                         const limitText = maxLimit ? `${connectedSlaves.length} / ${maxLimit} belegt` : `${connectedSlaves.length} Geräte`;
 
@@ -1051,14 +1060,17 @@
 
                         let addBtnHtml = '';
                         if(!isFull) {
+                            // SMART BUS FILTER FÜR MASTER
+                            const masterBusType = detectBusType(io.label); 
+                            const compatibleBusSlaves = getAllBusSlaves(masterBusType); // Nur passende Slaves anbieten
+
                             const pickerId = `add-slave-${hw.instanceId}-${io.id}`;
                             const safeFnName = `select_` + sanitizeFnName(pickerId);
-                            // Globale Zuweisungs-Funktion (nutzt den Payload)
                             window[safeFnName] = function(payload, ev) {
                                 assignSlaveToBus(payload, busIdString, ev);
                             };
-                            
-                            const addPicker = renderSearchableDropdown(pickerId, '', allBusSlaves, safeFnName, '+ Neues Gerät zuweisen...');
+
+                            const addPicker = renderSearchableDropdown(pickerId, '', compatibleBusSlaves, safeFnName, '+ Neues Gerät zuweisen...');
                             addBtnHtml = `<div style="margin-top:6px;">${addPicker}</div>`;
                         }
 
@@ -1074,7 +1086,6 @@
                         `;
 
                     } else {
-                        // NORMAL IN/OUT SCHALTER LOGIC
                         const assignedVal = hw.mappings[io.id] || '';
                         const pickerId = `hw-io-${hw.instanceId}-${io.id}`;
                         const safeFnName = `select_` + sanitizeFnName(pickerId);
@@ -1082,7 +1093,7 @@
                             if(ev) ev.stopPropagation();
                             document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
                             updateHwMapping(hw.instanceId, io.id, v);
-                            renderApp(); // Da HW mapping den UI-State drüben beeinflusst
+                            renderApp(); 
                         };
                         const ioPicker = renderSearchableDropdown(pickerId, assignedVal, allSwitches, safeFnName, 'Schalter/Taster wählen...');
 
@@ -1094,7 +1105,7 @@
             }
 
             let hwImageTag = config.image ? `<div class="hw-card-image"><img src="icons-schalter/${config.image}"></div>` : '<div></div>';
-            
+
             html += `
                 <div class="hw-card">
                     ${hwImageTag}
@@ -1116,13 +1127,10 @@
         return html;
     }
 
-    // --- DRUCK GENERATOREN (Angepasst für computed Bus) ---
-    // --- DRUCK GENERATOREN (Optimiert: Hardware wird immer gedruckt) ---
     function buildDetailPrintHtml(detail) {
         const [rows, cols] = detail.layout.split('x').map(Number);
         const totalSlots = rows * cols;
-        
-        // Prüfen, ob überhaupt Icons auf den Plätzen vorhanden sind
+
         let hasIcons = false;
         for(let i=1; i<=totalSlots; i++) {
             if(detail.slots[`slot-${i}`] && detail.slots[`slot-${i}`].iconFile) {
@@ -1152,7 +1160,7 @@
                 if(!slot || !slot.iconFile) continue;
                 const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
                 const slotTitle = iconDef ? (iconDef.label || slot.iconFile) : `Platz ${i}`;
-                
+
                 let printIoRows = '';
                 if(iconDef && iconDef.io) {
                     iconDef.io.forEach(io => {
@@ -1196,7 +1204,7 @@
                         if (io.type === 'bus') {
                             const busIdString = getBusIdString(detail, hw, io);
                             const connectedSlaves = findSlavesForBus(busIdString);
-                            
+
                             if(connectedSlaves.length > 0) {
                                 let busItems = connectedSlaves.map((slave, idx) => `<li class="print-bus-item">${idx+1}. ${getHwIdString(slave.detail, slave.hw)}</li>`).join('');
                                 busesHtml += `
