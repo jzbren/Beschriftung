@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V1.1</title>
+    <title>ServiceProDetail Konfigurator V1.2</title>
     <script src="icons.js"></script>
     <style>
         :root {
@@ -127,7 +127,8 @@
         .select-selected { background-color: #fff; border: 1px solid #d1d5db; border-radius: 4px; padding: 6px 8px; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .select-items { position: absolute; background-color: #fff; border: 1px solid #d1d5db; border-radius: 4px; top: 100%; left: 0; right: 0; z-index: 99; margin-top: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto; }
         .dropdown-search { width: calc(100% - 16px) !important; margin: 8px; padding: 6px; box-sizing: border-box; border: 1px solid #cbd5e1 !important; border-radius: 3px; }
-        .dropdown-group-label { padding: 6px 10px; background: #f1f5f9; font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase; }
+        .dropdown-group-label { padding: 6px 10px; background: #f1f5f9; font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; border-top: 1px solid #e2e8f0; }
+        .dropdown-group-label:first-of-type { border-top: none; }
         .dropdown-option { padding: 8px 10px; font-size: 0.9rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
         .dropdown-option:last-child { border-bottom: none; }
         .dropdown-option:hover { background-color: #f3f4f6; }
@@ -276,7 +277,7 @@
     }
     function generateId() { return Math.random().toString(36).substr(2, 9); }
     
-    // Erzeugt einen "sicheren" String für Callback-Funktionsnamen (keine Bindestriche)
+    // Erzeugt einen sicheren String für Callback-Funktionen
     function sanitizeFnName(str) { return str.replace(/[^a-zA-Z0-9_]/g, '_'); }
     
     function toggleSidebar() { 
@@ -296,14 +297,36 @@
         }
     }
 
-    // --- SUCHBARE AUSWAHLFELDER (PICKER) ---
+    // --- SUCHBARE AUSWAHLFELDER MIT KATEGORIEN (PICKER) ---
     function renderSearchableDropdown(dropdownId, currentValue, optionsList, onSelectCallbackName, placeholder = "Wählen...") {
         let optionsHtml = '';
-        optionsList.forEach(opt => {
-            const val = typeof opt === 'string' ? opt : opt.value;
-            const label = typeof opt === 'string' ? opt : opt.label;
-            optionsHtml += `<div class="dropdown-option" data-label="${label.toLowerCase()}" onclick="${onSelectCallbackName}('${val.replace(/'/g, "\\'")}', event)">${label}</div>`;
-        });
+        
+        // Prüfen ob Optionen mit Kategorien vorhanden sind
+        const hasCategories = optionsList.some(opt => typeof opt === 'object' && opt.category);
+        
+        if (hasCategories) {
+            const groups = {};
+            optionsList.forEach(opt => {
+                const cat = (typeof opt === 'object' && opt.category) ? opt.category : 'Sonstige';
+                if (!groups[cat]) groups[cat] = [];
+                groups[cat].push(opt);
+            });
+            
+            for (const cat in groups) {
+                optionsHtml += `<div class="dropdown-group-label">${cat}</div>`;
+                groups[cat].forEach(opt => {
+                    const val = typeof opt === 'string' ? opt : opt.value;
+                    const label = typeof opt === 'string' ? opt : opt.label;
+                    optionsHtml += `<div class="dropdown-option" data-label="${label.toLowerCase()}" onclick="${onSelectCallbackName}('${val.replace(/'/g, "\\'")}', event)">${label}</div>`;
+                });
+            }
+        } else {
+            optionsList.forEach(opt => {
+                const val = typeof opt === 'string' ? opt : opt.value;
+                const label = typeof opt === 'string' ? opt : opt.label;
+                optionsHtml += `<div class="dropdown-option" data-label="${label.toLowerCase()}" onclick="${onSelectCallbackName}('${val.replace(/'/g, "\\'")}', event)">${label}</div>`;
+            });
+        }
 
         const displayLabel = currentValue ? (optionsList.find(o => (typeof o === 'string' ? o : o.value) === currentValue)?.label || currentValue) : placeholder;
 
@@ -329,15 +352,36 @@
         }
     }
 
+    // Verbesserte Suchfunktion, die auch leere Kategorien ausblendet
     function filterGenericDropdown(id, term) {
         const search = term.toLowerCase();
         const list = document.getElementById(`dd-list-${id}`);
-        list.querySelectorAll('.dropdown-option').forEach(opt => {
-            opt.style.display = opt.getAttribute('data-label').includes(search) ? 'block' : 'none';
+        let currentGroupLabel = null;
+        let groupHasVisibleItems = false;
+
+        Array.from(list.children).forEach(child => {
+            if (child.classList.contains('dropdown-group-label')) {
+                // Vorherige Gruppe ausblenden, falls sie keine sichtbaren Elemente hatte
+                if (currentGroupLabel && !groupHasVisibleItems) {
+                    currentGroupLabel.style.display = 'none';
+                }
+                currentGroupLabel = child;
+                groupHasVisibleItems = false;
+                child.style.display = 'block'; // Zunächst anzeigen
+            } else if (child.classList.contains('dropdown-option')) {
+                const isMatch = child.getAttribute('data-label').includes(search);
+                child.style.display = isMatch ? 'block' : 'none';
+                if (isMatch) groupHasVisibleItems = true;
+            }
         });
+        
+        // Letzte Gruppe prüfen
+        if (currentGroupLabel && !groupHasVisibleItems) {
+            currentGroupLabel.style.display = 'none';
+        }
     }
 
-    // --- SAMMLUNG ALLER GERÄTE & AUSGÄNGE ---
+    // --- SAMMLUNG ALLER GERÄTE & AUSGÄNGE MIT KATEGORIEN ---
     function getAllAvailableConnections() {
         let list = [];
         projectData.details.forEach(detail => {
@@ -352,7 +396,7 @@
                             config.io.forEach(io => {
                                 if(io.type !== 'bus') {
                                     const identifier = `[${detail.name}] ${cleanName} - ${io.label}`;
-                                    list.push({ value: identifier, label: identifier });
+                                    list.push({ value: identifier, label: identifier, category: `Detail: ${detail.name}` });
                                 }
                             });
                         }
@@ -376,7 +420,7 @@
                             config.io.forEach(io => {
                                 if(io.type === 'bus') {
                                     const identifier = `[${detail.name}] ${cleanName} - ${io.label}`;
-                                    list.push({ value: identifier, label: identifier });
+                                    list.push({ value: identifier, label: identifier, category: `Detail: ${detail.name}` });
                                 }
                             });
                         }
@@ -401,7 +445,7 @@
                             const data = (slot.ioData && slot.ioData[io.id]) ? (typeof slot.ioData[io.id] === 'string' ? {bezeichnung: slot.ioData[io.id]} : slot.ioData[io.id]) : {};
                             const bez = data.bezeichnung ? data.bezeichnung : (iconDef.label || slot.iconFile);
                             const identifier = `[${detail.name}] ${bez}`;
-                            list.push({ value: identifier, label: identifier });
+                            list.push({ value: identifier, label: identifier, category: `Detail: ${detail.name}` });
                         });
                     }
                 }
@@ -508,7 +552,7 @@
         if(!detail.hardware) detail.hardware = [];
 
         const hwConfigListSafe = (typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : []);
-        const hwOptions = hwConfigListSafe.map(hw => ({ value: hw.id, label: hw.name }));
+        const hwOptions = hwConfigListSafe.map(hw => ({ value: hw.id, label: hw.name, category: hw.category || 'Hardware' }));
 
         window.selectNewHardwareType = function(val, event) {
             event.stopPropagation();
@@ -588,7 +632,12 @@
 
     function renderCustomIconDropdown(slotNum, currentIcon) {
         const iconList = (typeof iconConfigList !== 'undefined' ? iconConfigList : []);
-        const options = iconList.map(ic => ({ value: ic.file, label: ic.label || ic.file || '--- Kein Icon ---' }));
+        // Icons bekommen die Kategorie mit, falls in der JS definiert, sonst "Allgemein"
+        const options = iconList.map(ic => ({ 
+            value: ic.file, 
+            label: ic.label || ic.file || '--- Kein Icon ---',
+            category: ic.category || 'Allgemein'
+        }));
         const safeFnName = `selectIconDropdown_${slotNum}`;
         return renderSearchableDropdown(`icon-picker-${slotNum}`, currentIcon, options, safeFnName, 'Icon wählen...');
     }
