@@ -348,7 +348,6 @@
                         if(config.io) {
                             config.io.forEach(io => {
                                 if(io.type !== 'bus') {
-                                    // Anzeige exakt nach Wunsch: Kurzer Name mit Detail & Anschluss
                                     const identifier = `[${detail.name}] ${cleanName} - ${io.label}`;
                                     list.push({ value: identifier, label: identifier });
                                 }
@@ -385,7 +384,7 @@
         return list;
     }
 
-    // Liefert alle verfügbaren Schalter-Taster als Auswahl für Hardware-Eingänge
+    // Liefert alle verfügbaren Schalter-Taster als Auswahl (Nur Gerätebezeichnung nach Wunsch)
     function getAllAvailableSwitches() {
         let list = [];
         projectData.details.forEach(detail => {
@@ -398,7 +397,8 @@
                     if(iconDef && iconDef.io) {
                         iconDef.io.forEach(io => {
                             const data = (slot.ioData && slot.ioData[io.id]) ? (typeof slot.ioData[io.id] === 'string' ? {bezeichnung: slot.ioData[io.id]} : slot.ioData[io.id]) : {};
-                            const bez = data.bezeichnung ? data.bezeichnung : `Platz ${i} (${iconDef.label})`;
+                            // Exakt wie gewünscht: Nur die Gerätebezeichnung, sonst der Icon-Name/Platz
+                            const bez = data.bezeichnung ? data.bezeichnung : (iconDef.label || slot.iconFile);
                             const identifier = `[${detail.name}] ${bez}`;
                             list.push({ value: identifier, label: identifier });
                         });
@@ -662,7 +662,7 @@
         renderApp(); 
     }
 
-    // BIDIREKTIONALE SYNCHRONISATION (Zwei-Wege-Sync)
+    // BIDIREKTIONALE SYNCHRONISATION (Zwei-Wege-Sync für Schalter -> Hardware)
     function updateSlotIOField(slotNum, ioId, field, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
         if(!detail.slots[`slot-${slotNum}`].ioData) detail.slots[`slot-${slotNum}`].ioData = {};
@@ -674,14 +674,12 @@
         currentData[field] = value; 
         detail.slots[`slot-${slotNum}`].ioData[ioId] = currentData; 
 
-        // Wenn das Eingabegerät geändert wurde, synchronisiere automatisch die Hardware-Gegenseite!
         if (field === 'eingabegerat') {
             const slotIconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === detail.slots[`slot-${slotNum}`].iconFile);
-            const slotIoDef = slotIconDef ? slotIconDef.io.find(i => i.id === ioId) : null;
-            const switchLabelName = currentData.bezeichnung ? currentData.bezeichnung : `Platz ${slotNum} (${slotIconDef ? slotIconDef.label : 'Schalter'})`;
+            const switchLabelName = currentData.bezeichnung ? currentData.bezeichnung : (slotIconDef ? slotIconDef.label : 'Schalter');
             const switchTargetString = `[${detail.name}] ${switchLabelName}`;
 
-            // 1. Altes Hardware-Mapping bereinigen falls vorhanden
+            // Altes Hardware-Mapping bereinigen
             if (oldValue) {
                 projectData.details.forEach(d => {
                     if (d.hardware) {
@@ -701,7 +699,7 @@
                 });
             }
 
-            // 2. Neues Hardware-Mapping setzen (Hardware-Eingang erhält den Schalter-Namen)
+            // Neues Hardware-Mapping setzen
             if (value) {
                 projectData.details.forEach(d => {
                     if (d.hardware) {
@@ -756,19 +754,17 @@
         renderApp(); 
     }
 
-    // BIDIREKTIONALE SYNCHRONISATION FÜR HARDWARE -> SCHALTER
+    // BIDIREKTIONALE SYNCHRONISATION (Hardware -> Schalter mit Unterstützung für mehrere Ansteuerungen)
     function updateHwMapping(instanceId, ioId, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
-        const hw = detail.hardware.find(h => hw.instanceId === instanceId); 
+        const hw = detail.hardware.find(h => h.instanceId === instanceId); 
         if(!hw) return;
-        const oldVal = hw.mappings[ioId];
         hw.mappings[ioId] = value;
 
         const cfg = hardwareConfigList.find(c => c.id === hw.configId);
         const devBez = hw.fields['Geräte-Bez.'] ? hw.fields['Geräte-Bez.'] : cfg.name;
         const hwInputIdentifier = `[${detail.name}] ${devBez} - ${cfg.io.find(i => i.id === ioId)?.label || ioId}`;
 
-        // Wenn bei Hardware ein Schalter eingetragen wird, trage es beim Schalter als Eingabegerät ein
         if (value) {
             projectData.details.forEach(d => {
                 const [rows, cols] = d.layout.split('x').map(Number);
@@ -780,14 +776,24 @@
                         if(iconDef && iconDef.io) {
                             iconDef.io.forEach(io => {
                                 const data = (slot.ioData && slot.ioData[io.id]) ? (typeof slot.ioData[io.id] === 'string' ? {bezeichnung: slot.ioData[io.id]} : slot.ioData[io.id]) : {};
-                                const bez = data.bezeichnung ? data.bezeichnung : `Platz ${i} (${iconDef.label})`;
+                                const bez = data.bezeichnung ? data.bezeichnung : (iconDef.label || slot.iconFile);
                                 const fullSwitchName = `[${d.name}] ${bez}`;
                                 if (fullSwitchName === value) {
                                     if(!slot.ioData) slot.ioData = {};
                                     let slotIo = slot.ioData[io.id];
                                     if(typeof slotIo === 'string') slotIo = {bezeichnung: slotIo, art:'', gruppe:'', eingabegerat:'', funktion:'', bemerkung:''};
                                     else if(!slotIo) slotIo = {bezeichnung:'', art:'', gruppe:'', eingabegerat:'', funktion:'', bemerkung:''};
-                                    slotIo.eingabegerat = hwInputIdentifier;
+                                    
+                                    // Unterstützung für mehrere Ansteuerungen (mit Komma getrennt anhängen, falls schon vorhanden)
+                                    if (slotIo.eingabegerat) {
+                                        let items = slotIo.eingabegerat.split(',').map(s => s.trim());
+                                        if (!items.includes(hwInputIdentifier)) {
+                                            items.push(hwInputIdentifier);
+                                            slotIo.eingabegerat = items.join(', ');
+                                        }
+                                    } else {
+                                        slotIo.eingabegerat = hwInputIdentifier;
+                                    }
                                     slot.ioData[io.id] = slotIo;
                                 }
                             });
@@ -895,7 +901,6 @@
                             document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
                             updateHwMapping(hw.instanceId, io.id, v);
                         };
-                        // Hier werden Schalter/Taster aus dem ganzen Projekt für die Hardware-Eingänge angeboten
                         const ioPicker = renderSearchableDropdown(pickerId, assignedVal, allSwitches, `select_${pickerId}`, 'Schalter/Taster wählen...');
 
                         const row = `<div class="form-group" style="margin-bottom:5px;"><label style="width:110px; font-size:0.85rem;">${io.label}</label><div style="flex:1;">${ioPicker}</div></div>`;
