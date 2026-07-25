@@ -15,6 +15,7 @@
             --bg-color: #f3f4f6;
             --text-color: #1f2937;
             --panel-bg: #ffffff;
+            --sidebar-width: 280px;
         }
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -26,16 +27,22 @@
             height: 100vh;
             overflow: hidden;
         }
-        
-        /* Sidebar */
+
+        /* Sidebar & Layout */
         .sidebar {
-            width: 280px;
+            width: var(--sidebar-width);
             background: #1f2937;
             color: white;
             display: flex;
             flex-direction: column;
             padding: 20px 15px;
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            transition: margin-left 0.3s ease;
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+        .sidebar.collapsed {
+            margin-left: calc(-1 * var(--sidebar-width));
         }
         .sidebar h2 {
             margin-top: 0;
@@ -63,11 +70,24 @@
             background: var(--primary);
             border-left: 4px solid #34d399;
         }
+        
+        .sidebar-actions {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .icon-btn {
+            background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center;
+        }
+        .icon-btn img {
+            width: 16px; height: 16px; opacity: 0.7; transition: opacity 0.2s; filter: invert(1);
+        }
+        .icon-btn:hover img { opacity: 1; }
         .delete-btn {
-            background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 1.1rem;
+            background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 1.1rem; padding: 0 4px;
         }
         .delete-btn:hover { color: #f87171; }
-        
+
         .sidebar-btn {
             background: var(--primary);
             color: white;
@@ -88,6 +108,7 @@
             flex-direction: column;
             overflow-y: auto;
             padding: 20px 40px;
+            min-width: 0;
         }
         .top-bar {
             display: flex;
@@ -105,6 +126,21 @@
             align-items: center;
             width: 100%;
         }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .toggle-sidebar-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #475569;
+            padding: 0 5px;
+        }
+        .toggle-sidebar-btn:hover { color: var(--primary); }
+        
         .top-bar input[type="text"] {
             font-size: 1.2rem;
             font-weight: bold;
@@ -118,6 +154,7 @@
             font-weight: normal;
             color: #475569;
             width: 450px;
+            margin-left: 35px; /* Offset for hamburger menu */
         }
         .top-bar input[type="text"]:hover, .top-bar input[type="text"]:focus {
             border-bottom: 1px solid var(--feller-border);
@@ -129,9 +166,12 @@
         }
         button.btn {
             background: white; border: 1px solid #d1d5db; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem;
+            display: flex; align-items: center; gap: 6px;
         }
+        button.btn img { width: 16px; height: 16px; }
         button.btn:hover { background: #f3f4f6; }
         button.btn.primary { background: var(--primary); color: white; border: none; }
+        button.btn.primary img { filter: invert(1); }
         button.btn.primary:hover { background: var(--primary-hover); }
 
         /* Workspace Grid */
@@ -182,7 +222,11 @@
             overflow: hidden;
             width: 80px;
             height: 80px;
+            cursor: grab;
         }
+        .switch-slot:active { cursor: grabbing; }
+        .switch-slot.drag-over { border: 2px solid var(--primary); opacity: 0.7; }
+        
         .switch-slot img { 
             width: 100%; 
             height: 100%; 
@@ -190,6 +234,7 @@
             padding: 0; 
             box-sizing: border-box;
             opacity: 0.85; 
+            pointer-events: none; /* Prevents image from interfering with drag and drop */
         }
         .slot-badge { 
             position: absolute; 
@@ -199,6 +244,7 @@
             font-size: 9px; 
             color: #9ca3af; 
             z-index: 2; 
+            pointer-events: none;
         }
 
         /* Forms */
@@ -209,339 +255,83 @@
         .slot-form h4 { margin: 0 0 10px 0; color: var(--primary); }
 
         /* Custom Searchable Dropdown */
-        .custom-select {
-            position: relative;
-            flex: 1;
-            font-family: inherit;
-        }
+        .custom-select { position: relative; flex: 1; font-family: inherit; }
         .select-selected {
-            background-color: #fff;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            padding: 6px 8px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background-color: #fff; border: 1px solid #d1d5db; border-radius: 4px; padding: 6px 8px; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
         }
         .select-items {
-            position: absolute;
-            background-color: #fff;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            top: 100%;
-            left: 0;
-            right: 0;
-            z-index: 99;
-            margin-top: 4px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            max-height: 250px;
-            overflow-y: auto;
+            position: absolute; background-color: #fff; border: 1px solid #d1d5db; border-radius: 4px; top: 100%; left: 0; right: 0; z-index: 99; margin-top: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto;
         }
         .icon-search {
-            width: calc(100% - 16px) !important;
-            margin: 8px;
-            padding: 6px;
-            box-sizing: border-box;
-            border: 1px solid #cbd5e1 !important;
-            border-radius: 3px;
+            width: calc(100% - 16px) !important; margin: 8px; padding: 6px; box-sizing: border-box; border: 1px solid #cbd5e1 !important; border-radius: 3px;
         }
         .icon-group-label {
-            padding: 6px 10px;
-            background: #f1f5f9;
-            font-size: 0.75rem;
-            font-weight: bold;
-            color: #64748b;
-            text-transform: uppercase;
+            padding: 6px 10px; background: #f1f5f9; font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase;
         }
-        .icon-option {
-            padding: 8px 10px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            border-bottom: 1px solid #f1f5f9;
-        }
+        .icon-option { padding: 8px 10px; font-size: 0.9rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
         .icon-option:last-child { border-bottom: none; }
         .icon-option:hover { background-color: #f3f4f6; }
 
         .io-section { margin-top: 10px; }
-        .io-complex-row {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            padding: 8px;
-        }
-        .io-header {
-            display: flex;
-            align-items: center;
-            font-size: 0.8rem;
-            font-weight: bold;
-            color: #334155;
-            margin-bottom: 6px;
-            border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 4px;
-        }
-        .io-type {
-            font-size: 0.65rem;
-            padding: 2px 4px;
-            border-radius: 3px;
-            margin-right: 6px;
-            text-transform: uppercase;
-        }
+        .io-complex-row { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px; padding: 8px; }
+        .io-header { display: flex; align-items: center; font-size: 0.8rem; font-weight: bold; color: #334155; margin-bottom: 6px; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; }
+        .io-type { font-size: 0.65rem; padding: 2px 4px; border-radius: 3px; margin-right: 6px; text-transform: uppercase; }
         .io-type.in { background: #dbeafe; color: #1e3a8a; }
         .io-type.out { background: #fce7f3; color: #9d174d; }
-        
-        .io-fields-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 5px;
-        }
-        .io-fields-grid input {
-            padding: 4px 6px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            width: 100%;
-            box-sizing: border-box;
-        }
+
+        .io-fields-grid { display: grid; grid-template-columns: 1fr; gap: 5px; }
+        .io-fields-grid input { padding: 4px 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.8rem; width: 100%; box-sizing: border-box; }
 
         /* Hardware Editor Layout */
         .hardware-list { margin-top: 20px; }
         .hw-card {
-            background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px;
-            border-left: 4px solid var(--primary);
-            display: grid;
-            grid-template-columns: 130px 1fr;
-            gap: 15px;
-            align-items: start;
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--primary); display: grid; grid-template-columns: 130px 1fr; gap: 15px; align-items: start;
         }
-        .hw-card-image img {
-            width: 100%;
-            height: auto;
-            object-fit: contain;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
-            padding: 4px;
-            background: #fff;
-        }
-        .hw-card-body {
-            position: relative;
-        }
+        .hw-card-image img { width: 100%; height: auto; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; padding: 4px; background: #fff; }
+        .hw-card-body { position: relative; }
         .hw-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
         .hw-card-header h4 { margin: 0; font-size: 1.1rem; }
         .hw-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
 
         /* ==================== DRUCK-STILE ==================== */
         @media print {
-            body { 
-                -webkit-print-color-adjust: exact; 
-                print-color-adjust: exact; 
-                background: white;
-                height: auto; 
-                overflow: visible; 
-            }
-            .sidebar, .top-bar, .action-buttons, .no-print, .delete-btn { 
-                display: none !important; 
-            }
-            .main-content { 
-                padding: 0; 
-                overflow: visible; 
-            }
-            .pane { 
-                box-shadow: none; 
-                border: none; 
-                padding: 0; 
-                margin-bottom: 0;
-            }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; height: auto; overflow: visible; }
+            .sidebar, .top-bar, .action-buttons, .no-print, .delete-btn, .sidebar-actions { display: none !important; }
+            .main-content { padding: 0; overflow: visible; margin: 0 !important; }
+            .pane { box-shadow: none; border: none; padding: 0; margin-bottom: 0; }
             .workspace { display: block; }
-            
-            .print-detail-page {
-                page-break-after: always;
-                page-break-inside: avoid;
-            }
+            .print-detail-page { page-break-after: always; page-break-inside: avoid; }
             .print-detail-page:last-child { page-break-after: auto; }
-
-            .print-header-block {
-                margin-bottom: 8px;
-                border-bottom: 2px solid #0f766e;
-                padding-bottom: 4px;
-            }
-            .print-header-block h2 {
-                margin: 0 0 2px 0;
-                font-size: 1.2rem;
-                color: #1f2937;
-            }
-            .print-header-block p {
-                margin: 0;
-                color: #475569;
-                font-size: 0.8rem;
-            }
-
-            .print-section-title {
-                font-size: 0.9rem;
-                font-weight: bold;
-                color: #0f766e;
-                border-bottom: 1px solid #cbd5e1;
-                padding-bottom: 2px;
-                margin: 10px 0 6px 0;
-            }
-
-            /* Druck Schalter Layout Vorschau ultra-Kompakt */
-            .print-visualizer-wrapper {
-                display: flex;
-                justify-content: center;
-                margin-bottom: 8px;
-            }
-            .print-switch-frame {
-                background-color: var(--feller-white);
-                border: 2px solid #e5e7eb;
-                padding: 6px;
-                border-radius: 6px;
-                display: grid;
-                gap: 2px;
-                background-image: linear-gradient(145deg, #ffffff, #f0f0f0);
-            }
-            .print-switch-slot {
-                background-color: var(--feller-white);
-                border: 1px solid #d1d5db;
-                border-radius: 3px;
-                display: flex; 
-                justify-content: center; 
-                align-items: center;
-                position: relative;
-                overflow: hidden;
-                width: 48px;
-                height: 48px;
-            }
-            .print-switch-slot img { 
-                width: 100%; 
-                height: 100%; 
-                object-fit: fill; 
-            }
-            .print-slot-badge { 
-                position: absolute; 
-                top: 2px; 
-                left: 50%; 
-                transform: translateX(-50%); 
-                font-size: 7px; 
-                color: #9ca3af; 
-            }
-
-            /* 2-Spaltiges Layout für Schalter Belegungen im Druck */
-            .print-slots-grid-2col {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-                align-items: start;
-            }
-
-            .print-slot-item-block {
-                background: #f8fafc;
-                border: 1px solid #e2e8f0;
-                border-radius: 6px;
-                padding: 6px;
-                margin-bottom: 6px;
-                page-break-inside: avoid;
-            }
-            .print-slot-item-title {
-                font-weight: bold;
-                font-size: 0.8rem;
-                color: var(--primary);
-                margin-bottom: 4px;
-                border-bottom: 1px solid #e2e8f0;
-                padding-bottom: 2px;
-            }
-            .print-io-item {
-                margin-bottom: 4px;
-                font-size: 0.75rem;
-                background: #fff;
-                border: 1px solid #e2e8f0;
-                border-radius: 4px;
-                padding: 5px;
-            }
-            .print-io-header {
-                font-weight: bold;
-                color: #334155;
-                margin-bottom: 3px;
-                font-size: 0.7rem;
-                text-transform: uppercase;
-                border-bottom: 1px solid #f1f5f9;
-                padding-bottom: 2px;
-            }
-            .print-io-line {
-                display: flex;
-                margin-bottom: 2px;
-            }
-            .print-io-label {
-                width: 75px;
-                color: #475569;
-                font-size: 0.7rem;
-            }
-            .print-io-val {
-                flex: 1;
-                color: #1f2937;
-                font-weight: 500;
-                font-size: 0.75rem;
-            }
-
-            /* Druck Hardware Komponenten kompakt */
-            .print-hw-container {
-                display: grid;
-                grid-template-columns: 80px 1fr;
-                gap: 10px;
-                align-items: start;
-                background: #fff;
-                border: 1px solid #e2e8f0;
-                border-left: 4px solid var(--primary);
-                border-radius: 6px;
-                padding: 6px;
-                margin-bottom: 6px;
-                page-break-inside: avoid;
-            }
-            .print-hw-image img {
-                width: 100%;
-                height: auto;
-                object-fit: contain;
-                border: 1px solid #e2e8f0;
-                border-radius: 4px;
-                padding: 2px;
-                background: #fff;
-            }
-            .print-hw-header-title {
-                font-weight: bold;
-                font-size: 0.8rem;
-                margin-bottom: 3px;
-                color: #1f2937;
-                border-bottom: 1px solid #f1f5f9;
-                padding-bottom: 2px;
-            }
-            .print-hw-meta-row {
-                display: flex;
-                margin-bottom: 2px;
-                font-size: 0.73rem;
-            }
-            .print-hw-io-grid {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-                margin-top: 4px;
-                border-top: 1px solid #f1f5f9;
-                padding-top: 3px;
-            }
-            .print-hw-io-subcol h6 {
-                margin: 0 0 2px 0;
-                font-size: 0.68rem;
-                text-transform: uppercase;
-                color: #64748b;
-            }
+            .print-header-block { margin-bottom: 8px; border-bottom: 2px solid #0f766e; padding-bottom: 4px; }
+            .print-header-block h2 { margin: 0 0 2px 0; font-size: 1.2rem; color: #1f2937; }
+            .print-header-block p { margin: 0; color: #475569; font-size: 0.8rem; }
+            .print-section-title { font-size: 0.9rem; font-weight: bold; color: #0f766e; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px; margin: 10px 0 6px 0; }
+            .print-visualizer-wrapper { display: flex; justify-content: center; margin-bottom: 8px; }
+            .print-switch-frame { background-color: var(--feller-white); border: 2px solid #e5e7eb; padding: 6px; border-radius: 6px; display: grid; gap: 2px; background-image: linear-gradient(145deg, #ffffff, #f0f0f0); }
+            .print-switch-slot { background-color: var(--feller-white); border: 1px solid #d1d5db; border-radius: 3px; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; width: 48px; height: 48px; }
+            .print-switch-slot img { width: 100%; height: 100%; object-fit: fill; }
+            .print-slot-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 7px; color: #9ca3af; }
+            .print-slots-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+            .print-slot-item-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px; margin-bottom: 6px; page-break-inside: avoid; }
+            .print-slot-item-title { font-weight: bold; font-size: 0.8rem; color: var(--primary); margin-bottom: 4px; border-bottom: 1px solid #e2e8f0; padding-bottom: 2px; }
+            .print-io-item { margin-bottom: 4px; font-size: 0.75rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 5px; }
+            .print-io-header { font-weight: bold; color: #334155; margin-bottom: 3px; font-size: 0.7rem; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; padding-bottom: 2px; }
+            .print-io-line { display: flex; margin-bottom: 2px; }
+            .print-io-label { width: 75px; color: #475569; font-size: 0.7rem; }
+            .print-io-val { flex: 1; color: #1f2937; font-weight: 500; font-size: 0.75rem; }
+            .print-hw-container { display: grid; grid-template-columns: 80px 1fr; gap: 10px; align-items: start; background: #fff; border: 1px solid #e2e8f0; border-left: 4px solid var(--primary); border-radius: 6px; padding: 6px; margin-bottom: 6px; page-break-inside: avoid; }
+            .print-hw-image img { width: 100%; height: auto; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2px; background: #fff; }
+            .print-hw-header-title { font-weight: bold; font-size: 0.8rem; margin-bottom: 3px; color: #1f2937; border-bottom: 1px solid #f1f5f9; padding-bottom: 2px; }
+            .print-hw-meta-row { display: flex; margin-bottom: 2px; font-size: 0.73rem; }
+            .print-hw-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; border-top: 1px solid #f1f5f9; padding-top: 3px; }
+            .print-hw-io-subcol h6 { margin: 0 0 2px 0; font-size: 0.68rem; text-transform: uppercase; color: #64748b; }
         }
     </style>
 </head>
 <body>
 
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <h2>ServiceProDetails</h2>
         <div class="detail-list" id="detail-list"></div>
         <button class="sidebar-btn" onclick="addNewDetail()">+ Neues Detail</button>
@@ -551,13 +341,16 @@
     <div class="main-content">
         <div class="top-bar">
             <div class="top-bar-row">
-                <input type="text" id="project-name" value="Schalterdetail EFH Odermatt" onchange="updateProjectField('projectName', this.value)">
+                <div class="header-left">
+                    <button class="toggle-sidebar-btn no-print" onclick="toggleSidebar()">☰</button>
+                    <input type="text" id="project-name" value="Schalterdetail EFH Odermatt" onchange="updateProjectField('projectName', this.value)">
+                </div>
                 <div class="action-buttons">
                     <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
-                    <button class="btn" onclick="document.getElementById('file-input').click()">📂 Öffnen</button>
-                    <button class="btn primary" onclick="exportProject()">💾 Speichern</button>
-                    <button class="btn" onclick="printAllDetails()">🖨️ Alles Drucken (Komplett)</button>
-                    <button class="btn" onclick="printCurrentDetail()">🖨️ Aktuelles Detail</button>
+                    <button class="btn" onclick="document.getElementById('file-input').click()"><img src="icons/Hochladen.svg" alt="Öffnen"> Öffnen</button>
+                    <button class="btn primary" onclick="exportProject()"><img src="icons/Download.svg" alt="Speichern"> Speichern</button>
+                    <button class="btn" onclick="printAllDetails()"><img src="icons/Drucken.svg" alt="Drucken"> Alles Drucken</button>
+                    <button class="btn" onclick="printCurrentDetail()"><img src="icons/Drucken.svg" alt="Drucken"> Aktuelles Detail</button>
                 </div>
             </div>
             <div class="top-bar-row">
@@ -572,12 +365,28 @@
     </div>
 
 <script>
+    const LOCAL_STORAGE_KEY = 'serviceProDetailData';
+
     let projectData = {
         projectName: "Schalterdetail EFH Odermatt",
         location: "",
         details: []
     };
     let activeDetailId = null;
+    let draggedSlotNum = null;
+
+    // Tastaturkürzel (Shortcuts) einrichten
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey || e.metaKey) {
+            if (e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                exportProject(); // Shortcut zum Speichern/Export
+            } else if (e.key.toLowerCase() === 'p') {
+                e.preventDefault();
+                printCurrentDetail(); // Shortcut zum Drucken
+            }
+        }
+    });
 
     document.addEventListener("click", function (e) {
         document.querySelectorAll('.select-items').forEach(item => {
@@ -586,15 +395,39 @@
     });
 
     window.onload = () => {
-        if (projectData.details.length === 0) {
-            addNewDetail();
-        } else {
+        // Lokale Daten beim Start laden
+        const savedData = loadFromLocal();
+        if (savedData && savedData.details && savedData.details.length > 0) {
+            projectData = savedData;
+            activeDetailId = projectData.details[0].id;
             renderApp();
+        } else {
+            if (projectData.details.length === 0) {
+                addNewDetail();
+            } else {
+                renderApp();
+            }
         }
     };
 
+    function saveToLocal() {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(projectData));
+    }
+
+    function loadFromLocal() {
+        const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (data) {
+            try { return JSON.parse(data); } catch(e) { console.error(e); }
+        }
+        return null;
+    }
+
     function generateId() {
         return Math.random().toString(36).substr(2, 9);
+    }
+
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('collapsed');
     }
 
     function addNewDetail() {
@@ -608,6 +441,25 @@
         projectData.details.push(newDetail);
         activeDetailId = newDetail.id;
         renderApp();
+    }
+
+    function duplicateDetail(id, event) {
+        event.stopPropagation();
+        const detailToCopy = projectData.details.find(d => d.id === id);
+        if (detailToCopy) {
+            const newDetail = JSON.parse(JSON.stringify(detailToCopy)); // Deep copy
+            newDetail.id = generateId();
+            newDetail.name = newDetail.name + " (Kopie)";
+            
+            // Hardware IDs erneuern, damit sie eigenständig bleiben
+            if (newDetail.hardware) {
+                newDetail.hardware.forEach(hw => hw.instanceId = generateId());
+            }
+            
+            projectData.details.push(newDetail);
+            activeDetailId = newDetail.id;
+            renderApp();
+        }
     }
 
     function selectDetail(id) {
@@ -631,6 +483,7 @@
 
     function updateProjectField(field, value) {
         projectData[field] = value;
+        saveToLocal();
     }
 
     function updateActiveDetailField(field, value) {
@@ -638,6 +491,7 @@
         if (detail) {
             detail[field] = value;
             if (field === 'layout' || field === 'name') renderApp();
+            else saveToLocal();
         }
     }
 
@@ -646,6 +500,7 @@
         document.getElementById('project-location').value = projectData.location || '';
         renderSidebar();
         renderWorkspace();
+        saveToLocal();
     }
 
     function renderSidebar() {
@@ -657,10 +512,51 @@
             div.onclick = () => selectDetail(detail.id);
             div.innerHTML = `
                 <span>${detail.name}</span>
-                <button class="delete-btn" onclick="deleteDetail('${detail.id}', event)">×</button>
+                <div class="sidebar-actions">
+                    <button class="icon-btn" title="Duplizieren" onclick="duplicateDetail('${detail.id}', event)"><img src="icons/Dublizieren.svg" alt="Kopieren"></button>
+                    <button class="delete-btn" title="Löschen" onclick="deleteDetail('${detail.id}', event)">×</button>
+                </div>
             `;
             list.appendChild(div);
         });
+    }
+
+    // --- DRAG & DROP FÜR SLOTS ---
+    function handleDragStart(e, slotNum) {
+        draggedSlotNum = slotNum;
+        e.dataTransfer.effectAllowed = 'move';
+        // Unsichtbares Datenobjekt für Firefox Kompatibilität
+        e.dataTransfer.setData('text/plain', slotNum); 
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        e.currentTarget.classList.add('drag-over');
+    }
+
+    function handleDragLeave(e) {
+        e.currentTarget.classList.remove('drag-over');
+    }
+
+    function handleDrop(e, targetSlotNum) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drag-over');
+        if (draggedSlotNum && draggedSlotNum !== targetSlotNum) {
+            const detail = projectData.details.find(d => d.id === activeDetailId);
+            
+            // Erstelle Slots, falls sie noch nicht existieren
+            if (!detail.slots[`slot-${targetSlotNum}`]) detail.slots[`slot-${targetSlotNum}`] = { iconFile: '', ioData: {} };
+            if (!detail.slots[`slot-${draggedSlotNum}`]) detail.slots[`slot-${draggedSlotNum}`] = { iconFile: '', ioData: {} };
+
+            // Belegungen tauschen (Deep Copy)
+            const temp = JSON.parse(JSON.stringify(detail.slots[`slot-${targetSlotNum}`]));
+            detail.slots[`slot-${targetSlotNum}`] = JSON.parse(JSON.stringify(detail.slots[`slot-${draggedSlotNum}`]));
+            detail.slots[`slot-${draggedSlotNum}`] = temp;
+            
+            renderApp();
+        }
+        draggedSlotNum = null;
     }
 
     function renderWorkspace() {
@@ -749,8 +645,15 @@
             for (let c = 0; c < cols; c++) {
                 const slot = detail.slots[`slot-${count}`];
                 const iconPath = slot.iconFile ? `icons-schalter/${slot.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23e5e7eb" stroke-width="1"><circle cx="12" cy="12" r="10"></circle></svg>';
+                
+                // Füge Drag & Drop Attribute hinzu
                 html += `
-                    <div class="switch-slot">
+                    <div class="switch-slot" 
+                         draggable="true" 
+                         ondragstart="handleDragStart(event, ${count})" 
+                         ondragover="handleDragOver(event)" 
+                         ondragleave="handleDragLeave(event)"
+                         ondrop="handleDrop(event, ${count})">
                         <span class="slot-badge">${count}</span>
                         <img src="${iconPath}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;%23ff9999&quot; stroke-width=&quot;2&quot;><line x1=&quot;18&quot; y1=&quot;6&quot; x2=&quot;6&quot; y2=&quot;18&quot;></line><line x1=&quot;6&quot; y1=&quot;6&quot; x2=&quot;18&quot; y2=&quot;18&quot;></line></svg>'">
                     </div>
@@ -801,9 +704,16 @@
             if (dd.id !== `dropdown-${slotNum}`) dd.style.display = 'none';
         });
         const dd = document.getElementById(`dropdown-${slotNum}`);
-        dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
-        if(dd.style.display === 'block'){
-            dd.querySelector('.icon-search').focus();
+        const isOpening = dd.style.display !== 'block';
+        
+        dd.style.display = isOpening ? 'block' : 'none';
+        
+        // Automatischer Fokus auf die Suche beim Öffnen
+        if (isOpening) {
+            setTimeout(() => {
+                const searchInput = dd.querySelector('.icon-search');
+                if (searchInput) searchInput.focus();
+            }, 50);
         }
     }
 
@@ -878,7 +788,7 @@
     function updateSlotIcon(slotNum, iconFile) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
         detail.slots[`slot-${slotNum}`].iconFile = iconFile;
-        renderWorkspace(); 
+        renderApp(); 
     }
 
     function updateSlotIOField(slotNum, ioId, field, value) {
@@ -894,6 +804,7 @@
         }
         currentData[field] = value;
         detail.slots[`slot-${slotNum}`].ioData[ioId] = currentData;
+        saveToLocal();
     }
 
     // --- HARDWARE KOMPONENTEN ---
@@ -916,14 +827,14 @@
             fields: fieldsData,
             mappings: ioMapping
         });
-        renderWorkspace();
+        renderApp();
     }
 
     function removeHardware(instanceId) {
         if(confirm("Komponente entfernen?")) {
             const detail = projectData.details.find(d => d.id === activeDetailId);
             detail.hardware = detail.hardware.filter(h => h.instanceId !== instanceId);
-            renderWorkspace();
+            renderApp();
         }
     }
 
@@ -931,12 +842,14 @@
         const detail = projectData.details.find(d => d.id === activeDetailId);
         const hw = detail.hardware.find(h => h.instanceId === instanceId);
         hw.fields[field] = value;
+        saveToLocal();
     }
 
     function updateHwMapping(instanceId, ioId, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
         const hw = detail.hardware.find(h => h.instanceId === instanceId);
         hw.mappings[ioId] = value;
+        saveToLocal();
     }
 
     function generateHardwareHtml(detail) {
@@ -1026,7 +939,6 @@
             </div>
         `;
 
-        // Plätze in Paare (Zeilen) aufteilen für 2-spaltige Anordnung im Druck (Linke Hälfte = ungerade / Platz 1, 3...; Rechte Hälfte = gerade / Platz 2, 4...)
         let slotBlocks = [];
         for(let i=1; i<=totalSlots; i++) {
             const slot = detail.slots[`slot-${i}`];
@@ -1061,7 +973,6 @@
             `);
         }
 
-        // Paarweise Anordnung in Zeilen zu je 2 Spalten
         let slotsGridHtml = '';
         for (let i = 0; i < slotBlocks.length; i += 2) {
             let leftBlock = slotBlocks[i];
