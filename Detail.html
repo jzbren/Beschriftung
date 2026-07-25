@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V1.1</title>
+    <title>ServiceProDetail Konfigurator V1.0</title>
     <script src="icons.js"></script>
     <style>
         :root {
@@ -217,7 +217,7 @@
                 </div>
                 <div class="action-buttons">
                     <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
-                    <button class="btn danger" onclick="resetProject()"><img src="icons/radierer.svg" alt="Neu anfangen"> Neu anfangen</button>
+                    <button class="btn danger" onclick="resetProject()"><img src="icons/radieren.svg" alt="Neu anfangen"> Neu anfangen</button>
                     <button class="btn" onclick="document.getElementById('file-input').click()"><img src="icons/Hochladen.svg" alt="Öffnen"> Öffnen</button>
                     <button class="btn primary" onclick="exportProject()"><img src="icons/Download.svg" alt="Speichern"> Speichern</button>
                     <button class="btn" onclick="printAllDetails()"><img src="icons/Drucken.svg" alt="Drucken"> Alles Drucken</button>
@@ -334,7 +334,7 @@
         });
     }
 
-    // --- SAMMLUNG ALLER GERÄTE & EINZELNEN AUSGÄNGE FÜR VERKNÜPFUNGEN ---
+    // --- SAMMLUNG ALLER GERÄTE & AUSGÄNGE ---
     function getAllAvailableConnections() {
         let list = [];
         projectData.details.forEach(detail => {
@@ -384,7 +384,6 @@
         return list;
     }
 
-    // Liefert alle verfügbaren Schalter-Taster als Auswahl (Nur Gerätebezeichnung nach Wunsch)
     function getAllAvailableSwitches() {
         let list = [];
         projectData.details.forEach(detail => {
@@ -397,7 +396,6 @@
                     if(iconDef && iconDef.io) {
                         iconDef.io.forEach(io => {
                             const data = (slot.ioData && slot.ioData[io.id]) ? (typeof slot.ioData[io.id] === 'string' ? {bezeichnung: slot.ioData[io.id]} : slot.ioData[io.id]) : {};
-                            // Exakt wie gewünscht: Nur die Gerätebezeichnung, sonst der Icon-Name/Platz
                             const bez = data.bezeichnung ? data.bezeichnung : (iconDef.label || slot.iconFile);
                             const identifier = `[${detail.name}] ${bez}`;
                             list.push({ value: identifier, label: identifier });
@@ -509,6 +507,14 @@
         const hwConfigListSafe = (typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : []);
         const hwOptions = hwConfigListSafe.map(hw => ({ value: hw.id, label: hw.name }));
 
+        // Globaler Callback für Hardware-Hinzufügen Picker registrieren
+        window.selectNewHardwareType = function(val, event) {
+            event.stopPropagation();
+            document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
+            addHardwareComponent(val);
+        };
+        const newHwPickerHtml = renderSearchableDropdown('new-hw-picker', '', hwOptions, 'selectNewHardwareType', 'Hardware wählen...');
+
         let html = `
             <div class="workspace">
                 <div>
@@ -540,7 +546,7 @@
                             <h3>Hardware Komponenten</h3>
                             <div class="no-print" style="display:flex; gap:10px; align-items:center;">
                                 <div style="width: 220px;" id="hw-picker-container">
-                                    ${renderSearchableDropdown('new-hw-picker', '', hwOptions, 'selectNewHardwareType', 'Hardware wählen...')}
+                                    ${newHwPickerHtml}
                                 </div>
                             </div>
                         </div>
@@ -558,12 +564,6 @@
             </div>
         `;
         container.innerHTML = html; updatePrintContainers();
-    }
-
-    function selectNewHardwareType(val, event) {
-        event.stopPropagation();
-        document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
-        addHardwareComponent(val);
     }
 
     function generateVisualizerHtml(detail, rows, cols) {
@@ -662,7 +662,7 @@
         renderApp(); 
     }
 
-    // BIDIREKTIONALE SYNCHRONISATION (Zwei-Wege-Sync für Schalter -> Hardware)
+    // BIDIREKTIONALE SYNCHRONISATION (Schalter -> Hardware)
     function updateSlotIOField(slotNum, ioId, field, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
         if(!detail.slots[`slot-${slotNum}`].ioData) detail.slots[`slot-${slotNum}`].ioData = {};
@@ -679,7 +679,6 @@
             const switchLabelName = currentData.bezeichnung ? currentData.bezeichnung : (slotIconDef ? slotIconDef.label : 'Schalter');
             const switchTargetString = `[${detail.name}] ${switchLabelName}`;
 
-            // Altes Hardware-Mapping bereinigen
             if (oldValue) {
                 projectData.details.forEach(d => {
                     if (d.hardware) {
@@ -699,7 +698,6 @@
                 });
             }
 
-            // Neues Hardware-Mapping setzen
             if (value) {
                 projectData.details.forEach(d => {
                     if (d.hardware) {
@@ -754,7 +752,7 @@
         renderApp(); 
     }
 
-    // BIDIREKTIONALE SYNCHRONISATION (Hardware -> Schalter mit Unterstützung für mehrere Ansteuerungen)
+    // BIDIREKTIONALE SYNCHRONISATION (Hardware -> Schalter mit mehreren Ansteuerungen)
     function updateHwMapping(instanceId, ioId, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
         const hw = detail.hardware.find(h => h.instanceId === instanceId); 
@@ -784,7 +782,6 @@
                                     if(typeof slotIo === 'string') slotIo = {bezeichnung: slotIo, art:'', gruppe:'', eingabegerat:'', funktion:'', bemerkung:''};
                                     else if(!slotIo) slotIo = {bezeichnung:'', art:'', gruppe:'', eingabegerat:'', funktion:'', bemerkung:''};
                                     
-                                    // Unterstützung für mehrere Ansteuerungen (mit Komma getrennt anhängen, falls schon vorhanden)
                                     if (slotIo.eingabegerat) {
                                         let items = slotIo.eingabegerat.split(',').map(s => s.trim());
                                         if (!items.includes(hwInputIdentifier)) {
