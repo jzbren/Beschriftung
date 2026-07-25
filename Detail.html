@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V1.2</title>
+    <title>ServiceProDetail Konfigurator V1.3 - Smart Bus Edition</title>
     <script src="icons.js"></script>
     <style>
         :root {
@@ -13,10 +13,11 @@
             --primary-hover: #0d9488;
             --danger: #ef4444;
             --danger-hover: #dc2626;
+            --warning: #f59e0b;
             --bg-color: #f3f4f6;
             --text-color: #1f2937;
             --panel-bg: #ffffff;
-            --sidebar-width: 300px;
+            --sidebar-width: 320px;
         }
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -32,7 +33,7 @@
         /* Sidebar & Layout */
         .sidebar {
             width: var(--sidebar-width);
-            background: #1f2937;
+            background: #1e293b;
             color: white;
             display: flex;
             flex-direction: column;
@@ -47,33 +48,33 @@
         
         .sidebar-header {
             display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #374151; padding-bottom: 10px; margin-bottom: 15px;
+            border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 15px;
         }
         .sidebar-header h2 { margin: 0; font-size: 1.2rem; }
         
         /* Sidebar Suche */
         .sidebar-search { margin-bottom: 15px; }
         .sidebar-search input {
-            width: 100%; padding: 8px 12px; border-radius: 4px; border: 1px solid #4b5563; 
-            background: #374151; color: white; box-sizing: border-box; font-size: 0.9rem;
+            width: 100%; padding: 8px 12px; border-radius: 4px; border: 1px solid #475569; 
+            background: #334155; color: white; box-sizing: border-box; font-size: 0.9rem;
         }
-        .sidebar-search input::placeholder { color: #9ca3af; }
-        .sidebar-search input:focus { outline: none; border-color: #34d399; background: #4b5563; }
+        .sidebar-search input::placeholder { color: #94a3b8; }
+        .sidebar-search input:focus { outline: none; border-color: #10b981; background: #475569; }
 
         .detail-list { flex: 1; overflow-y: auto; }
         .detail-item {
-            padding: 10px; background: #374151; margin-bottom: 8px; border-radius: 4px; cursor: pointer; 
+            padding: 10px; background: #334155; margin-bottom: 8px; border-radius: 4px; cursor: pointer; 
             display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;
         }
-        .detail-item:hover { background: #4b5563; }
-        .detail-item.active { background: var(--primary); border-left: 4px solid #34d399; }
+        .detail-item:hover { background: #475569; }
+        .detail-item.active { background: var(--primary); border-left: 4px solid #10b981; }
         
         .sidebar-actions { display: flex; align-items: center; gap: 5px; }
         .icon-btn { background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; color: white; }
         .icon-btn img { width: 16px; height: 16px; opacity: 0.7; transition: opacity 0.2s; filter: invert(1); }
         .icon-btn:hover img { opacity: 1; }
-        .delete-btn { background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 1.1rem; padding: 0 4px; }
-        .delete-btn:hover { color: #f87171; }
+        .delete-btn { background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 1.1rem; padding: 0 4px; border-radius: 3px; }
+        .delete-btn:hover { color: #f87171; background: rgba(255,0,0,0.1); }
         .sidebar-btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; }
         .sidebar-btn:hover { background: var(--primary-hover); }
 
@@ -83,7 +84,7 @@
         .top-bar-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .header-left { display: flex; align-items: center; gap: 10px; }
         
-        .toggle-sidebar-btn { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 1.2rem; cursor: pointer; color: #475569; padding: 4px 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .toggle-sidebar-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 1.2rem; cursor: pointer; color: #475569; padding: 4px 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .toggle-sidebar-btn:hover { background: #e2e8f0; color: var(--primary); }
         
         .top-bar input[type="text"] { font-size: 1.2rem; font-weight: bold; border: 1px solid transparent; padding: 5px; background: transparent; width: 350px; }
@@ -91,7 +92,7 @@
         .top-bar input[type="text"]:hover, .top-bar input[type="text"]:focus { border-bottom: 1px solid var(--feller-border); outline: none; }
         .action-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
         
-        button.btn { background: white; border: 1px solid #d1d5db; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; }
+        button.btn { background: white; border: 1px solid #d1d5db; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
         button.btn img { width: 16px; height: 16px; }
         button.btn:hover { background: #f3f4f6; }
         button.btn.primary { background: var(--primary); color: white; border: none; }
@@ -103,56 +104,67 @@
 
         /* Workspace Grid */
         .workspace { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .pane { background: var(--panel-bg); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .pane h3 { margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; }
+        .pane { background: var(--panel-bg); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .pane h3 { margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; color: #0f172a; }
 
         /* Switch Visualizer */
         .visualizer-container { display: flex; justify-content: center; align-items: center; min-height: 250px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; margin-bottom: 15px; }
-        .switch-frame { background-color: var(--feller-white); border: 2px solid #e5e7eb; padding: 20px; border-radius: 6px; box-shadow: 2px 2px 10px rgba(0,0,0,0.05), inset 0 0 10px rgba(255,255,255,1); display: grid; gap: 2px; background-image: linear-gradient(145deg, #ffffff, #f0f0f0); }
-        .switch-slot { background-color: var(--feller-white); border: 1px solid #d1d5db; border-radius: 3px; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative; overflow: hidden; width: 80px; height: 80px; cursor: grab; }
+        .switch-frame { background-color: var(--feller-white); border: 2px solid #e2e8f0; padding: 20px; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), inset 0 0 10px rgba(255,255,255,0.5); display: grid; gap: 2px; background-image: linear-gradient(145deg, #ffffff, #f1f5f9); }
+        .switch-slot { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 3px; display: flex; justify-content: center; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; overflow: hidden; width: 80px; height: 80px; cursor: grab; }
         .switch-slot:active { cursor: grabbing; }
         .switch-slot.drag-over { border: 2px solid var(--primary); opacity: 0.7; }
-        .switch-slot img { width: 100%; height: 100%; object-fit: fill; padding: 0; box-sizing: border-box; opacity: 0.85; pointer-events: none; }
-        .slot-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #9ca3af; z-index: 2; pointer-events: none; }
+        .switch-slot img { width: 100%; height: 100%; object-fit: fill; padding: 0; box-sizing: border-box; opacity: 0.9; pointer-events: none; }
+        .slot-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: bold; color: #64748b; z-index: 2; pointer-events: none; }
 
         /* Forms & Fields */
         .form-group { display: flex; margin-bottom: 10px; align-items: center; }
-        .form-group label { width: 120px; font-size: 0.85rem; font-weight: 500; color: #475569; }
-        .form-group input, .form-group select { flex: 1; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.9rem; }
+        .form-group label { width: 130px; font-size: 0.85rem; font-weight: 500; color: #475569; }
+        .form-group input, .form-group select { flex: 1; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.9rem; }
         .slot-form { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
         .slot-form h4 { margin: 0 0 10px 0; color: var(--primary); }
 
         /* Custom Searchable Dropdown */
         .custom-select { position: relative; flex: 1; font-family: inherit; }
-        .select-selected { background-color: #fff; border: 1px solid #d1d5db; border-radius: 4px; padding: 6px 8px; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .select-items { position: absolute; background-color: #fff; border: 1px solid #d1d5db; border-radius: 4px; top: 100%; left: 0; right: 0; z-index: 99; margin-top: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto; }
+        .select-selected { background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px 8px; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .select-selected:hover { border-color: #94a3b8; }
+        .select-items { position: absolute; background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; top: 100%; left: 0; right: 0; z-index: 99; margin-top: 4px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto; }
         .dropdown-search { width: calc(100% - 16px) !important; margin: 8px; padding: 6px; box-sizing: border-box; border: 1px solid #cbd5e1 !important; border-radius: 3px; }
         .dropdown-group-label { padding: 6px 10px; background: #f1f5f9; font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; border-top: 1px solid #e2e8f0; }
         .dropdown-group-label:first-of-type { border-top: none; }
-        .dropdown-option { padding: 8px 10px; font-size: 0.9rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
+        .dropdown-option { padding: 8px 10px; font-size: 0.9rem; cursor: pointer; border-bottom: 1px solid #f8fafc; }
         .dropdown-option:last-child { border-bottom: none; }
-        .dropdown-option:hover { background-color: #f3f4f6; }
+        .dropdown-option:hover { background-color: #f1f5f9; color: var(--primary); }
 
         .io-section { margin-top: 10px; }
-        .io-complex-row { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px; padding: 8px; }
+        .io-complex-row { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px; padding: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
         .io-header { display: flex; align-items: center; font-size: 0.8rem; font-weight: bold; color: #334155; margin-bottom: 6px; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; }
-        .io-type { font-size: 0.65rem; padding: 2px 4px; border-radius: 3px; margin-right: 6px; text-transform: uppercase; }
-        .io-type.in { background: #dbeafe; color: #1e3a8a; }
-        .io-type.out { background: #fce7f3; color: #9d174d; }
-        .io-type.bus { background: #fef08a; color: #854d0e; }
+        .io-type { font-size: 0.65rem; padding: 2px 4px; border-radius: 3px; margin-right: 6px; text-transform: uppercase; font-weight: bold; }
+        .io-type.in { background: #dbeafe; color: #1e40af; }
+        .io-type.out { background: #fce7f3; color: #9f1239; }
+        .io-type.bus { background: #fef3c7; color: #92400e; }
 
         .io-fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-        .io-fields-grid input { padding: 4px 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.8rem; width: 100%; box-sizing: border-box; }
+        .io-fields-grid input { padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.8rem; width: 100%; box-sizing: border-box; }
         .io-fields-grid .io-full-width { grid-column: 1 / -1; }
 
         /* Hardware Editor Layout */
         .hardware-list { margin-top: 20px; }
-        .hw-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--primary); display: grid; grid-template-columns: 130px 1fr; gap: 15px; align-items: start; }
+        .hw-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--primary); display: grid; grid-template-columns: 100px 1fr; gap: 15px; align-items: start; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .hw-card-image img { width: 100%; height: auto; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; padding: 4px; background: #fff; }
         .hw-card-body { position: relative; }
         .hw-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
-        .hw-card-header h4 { margin: 0; font-size: 1.1rem; }
+        .hw-card-header h4 { margin: 0; font-size: 1.1rem; color: #0f172a; }
         .hw-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+
+        /* Smarte Bus Anzeige */
+        .bus-container { margin-top:15px; background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0; }
+        .bus-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 8px; }
+        .bus-header h5 { margin: 0; font-size: 0.9rem; color: #1e293b; }
+        .bus-limit-badge { font-size: 0.75rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
+        .bus-limit-badge.ok { background: #dcfce7; color: #166534; }
+        .bus-limit-badge.full { background: #fee2e2; color: #991b1b; }
+        .bus-item { display:flex; justify-content: space-between; align-items:center; font-size:0.85rem; padding:4px 8px; background:#fff; border:1px solid #e2e8f0; border-radius:4px; margin-bottom:4px; }
+        .bus-item-name { color: #334155; font-weight: 500; }
 
         /* ==================== DRUCK-STILE ==================== */
         @media print {
@@ -163,31 +175,39 @@
             .workspace { display: block; }
             .print-detail-page { page-break-after: always; page-break-inside: avoid; }
             .print-detail-page:last-child { page-break-after: auto; }
-            .print-header-block { margin-bottom: 8px; border-bottom: 2px solid #0f766e; padding-bottom: 4px; }
-            .print-header-block h2 { margin: 0 0 2px 0; font-size: 1.2rem; color: #1f2937; }
-            .print-header-block p { margin: 0; color: #475569; font-size: 0.8rem; }
-            .print-section-title { font-size: 0.9rem; font-weight: bold; color: #0f766e; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px; margin: 10px 0 6px 0; }
-            .print-visualizer-wrapper { display: flex; justify-content: center; margin-bottom: 8px; }
-            .print-switch-frame { background-color: var(--feller-white); border: 2px solid #e5e7eb; padding: 6px; border-radius: 6px; display: grid; gap: 2px; background-image: linear-gradient(145deg, #ffffff, #f0f0f0); }
-            .print-switch-slot { background-color: var(--feller-white); border: 1px solid #d1d5db; border-radius: 3px; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; width: 48px; height: 48px; }
+            .print-header-block { margin-bottom: 10px; border-bottom: 2px solid #0f766e; padding-bottom: 5px; }
+            .print-header-block h2 { margin: 0 0 2px 0; font-size: 1.4rem; color: #1e293b; }
+            .print-header-block p { margin: 0; color: #475569; font-size: 0.9rem; }
+            .print-section-title { font-size: 1rem; font-weight: bold; color: #0f766e; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px; margin: 15px 0 10px 0; }
+            
+            .print-visualizer-wrapper { display: flex; justify-content: center; margin-bottom: 15px; }
+            .print-switch-frame { background-color: #f8fafc; border: 2px solid #cbd5e1; padding: 10px; border-radius: 6px; display: grid; gap: 4px; }
+            .print-switch-slot { background-color: #fff; border: 1px solid #94a3b8; border-radius: 3px; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; width: 60px; height: 60px; }
             .print-switch-slot img { width: 100%; height: 100%; object-fit: fill; }
-            .print-slot-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 7px; color: #9ca3af; }
-            .print-slots-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
-            .print-slot-item-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px; margin-bottom: 6px; page-break-inside: avoid; }
-            .print-slot-item-title { font-weight: bold; font-size: 0.8rem; color: var(--primary); margin-bottom: 4px; border-bottom: 1px solid #e2e8f0; padding-bottom: 2px; }
-            .print-io-item { margin-bottom: 4px; font-size: 0.75rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 5px; }
-            .print-io-header { font-weight: bold; color: #334155; margin-bottom: 3px; font-size: 0.7rem; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; padding-bottom: 2px; }
-            .print-io-line { display: flex; margin-bottom: 2px; }
-            .print-io-label { width: 75px; color: #475569; font-size: 0.7rem; }
-            .print-io-val { flex: 1; color: #1f2937; font-weight: 500; font-size: 0.75rem; }
-            .print-hw-container { display: grid; grid-template-columns: 80px 1fr; gap: 10px; align-items: start; background: #fff; border: 1px solid #e2e8f0; border-left: 4px solid var(--primary); border-radius: 6px; padding: 6px; margin-bottom: 6px; page-break-inside: avoid; }
+            .print-slot-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 8px; color: #64748b; font-weight: bold; }
+            
+            .print-slots-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: start; }
+            .print-slot-item-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; margin-bottom: 10px; page-break-inside: avoid; }
+            .print-slot-item-title { font-weight: bold; font-size: 0.9rem; color: var(--primary); margin-bottom: 6px; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px; }
+            .print-io-item { margin-bottom: 6px; font-size: 0.8rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 6px; }
+            .print-io-header { font-weight: bold; color: #334155; margin-bottom: 4px; font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; padding-bottom: 2px; }
+            .print-io-line { display: flex; margin-bottom: 3px; }
+            .print-io-label { width: 90px; color: #64748b; font-size: 0.75rem; }
+            .print-io-val { flex: 1; color: #0f172a; font-weight: 500; font-size: 0.8rem; }
+            
+            .print-hw-container { display: grid; grid-template-columns: 80px 1fr; gap: 12px; align-items: start; background: #fff; border: 1px solid #cbd5e1; border-left: 4px solid var(--primary); border-radius: 6px; padding: 10px; margin-bottom: 10px; page-break-inside: avoid; }
             .print-hw-image img { width: 100%; height: auto; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2px; background: #fff; }
-            .print-hw-header-title { font-weight: bold; font-size: 0.8rem; margin-bottom: 3px; color: #1f2937; border-bottom: 1px solid #f1f5f9; padding-bottom: 2px; }
-            .print-hw-meta-row { display: flex; margin-bottom: 2px; font-size: 0.73rem; }
-            .print-hw-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; border-top: 1px solid #f1f5f9; padding-top: 3px; }
-            .print-hw-io-subcol h6 { margin: 0 0 2px 0; font-size: 0.68rem; text-transform: uppercase; color: #64748b; }
-            .print-bus-list { padding-left: 5px; border-left: 2px solid #cbd5e1; margin-top: 2px; }
-            .print-bus-item { font-size: 0.7rem; color: #1f2937; margin-bottom: 2px; }
+            .print-hw-header-title { font-weight: bold; font-size: 0.95rem; margin-bottom: 5px; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px; }
+            .print-hw-meta-row { display: flex; margin-bottom: 3px; font-size: 0.8rem; }
+            .print-hw-meta-label { width: 90px; color: #64748b; }
+            .print-hw-meta-val { flex: 1; color: #0f172a; font-weight: 500; }
+            .print-hw-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; border-top: 1px solid #e2e8f0; padding-top: 6px; }
+            .print-hw-io-subcol h6 { margin: 0 0 4px 0; font-size: 0.75rem; text-transform: uppercase; color: #64748b; }
+            
+            .print-bus-container { margin-top: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 6px; }
+            .print-bus-title { font-size: 0.8rem; font-weight: bold; color: #334155; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px; margin-bottom: 4px; }
+            .print-bus-list { padding-left: 0; margin: 0; list-style: none; }
+            .print-bus-item { font-size: 0.75rem; color: #0f172a; margin-bottom: 2px; padding-left: 8px; border-left: 2px solid #cbd5e1; }
         }
     </style>
 </head>
@@ -277,7 +297,7 @@
     }
     function generateId() { return Math.random().toString(36).substr(2, 9); }
     
-    // Erzeugt einen sicheren String für Callback-Funktionen
+    // Bereinigt Strings für dynamische Funktionsnamen
     function sanitizeFnName(str) { return str.replace(/[^a-zA-Z0-9_]/g, '_'); }
     
     function toggleSidebar() { 
@@ -287,21 +307,16 @@
     function resetProject() {
         if(confirm("Möchtest du wirklich das gesamte Projekt löschen und ganz von vorne anfangen? Alle nicht gespeicherten Daten gehen verloren.")) {
             localStorage.removeItem(LOCAL_STORAGE_KEY);
-            projectData = {
-                projectName: "Neues Projekt",
-                location: "",
-                details: []
-            };
+            projectData = { projectName: "Neues Projekt", location: "", details: [] };
             activeDetailId = null;
             addNewDetail();
         }
     }
 
-    // --- SUCHBARE AUSWAHLFELDER MIT KATEGORIEN (PICKER) ---
+    // --- SUCHBARE AUSWAHLFELDER MIT KATEGORIEN ---
     function renderSearchableDropdown(dropdownId, currentValue, optionsList, onSelectCallbackName, placeholder = "Wählen...") {
         let optionsHtml = '';
         
-        // Prüfen ob Optionen mit Kategorien vorhanden sind
         const hasCategories = optionsList.some(opt => typeof opt === 'object' && opt.category);
         
         if (hasCategories) {
@@ -347,12 +362,9 @@
         const dd = document.getElementById(`dd-${id}`);
         const isOpening = dd.style.display !== 'block';
         dd.style.display = isOpening ? 'block' : 'none';
-        if (isOpening) {
-            setTimeout(() => { const searchInput = dd.querySelector('.dropdown-search'); if (searchInput) searchInput.focus(); }, 50);
-        }
+        if (isOpening) { setTimeout(() => { const searchInput = dd.querySelector('.dropdown-search'); if (searchInput) searchInput.focus(); }, 50); }
     }
 
-    // Verbesserte Suchfunktion, die auch leere Kategorien ausblendet
     function filterGenericDropdown(id, term) {
         const search = term.toLowerCase();
         const list = document.getElementById(`dd-list-${id}`);
@@ -361,45 +373,74 @@
 
         Array.from(list.children).forEach(child => {
             if (child.classList.contains('dropdown-group-label')) {
-                // Vorherige Gruppe ausblenden, falls sie keine sichtbaren Elemente hatte
-                if (currentGroupLabel && !groupHasVisibleItems) {
-                    currentGroupLabel.style.display = 'none';
-                }
+                if (currentGroupLabel && !groupHasVisibleItems) currentGroupLabel.style.display = 'none';
                 currentGroupLabel = child;
                 groupHasVisibleItems = false;
-                child.style.display = 'block'; // Zunächst anzeigen
+                child.style.display = 'block';
             } else if (child.classList.contains('dropdown-option')) {
                 const isMatch = child.getAttribute('data-label').includes(search);
                 child.style.display = isMatch ? 'block' : 'none';
                 if (isMatch) groupHasVisibleItems = true;
             }
         });
-        
-        // Letzte Gruppe prüfen
-        if (currentGroupLabel && !groupHasVisibleItems) {
-            currentGroupLabel.style.display = 'none';
-        }
+        if (currentGroupLabel && !groupHasVisibleItems) currentGroupLabel.style.display = 'none';
     }
 
-    // --- SAMMLUNG ALLER GERÄTE & AUSGÄNGE MIT KATEGORIEN ---
-    function getAllAvailableConnections() {
-        let list = [];
-        projectData.details.forEach(detail => {
-            if(detail.hardware) {
-                detail.hardware.forEach(hw => {
-                    const config = hardwareConfigList.find(c => c.id === hw.configId);
-                    if(config) {
-                        const devBez = hw.fields['Geräte-Bez.'] ? hw.fields['Geräte-Bez.'] : '';
-                        const cleanName = devBez ? devBez : config.name;
-                        
-                        if(config.io) {
-                            config.io.forEach(io => {
-                                if(io.type !== 'bus') {
-                                    const identifier = `[${detail.name}] ${cleanName} - ${io.label}`;
-                                    list.push({ value: identifier, label: identifier, category: `Detail: ${detail.name}` });
+    // --- IDENTIFIKATOREN UND COMPUTED BUS-LOGIK (NEU & INTELLIGENT) ---
+
+    // Generiert die eindeutige ID eines Slaves (Geräts)
+    function getHwIdString(detail, hw) {
+        const config = hardwareConfigList.find(c => c.id === hw.configId);
+        return `[${detail.name}] ${hw.fields['Geräte-Bez.'] || config.name}`;
+    }
+
+    // Generiert die eindeutige ID eines Master-Bus (z.B. Ast)
+    function getBusIdString(detail, hw, io) {
+        return `${getHwIdString(detail, hw)} - ${io.label}`;
+    }
+
+    // Sucht alle Slaves im gesamten Projekt, deren Bus-Feld auf den übergebenen Master-Bus zeigt
+    function findSlavesForBus(busIdString) {
+        let results = [];
+        projectData.details.forEach(d => {
+            if(d.hardware) {
+                d.hardware.forEach(h => {
+                    const config = hardwareConfigList.find(c => c.id === h.configId);
+                    if(config && config.fields) {
+                        config.fields.forEach(f => {
+                            const fLower = f.toLowerCase();
+                            if(fLower.includes('ast') || fLower.includes('bus') || fLower.includes('bridge') || fLower.includes('dali')) {
+                                if(h.fields[f] === busIdString) {
+                                    results.push({ detail: d, hw: h, fieldName: f, config: config });
                                 }
-                            });
-                        }
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        return results;
+    }
+
+    // Liefert alle Slaves, die prinzipiell an einen Bus angeschlossen werden können (Für das "+ Gerät" Dropdown)
+    function getAllBusSlaves() {
+        let list = [];
+        projectData.details.forEach(d => {
+            if(d.hardware) {
+                d.hardware.forEach(h => {
+                    const config = hardwareConfigList.find(c => c.id === h.configId);
+                    if(config && config.fields) {
+                        config.fields.forEach(f => {
+                            const fLower = f.toLowerCase();
+                            if(fLower.includes('ast') || fLower.includes('bus') || fLower.includes('bridge') || fLower.includes('dali')) {
+                                // Value ist ein Payload, um das Gerät danach direkt identifizieren zu können
+                                list.push({
+                                    value: `${d.id}|${h.instanceId}|${f}`, 
+                                    label: getHwIdString(d, h),
+                                    category: `Detail: ${d.name}`
+                                });
+                            }
+                        });
                     }
                 });
             }
@@ -407,23 +448,67 @@
         return list;
     }
 
+    // Liefert alle Master-Bus-Anschlüsse (Damit ein Slave seinen Ast wählen kann)
     function getAllBusNodes() {
         let list = [];
         projectData.details.forEach(detail => {
             if(detail.hardware) {
                 detail.hardware.forEach(hw => {
                     const config = hardwareConfigList.find(c => c.id === hw.configId);
-                    if(config) {
-                        const devBez = hw.fields['Geräte-Bez.'] ? hw.fields['Geräte-Bez.'] : '';
-                        const cleanName = devBez ? devBez : config.name;
-                        if(config.io) {
-                            config.io.forEach(io => {
-                                if(io.type === 'bus') {
-                                    const identifier = `[${detail.name}] ${cleanName} - ${io.label}`;
-                                    list.push({ value: identifier, label: identifier, category: `Detail: ${detail.name}` });
-                                }
-                            });
-                        }
+                    if(config && config.io) {
+                        config.io.forEach(io => {
+                            if(io.type === 'bus') {
+                                const identifier = getBusIdString(detail, hw, io);
+                                list.push({ value: identifier, label: identifier, category: `Detail: ${detail.name}` });
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        return list;
+    }
+
+    // Global zugängliche Funktion für den Master, um einen Slave zu übernehmen
+    window.assignSlaveToBus = function(payload, masterBusIdString, ev) {
+        if(ev) ev.stopPropagation();
+        document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
+        
+        if(!payload) return;
+        const [detailId, hwInstId, fieldName] = payload.split('|');
+        const d = projectData.details.find(x => x.id === detailId);
+        if(d) {
+            const h = d.hardware.find(x => x.instanceId === hwInstId);
+            if(h) h.fields[fieldName] = masterBusIdString;
+        }
+        renderApp();
+    };
+
+    // Global zugängliche Funktion für den Master, um einen Slave abzukoppeln
+    window.removeSlaveFromBus = function(detailId, hwInstId, fieldName, ev) {
+        if(ev) ev.stopPropagation();
+        const d = projectData.details.find(x => x.id === detailId);
+        if(d) {
+            const h = d.hardware.find(x => x.instanceId === hwInstId);
+            if(h) h.fields[fieldName] = "";
+        }
+        renderApp();
+    };
+
+
+    function getAllAvailableConnections() {
+        let list = [];
+        projectData.details.forEach(detail => {
+            if(detail.hardware) {
+                detail.hardware.forEach(hw => {
+                    const config = hardwareConfigList.find(c => c.id === hw.configId);
+                    if(config && config.io) {
+                        config.io.forEach(io => {
+                            if(io.type !== 'bus') {
+                                const identifier = getBusIdString(detail, hw, io);
+                                list.push({ value: identifier, label: identifier, category: `Detail: ${detail.name}` });
+                            }
+                        });
                     }
                 });
             }
@@ -552,14 +637,15 @@
         if(!detail.hardware) detail.hardware = [];
 
         const hwConfigListSafe = (typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : []);
-        const hwOptions = hwConfigListSafe.map(hw => ({ value: hw.id, label: hw.name, category: hw.category || 'Hardware' }));
+        // Hardware hat standardmässig die Kategorie 'Hardware'
+        const hwOptions = hwConfigListSafe.map(hw => ({ value: hw.id, label: hw.name, category: 'Hardware' }));
 
         window.selectNewHardwareType = function(val, event) {
-            event.stopPropagation();
+            if(event) event.stopPropagation();
             document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
             addHardwareComponent(val);
         };
-        const newHwPickerHtml = renderSearchableDropdown('new-hw-picker', '', hwOptions, 'selectNewHardwareType', 'Hardware wählen...');
+        const newHwPickerHtml = renderSearchableDropdown('new-hw-picker', '', hwOptions, 'selectNewHardwareType', '+ Hardware hinzufügen');
 
         let html = `
             <div class="workspace">
@@ -591,7 +677,7 @@
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                             <h3>Hardware Komponenten</h3>
                             <div class="no-print" style="display:flex; gap:10px; align-items:center;">
-                                <div style="width: 220px;" id="hw-picker-container">
+                                <div style="width: 250px;" id="hw-picker-container">
                                     ${newHwPickerHtml}
                                 </div>
                             </div>
@@ -617,11 +703,11 @@
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
                 const slot = detail.slots[`slot-${count}`];
-                const iconPath = slot.iconFile ? `icons-schalter/${slot.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23e5e7eb" stroke-width="1"><circle cx="12" cy="12" r="10"></circle></svg>';
+                const iconPath = slot.iconFile ? `icons-schalter/${slot.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1" stroke-width="1"><circle cx="12" cy="12" r="8"></circle></svg>';
                 html += `
                     <div class="switch-slot" draggable="true" ondragstart="handleDragStart(event, ${count})" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, ${count})">
                         <span class="slot-badge">${count}</span>
-                        <img src="${iconPath}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;%23ff9999&quot; stroke-width=&quot;2&quot;><line x1=&quot;18&quot; y1=&quot;6&quot; x2=&quot;6&quot; y2=&quot;18&quot;></line><line x1=&quot;6&quot; y1=&quot;6&quot; x2=&quot;18&quot; y2=&quot;18&quot;></line></svg>'">
+                        <img src="${iconPath}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;%23ef4444&quot; stroke-width=&quot;2&quot;><line x1=&quot;18&quot; y1=&quot;6&quot; x2=&quot;6&quot; y2=&quot;18&quot;></line><line x1=&quot;6&quot; y1=&quot;6&quot; x2=&quot;18&quot; y2=&quot;18&quot;></line></svg>'">
                     </div>
                 `;
                 count++;
@@ -632,11 +718,11 @@
 
     function renderCustomIconDropdown(slotNum, currentIcon) {
         const iconList = (typeof iconConfigList !== 'undefined' ? iconConfigList : []);
-        // Icons bekommen die Kategorie mit, falls in der JS definiert, sonst "Allgemein"
+        // Nutzt die 'group' aus icons.js als 'category' für das Dropdown
         const options = iconList.map(ic => ({ 
             value: ic.file, 
             label: ic.label || ic.file || '--- Kein Icon ---',
-            category: ic.category || 'Allgemein'
+            category: ic.group || 'Allgemein'
         }));
         const safeFnName = `selectIconDropdown_${slotNum}`;
         return renderSearchableDropdown(`icon-picker-${slotNum}`, currentIcon, options, safeFnName, 'Icon wählen...');
@@ -665,7 +751,7 @@
                     const pickerId = `slot-io-${i}-${io.id}`;
                     const safeFnName = `select_` + sanitizeFnName(pickerId);
                     window[safeFnName] = function(val, ev) {
-                        ev.stopPropagation();
+                        if(ev) ev.stopPropagation();
                         document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
                         updateSlotIOField(i, io.id, 'eingabegerat', val);
                     };
@@ -689,7 +775,7 @@
             }
 
             window[`selectIconDropdown_${i}`] = function(file, ev) {
-                ev.stopPropagation();
+                if(ev) ev.stopPropagation();
                 document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
                 updateSlotIcon(i, file);
             };
@@ -715,7 +801,7 @@
         renderApp(); 
     }
 
-    // VERBESSERTER 2-WEGE-SYNC (Schalter -> Hardware)
+    // 2-WEGE-SYNC FÜR SCHALTER <-> HARDWARE IN/OUT (Nicht Bus!)
     function updateSlotIOField(slotNum, ioId, field, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
         if(!detail.slots[`slot-${slotNum}`].ioData) detail.slots[`slot-${slotNum}`].ioData = {};
@@ -730,7 +816,6 @@
             const switchLabelName = currentData.bezeichnung ? currentData.bezeichnung : (slotIconDef ? slotIconDef.label : 'Schalter');
             const switchTargetString = `[${detail.name}] ${switchLabelName}`;
 
-            // Alte Referenzen bereinigen (unterstützt Komma-separierte Einträge)
             if (oldValue) {
                 const oldItems = oldValue.split(',').map(s => s.trim());
                 projectData.details.forEach(d => {
@@ -742,9 +827,7 @@
                                     if (h_io.type !== 'bus' && hw.mappings[h_io.id] === switchTargetString) {
                                         const devBez = hw.fields['Geräte-Bez.'] ? hw.fields['Geräte-Bez.'] : cfg.name;
                                         const matchString = `[${d.name}] ${devBez} - ${h_io.label}`;
-                                        if (oldItems.includes(matchString)) {
-                                            hw.mappings[h_io.id] = "";
-                                        }
+                                        if (oldItems.includes(matchString)) { hw.mappings[h_io.id] = ""; }
                                     }
                                 });
                             }
@@ -753,7 +836,6 @@
                 });
             }
 
-            // Neue Referenz setzen
             if (value) {
                 const newItems = value.split(',').map(s => s.trim());
                 projectData.details.forEach(d => {
@@ -765,9 +847,7 @@
                                 cfg.io.forEach(h_io => {
                                     if (h_io.type !== 'bus') {
                                         const matchString = `[${d.name}] ${devBez} - ${h_io.label}`;
-                                        if (newItems.includes(matchString)) {
-                                            hw.mappings[h_io.id] = switchTargetString;
-                                        }
+                                        if (newItems.includes(matchString)) { hw.mappings[h_io.id] = switchTargetString; }
                                     }
                                 });
                             }
@@ -776,26 +856,36 @@
                 });
             }
         }
-        renderApp();
+        // renderApp NICHT direkt aufrufen, falls Felder Fokus verlieren. Wir speichern nur.
+        // Bei Dropdown wird renderApp explizit aufgerufen durch den Callback.
+        saveToLocal();
     }
 
-    // --- HARDWARE KOMPONENTEN ---
     function addHardwareComponent(hwId) {
         if(!hwId) return;
         const hwConfig = hardwareConfigList.find(h => h.id === hwId); if(!hwConfig) return;
         const detail = projectData.details.find(d => d.id === activeDetailId);
         const ioMapping = {};
-        if(hwConfig.io) hwConfig.io.forEach(io => { ioMapping[io.id] = (io.type === 'bus') ? [] : ""; });
+        if(hwConfig.io) hwConfig.io.forEach(io => { ioMapping[io.id] = ""; });
         const fieldsData = {};
-        if(hwConfig.fields) hwConfig.fields.forEach(f => { fieldsData[f] = ""; });
+        
+        // Smartes Benennen (z.B. "Nano DI Tree 1")
+        const count = detail.hardware.filter(h => h.configId === hwId).length + 1;
+        
+        if(hwConfig.fields) hwConfig.fields.forEach(f => { 
+            if(f === 'Geräte-Bez.') fieldsData[f] = `${hwConfig.name} ${count}`;
+            else fieldsData[f] = ""; 
+        });
+        
         detail.hardware.push({ instanceId: generateId(), configId: hwConfig.id, fields: fieldsData, mappings: ioMapping });
         renderApp();
     }
 
     function removeHardware(instanceId) {
-        if(confirm("Komponente entfernen?")) {
+        if(confirm("Komponente entfernen? Alle Verbindungen gehen verloren.")) {
             const detail = projectData.details.find(d => d.id === activeDetailId);
-            detail.hardware = detail.hardware.filter(h => h.instanceId !== instanceId); renderApp();
+            detail.hardware = detail.hardware.filter(h => h.instanceId !== instanceId); 
+            renderApp();
         }
     }
 
@@ -803,10 +893,12 @@
         const detail = projectData.details.find(d => d.id === activeDetailId);
         const hw = detail.hardware.find(h => h.instanceId === instanceId); 
         hw.fields[field] = value; 
+        
+        // Wir aktualisieren sofort, da dies die Bus-Ansicht verändern kann
         renderApp(); 
     }
 
-    // VERBESSERTER 2-WEGE-SYNC (Hardware -> Schalter mit Multi-Support)
+    // 2-WEGE-SYNC FÜR HARDWARE -> SCHALTER (Nicht Bus!)
     function updateHwMapping(instanceId, ioId, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
         const hw = detail.hardware.find(h => h.instanceId === instanceId); 
@@ -819,7 +911,6 @@
         const devBez = hw.fields['Geräte-Bez.'] ? hw.fields['Geräte-Bez.'] : cfg.name;
         const hwInputIdentifier = `[${detail.name}] ${devBez} - ${cfg.io.find(i => i.id === ioId)?.label || ioId}`;
 
-        // Alte Zuordnung beim alten Schalter sauber austragen
         if (oldValue) {
             projectData.details.forEach(d => {
                 const totalSlots = d.layout.split('x').map(Number).reduce((a,b)=>a*b, 1);
@@ -835,7 +926,7 @@
                                 
                                 if (fullSwitchName === oldValue && data.eingabegerat) {
                                     let items = data.eingabegerat.split(',').map(s => s.trim());
-                                    items = items.filter(item => item !== hwInputIdentifier); // Nur DIESEN Anschluss löschen
+                                    items = items.filter(item => item !== hwInputIdentifier); 
                                     data.eingabegerat = items.join(', ');
                                     slot.ioData[s_io.id] = data;
                                 }
@@ -846,7 +937,6 @@
             });
         }
 
-        // Neue Zuordnung beim neuen Schalter eintragen
         if (value) {
             projectData.details.forEach(d => {
                 const totalSlots = d.layout.split('x').map(Number).reduce((a,b)=>a*b, 1);
@@ -867,9 +957,7 @@
                                             items.push(hwInputIdentifier);
                                             data.eingabegerat = items.join(', ');
                                         }
-                                    } else {
-                                        data.eingabegerat = hwInputIdentifier;
-                                    }
+                                    } else { data.eingabegerat = hwInputIdentifier; }
                                     if(!slot.ioData) slot.ioData = {};
                                     slot.ioData[s_io.id] = data;
                                 }
@@ -879,34 +967,7 @@
                 }
             });
         }
-
-        renderApp();
-    }
-    
-    function addHwBusMapping(instanceId, ioId) {
-        const detail = projectData.details.find(d => d.id === activeDetailId);
-        const hw = detail.hardware.find(h => h.instanceId === instanceId);
-        if(!Array.isArray(hw.mappings[ioId])) hw.mappings[ioId] = [];
-        hw.mappings[ioId].push("");
-        renderApp();
-    }
-    
-    function updateHwBusMapping(instanceId, ioId, index, value) {
-        const detail = projectData.details.find(d => d.id === activeDetailId);
-        const hw = detail.hardware.find(h => h.instanceId === instanceId);
-        if(Array.isArray(hw.mappings[ioId]) && hw.mappings[ioId].length > index) {
-            hw.mappings[ioId][index] = value;
-            saveToLocal();
-        }
-    }
-
-    function removeHwBusMapping(instanceId, ioId, index) {
-        const detail = projectData.details.find(d => d.id === activeDetailId);
-        const hw = detail.hardware.find(h => h.instanceId === instanceId);
-        if(Array.isArray(hw.mappings[ioId])) {
-            hw.mappings[ioId].splice(index, 1);
-            renderApp();
-        }
+        saveToLocal();
     }
 
     function generateHardwareHtml(detail) {
@@ -915,71 +976,97 @@
         let html = '';
         const allBusNodes = getAllBusNodes();
         const allSwitches = getAllAvailableSwitches();
+        const allBusSlaves = getAllBusSlaves(); // Für Dropdown bei Bus-Mastern
 
         detail.hardware.forEach(hw => {
             const config = hardwareConfigList.find(c => c.id === hw.configId); if(!config) return;
             let fieldsHtml = '';
             
+            // RENDERING FIELDS
             if(config.fields) {
                 config.fields.forEach(f => {
                     const fLower = f.toLowerCase();
+                    // Wenn es ein Slave-Bus-Feld ist: Dropdown aus allBusNodes zeigen
                     if(fLower.includes('ast') || fLower.includes('bus') || fLower.includes('bridge') || fLower.includes('dali')) {
                         const pickerId = `hw-field-${hw.instanceId}-${f}`;
                         const safeFnName = `select_` + sanitizeFnName(pickerId);
                         window[safeFnName] = function(val, ev) {
-                            ev.stopPropagation();
+                            if(ev) ev.stopPropagation();
                             document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
                             updateHwField(hw.instanceId, f, val);
                         };
-                        const busPicker = renderSearchableDropdown(pickerId, hw.fields[f] || '', allBusNodes, safeFnName, 'Bus-Ast wählen...');
-                        fieldsHtml += `<div class="form-group" style="margin-bottom:5px;"><label style="width:100px;">${f}</label><div style="flex:1;">${busPicker}</div></div>`;
+                        const busPicker = renderSearchableDropdown(pickerId, hw.fields[f] || '', allBusNodes, safeFnName, 'Zugehöriger Bus...');
+                        fieldsHtml += `<div class="form-group" style="margin-bottom:5px;"><label style="width:110px;">${f}</label><div style="flex:1;">${busPicker}</div></div>`;
                     } else {
-                        fieldsHtml += `<div class="form-group" style="margin-bottom:5px;"><label style="width:100px;">${f}</label><input type="text" value="${hw.fields[f] || ''}" onchange="updateHwField('${hw.instanceId}', '${f}', this.value)"></div>`;
+                        fieldsHtml += `<div class="form-group" style="margin-bottom:5px;"><label style="width:110px;">${f}</label><input type="text" value="${hw.fields[f] || ''}" onchange="updateHwField('${hw.instanceId}', '${f}', this.value)"></div>`;
                     }
                 });
             }
 
             let inputsHtml = ''; let outputsHtml = ''; let busesHtml = '';
+            
+            // RENDERING IOs
             if(config.io) {
                 config.io.forEach(io => {
                     if (io.type === 'bus') {
-                        let items = Array.isArray(hw.mappings[io.id]) ? hw.mappings[io.id] : [];
-                        let itemsHtml = items.map((val, idx) => {
-                            const pickerId = `bus-item-${hw.instanceId}-${io.id}-${idx}`;
+                        // MASTER BUS LOGIC (Berechnet, nicht gespeichert!)
+                        const busIdString = getBusIdString(detail, hw, io);
+                        const connectedSlaves = findSlavesForBus(busIdString);
+                        const maxLimit = io.max || null;
+                        const isFull = maxLimit && (connectedSlaves.length >= maxLimit);
+                        
+                        const badgeClass = isFull ? 'full' : 'ok';
+                        const limitText = maxLimit ? `${connectedSlaves.length} / ${maxLimit} belegt` : `${connectedSlaves.length} Geräte`;
+
+                        let itemsHtml = '';
+                        if(connectedSlaves.length > 0) {
+                            itemsHtml = connectedSlaves.map((slave, idx) => {
+                                const slaveName = getHwIdString(slave.detail, slave.hw);
+                                return `
+                                    <div class="bus-item">
+                                        <div><span style="color:#64748b; margin-right:5px;">${idx+1}.</span><span class="bus-item-name">${slaveName}</span></div>
+                                        <button class="delete-btn" title="Entfernen" onclick="removeSlaveFromBus('${slave.detail.id}', '${slave.hw.instanceId}', '${slave.fieldName}', event)">×</button>
+                                    </div>
+                                `;
+                            }).join('');
+                        } else {
+                            itemsHtml = `<div style="font-size:0.8rem; color:#94a3b8; font-style:italic; padding:4px;">Noch keine Geräte verbunden.</div>`;
+                        }
+
+                        let addBtnHtml = '';
+                        if(!isFull) {
+                            const pickerId = `add-slave-${hw.instanceId}-${io.id}`;
                             const safeFnName = `select_` + sanitizeFnName(pickerId);
-                            window[safeFnName] = function(v, ev) {
-                                ev.stopPropagation();
-                                document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
-                                updateHwBusMapping(hw.instanceId, io.id, idx, v);
+                            // Globale Zuweisungs-Funktion (nutzt den Payload)
+                            window[safeFnName] = function(payload, ev) {
+                                assignSlaveToBus(payload, busIdString, ev);
                             };
-                            const allConnections = getAllAvailableConnections();
-                            const devicePicker = renderSearchableDropdown(pickerId, val, allConnections, safeFnName, 'Gerät wählen...');
+                            
+                            const addPicker = renderSearchableDropdown(pickerId, '', allBusSlaves, safeFnName, '+ Neues Gerät zuweisen...');
+                            addBtnHtml = `<div style="margin-top:6px;">${addPicker}</div>`;
+                        }
 
-                            return `
-                                <div style="display:flex; gap:5px; margin-bottom:4px; align-items:center;">
-                                    <span style="font-size:0.8rem; color:#64748b; width:20px;">${idx+1}.</span>
-                                    <div style="flex:1;">${devicePicker}</div>
-                                    <button class="delete-btn" onclick="removeHwBusMapping('${hw.instanceId}', '${io.id}', ${idx})">×</button>
-                                </div>
-                            `;
-                        }).join('');
-
-                        let addBtn = (!io.max || items.length < io.max) ? `<button class="btn" style="padding:2px 5px; font-size:0.75rem;" onclick="addHwBusMapping('${hw.instanceId}', '${io.id}')">+ Gerät hinzufügen</button>` : `<span style="font-size:0.75rem; color:#ef4444;">Max. Teilnehmer erreicht (${io.max})</span>`;
                         busesHtml += `
-                            <div style="margin-top:10px; background:#f8fafc; padding:10px; border-radius:4px; border:1px solid #e2e8f0;">
-                                <div style="font-size:0.85rem; font-weight:bold; margin-bottom:8px; color:#1e293b;">${io.label}</div>
+                            <div class="bus-container">
+                                <div class="bus-header">
+                                    <h5>${io.label}</h5>
+                                    <span class="bus-limit-badge ${badgeClass}">${limitText}</span>
+                                </div>
                                 <div>${itemsHtml}</div>
-                                <div style="margin-top:6px;">${addBtn}</div>
+                                ${addBtnHtml}
                             </div>
                         `;
+
                     } else {
+                        // NORMAL IN/OUT SCHALTER LOGIC
                         const assignedVal = hw.mappings[io.id] || '';
                         const pickerId = `hw-io-${hw.instanceId}-${io.id}`;
                         const safeFnName = `select_` + sanitizeFnName(pickerId);
                         window[safeFnName] = function(v, ev) {
-                            ev.stopPropagation();
+                            if(ev) ev.stopPropagation();
                             document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
                             updateHwMapping(hw.instanceId, io.id, v);
+                            renderApp(); // Da HW mapping den UI-State drüben beeinflusst
                         };
                         const ioPicker = renderSearchableDropdown(pickerId, assignedVal, allSwitches, safeFnName, 'Schalter/Taster wählen...');
 
@@ -998,14 +1085,14 @@
                     <div class="hw-card-body">
                         <div class="hw-card-header">
                             <h4>${config.name}</h4>
-                            <button class="delete-btn" onclick="removeHardware('${hw.instanceId}')">×</button>
+                            <button class="delete-btn" onclick="removeHardware('${hw.instanceId}')">Löschen</button>
                         </div>
                         ${fieldsHtml}
                         <div class="hw-io-grid">
-                            ${inputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5>Eingänge</h5>${inputsHtml}</div>` : '<div></div>'}
-                            ${outputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5>Ausgänge</h5>${outputsHtml}</div>` : '<div></div>'}
+                            ${inputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5 style="margin-top:0; color:#1e40af;">Eingänge</h5>${inputsHtml}</div>` : '<div></div>'}
+                            ${outputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5 style="margin-top:0; color:#9f1239;">Ausgänge</h5>${outputsHtml}</div>` : '<div></div>'}
                         </div>
-                        ${busesHtml ? `<div class="io-section" style="margin-top:10px;"><h5>Bus-Verbindungen</h5>${busesHtml}</div>` : ''}
+                        ${busesHtml ? `<div class="io-section" style="margin-top:10px;"><h5 style="margin-top:10px; color:#92400e; border-bottom:1px solid #f1f5f9; padding-bottom:5px;">Bus-Verbindungen</h5>${busesHtml}</div>` : ''}
                     </div>
                 </div>
             `;
@@ -1013,7 +1100,7 @@
         return html;
     }
 
-    // --- DRUCK GENERATOREN ---
+    // --- DRUCK GENERATOREN (Angepasst für computed Bus) ---
     function buildDetailPrintHtml(detail) {
         const [rows, cols] = detail.layout.split('x').map(Number);
         const totalSlots = rows * cols;
@@ -1023,12 +1110,12 @@
             for (let c = 0; c < cols; c++) {
                 let slotIdx = (r * cols) + c + 1;
                 const slot = detail.slots[`slot-${slotIdx}`];
-                const iconPath = (slot && slot.iconFile) ? `icons-schalter/${slot.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23e5e7eb" stroke-width="1"><circle cx="12" cy="12" r="10"></circle></svg>';
+                const iconPath = (slot && slot.iconFile) ? `icons-schalter/${slot.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1" stroke-width="1"><circle cx="12" cy="12" r="8"></circle></svg>';
                 printVisualizerSlots += `<div class="print-switch-slot"><span class="print-slot-badge">${slotIdx}</span><img src="${iconPath}"></div>`;
             }
         }
 
-        let printVisualizerHtml = `<div class="print-visualizer-wrapper"><div class="print-switch-frame" style="grid-template-columns: repeat(${cols}, 48px); grid-template-rows: repeat(${rows}, 48px);">${printVisualizerSlots}</div></div>`;
+        let printVisualizerHtml = `<div class="print-visualizer-wrapper"><div class="print-switch-frame" style="grid-template-columns: repeat(${cols}, 60px); grid-template-rows: repeat(${rows}, 60px);">${printVisualizerSlots}</div></div>`;
 
         let slotBlocks = [];
         for(let i=1; i<=totalSlots; i++) {
@@ -1070,26 +1157,28 @@
                 const config = hardwareConfigList.find(c => c.id === hw.configId); if(!config) return;
                 let printFieldsHtml = '';
                 if(config.fields && config.fields.length > 0) {
-                    config.fields.forEach(f => { printFieldsHtml += `<div class="print-hw-meta-row"><span style="width:75px; color:#475569;">${f}:</span><span style="flex:1; color:#1f2937; font-weight:500;">${hw.fields[f] || ''}</span></div>`; });
+                    config.fields.forEach(f => { printFieldsHtml += `<div class="print-hw-meta-row"><span class="print-hw-meta-label">${f}:</span><span class="print-hw-meta-val">${hw.fields[f] || ''}</span></div>`; });
                 }
 
                 let inputsHtml = ''; let outputsHtml = ''; let busesHtml = '';
                 if(config.io) {
                     config.io.forEach(io => {
                         if (io.type === 'bus') {
-                            let items = Array.isArray(hw.mappings[io.id]) ? hw.mappings[io.id] : [];
-                            if(items.length > 0) {
-                                let busItems = items.map((val, idx) => `<div class="print-bus-item">${idx+1}. ${val}</div>`).join('');
+                            const busIdString = getBusIdString(detail, hw, io);
+                            const connectedSlaves = findSlavesForBus(busIdString);
+                            
+                            if(connectedSlaves.length > 0) {
+                                let busItems = connectedSlaves.map((slave, idx) => `<li class="print-bus-item">${idx+1}. ${getHwIdString(slave.detail, slave.hw)}</li>`).join('');
                                 busesHtml += `
-                                    <div style="margin-top: 5px;">
-                                        <div style="font-size:0.7rem; font-weight:bold; color:#475569;">${io.label}</div>
-                                        <div class="print-bus-list">${busItems}</div>
+                                    <div class="print-bus-container">
+                                        <div class="print-bus-title">${io.label} (${connectedSlaves.length} Geräte)</div>
+                                        <ul class="print-bus-list">${busItems}</ul>
                                     </div>
                                 `;
                             }
                         } else {
                             const assignedVal = hw.mappings[io.id] || '';
-                            const row = `<div style="display:flex; margin-bottom:2px; font-size:0.7rem;"><span style="width:35px; color:#475569;">${io.label}:</span><span style="flex:1; color:#1f2937; font-weight:500;">${assignedVal}</span></div>`;
+                            const row = `<div style="display:flex; margin-bottom:2px; font-size:0.75rem;"><span style="width:50px; color:#64748b;">${io.label}:</span><span style="flex:1; color:#0f172a; font-weight:500;">${assignedVal}</span></div>`;
                             if(io.type === 'in') inputsHtml += row;
                             if(io.type === 'out') outputsHtml += row;
                         }
@@ -1102,10 +1191,10 @@
                         ${printHwImageTag}
                         <div>
                             <div class="print-hw-header-title">${config.name}</div>
-                            ${printFieldsHtml ? `<div style="margin-bottom:3px;">${printFieldsHtml}</div>` : ''}
+                            ${printFieldsHtml ? `<div style="margin-bottom:8px;">${printFieldsHtml}</div>` : ''}
                             <div class="print-hw-io-grid">
-                                <div class="print-hw-io-subcol">${inputsHtml ? `<h6>Eingänge</h6>${inputsHtml}` : ''}</div>
-                                <div class="print-hw-io-subcol">${outputsHtml ? `<h6>Ausgänge</h6>${outputsHtml}` : ''}</div>
+                                <div>${inputsHtml ? `<h6>Eingänge</h6>${inputsHtml}` : ''}</div>
+                                <div>${outputsHtml ? `<h6>Ausgänge</h6>${outputsHtml}` : ''}</div>
                             </div>
                             ${busesHtml}
                         </div>
