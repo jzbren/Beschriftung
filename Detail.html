@@ -293,13 +293,13 @@
         }
     }
 
-    // --- HILFSFUNKTIONEN FÜR SUCHBARE AUSWAHLFELDER (PICKER) ---
+    // --- SUCHBARE AUSWAHLFELDER (PICKER) ---
     function renderSearchableDropdown(dropdownId, currentValue, optionsList, onSelectCallbackName, placeholder = "Wählen...") {
         let optionsHtml = '';
         optionsList.forEach(opt => {
             const val = typeof opt === 'string' ? opt : opt.value;
             const label = typeof opt === 'string' ? opt : opt.label;
-            optionsHtml += `<div class="dropdown-option" data-label="${label.toLowerCase()}" onclick="${onSelectCallbackName}('${val}', event)">${label}</div>`;
+            optionsHtml += `<div class="dropdown-option" data-label="${label.toLowerCase()}" onclick="${onSelectCallbackName}('${val.replace(/'/g, "\\'")}', event)">${label}</div>`;
         });
 
         const displayLabel = currentValue ? (optionsList.find(o => (typeof o === 'string' ? o : o.value) === currentValue)?.label || currentValue) : placeholder;
@@ -343,15 +343,14 @@
                     const config = hardwareConfigList.find(c => c.id === hw.configId);
                     if(config) {
                         const devBez = hw.fields['Geräte-Bez.'] ? hw.fields['Geräte-Bez.'] : '';
-                        // Nur den Namen / Gerätebezeichnung verwenden wie gewünscht
                         const cleanName = devBez ? devBez : config.name;
                         
-                        list.push({ value: `[${detail.name}] ${cleanName}`, label: `[${detail.name}] ${cleanName}` });
-
                         if(config.io) {
                             config.io.forEach(io => {
                                 if(io.type !== 'bus') {
-                                    list.push({ value: `[${detail.name}] ${cleanName} - ${io.label}`, label: `[${detail.name}] ${cleanName} - ${io.label}` });
+                                    // Anzeige exakt nach Wunsch: Kurzer Name mit Detail & Anschluss
+                                    const identifier = `[${detail.name}] ${cleanName} - ${io.label}`;
+                                    list.push({ value: identifier, label: identifier });
                                 }
                             });
                         }
@@ -374,12 +373,37 @@
                         if(config.io) {
                             config.io.forEach(io => {
                                 if(io.type === 'bus') {
-                                    list.push({ value: `[${detail.name}] ${cleanName} - ${io.label}`, label: `[${detail.name}] ${cleanName} - ${io.label}` });
+                                    const identifier = `[${detail.name}] ${cleanName} - ${io.label}`;
+                                    list.push({ value: identifier, label: identifier });
                                 }
                             });
                         }
                     }
                 });
+            }
+        });
+        return list;
+    }
+
+    // Liefert alle verfügbaren Schalter-Taster als Auswahl für Hardware-Eingänge
+    function getAllAvailableSwitches() {
+        let list = [];
+        projectData.details.forEach(detail => {
+            const [rows, cols] = detail.layout.split('x').map(Number);
+            const totalSlots = rows * cols;
+            for(let i=1; i<=totalSlots; i++) {
+                const slot = detail.slots[`slot-${i}`];
+                if(slot && slot.iconFile) {
+                    const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
+                    if(iconDef && iconDef.io) {
+                        iconDef.io.forEach(io => {
+                            const data = (slot.ioData && slot.ioData[io.id]) ? (typeof slot.ioData[io.id] === 'string' ? {bezeichnung: slot.ioData[io.id]} : slot.ioData[io.id]) : {};
+                            const bez = data.bezeichnung ? data.bezeichnung : `Platz ${i} (${iconDef.label})`;
+                            const identifier = `[${detail.name}] ${bez}`;
+                            list.push({ value: identifier, label: identifier });
+                        });
+                    }
+                }
             }
         });
         return list;
@@ -536,11 +560,9 @@
         container.innerHTML = html; updatePrintContainers();
     }
 
-    let selectedHwToAdd = '';
     function selectNewHardwareType(val, event) {
         event.stopPropagation();
         document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
-        selectedHwToAdd = val;
         addHardwareComponent(val);
     }
 
@@ -568,16 +590,6 @@
         return renderSearchableDropdown(`icon-picker-${slotNum}`, currentIcon, options, `selectIconDropdown_${slotNum}`, 'Icon wählen...');
     }
 
-    // Dynamischer Callback für Icon Picker
-    window.selectIconDropdown_global = function(slotNum, iconFile, event) {
-        event.stopPropagation();
-        document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
-        updateSlotIcon(slotNum, iconFile);
-    };
-
-    // Wir injizieren für jedes Slot-Icon einen passenden globalen Callback
-    document.addEventListener('click', () => {}, true);
-
     function getIOObject(slot, ioId) {
         let val = slot.ioData[ioId];
         if (typeof val === 'string') return { bezeichnung: val, art: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
@@ -598,7 +610,6 @@
                     const data = getIOObject(slot, io.id);
                     const ioTypeText = io.type === 'in' ? 'Eingang' : 'Ausgang';
                     
-                    // Suchbarer Picker für Eingang / Verknüpfung
                     const pickerId = `slot-io-${i}-${io.id}`;
                     window[`select_${pickerId}`] = function(val, ev) {
                         ev.stopPropagation();
@@ -624,7 +635,6 @@
                 ioHtml = `<div class="io-section">${ioRows}</div>`;
             }
 
-            // Globalen Callback für Icon-Dropdown binden
             window[`selectIconDropdown_${i}`] = function(file, ev) {
                 ev.stopPropagation();
                 document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
@@ -652,15 +662,71 @@
         renderApp(); 
     }
 
+    // BIDIREKTIONALE SYNCHRONISATION (Zwei-Wege-Sync)
     function updateSlotIOField(slotNum, ioId, field, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
         if(!detail.slots[`slot-${slotNum}`].ioData) detail.slots[`slot-${slotNum}`].ioData = {};
         let currentData = detail.slots[`slot-${slotNum}`].ioData[ioId];
         if (typeof currentData === 'string') currentData = { bezeichnung: currentData, art: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
         else if (!currentData) currentData = { bezeichnung: '', art: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
+        
+        const oldValue = currentData[field];
         currentData[field] = value; 
         detail.slots[`slot-${slotNum}`].ioData[ioId] = currentData; 
-        saveToLocal();
+
+        // Wenn das Eingabegerät geändert wurde, synchronisiere automatisch die Hardware-Gegenseite!
+        if (field === 'eingabegerat') {
+            const slotIconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === detail.slots[`slot-${slotNum}`].iconFile);
+            const slotIoDef = slotIconDef ? slotIconDef.io.find(i => i.id === ioId) : null;
+            const switchLabelName = currentData.bezeichnung ? currentData.bezeichnung : `Platz ${slotNum} (${slotIconDef ? slotIconDef.label : 'Schalter'})`;
+            const switchTargetString = `[${detail.name}] ${switchLabelName}`;
+
+            // 1. Altes Hardware-Mapping bereinigen falls vorhanden
+            if (oldValue) {
+                projectData.details.forEach(d => {
+                    if (d.hardware) {
+                        d.hardware.forEach(hw => {
+                            const cfg = hardwareConfigList.find(c => c.id === hw.configId);
+                            if (cfg && cfg.io) {
+                                cfg.io.forEach(io => {
+                                    if (io.type !== 'bus' && hw.mappings[io.id]) {
+                                        if (hw.mappings[io.id] === switchTargetString) {
+                                            hw.mappings[io.id] = "";
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+
+            // 2. Neues Hardware-Mapping setzen (Hardware-Eingang erhält den Schalter-Namen)
+            if (value) {
+                projectData.details.forEach(d => {
+                    if (d.hardware) {
+                        d.hardware.forEach(hw => {
+                            const cfg = hardwareConfigList.find(c => c.id === hw.configId);
+                            if (cfg) {
+                                const devBez = hw.fields['Geräte-Bez.'] ? hw.fields['Geräte-Bez.'] : cfg.name;
+                                if (cfg.io) {
+                                    cfg.io.forEach(io => {
+                                        if (io.type !== 'bus') {
+                                            const matchString = `[${d.name}] ${devBez} - ${io.label}`;
+                                            if (matchString === value) {
+                                                hw.mappings[io.id] = switchTargetString;
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
+        renderApp();
     }
 
     // --- HARDWARE KOMPONENTEN ---
@@ -687,12 +753,51 @@
         const detail = projectData.details.find(d => d.id === activeDetailId);
         const hw = detail.hardware.find(h => h.instanceId === instanceId); 
         hw.fields[field] = value; 
-        renderApp(); // Direktes Re-Rendern, damit die Gerätenamen in Pickern sofort aktualisiert werden
+        renderApp(); 
     }
 
+    // BIDIREKTIONALE SYNCHRONISATION FÜR HARDWARE -> SCHALTER
     function updateHwMapping(instanceId, ioId, value) {
         const detail = projectData.details.find(d => d.id === activeDetailId);
-        const hw = detail.hardware.find(h => h.instanceId === instanceId); hw.mappings[ioId] = value; saveToLocal();
+        const hw = detail.hardware.find(h => hw.instanceId === instanceId); 
+        if(!hw) return;
+        const oldVal = hw.mappings[ioId];
+        hw.mappings[ioId] = value;
+
+        const cfg = hardwareConfigList.find(c => c.id === hw.configId);
+        const devBez = hw.fields['Geräte-Bez.'] ? hw.fields['Geräte-Bez.'] : cfg.name;
+        const hwInputIdentifier = `[${detail.name}] ${devBez} - ${cfg.io.find(i => i.id === ioId)?.label || ioId}`;
+
+        // Wenn bei Hardware ein Schalter eingetragen wird, trage es beim Schalter als Eingabegerät ein
+        if (value) {
+            projectData.details.forEach(d => {
+                const [rows, cols] = d.layout.split('x').map(Number);
+                const totalSlots = rows * cols;
+                for(let i=1; i<=totalSlots; i++) {
+                    const slot = d.slots[`slot-${i}`];
+                    if(slot && slot.iconFile) {
+                        const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
+                        if(iconDef && iconDef.io) {
+                            iconDef.io.forEach(io => {
+                                const data = (slot.ioData && slot.ioData[io.id]) ? (typeof slot.ioData[io.id] === 'string' ? {bezeichnung: slot.ioData[io.id]} : slot.ioData[io.id]) : {};
+                                const bez = data.bezeichnung ? data.bezeichnung : `Platz ${i} (${iconDef.label})`;
+                                const fullSwitchName = `[${d.name}] ${bez}`;
+                                if (fullSwitchName === value) {
+                                    if(!slot.ioData) slot.ioData = {};
+                                    let slotIo = slot.ioData[io.id];
+                                    if(typeof slotIo === 'string') slotIo = {bezeichnung: slotIo, art:'', gruppe:'', eingabegerat:'', funktion:'', bemerkung:''};
+                                    else if(!slotIo) slotIo = {bezeichnung:'', art:'', gruppe:'', eingabegerat:'', funktion:'', bemerkung:''};
+                                    slotIo.eingabegerat = hwInputIdentifier;
+                                    slot.ioData[io.id] = slotIo;
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+        }
+
+        renderApp();
     }
     
     function addHwBusMapping(instanceId, ioId) {
@@ -725,8 +830,8 @@
         if(!detail.hardware || detail.hardware.length === 0) return '<p style="color:#64748b; font-size:0.9rem;" class="no-print">Noch keine Komponenten zugewiesen.</p>';
         
         let html = '';
-        const allConnections = getAllAvailableConnections();
         const allBusNodes = getAllBusNodes();
+        const allSwitches = getAllAvailableSwitches();
 
         detail.hardware.forEach(hw => {
             const config = hardwareConfigList.find(c => c.id === hw.configId); if(!config) return;
@@ -762,6 +867,7 @@
                                 document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
                                 updateHwBusMapping(hw.instanceId, io.id, idx, v);
                             };
+                            const allConnections = getAllAvailableConnections();
                             const devicePicker = renderSearchableDropdown(pickerId, val, allConnections, `select_${pickerId}`, 'Gerät wählen...');
 
                             return `
@@ -789,7 +895,8 @@
                             document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
                             updateHwMapping(hw.instanceId, io.id, v);
                         };
-                        const ioPicker = renderSearchableDropdown(pickerId, assignedVal, allConnections, `select_${pickerId}`, 'Zuweisung wählen...');
+                        // Hier werden Schalter/Taster aus dem ganzen Projekt für die Hardware-Eingänge angeboten
+                        const ioPicker = renderSearchableDropdown(pickerId, assignedVal, allSwitches, `select_${pickerId}`, 'Schalter/Taster wählen...');
 
                         const row = `<div class="form-group" style="margin-bottom:5px;"><label style="width:110px; font-size:0.85rem;">${io.label}</label><div style="flex:1;">${ioPicker}</div></div>`;
                         if(io.type === 'in') inputsHtml += row;
@@ -821,7 +928,7 @@
         return html;
     }
 
-    // --- DRUCK GENERATOREN (Reiner Gerätename im Druck) ---
+    // --- DRUCK GENERATOREN ---
     function buildDetailPrintHtml(detail) {
         const [rows, cols] = detail.layout.split('x').map(Number);
         const totalSlots = rows * cols;
@@ -961,8 +1068,8 @@
     }
 
     function exportProject() {
-        const dataStr = JSON.stringify(projectData, null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob);
-        const a = document.createElement("a"); a.href = url; a.download = (projectData.projectName.replace(/[^a-z0-9]/gi, '_').toLowerCase() || "projekt") + ".ServiceProDetail"; a.click(); URL.revokeObjectURL(url);
+        const dataStr = JSON.stringify(projectData, null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const dataUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a"); a.href = dataUrl; a.download = (projectData.projectName.replace(/[^a-z0-9]/gi, '_').toLowerCase() || "projekt") + ".ServiceProDetail"; a.click(); URL.revokeObjectURL(dataUrl);
     }
 
     function importProject(event) {
