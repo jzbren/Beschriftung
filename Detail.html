@@ -1101,53 +1101,67 @@
     }
 
     // --- DRUCK GENERATOREN (Angepasst für computed Bus) ---
+    // --- DRUCK GENERATOREN (Optimiert: Hardware wird immer gedruckt) ---
     function buildDetailPrintHtml(detail) {
         const [rows, cols] = detail.layout.split('x').map(Number);
         const totalSlots = rows * cols;
-        let printVisualizerSlots = '';
-
-        for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-                let slotIdx = (r * cols) + c + 1;
-                const slot = detail.slots[`slot-${slotIdx}`];
-                const iconPath = (slot && slot.iconFile) ? `icons-schalter/${slot.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1" stroke-width="1"><circle cx="12" cy="12" r="8"></circle></svg>';
-                printVisualizerSlots += `<div class="print-switch-slot"><span class="print-slot-badge">${slotIdx}</span><img src="${iconPath}"></div>`;
-            }
-        }
-
-        let printVisualizerHtml = `<div class="print-visualizer-wrapper"><div class="print-switch-frame" style="grid-template-columns: repeat(${cols}, 60px); grid-template-rows: repeat(${rows}, 60px);">${printVisualizerSlots}</div></div>`;
-
-        let slotBlocks = [];
+        
+        // Prüfen, ob überhaupt Icons auf den Plätzen vorhanden sind
+        let hasIcons = false;
         for(let i=1; i<=totalSlots; i++) {
-            const slot = detail.slots[`slot-${i}`];
-            if(!slot || !slot.iconFile) continue;
-            const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
-            const slotTitle = iconDef ? (iconDef.label || slot.iconFile) : `Platz ${i}`;
-            
-            let printIoRows = '';
-            if(iconDef && iconDef.io) {
-                iconDef.io.forEach(io => {
-                    const data = getIOObject(slot, io.id);
-                    const ioTypeText = io.type === 'in' ? 'Eingang' : 'Ausgang';
-                    printIoRows += `
-                        <div class="print-io-item">
-                            <div class="print-io-header">${ioTypeText}: ${io.label}</div>
-                            <div class="print-io-line"><span class="print-io-label">Bezeichnung:</span><span class="print-io-val">${data.bezeichnung || ''}</span></div>
-                            ${data.art ? `<div class="print-io-line"><span class="print-io-label">Art:</span><span class="print-io-val">${data.art}</span></div>` : ''}
-                            <div class="print-io-line"><span class="print-io-label">Gruppe:</span><span class="print-io-val">${data.gruppe || ''}</span></div>
-                            <div class="print-io-line"><span class="print-io-label">Eingabegerät:</span><span class="print-io-val">${data.eingabegerat || ''}</span></div>
-                            <div class="print-io-line"><span class="print-io-label">Funktion:</span><span class="print-io-val">${data.funktion || ''}</span></div>
-                            <div class="print-io-line"><span class="print-io-label">Bemerkung:</span><span class="print-io-val">${data.bemerkung || ''}</span></div>
-                        </div>
-                    `;
-                });
+            if(detail.slots[`slot-${i}`] && detail.slots[`slot-${i}`].iconFile) {
+                hasIcons = true;
+                break;
             }
-            slotBlocks.push(`<div class="print-slot-item-block"><div class="print-slot-item-title">Platz ${i} – ${slotTitle}</div>${printIoRows}</div>`);
         }
 
+        let printVisualizerHtml = '';
         let slotsGridHtml = '';
-        for (let i = 0; i < slotBlocks.length; i += 2) {
-            slotsGridHtml += `<div class="print-slots-grid-2col">${slotBlocks[i]}${slotBlocks[i+1] || '<div></div>'}</div>`;
+
+        if (hasIcons) {
+            let printVisualizerSlots = '';
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    let slotIdx = (r * cols) + c + 1;
+                    const slot = detail.slots[`slot-${slotIdx}`];
+                    const iconPath = (slot && slot.iconFile) ? `icons-schalter/${slot.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1" stroke-width="1"><circle cx="12" cy="12" r="8"></circle></svg>';
+                    printVisualizerSlots += `<div class="print-switch-slot"><span class="print-slot-badge">${slotIdx}</span><img src="${iconPath}"></div>`;
+                }
+            }
+            printVisualizerHtml = `<div class="print-visualizer-wrapper"><div class="print-switch-frame" style="grid-template-columns: repeat(${cols}, 60px); grid-template-rows: repeat(${rows}, 60px);">${printVisualizerSlots}</div></div>`;
+
+            let slotBlocks = [];
+            for(let i=1; i<=totalSlots; i++) {
+                const slot = detail.slots[`slot-${i}`];
+                if(!slot || !slot.iconFile) continue;
+                const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
+                const slotTitle = iconDef ? (iconDef.label || slot.iconFile) : `Platz ${i}`;
+                
+                let printIoRows = '';
+                if(iconDef && iconDef.io) {
+                    iconDef.io.forEach(io => {
+                        const data = getIOObject(slot, io.id);
+                        const ioTypeText = io.type === 'in' ? 'Eingang' : 'Ausgang';
+                        printIoRows += `
+                            <div class="print-io-item">
+                                <div class="print-io-header">${ioTypeText}: ${io.label}</div>
+                                <div class="print-io-line"><span class="print-io-label">Bezeichnung:</span><span class="print-io-val">${data.bezeichnung || ''}</span></div>
+                                ${data.art ? `<div class="print-io-line"><span class="print-io-label">Art:</span><span class="print-io-val">${data.art}</span></div>` : ''}
+                                <div class="print-io-line"><span class="print-io-label">Gruppe:</span><span class="print-io-val">${data.gruppe || ''}</span></div>
+                                <div class="print-io-line"><span class="print-io-label">Eingabegerät:</span><span class="print-io-val">${data.eingabegerat || ''}</span></div>
+                                <div class="print-io-line"><span class="print-io-label">Funktion:</span><span class="print-io-val">${data.funktion || ''}</span></div>
+                                <div class="print-io-line"><span class="print-io-label">Bemerkung:</span><span class="print-io-val">${data.bemerkung || ''}</span></div>
+                            </div>
+                        `;
+                    });
+                }
+                slotBlocks.push(`<div class="print-slot-item-block"><div class="print-slot-item-title">Platz ${i} – ${slotTitle}</div>${printIoRows}</div>`);
+            }
+
+            for (let i = 0; i < slotBlocks.length; i += 2) {
+                slotsGridHtml += `<div class="print-slots-grid-2col">${slotBlocks[i]}${slotBlocks[i+1] || '<div></div>'}</div>`;
+            }
+            slotsGridHtml = `<div class="print-section-title">Schalter Belegungen</div>` + slotsGridHtml;
         }
 
         let hwHtml = '';
@@ -1209,7 +1223,6 @@
                 <div class="print-header-block"><h2>${projectData.projectName}</h2>${projectData.location ? `<p>${projectData.location}</p>` : ''}</div>
                 <div class="print-section-title">${detail.name}</div>
                 ${printVisualizerHtml}
-                <div class="print-section-title">Schalter Belegungen</div>
                 ${slotsGridHtml}
                 ${hwHtml}
             </div>
