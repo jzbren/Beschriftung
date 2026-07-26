@@ -471,6 +471,16 @@
         d.hardware.push({ instanceId: generateId(), configId: hwId, fields: fields, mappings: maps }); renderApp();
     }
 
+    function deleteHardwareComponent(instanceId) {
+        if(confirm('Hardware Komponente wirklich löschen?')) {
+            const d = projectData.details.find(x => x.id === activeDetailId);
+            if(d) {
+                d.hardware = d.hardware.filter(x => x.instanceId !== instanceId);
+                renderApp();
+            }
+        }
+    }
+
     function generateVisualizerHtml(d, f, r, c) {
         let h = ''; let cnt = 1;
         for(let i=0; i<r*c; i++) {
@@ -606,7 +616,7 @@
                 }
             });
 
-            return `<div class="hw-card"><div class="hw-card-image"><img src="icons-schalter/${cfg.image}"></div><div class="hw-card-body"><div class="hw-card-header"><h4>${cfg.name}</h4><button class="delete-btn" onclick="if(confirm('Löschen?')){ d.hardware = d.hardware.filter(x=>x.instanceId!=='${hw.instanceId}'); renderApp(); }">Löschen</button></div>${fHtml}<div class="hw-io-grid">${inHtml?`<div><h5>Eingänge</h5>${inHtml}</div>`:''} ${outHtml?`<div><h5>Ausgänge</h5>${outHtml}</div>`:''}</div>${busHtml}</div></div>`;
+            return `<div class="hw-card"><div class="hw-card-image"><img src="icons-schalter/${cfg.image}"></div><div class="hw-card-body"><div class="hw-card-header"><h4>${cfg.name}</h4><button class="delete-btn" onclick="deleteHardwareComponent('${hw.instanceId}')">Löschen</button></div>${fHtml}<div class="hw-io-grid">${inHtml?`<div><h5>Eingänge</h5>${inHtml}</div>`:''} ${outHtml?`<div><h5>Ausgänge</h5>${outHtml}</div>`:''}</div>${busHtml}</div></div>`;
         }).join('');
     }
 
@@ -725,6 +735,43 @@
             });
         });
 
+        // --- NICHT ZUGEORDNETE HARDWARE ---
+        let unassignedHw = [];
+        projectData.details.forEach(d => {
+            if(d.hardware) {
+                d.hardware.forEach(hw => {
+                    const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+                    // Prüfen, ob das Gerät Felder mit Bus-/Ast-Bezug hat und ob diese leer sind
+                    if(cfg && cfg.fields) {
+                        const hasBusField = cfg.fields.some(f => /ast|bus|bridge|dali|link/i.test(f));
+                        if(hasBusField) {
+                            const isAssigned = cfg.fields.some(f => {
+                                if(/ast|bus|bridge|dali|link/i.test(f)) {
+                                    return hw.fields[f] && hw.fields[f].trim() !== "";
+                                }
+                                return false;
+                            });
+                            if(!isAssigned) {
+                                unassignedHw.push({ d, hw, cfg });
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+        if(unassignedHw.length > 0) {
+            h += `<div class="tree-master" style="color:var(--danger); border-bottom-color:var(--danger); margin-top:25px;">⚠️ Nicht zugeordnete Hardware</div>`;
+            unassignedHw.forEach(u => {
+                let uPower = 0;
+                if(u.cfg.power !== null && u.cfg.power !== undefined) uPower = u.cfg.power;
+                else if(u.hw.fields['Leistung (W)'] !== undefined) uPower = parseFloat(u.hw.fields['Leistung (W)']) || 0;
+                else if(u.cfg.defaultPower) uPower = u.cfg.defaultPower;
+
+                h += `<div class="tree-slave" style="border-left-color:var(--danger); color:var(--danger);">▪ ${getHwIdString(u.d, u.hw)} <span style="color:#94a3b8; font-size:0.8em;">(${u.d.name} | ⚡ ${uPower.toFixed(1)} W)</span></div>`;
+            });
+        }
+
         c.innerHTML = h; document.getElementById('bus-modal').style.display = 'flex';
     }
     window.closeBusOverviewModal = function(ev) { if(ev && ev.target.id !== 'bus-modal') return; document.getElementById('bus-modal').style.display = 'none'; }
@@ -760,7 +807,7 @@
                 const cfg = hardwareConfigList.find(x=>x.id===hw.configId); if(!cfg) return '';
                 let fh = ''; if(cfg.fields) cfg.fields.forEach(f => fh += `<div style="font-size:0.8rem;"><b>${f}:</b> ${hw.fields[f]||''}</div>`);
                 let ioh = ''; if(cfg.io) cfg.io.forEach(io => { if(io.type!=='bus') ioh += `<div style="font-size:0.8rem; margin-top:2px;"><b>${io.label}:</b> ${hw.mappings[io.id]||''}</div>`; });
-                return `<div class="print-hw-container"><div class="print-hw-image"><img src="icons-schalter/${cfg.image}"></div><div><b>${cfg.name}</b>${fh}<div style="margin-top:5px;">${iooh}</div></div></div>`;
+                return `<div class="print-hw-container"><div class="print-hw-image"><img src="icons-schalter/${cfg.image}"></div><div><b>${cfg.name}</b>${fh}<div style="margin-top:5px;">${ioh}</div></div></div>`;
             }).join('');
         }
 
