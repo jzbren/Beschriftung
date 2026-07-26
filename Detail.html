@@ -1421,7 +1421,13 @@ const hardwareConfigList = [
                         vSlots += `<div class="print-switch-slot"><img src="icons-schalter/${ic.file}"></div>`;
                         let ioRows = ic.io.map(io => {
                             const dat = s.ioData?.[io.id] || {};
-                            return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;"><b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>Bezeichnung: ${dat.bezeichnung||''}<br>Ziel: ${dat.eingabegerat||''}</div>`;
+                            return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">
+                                <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
+                                Bezeichnung: ${dat.bezeichnung||''}<br>
+                                Art: ${dat.art||''}<br>
+                                Gruppe: ${dat.gruppe||''}<br>
+                                Ziel: ${dat.eingabegerat||''}
+                            </div>`;
                         }).join('');
                         blocks.push(`<div class="print-slot-item-block"><b>Platz ${i} - ${ic.label}</b><div style="margin-top:5px;">${ioRows}</div></div>`);
                     }
