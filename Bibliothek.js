@@ -467,5 +467,16 @@ const hardwareConfigList = [
             { id: "LUX", label: "Helligkeit", type: "in" }, 
             { id: "VOL", label: "Lautstärke", type: "in" }
         ] 
+    },
+    { 
+        id: "lox_shading_air", 
+        name: "Loxone Shadingaktor Air", 
+        image: "Storenaktor-Air.jpg", 
+        power: 0.5, 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], 
+        io: [
+            { id: "M_1", label: "Motor(Auf )", type: "out" },
+            { id: "M_1", label: "Motor(Ab)", type: "out" }
+        ] 
     }
 ];
