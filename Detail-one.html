@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V2.0 (Flex)</title>
+    <title>ServiceProDetail Konfigurator V1.0</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -15,73 +15,153 @@
         }
         body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
 
-        .sidebar { width: var(--sidebar-width); background: #1e293b; color: white; display: flex; flex-direction: column; padding: 20px 15px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); transition: margin-left 0.3s; flex-shrink: 0; z-index: 100; box-sizing: border-box; }
+        /* Sidebar & Layout */
+        .sidebar { width: var(--sidebar-width); background: #1e293b; color: white; display: flex; flex-direction: column; padding: 20px 15px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); flex-shrink: 0; box-sizing: border-box; z-index: 100; }
         .sidebar.collapsed { margin-left: calc(-1 * var(--sidebar-width)); }
         .sidebar-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 15px; }
         .sidebar-header h2 { margin: 0; font-size: 1.2rem; }
-        .sidebar-search input { width: 100%; padding: 8px 12px; border-radius: 4px; border: 1px solid #475569; background: #334155; color: white; box-sizing: border-box; }
-        .detail-list { flex: 1; overflow-y: auto; }
-        .detail-item { padding: 10px; background: #334155; margin-bottom: 8px; border-radius: 4px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .detail-item.active { background: var(--primary); border-left: 4px solid #10b981; }
-        .sidebar-btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; }
 
-        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px 40px; min-width: 0; }
+        .sidebar-search { margin-bottom: 15px; }
+        .sidebar-search input { width: 100%; padding: 8px 12px; border-radius: 4px; border: 1px solid #475569; background: #334155; color: white; box-sizing: border-box; font-size: 0.9rem; }
+        .sidebar-search input:focus { outline: none; border-color: #10b981; background: #475569; }
+
+        .detail-list { flex: 1; overflow-y: auto; }
+        .detail-item { padding: 10px; background: #334155; margin-bottom: 8px; border-radius: 4px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+        .detail-item:hover { background: #475569; }
+        .detail-item.active { background: var(--primary); border-left: 4px solid #10b981; }
+        .detail-item-info { display: flex; flex-direction: column; }
+        .detail-item-room { font-size: 0.75rem; color: #94a3b8; margin-bottom: 2px; }
+
+        .sidebar-actions { display: flex; align-items: center; gap: 5px; }
+        .icon-btn { background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; color: white; font-size: 1.2rem; }
+        .icon-btn:hover { opacity: 0.8; }
+        .delete-btn { background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 1.1rem; padding: 0 4px; border-radius: 3px; }
+        .delete-btn:hover { color: #f87171; background: rgba(255,0,0,0.1); }
+        .sidebar-btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; }
+        .sidebar-btn:hover { background: var(--primary-hover); }
+
+        /* Main Content */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px 40px; min-width: 0; transition: width 0.3s; }
         .top-bar { display: flex; flex-direction: column; gap: 10px; background: var(--panel-bg); padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .top-bar-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .header-left { display: flex; align-items: center; gap: 10px; }
-        .toggle-sidebar-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; padding: 4px 10px; }
-        .top-bar input[type="text"] { font-size: 1.2rem; font-weight: bold; border: 1px solid transparent; padding: 5px; background: transparent; width: 350px; }
-        .top-bar input.location-input { font-size: 0.95rem; font-weight: normal; color: #475569; width: 450px; margin-left: 35px; }
+        .toggle-sidebar-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 1.2rem; cursor: pointer; color: #475569; padding: 4px 10px; }
 
-        .action-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
-        button.btn { background: white; border: 1px solid #d1d5db; padding: 8px 15px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.9rem; }
+        .top-bar input[type="text"] { font-size: 1.2rem; font-weight: bold; border: 1px solid transparent; padding: 5px; background: transparent; width: 350px; }
+        .top-bar input[type="text"].location-input { font-size: 0.95rem; font-weight: normal; color: #475569; width: 450px; margin-left: 55px; }
+        .top-bar input[type="text"]:hover, .top-bar input[type="text"]:focus { border-bottom: 1px solid var(--feller-border); outline: none; }
+        
+        .action-buttons { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        
+        button.btn { background: white; border: 1px solid #d1d5db; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
+        button.btn:hover { background: #f3f4f6; }
         button.btn.primary { background: var(--primary); color: white; border: none; }
+        button.btn.primary:hover { background: var(--primary-hover); }
         button.btn.danger { background: white; border: 1px solid #fca5a5; color: var(--danger); }
+        button.btn.danger:hover { background: #fef2f2; border-color: var(--danger); }
         button.btn.warning { background: var(--warning); color: white; border: none; }
 
+        /* Workspace Grid */
         .workspace { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 1200px; margin: 0 auto; }
+
         .pane { background: var(--panel-bg); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .pane h3 { margin-top: 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .pane h3 { margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; color: #0f172a; display: flex; justify-content: space-between; align-items: center; }
 
         .frame-header-row { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; }
         .frame-header-row input { font-weight: bold; flex: 1; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; }
-        .visualizer-container { display: flex; justify-content: center; padding: 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; margin-bottom: 15px; }
-        .switch-frame { background-color: var(--feller-white); border: 2px solid #e2e8f0; padding: 20px; border-radius: 6px; display: grid; gap: 2px; }
-        .switch-slot { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 3px; display: flex; justify-content: center; align-items: center; position: relative; width: 80px; height: 80px; cursor: grab; }
-        .switch-slot img { width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
-        .slot-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: bold; color: #64748b; }
+        .frame-header-row select { padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; }
 
+        /* Switch Visualizer */
+        .visualizer-container { display: flex; justify-content: center; align-items: center; padding: 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; margin-bottom: 15px; }
+        .switch-frame { background-color: var(--feller-white); border: 2px solid #e2e8f0; padding: 20px; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), inset 0 0 10px rgba(255,255,255,0.5); display: grid; gap: 2px; }
+        .switch-slot { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 3px; display: flex; justify-content: center; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; overflow: hidden; width: 80px; height: 80px; cursor: grab; }
+        .switch-slot.drag-over { border: 2px solid var(--primary); opacity: 0.7; }
+        .switch-slot img { width: 100%; height: 100%; object-fit: fill; padding: 0; box-sizing: border-box; opacity: 0.9; pointer-events: none; }
+        .slot-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: bold; color: #64748b; z-index: 2; pointer-events: none; }
+
+        /* Forms & Fields */
         .form-group { display: flex; margin-bottom: 10px; align-items: center; }
         .form-group label { width: 140px; font-size: 0.85rem; font-weight: 500; color: #475569; }
         .form-group input, .form-group select { flex: 1; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.9rem; }
         .slot-form { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
+        .slot-form h4 { margin: 0 0 10px 0; color: var(--primary); }
 
-        .custom-select { position: relative; flex: 1; min-width: 160px; }
-        .select-selected { background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px 8px; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .select-items { display: none; position: absolute; background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; top: 100%; left: 0; right: 0; z-index: 99; margin-top: 4px; max-height: 250px; overflow-y: auto; box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+        /* Custom Searchable Dropdown */
+        .custom-select { position: relative; flex: 1; font-family: inherit; min-width: 160px; }
+        .select-selected { background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px 8px; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .select-items { display: none; position: absolute; background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; top: 100%; left: 0; right: 0; z-index: 99; margin-top: 4px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto; min-width: 100%; }
         .select-items.show { display: block !important; }
-        .dropdown-search { width: calc(100% - 16px) !important; margin: 8px; padding: 6px; border: 1px solid #cbd5e1 !important; border-radius: 3px; }
+        .dropdown-search { width: calc(100% - 16px) !important; margin: 8px; padding: 6px; box-sizing: border-box; border: 1px solid #cbd5e1 !important; border-radius: 3px; }
         .dropdown-option { padding: 8px 10px; font-size: 0.9rem; cursor: pointer; border-bottom: 1px solid #f8fafc; }
         .dropdown-option:hover { background-color: #f1f5f9; color: var(--primary); }
 
-        .io-complex-row { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px; padding: 8px; }
+        .io-section { margin-top: 10px; }
+        .io-complex-row { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px; padding: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
         .io-header { display: flex; align-items: center; font-size: 0.8rem; font-weight: bold; color: #334155; margin-bottom: 6px; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; }
-        .io-type { font-size: 0.65rem; padding: 2px 4px; border-radius: 3px; margin-right: 6px; text-transform: uppercase; }
-        .io-fields-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+        .io-type { font-size: 0.65rem; padding: 2px 4px; border-radius: 3px; margin-right: 6px; text-transform: uppercase; font-weight: bold; }
+        .io-type.in { background: #dbeafe; color: #1e40af; }
+        .io-type.out { background: #fce7f3; color: #9f1239; }
+        .io-type.bus { background: #fef3c7; color: #92400e; }
+
+        .io-fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
         .io-fields-grid input { padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.8rem; width: 100%; box-sizing: border-box; }
 
-        .hw-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--primary); display: grid; grid-template-columns: 100px 1fr; gap: 15px; }
-        .hw-card-image img { width: 100%; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; padding: 4px; }
+        /* Hardware Editor */
+        .hardware-list { margin-top: 20px; }
+        .hw-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--primary); display: grid; grid-template-columns: 100px 1fr; gap: 15px; align-items: start; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .hw-card-image img { width: 100%; height: auto; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; padding: 4px; }
         .hw-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+        .hw-card-header h4 { margin: 0; font-size: 1.1rem; color: #0f172a; }
+        .hw-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
 
+        /* DALI Inline Sub-Device Styling */
         .bus-container { margin-top:15px; background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0; }
-        .dali-table { width: 100%; border-collapse: collapse; margin-top: 5px; background: #fff; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; }
-        .dali-table th { background: #f1f5f9; padding: 6px 8px; text-align: left; font-size: 0.8rem; color: #475569; }
-        .dali-table td { padding: 4px; border-bottom: 1px solid #f1f5f9; }
-        .dali-table input, .dali-table select { width: 100%; border: 1px solid #cbd5e1; padding: 4px 6px; border-radius: 4px; font-size: 0.85rem; box-sizing: border-box; }
+        .bus-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 8px; }
+        .bus-header h5 { margin: 0; font-size: 0.9rem; color: #1e293b; }
+        .bus-limit-badge { font-size: 0.75rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
+        .bus-limit-badge.ok { background: #dcfce7; color: #166534; }
+        .bus-limit-badge.full { background: #fee2e2; color: #991b1b; }
         
-        .delete-btn { background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 1.1rem; }
-        .delete-btn:hover { color: #f87171; }
+        .dali-table { width: 100%; border-collapse: collapse; margin-top: 5px; background: #fff; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
+        .dali-table th { background: #f1f5f9; padding: 6px 8px; text-align: left; font-size: 0.8rem; color: #475569; border-bottom: 1px solid #cbd5e1; font-weight: 600;}
+        .dali-table td { padding: 4px; border-bottom: 1px solid #f1f5f9; }
+        .dali-table tr:last-child td { border-bottom: none; }
+        .dali-table input, .dali-table select { width: 100%; border: 1px solid transparent; padding: 4px 6px; border-radius: 4px; background: transparent; font-size: 0.85rem; box-sizing: border-box; }
+        .dali-table input:focus, .dali-table select:focus { border: 1px solid #cbd5e1; background: #fff; outline: none; }
+        .dali-table input:hover, .dali-table select:hover { background: #f8fafc; border: 1px solid #e2e8f0; }
+
+        /* Modal Bus-Übersicht (Topologie) */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 85%; max-width: 900px; max-height: 85vh; border-radius: 8px; padding: 30px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
+        .modal-header h2 { margin: 0; color: #1e293b; }
+        
+        .topo-master { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .topo-master-title { font-size: 1.1rem; font-weight: bold; color: #0f766e; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+        .topo-bus { margin-left: 20px; border-left: 2px solid #94a3b8; padding-left: 15px; margin-top: 15px; position: relative; }
+        .topo-bus::before { content: ''; position: absolute; left: -2px; top: 12px; width: 12px; border-top: 2px solid #94a3b8; }
+        .topo-bus-title { font-weight: bold; color: #1e293b; margin-bottom: 10px; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center;}
+        .topo-device { margin-left: 15px; padding: 8px 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+        .topo-device-info { display: flex; gap: 15px; color: #64748b; font-size: 0.8rem; }
+        .topo-badge { background: #e2e8f0; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; color: #475569; font-weight: normal; }
+
+        @media print {
+            body { background: white; height: auto; overflow: visible; }
+            .sidebar, .top-bar, .action-buttons, .no-print, .delete-btn { display: none !important; }
+            .main-content { padding: 0; margin: 0 !important; }
+            .pane { box-shadow: none; border: none; padding: 0; margin-bottom: 15px; }
+            .print-detail-page { page-break-after: always; }
+            .print-header-block { border-bottom: 2px solid #0f766e; padding-bottom: 5px; margin-bottom: 15px; }
+            .print-section-title { font-size: 1.1rem; font-weight: bold; color: #0f766e; border-bottom: 1px solid #cbd5e1; margin: 20px 0 10px 0; }
+            .print-frame-title { font-size: 0.95rem; font-weight: bold; margin-bottom: 8px; color: #1e293b; }
+            .print-switch-frame { display: grid; gap: 4px; background: #f8fafc; border: 2px solid #cbd5e1; padding: 10px; border-radius: 6px; }
+            .print-switch-slot { background: #fff; border: 1px solid #94a3b8; display: flex; justify-content: center; align-items: center; position: relative; width: 60px; height: 60px; }
+            .print-switch-slot img { width: 100%; height: 100%; }
+            .print-slots-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+            .print-slot-item-block { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; page-break-inside: avoid; }
+            .print-hw-container { display: grid; grid-template-columns: 80px 1fr; gap: 12px; border: 1px solid #cbd5e1; border-left: 4px solid var(--primary); padding: 10px; margin-bottom: 10px; page-break-inside: avoid; }
+            .print-hw-image img { width: 100%; object-fit: contain; }
+        }
     </style>
 </head>
 <body>
@@ -89,10 +169,10 @@
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2>ServiceProDetails</h2>
-            <button class="btn" style="padding: 2px 6px;" onclick="toggleSidebar()">×</button>
+            <button class="icon-btn toggle-sidebar-btn-inner no-print" onclick="toggleSidebar()">×</button>
         </div>
         <div class="sidebar-search">
-            <input type="text" id="detail-search-input" placeholder="Suche..." onkeyup="filterDetails()">
+            <input type="text" id="detail-search-input" placeholder="Nach Detail oder Raum suchen..." onkeyup="filterDetails()">
         </div>
         <div class="detail-list" id="detail-list"></div>
         <button class="sidebar-btn" onclick="addNewDetail()">+ Neues Detail / Raum</button>
@@ -102,14 +182,17 @@
         <div class="top-bar">
             <div class="top-bar-row">
                 <div class="header-left">
-                    <button class="toggle-sidebar-btn" onclick="toggleSidebar()">☰</button>
-                    <input type="text" id="project-name" value="Flexibles Projekt" onchange="updateProjectField('projectName', this.value)">
+                    <button class="toggle-sidebar-btn no-print" onclick="toggleSidebar()">☰</button>
+                    <input type="text" id="project-name" value="Schalterdetail EFH Odermatt" onchange="updateProjectField('projectName', this.value)">
                 </div>
                 <div class="action-buttons">
                     <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
-                    <button class="btn danger" onclick="resetProject()">Neu anfangen</button>
-                    <button class="btn" onclick="document.getElementById('file-input').click()">Öffnen</button>
-                    <button class="btn primary" onclick="exportProject()">Speichern</button>
+                    <button class="btn warning" onclick="openBusOverviewModal()"><img src="icons/Switch.svg" alt="Bus" style="height:16px;"> Bus-Topologie</button>
+                    <button class="btn danger" onclick="resetProject()"><img src="icons/Radierer.svg" alt="Neu" style="height:16px;"> Neu anfangen</button>
+                    <button class="btn" onclick="document.getElementById('file-input').click()"><img src="icons/Hochladen.svg" alt="Öffnen" style="height:16px;"> Öffnen</button>
+                    <button class="btn primary" onclick="exportProject()"><img src="icons/Download.svg" alt="Speichern" style="height:16px;"> Speichern</button>
+                    <button class="btn" onclick="printAllDetails()"><img src="icons/Drucken.svg" alt="Drucken" style="height:16px;"> Alles Drucken</button>
+                    <button class="btn" onclick="printCurrentDetail()"><img src="icons/Drucken.svg" alt="Drucken" style="height:16px;"> Aktuelles Detail</button>
                 </div>
             </div>
             <div class="top-bar-row">
@@ -118,372 +201,878 @@
         </div>
 
         <div id="workspace-container"></div>
+        <div id="print-all-container" style="display: none;"></div>
+        <div id="print-single-container" style="display: none;"></div>
     </div>
 
-<!-- WICHTIG: Korrekter Verweis auf Bibliothek_one.js -->
+    <!-- Bus Overview Modal -->
+    <div id="bus-modal" class="modal-overlay" onclick="closeBusOverviewModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Loxone Bus-Topologie</h2>
+                <button class="icon-btn" onclick="closeBusOverviewModal(null)" style="color:black; font-size:1.5rem;">×</button>
+            </div>
+            <div id="bus-tree-content"></div>
+        </div>
+    </div>
 <script src="Bibliothek_one.js"></script>
 <script>
     const BASE_ICON_PATH = "icons-schalter/";
-    const LOCAL_STORAGE_KEY = 'serviceProDetailFlexData';
-    let projectData = { version: "2.0", projectName: "Flexibles Projekt", location: "", details: [] };
-    let activeDetailId = null;
+    const LOCAL_STORAGE_KEY = 'serviceProDetailData';
+    let projectData = { version: "2.0", projectName: "Neues Projekt", location: "", details: [] };
+    let activeDetailId = null; let draggedSlot = null;
+
+    document.addEventListener('keydown', e => { if (e.ctrlKey || e.metaKey) { if (e.key.toLowerCase() === 's') { e.preventDefault(); exportProject(); } else if (e.key.toLowerCase() === 'p') { e.preventDefault(); printCurrentDetail(); } } });
+    
+    document.addEventListener("click", () => {
+        document.querySelectorAll('.select-items').forEach(item => item.classList.remove('show'));
+    });
 
     window.onload = () => {
-        let saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (saved) {
-            try { projectData = JSON.parse(saved); } catch(e){}
-        }
-        if (!projectData.details || projectData.details.length === 0) {
-            addNewDetail();
-        } else {
-            activeDetailId = projectData.details[0].id;
-            renderApp();
-        }
+        let savedData = loadFromLocal();
+        if (savedData && savedData.details) {
+            projectData = savedData; activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null;
+            if(!activeDetailId) addNewDetail(); else renderApp();
+        } else addNewDetail();
     };
 
     function saveToLocal() { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(projectData)); }
+    function loadFromLocal() { const data = localStorage.getItem(LOCAL_STORAGE_KEY); return data ? JSON.parse(data) : null; }
     function generateId() { return Math.random().toString(36).substr(2, 9); }
+    function sanitizeFnName(str) { return str.replace(/[^a-zA-Z0-9_]/g, '_'); }
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
 
     function resetProject() {
-        if(confirm("Alles zurücksetzen?")) {
-            localStorage.removeItem(LOCAL_STORAGE_KEY);
-            projectData = { version: "2.0", projectName: "Neues Projekt", location: "", details: [] };
-            addNewDetail();
+        if(confirm("Komplettes Projekt löschen und neu starten?")) {
+            localStorage.removeItem(LOCAL_STORAGE_KEY); projectData = { version: "2.0", projectName: "Neues Projekt", location: "", details: [] }; activeDetailId = null; addNewDetail();
         }
+    }
+
+    // Globale Umbenennungs-Logik (Kaskadierung)
+    window.replaceStringInAllReferences = function(oldStr, newStr) {
+        if (!oldStr || !newStr || oldStr === newStr) return;
+        projectData.details.forEach(pd => {
+            if (pd.hardware) {
+                pd.hardware.forEach(hw => {
+                    for(let key in hw.fields) { if (hw.fields[key] === oldStr) hw.fields[key] = newStr; }
+                    for(let key in hw.mappings) { if (hw.mappings[key] === oldStr) hw.mappings[key] = newStr; }
+                });
+            }
+            if (pd.frames) {
+                pd.frames.forEach(f => {
+                    for(let slotKey in f.slots) {
+                        const slot = f.slots[slotKey];
+                        if(slot && slot.ioData) {
+                            for(let ioKey in slot.ioData) {
+                                let cData = slot.ioData[ioKey];
+                                if(cData && cData.eingabegerat) {
+                                    let items = cData.eingabegerat.split(',').map(x=>x.trim());
+                                    let idx = items.indexOf(oldStr);
+                                    if (idx !== -1) {
+                                        items[idx] = newStr;
+                                        cData.eingabegerat = items.join(', ');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    };
+
+    window.filterDetails = function() { renderSidebarList(); };
+
+    function getHwIdString(d, hw) {
+        const config = hardwareConfigList.find(c => c.id === hw.configId);
+        return `${d.name} ${hw.fields['Geräte-Bez.'] || config.name}`;
+    }
+    function getBusIdString(d, hw, io) { return `${getHwIdString(d, hw)} ${io.label}`; }
+
+    function getProjectTotalPower() {
+        let sum = 0;
+        projectData.details.forEach(d => d.hardware && d.hardware.forEach(hw => {
+            const c = hardwareConfigList.find(x => x.id === hw.configId);
+            if(c) {
+                if(c.power !== null && c.power !== undefined) {
+                    sum += c.power;
+                } else if(hw.fields['Leistung (W)'] !== undefined) {
+                    let pVal = parseFloat(hw.fields['Leistung (W)']);
+                    if(!isNaN(pVal)) sum += pVal;
+                } else if(c.defaultPower) {
+                    sum += c.defaultPower;
+                }
+            }
+        }));
+        return sum;
     }
 
     function renderApp() {
         document.getElementById('project-name').value = projectData.projectName;
         document.getElementById('project-location').value = projectData.location || '';
-        renderSidebar();
-        renderWorkspace();
-        saveToLocal();
+        renderSidebarList(); renderWorkspace(); saveToLocal();
     }
 
-    function renderSidebar() {
+    function renderSidebarList() {
         const list = document.getElementById('detail-list'); list.innerHTML = '';
-        projectData.details.forEach(d => {
+        const search = (document.getElementById('detail-search-input')?.value || '').toLowerCase();
+
+        projectData.details.forEach(detail => {
+            const searchStr = `${detail.name} ${detail.room || ''}`.toLowerCase();
+            if(search && !searchStr.includes(search)) return;
+
             const div = document.createElement('div');
-            div.className = `detail-item ${d.id === activeDetailId ? 'active' : ''}`;
-            div.onclick = () => { activeDetailId = d.id; renderApp(); };
-            div.innerHTML = `<div><div style="font-size:0.75rem; color:#94a3b8;">${d.room||'Raum'}</div><div>${d.name}</div></div><button class="delete-btn" onclick="event.stopPropagation(); deleteDetail('${d.id}')">×</button>`;
+            div.className = `detail-item ${detail.id === activeDetailId ? 'active' : ''}`;
+            div.onclick = () => { activeDetailId = detail.id; renderApp(); };
+            div.innerHTML = `
+                <div class="detail-item-info">
+                    <span class="detail-item-room">${detail.room || 'Kein Raum'}</span>
+                    <span>${detail.name}</span>
+                </div>
+                <div class="sidebar-actions">
+                    <button class="icon-btn" title="Duplizieren" onclick="event.stopPropagation(); duplicateDetail('${detail.id}')">📋</button>
+                    <button class="delete-btn" title="Löschen" onclick="event.stopPropagation(); deleteDetail('${detail.id}')">×</button>
+                </div>
+            `;
             list.appendChild(div);
         });
     }
 
     function addNewDetail() {
-        const nd = { id: generateId(), name: `Detail ${projectData.details.length + 1}`, room: "", frames: [], hardware: [] };
-        projectData.details.push(nd); activeDetailId = nd.id; renderApp();
+        const newDetail = { id: generateId(), name: `Detail ${projectData.details.length + 1}`, room: "", frames: [], hardware: [] };
+        projectData.details.push(newDetail); activeDetailId = newDetail.id; renderApp();
     }
-
+    
+    function duplicateDetail(id) {
+        const d = projectData.details.find(x => x.id === id);
+        if (d) { const nd = JSON.parse(JSON.stringify(d)); nd.id = generateId(); nd.name += " (Kopie)"; if(nd.hardware) nd.hardware.forEach(h => h.instanceId = generateId()); if(nd.frames) nd.frames.forEach(f => f.id = generateId()); projectData.details.push(nd); activeDetailId = nd.id; renderApp(); }
+    }
+    
     function deleteDetail(id) {
-        projectData.details = projectData.details.filter(x => x.id !== id);
-        if(projectData.details.length === 0) addNewDetail();
-        activeDetailId = projectData.details[0].id;
-        renderApp();
+        if(confirm("Detail wirklich löschen?")) { projectData.details = projectData.details.filter(x => x.id !== id); activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null; if(!activeDetailId) addNewDetail(); else renderApp(); }
     }
 
-    function updateProjectField(f, v) { projectData[f] = v; saveToLocal(); }
+    function updateProjectField(field, value) { projectData[field] = value; saveToLocal(); }
+    
+    window.updateActiveDetailField = function(field, value) { 
+        const d = projectData.details.find(x => x.id === activeDetailId); 
+        if (d) { 
+            if (field === 'name') {
+                const oldDetailName = d.name;
+                const newDetailName = value;
+                
+                d.hardware.forEach(hw => {
+                    const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+                    if(cfg) {
+                        const activeIo = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
+                        const hwName = hw.fields['Geräte-Bez.'] || cfg.name;
+                        if(activeIo) activeIo.forEach(io => {
+                            replaceStringInAllReferences(`${oldDetailName} ${hwName} ${io.label}`, `${newDetailName} ${hwName} ${io.label}`);
+                        });
+                    }
+                });
+                d.frames.forEach(f => {
+                    for(let key in f.slots) {
+                        const slot = f.slots[key];
+                        const ic = iconConfigList.find(x => x.file === slot.iconFile);
+                        if(ic && ic.io) {
+                            ic.io.forEach(io => {
+                                const cData = slot.ioData?.[io.id] || {};
+                                replaceStringInAllReferences(`${oldDetailName} ${cData.bezeichnung || ic.label}`, `${newDetailName} ${cData.bezeichnung || ic.label}`);
+                            });
+                        }
+                    }
+                });
+            }
+            d[field] = value; 
+            renderApp(); 
+        } 
+    }
+
+    function addFrameToDetail() {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        if(d) { d.frames.push({ id: generateId(), name: `Schaltstelle ${d.frames.length + 1}`, layout: "1x1", slots: {} }); renderApp(); }
+    }
+    function updateFrameField(fId, field, val) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        if(d) { const f = d.frames.find(x => x.id === fId); if(f) { f[field] = val; renderApp(); } }
+    }
+    function deleteFrame(fId) {
+        if(confirm("Schaltstelle wirklich löschen?")) { const d = projectData.details.find(x => x.id === activeDetailId); if(d) { d.frames = d.frames.filter(x => x.id !== fId); renderApp(); } }
+    }
 
     function renderSearchableDropdown(dropdownId, currentValue, optionsList, callbackName, placeholder) {
         let optsHtml = optionsList.map(opt => `<div class="dropdown-option" data-label="${(opt.label || opt.value).toLowerCase()}" onclick="${callbackName}('${opt.value.replace(/'/g, "\\'")}', event)">${opt.label || opt.value}</div>`).join('');
         const dLabel = optionsList.find(o => o.value === currentValue)?.label || currentValue || placeholder;
         return `<div class="custom-select" onclick="toggleGenericDropdown('${dropdownId}', event)"><div class="select-selected">${dLabel} <span>▼</span></div><div class="select-items" id="dd-${dropdownId}" onclick="event.stopPropagation()"><input type="text" class="dropdown-search" placeholder="Suchen..." onkeyup="filterGenericDropdown('${dropdownId}', this.value)"><div id="dd-list-${dropdownId}">${optsHtml}</div></div></div>`;
     }
-
-    window.toggleGenericDropdown = function(id, ev) {
-        ev.stopPropagation();
-        const target = document.getElementById(`dd-${id}`);
-        const isOpen = target.classList.contains('show');
-        document.querySelectorAll('.select-items').forEach(x => x.classList.remove('show'));
-        if(!isOpen) target.classList.add('show');
+    
+    window.toggleGenericDropdown = function(id, ev) { 
+        ev.stopPropagation(); 
+        const targetDropdown = document.getElementById(`dd-${id}`);
+        const willBeOpen = !targetDropdown.classList.contains('show');
+        document.querySelectorAll('.select-items').forEach(dd => dd.classList.remove('show'));
+        if(willBeOpen) {
+            targetDropdown.classList.add('show');
+            setTimeout(() => targetDropdown.querySelector('.dropdown-search')?.focus(), 50);
+        }
     };
 
-    window.filterGenericDropdown = function(id, term) {
-        const t = term.toLowerCase();
+    window.filterGenericDropdown = function(id, term) { 
+        const t = term.toLowerCase(); 
         Array.from(document.getElementById(`dd-list-${id}`).children).forEach(c => {
             c.style.display = c.getAttribute('data-label').includes(t) ? 'block' : 'none';
-        });
+        }); 
     };
 
-    window.onclick = () => document.querySelectorAll('.select-items').forEach(x => x.classList.remove('show'));
-
-    function getAllUniversalTargets() {
-        let targets = [];
-        projectData.details.forEach(d => {
-            // 1. Alle Schaltertasten als Ziel
-            if(d.frames) {
-                d.frames.forEach(f => {
-                    const tot = f.layout.split('x').reduce((a,b)=>a*b,1);
-                    for(let i=1; i<=tot; i++) {
-                        const s = f.slots[`slot-${i}`];
-                        if(s && s.iconFile) {
-                            const ic = iconConfigList.find(x => x.file === s.iconFile);
-                            if(ic && ic.io) {
-                                ic.io.forEach(io => {
-                                    const dat = s.ioData?.[io.id] || {};
-                                    targets.putTarget ? null : targets.push({ value: `${d.name} -> ${dat.bezeichnung || ic.label} (${io.label})`, label: `${d.name}: ${dat.bezeichnung || ic.label} [${io.label}]` });
-                                });
-                            }
-                        }
-                    }
-                });
-            }
-            // 2. Alle DALI-Geräte und Gruppen
-            if(d.hardware) {
-                d.hardware.forEach(hw => {
-                    const cfg = hardwareConfigList.find(x => x.id === hw.configId);
-                    if(cfg) {
-                        // DALI Sub-Devices
-                        if(hw.daliDevices) {
-                            for(let busId in hw.daliDevices) {
-                                hw.daliDevices[busId].forEach(sub => {
-                                    targets.push({ value: `DALI: ${sub.name} (Grp ${sub.group})`, label: `DALI-Gruppe/Leuchte: ${sub.name} (Gruppe ${sub.group})` });
-                                });
-                            }
-                        }
-                        // 3. NEU: Alle Relais- und Dimmer-Ausgänge als direktes Ziel (Lampengruppen / Lasten)
-                        if(cfg.io) {
-                            cfg.io.forEach(io => {
-                                if(io.type === 'out') {
-                                    const hwName = hw.fields['Geräte-Bez.'] || cfg.name;
-                                    targets.push({ 
-                                        value: `${d.name} - ${hwName} (${io.label})`, 
-                                        label: `Relais/Ausgang: ${hwName} -> ${io.label} (${d.name})` 
-                                    });
-                                }
-                            });
-                        }
-                    }
-                });
-            }
-        });
-        return targets;
+    function checkCollision(switchIdentifier) {
+        if (!switchIdentifier) return false;
+        let count = 0; projectData.details.forEach(d => { if(d.hardware) d.hardware.forEach(h => { for (const key in h.mappings) { if (h.mappings[key] === switchIdentifier) count++; } }); });
+        return count > 1;
     }
 
     function renderWorkspace() {
-        const container = document.getElementById('workspace-container');
-        const d = projectData.details.find(x => x.id === activeDetailId);
-        if(!d) return;
+        const c = document.getElementById('workspace-container'); const d = projectData.details.find(x => x.id === activeDetailId);
+        if (!d) return;
 
-        window.selectNewHw = (val, ev) => { if(ev){ev.preventDefault();ev.stopPropagation();} if(val) addHw(val); };
+        window.selectNewHw = (val, ev) => { 
+            if(ev){ev.preventDefault();ev.stopPropagation();} 
+            document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+            if(val) { setTimeout(() => { addHardwareComponent(val); }, 10); } 
+        };
         const hwPicker = renderSearchableDropdown('new-hw', '', hardwareConfigList.map(h => ({value: h.id, label: h.name})), 'selectNewHw', '+ Hardware hinzufügen');
 
         let framesHtml = d.frames.map(f => {
-            const [r, col] = f.layout.split('x').map(Number);
-            const tot = r * col;
+            const [r, col] = f.layout.split('x').map(Number); const tot = r * col;
             for(let i=1; i<=tot; i++) { if(!f.slots[`slot-${i}`]) f.slots[`slot-${i}`] = { iconFile: '', ioData: {} }; }
-            
-            let vis = '';
-            for(let i=1; i<=tot; i++) {
-                const s = f.slots[`slot-${i}`];
-                const path = s.iconFile ? `${BASE_ICON_PATH}${s.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
-                vis += `<div class="switch-slot"><span class="slot-badge">${i}</span><img src="${path}"></div>`;
-            }
-
-            let slotsForm = '';
-            for(let i=1; i<=tot; i++) {
-                const s = f.slots[`slot-${i}`];
-                const ic = iconConfigList.find(x => x.file === s.iconFile);
-                window[`setIcon_${f.id}_${i}`] = (v, ev) => { if(ev){ev.preventDefault();ev.stopPropagation();} s.iconFile = v; renderApp(); };
-                
-                let ioHtml = '';
-                if(ic && ic.io) {
-                    ioHtml = ic.io.map(io => {
-                        const dat = s.ioData?.[io.id] || {bezeichnung:'', art:'', funktion:''};
-                        return `<div class="io-complex-row">
-                            <div class="io-header"><span class="io-type" style="background:#e0f2fe; color:#0369a1;">${io.label}</span></div>
-                            <div class="io-fields-grid">
-                                <input type="text" placeholder="Bezeichnung" value="${dat.bezeichnung||''}" onchange="updateSlotIO('${f.id}', ${i}, '${io.id}', 'bezeichnung', this.value)">
-                                <input type="text" placeholder="Art (z.B. Taster)" value="${dat.art||''}" onchange="updateSlotIO('${f.id}', ${i}, '${io.id}', 'art', this.value)">
-                                <input type="text" placeholder="Funktion / Ziel" value="${dat.funktion||''}" onchange="updateSlotIO('${f.id}', ${i}, '${io.id}', 'funktion', this.value)">
-                            </div>
-                        </div>`;
-                    }).join('');
-                }
-
-                slotsForm += `<div class="slot-form">
-                    <h4>Platz ${i}</h4>
-                    <div class="form-group"><label>Modul / Taster</label>${renderSearchableDropdown(`icon-${f.id}-${i}`, s.iconFile, [{value:'', label:'--- Leer ---'}, ...iconConfigList.map(x=>({value:x.file, label:x.label}))], `setIcon_${f.id}_${i}`, 'Wählen...')}</div>
-                    ${ioHtml}
-                </div>`;
-            }
-
-            return `<div class="pane">
+            return `
+            <div class="pane">
                 <div class="frame-header-row">
-                    <input type="text" value="${f.name}" onchange="updateFrame('${f.id}', 'name', this.value)">
-                    <select onchange="updateFrame('${f.id}', 'layout', this.value)">
+                    <input type="text" value="${f.name}" placeholder="Name der Schaltstelle..." onchange="updateFrameField('${f.id}', 'name', this.value)">
+                    <select onchange="updateFrameField('${f.id}', 'layout', this.value)">
                         <option value="1x1" ${f.layout==='1x1'?'selected':''}>1 x 1</option>
-                        <option value="2x1" ${f.layout==='2x1'?'selected':''}>2 x 1</option>
+                        <option value="2x1" ${f.layout==='2x1'?'selected':''}>2 x 1 (Vertikal)</option>
+                        <option value="1x2" ${f.layout==='1x2'?'selected':''}>1 x 2 (Horizontal)</option>
                         <option value="2x2" ${f.layout==='2x2'?'selected':''}>2 x 2</option>
+                        <option value="3x2" ${f.layout==='3x2'?'selected':''}>3 x 2</option>
+                        <option value="2x3" ${f.layout==='2x3'?'selected':''}>2 x 3</option>
                         <option value="3x3" ${f.layout==='3x3'?'selected':''}>3 x 3</option>
                     </select>
-                    <button class="delete-btn" onclick="deleteFrame('${f.id}')">×</button>
+                    <button class="delete-btn" onclick="deleteFrame('${f.id}')" title="Schaltstelle löschen">×</button>
                 </div>
-                <div class="visualizer-container"><div class="switch-frame" style="grid-template-columns: repeat(${col}, 80px);">${vis}</div></div>
-                <div>${slotsForm}</div>
+                <div class="visualizer-container"><div class="switch-frame" style="grid-template-columns: repeat(${col}, 80px); grid-template-rows: repeat(${r}, 80px);">${generateVisualizerHtml(d, f, r, col)}</div></div>
+                <div>${generateSlotsHtml(d, f, tot)}</div>
             </div>`;
         }).join('');
 
-        container.innerHTML = `
+        let html = `
         <div class="workspace">
-            <div class="pane">
-                <div class="form-group"><label>Raum:</label><input type="text" value="${d.room||''}" onchange="updateDetail('room', this.value)"></div>
-                <div class="form-group"><label>Detail-Name:</label><input type="text" value="${d.name}" onchange="updateDetail('name', this.value)"></div>
-                <button class="btn" style="width:100%; justify-content:center;" onclick="addFrame()">+ Schaltstelle hinzufügen</button>
+            <div class="pane" style="padding-bottom: 15px;">
+                <div class="form-group"><label>Raum / Zone:</label><input type="text" value="${d.room || ''}" placeholder="z.B. Wohnzimmer" onchange="updateActiveDetailField('room', this.value)"></div>
+                <div class="form-group"><label>Detail Name:</label><input type="text" value="${d.name}" onchange="updateActiveDetailField('name', this.value)"></div>
+                <button class="btn" style="width:100%; justify-content:center; margin-top:10px;" onclick="addFrameToDetail()">+ Neue Schaltstelle hinzufügen</button>
             </div>
             ${framesHtml}
             <div class="pane">
-                <h3><span>Hardware & DALI</span><div style="width:250px;">${hwPicker}</div></h3>
-                <div style="margin-top:15px;">${renderHardware(d)}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>Hardware Komponenten</h3>
+                    <div class="no-print" style="width:220px;">${hwPicker}</div>
+                </div>
+                <div class="hardware-list">${generateHardwareHtml(d)}</div>
             </div>
         </div>`;
+        c.innerHTML = html; updatePrintContainers();
     }
 
-    function addFrame() {
-        const d = projectData.details.find(x => x.id === activeDetailId);
-        d.frames.push({ id: generateId(), name: `Schaltstelle ${d.frames.length + 1}`, layout: "1x1", slots: {} });
-        renderApp();
-    }
-    function updateFrame(fId, k, v) {
-        const d = projectData.details.find(x => x.id === activeDetailId);
-        const f = d.frames.find(x => x.id === fId);
-        f[k] = v; renderApp();
-    }
-    function deleteFrame(fId) {
-        const d = projectData.details.find(x => x.id === activeDetailId);
-        d.frames = d.frames.filter(x => x.id !== fId);
-        renderApp();
-    }
-    function updateDetail(k, v) {
-        const d = projectData.details.find(x => x.id === activeDetailId);
-        d[k] = v; renderApp();
-    }
-    function updateSlotIO(fId, sNum, ioId, field, val) {
-        const d = projectData.details.find(x => x.id === activeDetailId);
-        const f = d.frames.find(x => x.id === fId);
-        const s = f.slots[`slot-${sNum}`];
-        if(!s.ioData) s.ioData = {};
-        if(!s.ioData[ioId]) s.ioData[ioId] = {};
-        s.ioData[ioId][field] = val;
-        saveToLocal();
+    window.handleDragStart = function(e, fId, sNum) { draggedSlot = { fId, sNum }; e.dataTransfer.effectAllowed = 'move'; }
+    window.handleDragOver = function(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+    window.handleDragLeave = function(e) { e.currentTarget.classList.remove('drag-over'); }
+    window.handleDrop = function(e, targetFId, targetSNum) {
+        e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+        if(draggedSlot && (draggedSlot.fId !== targetFId || draggedSlot.sNum !== targetSNum)) {
+            const d = projectData.details.find(x => x.id === activeDetailId);
+            const sourceF = d.frames.find(x => x.id === draggedSlot.fId); const targetF = d.frames.find(x => x.id === targetFId);
+            if(sourceF && targetF) {
+                const temp = JSON.parse(JSON.stringify(targetF.slots[`slot-${targetSNum}`] || {}));
+                targetF.slots[`slot-${targetSNum}`] = JSON.parse(JSON.stringify(sourceF.slots[`slot-${draggedSlot.sNum}`] || {}));
+                sourceF.slots[`slot-${draggedSlot.sNum}`] = temp;
+                renderApp();
+            }
+        }
+        draggedSlot = null;
     }
 
-    function addHw(cfgId) {
-        const d = projectData.details.find(x => x.id === activeDetailId);
-        const cfg = hardwareConfigList.find(x => x.id === cfgId);
-        const fields = {};
-        if(cfg.fields) cfg.fields.forEach(f => fields[f] = f === 'Geräte-Bez.' ? `${cfg.name}` : '');
-        const mappings = {};
-        if(cfg.io) cfg.io.forEach(io => mappings[io.id] = '');
-        d.hardware.push({ instanceId: generateId(), configId: cfgId, fields, mappings, daliDevices: {} });
-        renderApp();
-    }
-    function deleteHw(instId) {
-        const d = projectData.details.find(x => x.id === activeDetailId);
-        d.hardware = d.hardware.filter(x => x.instanceId !== instId);
-        renderApp();
-    }
-
-    function renderHardware(d) {
-        if(!d.hardware || d.hardware.length === 0) return '<p style="color:#64748b;">Keine Hardware vorhanden.</p>';
-        const allTargets = getAllUniversalTargets();
-
-        return d.hardware.map(hw => {
-            const cfg = hardwareConfigList.find(x => x.id === hw.configId);
-            if(!cfg) return '';
-
-            let fieldsHtml = '';
-            cfg.fields.forEach(f => {
-                fieldsHtml += `<div class="form-group"><label>${f}</label><input type="text" value="${hw.fields[f]||''}" onchange="updateHwField('${hw.instanceId}', '${f}', this.value)"></div>`;
+    function addHardwareComponent(hwId) {
+        const c = hardwareConfigList.find(x => x.id === hwId); const d = projectData.details.find(x => x.id === activeDetailId);
+        const cnt = d.hardware.filter(x => x.configId === hwId).length + 1;
+        const fields = {}; 
+        if(c.fields) {
+            c.fields.forEach(f => {
+                if(f === 'Geräte-Bez.') fields[f] = `${c.name} ${cnt}`;
+                else if(f === 'Leistung (W)') fields[f] = c.defaultPower ? c.defaultPower.toString() : "0";
+                else fields[f] = "";
             });
+        }
+        
+        const initialProfileId = c.profiles ? c.profiles[0].id : null;
+        d.hardware.push({ 
+            instanceId: generateId(), 
+            configId: hwId, 
+            activeProfile: initialProfileId,
+            fields: fields, 
+            mappings: {}, 
+            customLabels: {}, 
+            categories: {}, 
+            subNodes: {} 
+        }); 
+        renderApp();
+    }
 
-            let ioHtml = '';
-            if(cfg.io) {
-                cfg.io.forEach(io => {
-                    if(io.isDaliBus) {
-                        if(!hw.daliDevices[io.id]) hw.daliDevices[io.id] = [];
-                        const subs = hw.daliDevices[io.id];
-                        let rows = subs.map(sub => `<tr>
-                            <td><input type="text" value="${sub.name}" oninput="updateDali('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)"></td>
-                            <td><input type="text" value="${sub.group}" oninput="updateDali('${hw.instanceId}', '${io.id}', '${sub.id}', 'group', this.value)"></td>
-                            <td><button class="delete-btn" onclick="delDali('${hw.instanceId}', '${io.id}', '${sub.id}')">×</button></td>
-                        </tr>`).join('');
+    function deleteHardwareComponent(instanceId) {
+        if(confirm('Hardware Komponente wirklich löschen?')) {
+            const d = projectData.details.find(x => x.id === activeDetailId);
+            if(d) {
+                d.hardware = d.hardware.filter(x => x.instanceId !== instanceId);
+                renderApp();
+            }
+        }
+    }
 
-                        ioHtml += `<div class="bus-container">
-                            <h5>${io.label}</h5>
-                            <table class="dali-table"><thead><tr><th>Geräte / Gruppen-Name</th><th>DALI-Gruppe</th><th style="width:30px;"></th></tr></thead><tbody>${rows}</tbody></table>
-                            <button class="btn" style="margin-top:8px; font-size:0.8rem;" onclick="addDali('${hw.instanceId}', '${io.id}')">+ DALI / Gruppe hinzufügen</button>
-                        </div>`;
-                    } else {
-                        const cbName = `setMap_${hw.instanceId}_${io.id}`;
-                        window[cbName] = (v, ev) => {
-                            if(ev){ev.preventDefault();ev.stopPropagation();}
-                            document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show'));
-                            hw.mappings[io.id] = v;
-                            saveToLocal();
-                        };
-                        ioHtml += `<div class="form-group"><label>${io.label}</label>${renderSearchableDropdown(`map-${hw.instanceId}-${io.id}`, hw.mappings[io.id]||'', [{value:'', label:'--- Frei / Direkt ---'}, ...allTargets], cbName, 'Verknüpfen...')}</div>`;
+    window.changeHwProfile = function(hwInstanceId, profileId) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        const hw = d.hardware.find(x => x.instanceId === hwInstanceId);
+        if(hw && confirm("Profil ändern? Bestehende IO-Verknüpfungen dieser Komponente werden zurückgesetzt.")) {
+            hw.activeProfile = profileId;
+            hw.mappings = {}; hw.customLabels = {}; hw.categories = {};
+            renderApp();
+        }
+    }
+
+    window.updateHardwareField = function(hwInstanceId, field, val) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        const hw = d.hardware.find(x => x.instanceId === hwInstanceId);
+        if(!hw) return;
+
+        if (field === 'Geräte-Bez.') {
+            const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+            if(cfg) {
+                const activeIo = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
+                const oldName = hw.fields[field] || cfg.name;
+                const newName = val || cfg.name;
+                if(activeIo) activeIo.forEach(io => {
+                    replaceStringInAllReferences(`${d.name} ${oldName} ${io.label}`, `${d.name} ${newName} ${io.label}`);
+                });
+            }
+        }
+        hw.fields[field] = val; saveToLocal(); renderApp();
+    };
+
+    // Generische Sub-Nodes Steuerung (DALI, Modbus, etc.)
+    window.addSubNode = function(hwInstanceId, ioId) {
+        projectData.details.forEach(d => {
+            if(d.hardware) {
+                d.hardware.forEach(hw => {
+                    if(hw.instanceId === hwInstanceId) {
+                        if(!hw.subNodes) hw.subNodes = {};
+                        if(!hw.subNodes[ioId]) hw.subNodes[ioId] = [];
+                        hw.subNodes[ioId].push({ id: generateId(), name: "Neues Gerät", location: d.room || "", group: "1", channels: 1 });
                     }
                 });
             }
+        });
+        renderApp();
+    }
 
-            return `<div class="hw-card">
-                <div class="hw-card-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div>
-                <div>
-                    <div class="hw-card-header"><h4>${cfg.name}</h4><button class="delete-btn" onclick="deleteHw('${hw.instanceId}')">Löschen</button></div>
-                    ${fieldsHtml}
-                    <div style="margin-top:10px;">${ioHtml}</div>
-                </div>
-            </div>`;
+    window.updateSubNode = function(hwInstanceId, ioId, subId, field, val) {
+        projectData.details.forEach(d => {
+            if(d.hardware) d.hardware.forEach(hw => {
+                if(hw.instanceId === hwInstanceId && hw.subNodes && hw.subNodes[ioId]) {
+                    const dev = hw.subNodes[ioId].find(x => x.id === subId);
+                    if(dev) dev[field] = val;
+                }
+            });
+        });
+        saveToLocal();
+        if (field === 'channels') renderApp();
+    }
+
+    window.deleteSubNode = function(hwInstanceId, ioId, subId) {
+        projectData.details.forEach(d => {
+            if(d.hardware) d.hardware.forEach(hw => {
+                if(hw.instanceId === hwInstanceId && hw.subNodes && hw.subNodes[ioId]) {
+                    hw.subNodes[ioId] = hw.subNodes[ioId].filter(x => x.id !== subId);
+                }
+            });
+        });
+        renderApp();
+    }
+
+    function generateVisualizerHtml(d, f, r, c) {
+        let h = ''; let cnt = 1;
+        for(let i=0; i<r*c; i++) {
+            const path = f.slots[`slot-${cnt}`].iconFile ? `${BASE_ICON_PATH}${f.slots[`slot-${cnt}`].iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
+            h += `<div class="switch-slot" draggable="true" ondragstart="handleDragStart(event, '${f.id}', ${cnt})" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${f.id}', ${cnt})"><span class="slot-badge">${cnt}</span><img src="${path}"></div>`; cnt++;
+        }
+        return h;
+    }
+
+    function generateSlotsHtml(d, f, total) {
+        let h = ''; const allConns = getAllAvailableConnections();
+        for(let i=1; i<=total; i++) {
+            const slot = f.slots[`slot-${i}`]; const ic = iconConfigList.find(x => x.file === slot.iconFile); let ioHtml = '';
+            if(ic && ic.io) {
+                ioHtml = `<div class="io-section">` + ic.io.map(io => {
+                    let data = slot.ioData?.[io.id] || {bezeichnung:'', art:'', gruppe:'', eingabegerat:'', funktion:'', bemerkung:''};
+                    if(typeof data === 'string') data = {bezeichnung: data, eingabegerat:''};
+                    const fn = `setIO_${f.id}_${i}_${io.id}`;
+                    window[fn] = (v, ev) => { 
+                        if(ev){ev.preventDefault();ev.stopPropagation();} 
+                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+                        setTimeout(()=>updateSlotField(f.id, i, io.id, 'eingabegerat', v), 10); 
+                    };
+                    
+                    const switchIdent = `${d.name} ${data.bezeichnung || ic.label}`;
+                    const hasWarn = checkCollision(switchIdent);
+                    const warnHtml = hasWarn ? `<span class="collision-warn" title="Achtung: Dieser Taster ist an mehrere Hardware-Eingänge zugewiesen!">⚠️</span>` : '';
+
+                    return `<div class="io-complex-row"><div class="io-header"><span class="io-type ${io.type}">${io.type==='in'?'Eingang':'Ausgang'}</span> ${io.label} ${warnHtml}</div>
+                    <div class="io-fields-grid">
+                        <input type="text" placeholder="Bezeichnung" value="${data.bezeichnung}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','bezeichnung',this.value)">
+                        <input type="text" placeholder="Art" value="${data.art||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','art',this.value)">
+                        <input type="text" placeholder="Gruppe" value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','gruppe',this.value)">
+                        <div>${renderSearchableDropdown(`picker-${f.id}-${i}-${io.id}`, data.eingabegerat, [{value:'', label:'--- Keine Verknüpfung ---'}, ...allConns], fn, 'Verknüpfung...')}</div>
+                    </div></div>`;
+                }).join('') + `</div>`;
+            }
+            window[`setIcon_${f.id}_${i}`] = (v, ev) => { 
+                if(ev){ev.preventDefault();ev.stopPropagation();} 
+                document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+                setTimeout(() => { f.slots[`slot-${i}`].iconFile = v; renderApp(); }, 10); 
+            };
+            h += `<div class="slot-form ${slot.iconFile ? '' : 'no-print'}"><h4>Platz ${i}</h4><div class="form-group no-print"><label>Icon</label>${renderSearchableDropdown(`icon-${f.id}-${i}`, slot.iconFile, [{value:'', label:'--- Kein Icon ---'}, ...iconConfigList.map(x=>({value:x.file, label:x.label}))], `setIcon_${f.id}_${i}`, 'Icon wählen...')}</div>${ioHtml}</div>`;
+        }
+        return h;
+    }
+
+    function updateSlotField(fId, slotN, ioId, field, val) {
+        const d = projectData.details.find(x => x.id === activeDetailId); const f = d.frames.find(x => x.id === fId);
+        if(!f.slots[`slot-${slotN}`].ioData) f.slots[`slot-${slotN}`].ioData = {};
+        const slot = f.slots[`slot-${slotN}`]; const cData = slot.ioData[ioId] || {bezeichnung:''};
+        
+        if (field === 'bezeichnung') {
+            const ic = iconConfigList.find(x => x.file === slot.iconFile);
+            if(ic) {
+                const oldBezeichnung = cData.bezeichnung || ic.label;
+                const newBezeichnung = val || ic.label;
+                replaceStringInAllReferences(`${d.name} ${oldBezeichnung}`, `${d.name} ${newBezeichnung}`);
+            }
+        }
+
+        const oldVal = cData[field]; cData[field] = val; slot.ioData[ioId] = cData;
+
+        if (field === 'eingabegerat') {
+            const ic = iconConfigList.find(x => x.file === slot.iconFile);
+            const swIdent = `${d.name} ${cData.bezeichnung || ic.label}`;
+            
+            projectData.details.forEach(pd => pd.hardware && pd.hardware.forEach(hw => {
+                const hc = hardwareConfigList.find(x => x.id === hw.configId);
+                if(hc) {
+                    const activeIo = hc.profiles ? (hc.profiles.find(p=>p.id===hw.activeProfile)?.io || hc.profiles[0].io) : hc.io;
+                    if(activeIo) activeIo.forEach(hio => {
+                        if(hio.type !== 'bus') {
+                            const targetIdent = `${pd.name} ${hw.fields['Geräte-Bez.'] || hc.name} ${hio.label}`;
+                            if(oldVal && oldVal.includes(targetIdent) && hw.mappings[hio.id] === swIdent) hw.mappings[hio.id] = "";
+                            if(val && val !== "" && val.includes(targetIdent)) hw.mappings[hio.id] = swIdent;
+                        }
+                    });
+                }
+            }));
+        }
+        renderApp();
+    }
+
+    function getFieldBusType(fieldName) {
+        const n = fieldName.toLowerCase();
+        if(n.includes('tree')) return 'tree';
+        if(n.includes('air')) return 'air';
+        if(n.includes('link') || n.includes('bus')) return 'link';
+        if(n.includes('dali')) return 'dali';
+        if(n.includes('modbus')) return 'modbus';
+        if(n.includes('1-wire') || n.includes('1wire')) return '1wire';
+        return 'unknown';
+    }
+
+    function generateHardwareHtml(d) {
+        if(!d.hardware.length) return '<p class="no-print" style="color:#64748b;">Noch keine Komponenten zugewiesen.</p>';
+        const allSwitches = getAllAvailableSwitches();
+        
+        return d.hardware.map(hw => {
+            const cfg = hardwareConfigList.find(x => x.id === hw.configId); if(!cfg) return '';
+            
+            let profileHtml = '';
+            let activeIoList = cfg.io || [];
+            if(cfg.profiles) {
+                const selProfile = cfg.profiles.find(p => p.id === hw.activeProfile) || cfg.profiles[0];
+                activeIoList = selProfile.io;
+                profileHtml = `<div class="form-group" style="background:#fef3c7; padding:8px; border-radius:4px;"><label>Geräte-Profil:</label>
+                    <select style="flex:1; padding:6px; font-weight:bold;" onchange="changeHwProfile('${hw.instanceId}', this.value)">
+                        ${cfg.profiles.map(p => `<option value="${p.id}" ${hw.activeProfile === p.id ? 'selected':''}>${p.label}</option>`).join('')}
+                    </select>
+                </div>`;
+            }
+
+            let fHtml = profileHtml; let inHtml = ''; let outHtml = ''; let busHtml = '';
+
+            if(cfg.fields) cfg.fields.forEach(f => {
+                if(/ast|bus|bridge|dali|link/i.test(f)) {
+                    const fn = `setHwF_${hw.instanceId}_${sanitizeFnName(f)}`;
+                    window[fn] = (v, ev) => { 
+                        if(ev){ev.preventDefault();ev.stopPropagation();} 
+                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+                        setTimeout(() => { updateHardwareField(hw.instanceId, f, v); }, 10); 
+                    };
+                    const expectedType = getFieldBusType(f);
+                    const busNodes = getAllBusNodes(expectedType);
+                    fHtml += `<div class="form-group"><label>${f}</label><div>${renderSearchableDropdown(`hf-${hw.instanceId}-${sanitizeFnName(f)}`, hw.fields[f]||'', [{value:'', label:'--- Keine Zuordnung ---'}, ...busNodes], fn, 'Bus...')}</div></div>`;
+                } else {
+                    fHtml += `<div class="form-group"><label>${f}</label><input type="text" value="${hw.fields[f]||''}" onchange="updateHardwareField('${hw.instanceId}', '${f}', this.value)"></div>`;
+                }
+            });
+
+            activeIoList.forEach(io => {
+                if(io.type === 'bus') {
+                    const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
+                    
+                    if(busCfg && busCfg.hasSubDevices) {
+                        if(!hw.subNodes) hw.subNodes = {};
+                        if(!hw.subNodes[io.id]) hw.subNodes[io.id] = [];
+                        const subs = hw.subNodes[io.id];
+
+                        let totalAddresses = 0;
+                        subs.forEach(s => { totalAddresses += parseInt(s.channels) || 1; });
+                        const maxLimit = io.limit || busCfg.defaultLimit || 64;
+                        const isFull = totalAddresses >= maxLimit;
+
+                        let subsHtml = '';
+                        if (subs.length > 0) {
+                            subsHtml = `<table class="dali-table">
+                                <thead><tr>
+                                    <th>Bezeichnung (${busCfg.subDeviceLabel})</th>
+                                    <th>Montageort</th><th>Gruppe</th><th>Adressen/Kanäle</th><th style="width: 30px;"></th>
+                                </tr></thead><tbody>` + subs.map(sub => `
+                                <tr>
+                                    <td><input type="text" value="${sub.name}" oninput="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)"></td>
+                                    <td><input type="text" value="${sub.location}" oninput="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'location', this.value)"></td>
+                                    <td><input type="text" value="${sub.group}" oninput="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'group', this.value)"></td>
+                                    <td><input type="number" min="1" max="16" value="${sub.channels}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'channels', this.value)" style="width:60px; border:1px solid transparent; background:transparent;"></td>
+                                    <td style="text-align: right;"><button class="delete-btn" style="padding: 2px 4px;" title="Löschen" onclick="deleteSubNode('${hw.instanceId}', '${io.id}', '${sub.id}')">✕</button></td>
+                                </tr>`).join('') + `</tbody></table>`;
+                        } else {
+                            subsHtml = `<div style="font-size:0.85rem; color:#94a3b8; margin:10px 0;">Keine ${busCfg.subDeviceLabel} angelegt.</div>`;
+                        }
+                        busHtml += `<div class="bus-container"><div class="bus-header"><h5>${busCfg.icon} ${io.label}</h5><span class="bus-limit-badge ${isFull?'full':'ok'}">${totalAddresses}/${maxLimit} Adr. belegt</span></div>${subsHtml}<button class="btn" style="margin-top:10px; padding:6px 12px; font-size:0.85rem;" onclick="addSubNode('${hw.instanceId}', '${io.id}')">+ ${busCfg.subDeviceLabel} hinzufügen</button></div>`;
+                    }
+                } else {
+                    const fn = `setHwM_${hw.instanceId}_${io.id}`;
+                    window[fn] = (v, ev) => { 
+                        if(ev){ev.preventDefault();ev.stopPropagation();} 
+                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+                        setTimeout(() => { updateHwFieldEx(hw, 'mappings', io.id, v, cfg); renderApp(); }, 10); 
+                    };
+                    
+                    const isMapped = !!(hw.mappings && hw.mappings[io.id]);
+                    const currentCat = (hw.categories && hw.categories[io.id]) ? hw.categories[io.id] : '';
+                    const currentDirect = (hw.customLabels && hw.customLabels[io.id]) ? hw.customLabels[io.id] : '';
+
+                    const row = `<div class="io-complex-row" style="margin-bottom:10px; padding:10px; border-left:3px solid ${io.type==='in'?'#3b82f6':'#ef4444'}">
+                        <div style="font-weight:bold; font-size:0.85rem; margin-bottom:8px; color:#334155;">${io.label}</div>
+                        <div style="display:flex; gap:10px; margin-bottom:6px;">
+                            <select style="width:40%; padding:4px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px;" onchange="updateHwFieldEx('${hw.instanceId}', 'categories', '${io.id}', this.value)">
+                                <option value="">-- Gewerk --</option>
+                                ${SYSTEM_CONFIG.categories.map(c => `<option value="${c}" ${currentCat===c?'selected':''}>${c}</option>`).join('')}
+                            </select>
+                            <input type="text" style="flex:1; padding:4px; font-size:0.8rem; border:1px solid #cbd5e1; border-radius:4px;" placeholder="App-/Direktbeschriftung (z.B. Deckenlicht)" value="${currentDirect}" onchange="updateHwFieldEx('${hw.instanceId}', 'customLabels', '${io.id}', this.value)">
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:0.75rem; color:#64748b; width:40%;">Taster-Verknüpfung:</span>
+                            ${renderSearchableDropdown(`hm-${hw.instanceId}-${io.id}`, hw.mappings?.[io.id]||'', [{value:'', label:'--- Nur App ---'}, ...allSwitches], fn, 'Physischer Taster...')}
+                        </div>
+                    </div>`;
+
+                    if(io.type === 'in') inHtml += row; else outHtml += row;
+                }
+            });
+
+            return `<div class="hw-card"><div class="hw-card-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div><div class="hw-card-body"><div class="hw-card-header"><h4>${cfg.name}</h4><button class="delete-btn" onclick="deleteHardwareComponent('${hw.instanceId}')">Löschen</button></div>${fHtml}<div class="hw-io-grid">${inHtml?`<div><h5>Eingänge</h5>${inHtml}</div>`:''} ${outHtml?`<div><h5>Ausgänge</h5>${outHtml}</div>`:''}</div>${busHtml}</div></div>`;
         }).join('');
     }
 
-    function updateHwField(instId, field, val) {
-        const d = projectData.details.find(x => x.id === activeDetailId);
-        const hw = d.hardware.find(x => x.instanceId === instId);
-        hw.fields[field] = val; saveToLocal();
+    window.updateHwFieldEx = function(hwOrId, dataBlock, ioId, val, cfg) {
+        let hw = typeof hwOrId === 'string' ? projectData.details.find(x => x.id === activeDetailId).hardware.find(h => h.instanceId === hwOrId) : hwOrId;
+        if(!hw[dataBlock]) hw[dataBlock] = {};
+        
+        if (dataBlock === 'mappings') {
+            updateHwMapping(hw, ioId, val, cfg);
+        } else {
+            hw[dataBlock][ioId] = val;
+            saveToLocal();
+        }
     }
 
-    function addDali(instId, ioId) {
+    function updateHwMapping(hw, ioId, val, cfg) {
         const d = projectData.details.find(x => x.id === activeDetailId);
-        const hw = d.hardware.find(x => x.instanceId === instId);
-        if(!hw.daliDevices[ioId]) hw.daliDevices[ioId] = [];
-        hw.daliDevices[ioId].push({ id: generateId(), name: "DALI Leuchte / Gruppe 1", group: "1" });
-        renderApp();
-    }
-    function updateDali(instId, ioId, subId, field, val) {
-        const d = projectData.details.find(x => x.id === activeDetailId);
-        const hw = d.hardware.find(x => x.instanceId === instId);
-        const sub = hw.daliDevices[ioId].find(x => x.id === subId);
-        sub[field] = val; saveToLocal();
-    }
-    function delDali(instId, ioId, subId) {
-        const d = projectData.details.find(x => x.id === activeDetailId);
-        const hw = d.hardware.find(x => x.instanceId === instId);
-        hw.daliDevices[ioId] = hw.daliDevices[ioId].filter(x => x.id !== subId);
-        renderApp();
+        if(!hw.mappings) hw.mappings = {};
+        const oldVal = hw.mappings[ioId]; hw.mappings[ioId] = val;
+        
+        const activeIo = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
+        const targetIdent = `${d.name} ${hw.fields['Geräte-Bez.'] || cfg.name} ${activeIo.find(i=>i.id===ioId)?.label || ioId}`;
+
+        projectData.details.forEach(pd => {
+            if(!pd.frames) return;
+            pd.frames.forEach(f => {
+                const tot = f.layout.split('x').reduce((a,b)=>a*b,1);
+                for(let i=1; i<=tot; i++) {
+                    const s = f.slots[`slot-${i}`]; if(!s || !s.iconFile || !s.ioData) continue;
+                    const ic = iconConfigList.find(x => x.file === s.iconFile); if(!ic || !ic.io) continue;
+                    ic.io.forEach(sio => {
+                        const cData = s.ioData[sio.id] || {};
+                        const swIdent = `${pd.name} ${cData.bezeichnung || ic.label}`;
+                        if(swIdent === oldVal && cData.eingabegerat) { cData.eingabegerat = cData.eingabegerat.split(',').map(x=>x.trim()).filter(x=>x!==targetIdent).join(', '); }
+                        if(swIdent === val && val !== "") { const items = cData.eingabegerat ? cData.eingabegerat.split(',').map(x=>x.trim()) : []; if(!items.includes(targetIdent)) items.push(targetIdent); cData.eingabegerat = items.join(', '); }
+                    });
+                }
+            });
+        });
     }
 
-    function exportProject() {
-        const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: "application/json" });
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-        a.download = "projekt.ServiceProDetail"; a.click();
+    function getAllAvailableConnections() {
+        let list = [];
+        projectData.details.forEach(d => d.hardware && d.hardware.forEach(hw => {
+            const c = hardwareConfigList.find(x => x.id === hw.configId);
+            if(c) {
+                const activeIo = c.profiles ? (c.profiles.find(p=>p.id===hw.activeProfile)?.io || c.profiles[0].io) : c.io;
+                if(activeIo) activeIo.forEach(io => { if(io.type !== 'bus') list.push({value: `${d.name} ${hw.fields['Geräte-Bez.'] || c.name} ${io.label}`}); });
+            }
+        }));
+        return list;
     }
-    function importProject(ev) {
-        const f = ev.target.files[0];
-        if(!f) return;
-        const r = new FileReader();
-        r.onload = e => {
-            try {
-                projectData = JSON.parse(e.target.result);
-                activeDetailId = projectData.details[0]?.id;
-                renderApp();
-            } catch(err) { alert("Fehler beim Laden."); }
-        };
-        r.readAsText(f);
+
+    function getAllAvailableSwitches() {
+        let list = [];
+        projectData.details.forEach(d => {
+            if(!d.frames) return;
+            d.frames.forEach(f => {
+                const tot = f.layout.split('x').reduce((a,b)=>a*b,1);
+                for(let i=1; i<=tot; i++) {
+                    const s = f.slots[`slot-${i}`]; if(!s || !s.iconFile) continue;
+                    const ic = iconConfigList.find(x => x.file === s.iconFile);
+                    if(ic && ic.io) ic.io.forEach(io => {
+                        list.push({value: `${d.name} ${(s.ioData && s.ioData[io.id] && s.ioData[io.id].bezeichnung) || ic.label}`});
+                    });
+                }
+            });
+        });
+        return list;
     }
+
+    function getAllBusNodes(slaveType=null) {
+        let list = [];
+        projectData.details.forEach(d => d.hardware && d.hardware.forEach(hw => {
+            const c = hardwareConfigList.find(x => x.id === hw.configId);
+            if(c) {
+                const activeIo = c.profiles ? (c.profiles.find(p=>p.id===hw.activeProfile)?.io || c.profiles[0].io) : c.io;
+                if(activeIo) activeIo.forEach(io => {
+                    if(io.type === 'bus') {
+                        const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
+                        if(busCfg && !busCfg.hasSubDevices) {
+                            if(!slaveType || slaveType === io.busType || slaveType === 'unknown' || io.busType === 'unknown') {
+                                list.push({value: getBusIdString(d,hw,io)});
+                            }
+                        }
+                    }
+                });
+            }
+        }));
+        return list;
+    }
+
+    // --- BUS ÜBERSICHT (MODAL) MIT VERSCHACHTELUNG ---
+    function getParentBusId(hw) {
+        for (let fieldName in hw.fields) {
+            if (/ast|bus|link|bridge|dali/i.test(fieldName) && hw.fields[fieldName]) {
+                return hw.fields[fieldName];
+            }
+        }
+        return null;
+    }
+
+    function openBusOverviewModal() {
+        const c = document.getElementById('bus-tree-content'); c.innerHTML = ''; let h = '';
+        
+        const allHw = [];
+        projectData.details.forEach(d => d.hardware && d.hardware.forEach(hw => {
+            const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+            if(cfg) allHw.push({d, hw, cfg});
+        }));
+
+        const totalPower = getProjectTotalPower();
+        h += `<div style="margin-bottom:25px; font-weight:bold; color:#0f766e; font-size:1.1rem; padding-bottom:10px; border-bottom:1px solid #cbd5e1;">⚡ Gesamtstromaufnahme Projekt: ${totalPower.toFixed(1)} W</div>`;
+
+        const roots = allHw.filter(item => {
+            const parentId = getParentBusId(item.hw);
+            if (!parentId) return true;
+            
+            const parentExists = allHw.some(possibleParent => {
+                const pIo = possibleParent.cfg.profiles ? (possibleParent.cfg.profiles.find(p=>p.id===possibleParent.hw.activeProfile)?.io || possibleParent.cfg.profiles[0].io) : possibleParent.cfg.io;
+                if (!pIo) return false;
+                return pIo.some(io => io.type === 'bus' && getBusIdString(possibleParent.d, possibleParent.hw, io) === parentId);
+            });
+            return !parentExists;
+        });
+
+        if (roots.length === 0 && allHw.length > 0) roots.push(...allHw);
+        if(roots.length === 0) h += '<div style="color:#64748b; font-style:italic;">Keine Hardware im Projekt vorhanden.</div>';
+
+        function renderTopoNode(item, level) {
+            const isRoot = level === 0;
+            const activeIo = item.cfg.profiles ? (item.cfg.profiles.find(p=>p.id===item.hw.activeProfile)?.io || item.cfg.profiles[0].io) : item.cfg.io;
+
+            let html = `<div class="topo-master" style="${isRoot ? '' : 'margin-top: 10px; margin-bottom: 5px; border-color:#e2e8f0; box-shadow:none;'}">
+                    <div class="topo-master-title" style="${isRoot ? '' : 'font-size:1rem; color:#1e293b;'}">
+                        ${isRoot ? '🖥️' : '🔌'} ${item.hw.fields['Geräte-Bez.'] || item.cfg.name} 
+                        <span style="color:#64748b; font-size:0.85rem; font-weight:normal;">(${item.d.room ? item.d.room + ' - ' : ''}${item.d.name})</span>
+                    </div>`;
+            
+            if (activeIo) {
+                activeIo.filter(i => i.type === 'bus').forEach(io => {
+                    const busIdStr = getBusIdString(item.d, item.hw, io);
+                    const children = allHw.filter(c => getParentBusId(c.hw) === busIdStr);
+                    const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
+                    
+                    if (busCfg && busCfg.hasSubDevices) {
+                        const subs = (item.hw.subNodes && item.hw.subNodes[io.id]) || [];
+                        let totalAddrs = 0;
+                        subs.forEach(s => { totalAddrs += parseInt(s.channels) || 1; });
+                        
+                        html += `<div class="topo-bus">
+                                <div class="topo-bus-title">
+                                    <span>${busCfg.icon} ${io.label}</span>
+                                    <span class="topo-badge">${subs.length} ${busCfg.subDeviceLabel} / ${totalAddrs} Adr. belegt</span>
+                                </div>`;
+                        
+                        if(subs.length === 0) {
+                            html += `<div class="topo-device" style="color:#94a3b8; font-style:italic; justify-content:center;">Keine ${busCfg.subDeviceLabel} angelegt</div>`;
+                        } else {
+                            subs.forEach(sub => {
+                                let ch = parseInt(sub.channels) || 1;
+                                html += `<div class="topo-device">
+                                        <div style="font-weight:600; color:#1e293b;">${sub.name || 'Ohne Bezeichnung'}</div>
+                                        <div class="topo-device-info">
+                                            <span>📍 ${sub.location || '-'}</span>
+                                            <span>👥 Grp: ${sub.group || '-'}</span>
+                                            <span style="color:#0f766e; font-weight:bold;">💡 ${ch} Adr.</span>
+                                        </div>
+                                      </div>`;
+                            });
+                        }
+                        html += `</div>`;
+                    } else {
+                        html += `<div class="topo-bus">
+                            <div class="topo-bus-title">
+                                <span>📶 ${io.label}</span>
+                                <span class="topo-badge">${children.length} Gerät(e) verbunden</span>
+                            </div>`;
+                        
+                        if (children.length > 0) {
+                            children.forEach(child => { html += renderTopoNode(child, level + 1); });
+                        } else {
+                            html += `<div class="topo-device" style="color:#94a3b8; font-style:italic; justify-content:center; background:transparent; border:none; box-shadow:none;">Keine Geräte angehängt</div>`;
+                        }
+                        html += `</div>`;
+                    }
+                });
+            }
+            html += `</div>`;
+            return html;
+        }
+
+        roots.forEach(root => { h += renderTopoNode(root, 0); });
+        c.innerHTML = h; document.getElementById('bus-modal').style.display = 'flex';
+    }
+    
+    window.closeBusOverviewModal = function(ev) { if(ev && ev.target.id !== 'bus-modal') return; document.getElementById('bus-modal').style.display = 'none'; }
+
+    // --- DRUCK FUNKTIONEN ---
+    function buildDetailPrintHtml(d) {
+        let framesHtml = '';
+        if(d.frames && d.frames.length > 0) {
+            framesHtml = d.frames.map(f => {
+                const [r, c] = f.layout.split('x').map(Number); let vSlots = ''; let blocks = [];
+                for(let i=1; i<=r*c; i++) {
+                    const s = f.slots[`slot-${i}`]; const ic = iconConfigList.find(x=>x.file===s?.iconFile);
+                    if(ic) {
+                        vSlots += `<div class="print-switch-slot"><img src="icons-schalter/${ic.file}"></div>`;
+                        let ioRows = ic.io.map(io => {
+                            const dat = s.ioData?.[io.id] || {};
+                            return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">
+                                <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
+                                Bezeichnung: ${dat.bezeichnung||''}<br>
+                                Art: ${dat.art||''}<br>
+                                Gruppe: ${dat.gruppe||''}<br>
+                                Ziel: ${dat.eingabegerat||''}
+                            </div>`;
+                        }).join('');
+                        blocks.push(`<div class="print-slot-item-block"><b>Platz ${i} - ${ic.label}</b><div style="margin-top:5px;">${ioRows}</div></div>`);
+                    }
+                }
+                if(blocks.length === 0) return '';
+                let visHtml = `<div style="display:flex; justify-content:center; margin: 10px 0;"><div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px);">${vSlots}</div></div>`;
+                let bStr = ''; for(let i=0; i<blocks.length; i+=2) bStr += `<div class="print-slots-grid-2col">${blocks[i]}${blocks[i+1]||'<div></div>'}</div>`;
+                return `<div><div class="print-frame-title">Schaltstelle: ${f.name}</div>${visHtml}${bStr}</div>`;
+            }).join('');
+            if(framesHtml) framesHtml = `<div class="print-section-title">Schalter Belegungen</div>${framesHtml}`;
+        }
+        
+        let hwHtml = '';
+        if(d.hardware.length) {
+            hwHtml = `<div class="print-section-title">Hardware</div>` + d.hardware.map(hw => {
+                const cfg = hardwareConfigList.find(x=>x.id===hw.configId); if(!cfg) return '';
+                const activeIo = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
+                
+                let fh = ''; if(cfg.fields) cfg.fields.forEach(f => fh += `<div style="font-size:0.8rem;"><b>${f}:</b> ${hw.fields[f]||''}</div>`);
+                if(cfg.profiles) {
+                    const pName = cfg.profiles.find(p=>p.id===hw.activeProfile)?.label || '';
+                    fh += `<div style="font-size:0.8rem; color:#0f766e;"><b>Profil:</b> ${pName}</div>`;
+                }
+
+                let ioh = ''; if(activeIo) activeIo.forEach(io => { 
+                    const busCfg = io.type==='bus' ? SYSTEM_CONFIG.busTypes[io.busType] : null;
+                    if(busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
+                        hw.subNodes[io.id].forEach(sub => {
+                            ioh += `<div style="font-size:0.8rem; margin-top:2px; border-left:2px solid var(--primary); padding-left:6px;"><b>${busCfg.subDeviceLabel}:</b> ${sub.name} (Ort: ${sub.location || 'k.A.'}, Grp: ${sub.group || '-'}, ${sub.channels} Adr.)</div>`;
+                        });
+                    } else if(io.type!=='bus') {
+                        const cat = hw.categories?.[io.id] || '-';
+                        const app = hw.customLabels?.[io.id] || '-';
+                        const map = hw.mappings?.[io.id] || '-';
+                        ioh += `<div style="font-size:0.8rem; margin-top:2px;"><b>${io.label}:</b> Gewerk: ${cat} | App: ${app} | Taster: ${map}</div>`; 
+                    }
+                });
+                return `<div class="print-hw-container"><div class="print-hw-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div><div><b>${cfg.name}</b>${fh}<div style="margin-top:5px;">${ioh}</div></div></div>`;
+            }).join('');
+        }
+
+        return `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName}</h2><p>${projectData.location||''}</p></div><h3 style="color:#0f766e; margin:0;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}</h3>${framesHtml}${hwHtml}</div>`;
+    }
+
+    function updatePrintContainers() {
+        document.getElementById('print-all-container').innerHTML = projectData.details.map(buildDetailPrintHtml).join('');
+        const ad = projectData.details.find(x=>x.id===activeDetailId); document.getElementById('print-single-container').innerHTML = ad ? buildDetailPrintHtml(ad) : '';
+    }
+    function printAllDetails() { updatePrintContainers(); document.getElementById('workspace-container').style.display='none'; document.getElementById('print-all-container').style.display='block'; window.print(); document.getElementById('workspace-container').style.display='block'; document.getElementById('print-all-container').style.display='none'; }
+    function printCurrentDetail() { updatePrintContainers(); document.getElementById('workspace-container').style.display='none'; document.getElementById('print-single-container').style.display='block'; window.print(); document.getElementById('workspace-container').style.display='block'; document.getElementById('print-single-container').style.display='none'; }
+    function exportProject() { const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: "application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = (projectData.projectName.replace(/[^a-z0-9]/gi, '_').toLowerCase() || "projekt") + ".ServiceProDetail"; a.click(); }
+    function importProject(ev) { const f = ev.target.files[0]; if(!f || !f.name.endsWith('.ServiceProDetail')) return alert("Ungültige Datei!"); const r = new FileReader(); r.onload = e => { try { const p = JSON.parse(e.target.result); if(p && p.details) { projectData = p; activeDetailId = p.details[0]?.id; window.onload(); } } catch (err) { alert("Fehler beim Laden."); } }; r.readAsText(f); ev.target.value = ''; }
 </script>
 </body>
 </html>
