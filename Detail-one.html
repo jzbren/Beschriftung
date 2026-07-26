@@ -212,6 +212,7 @@
     function getAllUniversalTargets() {
         let targets = [];
         projectData.details.forEach(d => {
+            // 1. Alle Schaltertasten als Ziel
             if(d.frames) {
                 d.frames.forEach(f => {
                     const tot = f.layout.split('x').reduce((a,b)=>a*b,1);
@@ -222,20 +223,36 @@
                             if(ic && ic.io) {
                                 ic.io.forEach(io => {
                                     const dat = s.ioData?.[io.id] || {};
-                                    targets.push({ value: `${d.name} -> ${dat.bezeichnung || ic.label} (${io.label})`, label: `${d.name}: ${dat.bezeichnung || ic.label} [${io.label}]` });
+                                    targets.putTarget ? null : targets.push({ value: `${d.name} -> ${dat.bezeichnung || ic.label} (${io.label})`, label: `${d.name}: ${dat.bezeichnung || ic.label} [${io.label}]` });
                                 });
                             }
                         }
                     }
                 });
             }
+            // 2. Alle DALI-Geräte und Gruppen
             if(d.hardware) {
                 d.hardware.forEach(hw => {
                     const cfg = hardwareConfigList.find(x => x.id === hw.configId);
-                    if(cfg && hw.daliDevices) {
-                        for(let busId in hw.daliDevices) {
-                            hw.daliDevices[busId].forEach(sub => {
-                                targets.push({ value: `DALI: ${sub.name} (Grp ${sub.group})`, label: `DALI-Gerät: ${sub.name} (Gruppe ${sub.group})` });
+                    if(cfg) {
+                        // DALI Sub-Devices
+                        if(hw.daliDevices) {
+                            for(let busId in hw.daliDevices) {
+                                hw.daliDevices[busId].forEach(sub => {
+                                    targets.push({ value: `DALI: ${sub.name} (Grp ${sub.group})`, label: `DALI-Gruppe/Leuchte: ${sub.name} (Gruppe ${sub.group})` });
+                                });
+                            }
+                        }
+                        // 3. NEU: Alle Relais- und Dimmer-Ausgänge als direktes Ziel (Lampengruppen / Lasten)
+                        if(cfg.io) {
+                            cfg.io.forEach(io => {
+                                if(io.type === 'out') {
+                                    const hwName = hw.fields['Geräte-Bez.'] || cfg.name;
+                                    targets.push({ 
+                                        value: `${d.name} - ${hwName} (${io.label})`, 
+                                        label: `Relais/Ausgang: ${hwName} -> ${io.label} (${d.name})` 
+                                    });
+                                }
                             });
                         }
                     }
