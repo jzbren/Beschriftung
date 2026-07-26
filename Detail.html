@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V1.5</title>
+    <title>ServiceProDetail Konfigurator V1.4</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -239,13 +239,13 @@
         
         { id: "lox_dali_rgbw", name: "Loxone DALI RGBW Dimmer", image: "Dali-Dimmer.jpg", power: null, defaultPower: 1.0, fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "DALI Bus"], io: [{ id: "O_1", label: "RGBW Licht", type: "out" }] },
         { id: "lox_dali_air", name: "Loxone DALI Air", image: "Dali-Air.jpg", power: 0.5, fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], io: [{ id: "DALI_OUT", label: "DALI Geräte (Max 10)", type: "bus", max: 10, isDaliMaster: true }] },
-        { id: "lox_dali_ext_sub", name: "Loxone DALI Extension (Geräte-Bus)", image: "Dali-Extension.jpg", power: 1.5, fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], io: [{ id: "DALI_1", label: "DALI Bus 1 (Max 64)", type: "bus", max: 64, isDaliMaster: true }, { id: "DALI_2", label: "DALI Bus 2 (Max 64)", type: "bus", max: 64, isDaliMaster: true }] },
         
-        { id: "dali_device_generic", name: "DALI Gerät / EVG / Leuchte", image: "SCH3.png", power: 0.2, fields: ["S.-Nr.", "Geräte-Bez.", "DALI Bus", "DALI Gruppe", "Belegte Adressen (1-4)"], io: [{ id: "DALI_OUT", label: "DALI Lichtkanal", type: "out" }] }
+        // NEU / KORRIGIERT: Spezielles DALI-Gerät (EVG / Leuchte) für die Bus-Zuordnung mit Gruppen & Kanalanzahl
+        { id: "dali_device_slave", name: "DALI Gerät / EVG / Mehrkanal", image: "SCH3.png", power: 0.2, fields: ["S.-Nr.", "Geräte-Bez.", "DALI Bus", "DALI Gruppen", "Belegte Adressen (1-4)"], io: [{ id: "DALI_KANAL", label: "DALI Lichtkanal", type: "out" }] }
     ];
 
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
-    let projectData = { version: "1.4", projectName: "Neues Projekt", location: "", details: [] };
+    let projectData = { version: "1.5", projectName: "Neues Projekt", location: "", details: [] };
     let activeDetailId = null; let draggedSlot = null;
 
     document.addEventListener('keydown', e => { if (e.ctrlKey || e.metaKey) { if (e.key.toLowerCase() === 's') { e.preventDefault(); exportProject(); } else if (e.key.toLowerCase() === 'p') { e.preventDefault(); printCurrentDetail(); } } });
@@ -270,7 +270,7 @@
 
     function resetProject() {
         if(confirm("Komplettes Projekt löschen und neu starten?")) {
-            localStorage.removeItem(LOCAL_STORAGE_KEY); projectData = { version: "1.4", projectName: "Neues Projekt", location: "", details: [] }; activeDetailId = null; addNewDetail();
+            localStorage.removeItem(LOCAL_STORAGE_KEY); projectData = { version: "1.5", projectName: "Neues Projekt", location: "", details: [] }; activeDetailId = null; addNewDetail();
         }
     }
 
@@ -601,7 +601,6 @@
                 if(io.type === 'bus') {
                     const bId = getBusIdString(d, hw, io); const slaves = findSlavesForBus(bId);
                     
-                    // DALI Adress-Berechnung (z.B. wenn EVGs mit mehr als 1 Adresse angeschlossen sind)
                     let totalDaliAddressesUsed = 0;
                     slaves.forEach(s => {
                         let addrs = parseInt(s.hw.fields['Belegte Adressen (1-4)']) || 1;
@@ -612,7 +611,7 @@
 
                     const bHtml = slaves.length ? slaves.map((s,i) => {
                         let addrs = s.hw.fields['Belegte Adressen (1-4)'] ? ` | ${s.hw.fields['Belegte Adressen (1-4)']} Adr.` : '';
-                        let groupInfo = s.hw.fields['DALI Gruppe'] ? ` | Grp: ${s.hw.fields['DALI Gruppe']}` : '';
+                        let groupInfo = s.hw.fields['DALI Gruppen'] ? ` | Grp: ${s.hw.fields['DALI Gruppen']}` : '';
                         return `<div class="bus-item"><span>${i+1}. ${getHwIdString(s.detail, s.hw)}${groupInfo}${addrs}</span><button class="delete-btn" onclick="s.hw.fields['${s.fieldName}']=''; renderApp();">×</button></div>`;
                     }).join('') : '<div style="font-size:0.8rem; color:#94a3b8;">Leer</div>';
 
@@ -752,7 +751,7 @@
 
                     let addrs = parseInt(s.hw.fields['Belegte Adressen (1-4)']) || 1;
                     daliAddressCount += addrs;
-                    let groupInfo = s.hw.fields['DALI Gruppe'] ? ` [Grp: ${s.hw.fields['DALI Gruppe']}]` : '';
+                    let groupInfo = s.hw.fields['DALI Gruppen'] ? ` [Grp: ${s.hw.fields['DALI Gruppen']}]` : '';
 
                     return `<div class="tree-slave">▪ ${getHwIdString(s.detail, s.hw)}${groupInfo} <span style="color:#94a3b8; font-size:0.8em;">(⚡ ${sPower.toFixed(1)} W | 🔌 ${addrs} Adr.)</span></div>`;
                 }).join('');
