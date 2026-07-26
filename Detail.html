@@ -514,7 +514,7 @@
                         <input type="text" placeholder="Bezeichnung" value="${data.bezeichnung}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','bezeichnung',this.value)">
                         <input type="text" placeholder="Art" value="${data.art||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','art',this.value)">
                         <input type="text" placeholder="Gruppe" value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','gruppe',this.value)">
-                        <div>${renderSearchableDropdown(`picker-${f.id}-${i}-${io.id}`, data.eingabegerat, allConns, fn, 'Verknüpfung...')}</div>
+                        <div>${renderSearchableDropdown(`picker-${f.id}-${i}-${io.id}`, data.eingabegerat, [{value:'', label:'--- Keine Zuordnung ---'}, ...allConns], fn, 'Verknüpfung...')}</div>
                     </div></div>`;
                 }).join('') + `</div>`;
             }
@@ -523,7 +523,7 @@
                 document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
                 setTimeout(() => { f.slots[`slot-${i}`].iconFile = v; renderApp(); }, 10); 
             };
-            h += `<div class="slot-form ${slot.iconFile ? '' : 'no-print'}"><h4>Platz ${i}</h4><div class="form-group no-print"><label>Icon</label>${renderSearchableDropdown(`icon-${f.id}-${i}`, slot.iconFile, iconConfigList.map(x=>({value:x.file, label:x.label})), `setIcon_${f.id}_${i}`, 'Icon wählen...')}</div>${ioHtml}</div>`;
+            h += `<div class="slot-form ${slot.iconFile ? '' : 'no-print'}"><h4>Platz ${i}</h4><div class="form-group no-print"><label>Icon</label>${renderSearchableDropdown(`icon-${f.id}-${i}`, slot.iconFile, [{value:'', label:'--- Kein Icon ---'}, ...iconConfigList.map(x=>({value:x.file, label:x.label}))], `setIcon_${f.id}_${i}`, 'Icon wählen...')}</div>${ioHtml}</div>`;
         }
         return h;
     }
@@ -585,7 +585,8 @@
                         document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
                         setTimeout(() => { hw.fields[f] = v; renderApp(); }, 10); 
                     };
-                    fHtml += `<div class="form-group"><label>${f}</label><div>${renderSearchableDropdown(`hf-${hw.instanceId}-${sanitizeFnName(f)}`, hw.fields[f]||'', getAllBusNodes(detectBusType(f)), fn, 'Bus...')}</div></div>`;
+                    const busNodes = getAllBusNodes(detectBusType(f));
+                    fHtml += `<div class="form-group"><label>${f}</label><div>${renderSearchableDropdown(`hf-${hw.instanceId}-${sanitizeFnName(f)}`, hw.fields[f]||'', [{value:'', label:'--- Keine Zuordnung ---'}, ...busNodes], fn, 'Bus...')}</div></div>`;
                 } else {
                     fHtml += `<div class="form-group"><label>${f}</label><input type="text" value="${hw.fields[f]||''}" oninput="const hObj = projectData.details.find(d=>d.id==='${d.id}').hardware.find(h=>h.instanceId==='${hw.instanceId}'); if(hObj) hObj.fields['${f}'] = this.value; saveToLocal();"></div>`;
                 }
@@ -611,7 +612,7 @@
                     };
                     const hasWarn = hw.mappings[io.id] ? checkCollision(hw.mappings[io.id]) : false;
                     const warnHtml = hasWarn ? `<span class="collision-warn" title="Dieser Taster ist mehrfach verknüpft!">⚠️</span>` : '';
-                    const row = `<div class="form-group"><label style="width:110px;">${io.label} ${warnHtml}</label><div>${renderSearchableDropdown(`hm-${hw.instanceId}-${io.id}`, hw.mappings[io.id]||'', allSwitches, fn, 'Taster wählen...')}</div></div>`;
+                    const row = `<div class="form-group"><label style="width:110px;">${io.label} ${warnHtml}</label><div>${renderSearchableDropdown(`hm-${hw.instanceId}-${io.id}`, hw.mappings[io.id]||'', [{value:'', label:'--- Keine Verknüpfung ---'}, ...allSwitches], fn, 'Taster wählen...')}</div></div>`;
                     if(io.type === 'in') inHtml += row; else outHtml += row;
                 }
             });
@@ -636,7 +637,7 @@
                         const cData = s.ioData[sio.id] || {};
                         const swIdent = `${pd.name} ${cData.bezeichnung || ic.label}`;
                         if(swIdent === oldVal && cData.eingabegerat) { cData.eingabegerat = cData.eingabegerat.split(',').map(x=>x.trim()).filter(x=>x!==targetIdent).join(', '); }
-                        if(swIdent === val) { const items = cData.eingabegerat ? cData.eingabegerat.split(',').map(x=>x.trim()) : []; if(!items.includes(targetIdent)) items.push(targetIdent); cData.eingabegerat = items.join(', '); }
+                        if(swIdent === val && val !== "") { const items = cData.eingabegerat ? cData.eingabegerat.split(',').map(x=>x.trim()) : []; if(!items.includes(targetIdent)) items.push(targetIdent); cData.eingabegerat = items.join(', '); }
                     });
                 }
             });
@@ -741,7 +742,6 @@
             if(d.hardware) {
                 d.hardware.forEach(hw => {
                     const cfg = hardwareConfigList.find(x => x.id === hw.configId);
-                    // Prüfen, ob das Gerät Felder mit Bus-/Ast-Bezug hat und ob diese leer sind
                     if(cfg && cfg.fields) {
                         const hasBusField = cfg.fields.some(f => /ast|bus|bridge|dali|link/i.test(f));
                         if(hasBusField) {
