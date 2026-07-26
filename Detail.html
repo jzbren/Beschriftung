@@ -238,7 +238,10 @@
         { id: "lox_nano_io_air", name: "Loxone Nano IO Air", image: "Nano-IO-Air.jpg", power: 0.5, fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], io: [{ id: "I_1", label: "I1", type: "in" }, { id: "I_2", label: "I2", type: "in" }, { id: "O_1", label: "Relais 1", type: "out" }, { id: "O_2", label: "Relais 2", type: "out" }] },
         
         { id: "lox_dali_rgbw", name: "Loxone DALI RGBW Dimmer", image: "Dali-Dimmer.jpg", power: null, defaultPower: 1.0, fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "DALI Bus"], io: [{ id: "O_1", label: "RGBW Licht", type: "out" }] },
-        { id: "lox_dali_air", name: "Loxone DALI Air", image: "Dali-Air.jpg", power: 0.5, fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], io: [{ id: "DALI_OUT", label: "DALI Geräte (Max 10)", type: "bus", max: 10 }] }
+        { id: "lox_dali_air", name: "Loxone DALI Air", image: "Dali-Air.jpg", power: 0.5, fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], io: [{ id: "DALI_OUT", label: "DALI Geräte (Max 10)", type: "bus", max: 10, isDaliMaster: true }] },
+        { id: "lox_dali_ext_sub", name: "Loxone DALI Extension (Geräte-Bus)", image: "Dali-Extension.jpg", power: 1.5, fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], io: [{ id: "DALI_1", label: "DALI Bus 1 (Max 64)", type: "bus", max: 64, isDaliMaster: true }, { id: "DALI_2", label: "DALI Bus 2 (Max 64)", type: "bus", max: 64, isDaliMaster: true }] },
+        
+        { id: "dali_device_generic", name: "DALI Gerät / EVG / Leuchte", image: "SCH3.png", power: 0.2, fields: ["S.-Nr.", "Geräte-Bez.", "DALI Bus", "DALI Gruppe", "Belegte Adressen (1-4)"], io: [{ id: "DALI_OUT", label: "DALI Lichtkanal", type: "out" }] }
     ];
 
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
@@ -383,6 +386,7 @@
     };
 
     function checkCollision(switchIdentifier) {
+        if (!switchIdentifier) return false;
         let count = 0; projectData.details.forEach(d => { if(d.hardware) d.hardware.forEach(h => { for (const key in h.mappings) { if (h.mappings[key] === switchIdentifier) count++; } }); });
         return count > 1;
     }
@@ -464,6 +468,7 @@
             c.fields.forEach(f => {
                 if(f === 'Geräte-Bez.') fields[f] = `${c.name} ${cnt}`;
                 else if(f === 'Leistung (W)') fields[f] = c.defaultPower ? c.defaultPower.toString() : "0";
+                else if(f === 'Belegte Adressen (1-4)') fields[f] = "1";
                 else fields[f] = "";
             });
         }
@@ -514,7 +519,7 @@
                         <input type="text" placeholder="Bezeichnung" value="${data.bezeichnung}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','bezeichnung',this.value)">
                         <input type="text" placeholder="Art" value="${data.art||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','art',this.value)">
                         <input type="text" placeholder="Gruppe" value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','gruppe',this.value)">
-                        <div>${renderSearchableDropdown(`picker-${f.id}-${i}-${io.id}`, data.eingabegerat, [{value:'', label:'--- Keine Zuordnung ---'}, ...allConns], fn, 'Verknüpfung...')}</div>
+                        <div>${renderSearchableDropdown(`picker-${f.id}-${i}-${io.id}`, data.eingabegerat, [{value:'', label:'--- Keine Verknüpfung ---'}, ...allConns], fn, 'Verknüpfung...')}</div>
                     </div></div>`;
                 }).join('') + `</div>`;
             }
@@ -544,7 +549,7 @@
                     if(hio.type !== 'bus') {
                         const targetIdent = `${pd.name} ${hw.fields['Geräte-Bez.'] || hc.name} ${hio.label}`;
                         if(oldVal && oldVal.includes(targetIdent) && hw.mappings[hio.id] === swIdent) hw.mappings[hio.id] = "";
-                        if(val && val.includes(targetIdent)) hw.mappings[hio.id] = swIdent;
+                        if(val && val !== "" && val.includes(targetIdent)) hw.mappings[hio.id] = swIdent;
                     }
                 });
             }));
@@ -595,14 +600,29 @@
             if(cfg.io) cfg.io.forEach(io => {
                 if(io.type === 'bus') {
                     const bId = getBusIdString(d, hw, io); const slaves = findSlavesForBus(bId);
-                    const bHtml = slaves.length ? slaves.map((s,i) => `<div class="bus-item"><span>${i+1}. ${getHwIdString(s.detail, s.hw)}</span><button class="delete-btn" onclick="s.hw.fields['${s.fieldName}']=''; renderApp();">×</button></div>`).join('') : '<div style="font-size:0.8rem; color:#94a3b8;">Leer</div>';
+                    
+                    // DALI Adress-Berechnung (z.B. wenn EVGs mit mehr als 1 Adresse angeschlossen sind)
+                    let totalDaliAddressesUsed = 0;
+                    slaves.forEach(s => {
+                        let addrs = parseInt(s.hw.fields['Belegte Adressen (1-4)']) || 1;
+                        totalDaliAddressesUsed += addrs;
+                    });
+                    const maxLimit = io.max || (io.isDaliMaster ? 64 : null);
+                    const isFull = maxLimit && totalDaliAddressesUsed >= maxLimit;
+
+                    const bHtml = slaves.length ? slaves.map((s,i) => {
+                        let addrs = s.hw.fields['Belegte Adressen (1-4)'] ? ` | ${s.hw.fields['Belegte Adressen (1-4)']} Adr.` : '';
+                        let groupInfo = s.hw.fields['DALI Gruppe'] ? ` | Grp: ${s.hw.fields['DALI Gruppe']}` : '';
+                        return `<div class="bus-item"><span>${i+1}. ${getHwIdString(s.detail, s.hw)}${groupInfo}${addrs}</span><button class="delete-btn" onclick="s.hw.fields['${s.fieldName}']=''; renderApp();">×</button></div>`;
+                    }).join('') : '<div style="font-size:0.8rem; color:#94a3b8;">Leer</div>';
+
                     const fn = `addSlave_${hw.instanceId}_${io.id}`;
                     window[fn] = (v, ev) => { 
                         if(ev){ev.preventDefault();ev.stopPropagation();} 
                         document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
                         setTimeout(() => { const [did, hid, fname] = v.split('|'); const sd = projectData.details.find(x=>x.id===did); if(sd) { const sh = sd.hardware.find(x=>x.instanceId===hid); if(sh) sh.fields[fname] = bId; } renderApp(); }, 10); 
                     };
-                    busHtml += `<div class="bus-container"><div class="bus-header"><h5>${io.label}</h5><span class="bus-limit-badge ${io.max && slaves.length>=io.max?'full':'ok'}">${slaves.length}${io.max?'/'+io.max:''}</span></div>${bHtml}${!io.max||slaves.length<io.max ? `<div style="margin-top:5px;">${renderSearchableDropdown(`as-${hw.instanceId}-${io.id}`,'',getAllBusSlaves(detectBusType(io.label)),fn,'+ Gerät...')}</div>` : ''}</div>`;
+                    busHtml += `<div class="bus-container"><div class="bus-header"><h5>${io.label}</h5><span class="bus-limit-badge ${isFull?'full':'ok'}">${totalDaliAddressesUsed}${maxLimit?'/'+maxLimit+' Adr.':''}</span></div>${bHtml}${!maxLimit || totalDaliAddressesUsed < maxLimit ? `<div style="margin-top:5px;">${renderSearchableDropdown(`as-${hw.instanceId}-${io.id}`,'',getAllBusSlaves(detectBusType(io.label)),fn,'+ Gerät...')}</div>` : ''}</div>`;
                 } else {
                     const fn = `setHwM_${hw.instanceId}_${io.id}`;
                     window[fn] = (v, ev) => { 
@@ -718,6 +738,7 @@
             m.cfg.io.filter(i => i.type === 'bus').forEach(io => {
                 const bId = getBusIdString(m.d, m.hw, io); const slaves = findSlavesForBus(bId);
                 let astPower = 0;
+                let daliAddressCount = 0;
                 let slavesHtml = slaves.map(s => {
                     let sPower = 0;
                     if(s.config.power !== null && s.config.power !== undefined) {
@@ -728,9 +749,16 @@
                         sPower = s.config.defaultPower;
                     }
                     astPower += sPower;
-                    return `<div class="tree-slave">▪ ${getHwIdString(s.detail, s.hw)} <span style="color:#94a3b8; font-size:0.8em;">(⚡ ${sPower.toFixed(1)} W)</span></div>`;
+
+                    let addrs = parseInt(s.hw.fields['Belegte Adressen (1-4)']) || 1;
+                    daliAddressCount += addrs;
+                    let groupInfo = s.hw.fields['DALI Gruppe'] ? ` [Grp: ${s.hw.fields['DALI Gruppe']}]` : '';
+
+                    return `<div class="tree-slave">▪ ${getHwIdString(s.detail, s.hw)}${groupInfo} <span style="color:#94a3b8; font-size:0.8em;">(⚡ ${sPower.toFixed(1)} W | 🔌 ${addrs} Adr.)</span></div>`;
                 }).join('');
-                h += `<div class="tree-bus">↳ 🔌 ${io.label} (${slaves.length} Geräte | ⚡ ${astPower.toFixed(1)} W)</div>`;
+
+                let labelSuffix = io.max ? ` (${slaves.length} Geräte / ${daliAddressCount} von ${io.max} Adr. | ⚡ ${astPower.toFixed(1)} W)` : ` (${slaves.length} Geräte | ⚡ ${astPower.toFixed(1)} W)`;
+                h += `<div class="tree-bus">↳ 🔌 ${io.label}${labelSuffix}</div>`;
                 h += slavesHtml;
                 if(slaves.length === 0) h += `<div class="tree-slave" style="color:#cbd5e1; font-style:italic;">Keine Geräte verbunden</div>`;
             });
