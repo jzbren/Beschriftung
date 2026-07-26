@@ -189,8 +189,12 @@ const hardwareConfigList = [
         power: 2.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], 
         io: [
-            { id: "DI_1", label: "DI 1-4", type: "in" }, 
-            { id: "O_1", label: "Relais 1-2", type: "out" }, 
+            { id: "DI_1", label: "DI 1", type: "in" },
+            { id: "DI_2", label: "DI 2", type: "in" }, 
+            { id: "DI_3", label: "DI 3", type: "in" }, 
+            { id: "DI_4", label: "DI 4", type: "in" }, 
+            { id: "O_1", label: "Relais 1", type: "out" },
+            { id: "O_2", label: "Relais 2", type: "out" }, 
             { id: "TREE_1", label: "Tree Ast", type: "bus", max: 50 }, 
             { id: "AIR_BASE", label: "Air Geräte (Max 128)", type: "bus", max: 128 }, 
             { id: "LINK_1", label: "Loxone Link", type: "bus", max: 30 }
@@ -249,8 +253,22 @@ const hardwareConfigList = [
         power: 1.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
         io: [
-            { id: "O_1", label: "Relais 1-7", type: "out" }, 
-            { id: "O_2", label: "Relais 8-14", type: "out" }
+            { id: "O_1", label: "Relais 1", type: "out" },
+            { id: "O_2", label: "Relais 2", type: "out" }, 
+            { id: "O_3", label: "Relais 3", type: "out" }, 
+            { id: "O_4", label: "Relais 4", type: "out" },
+            { id: "O_5", label: "Relais 5", type: "out" },
+            { id: "O_6", label: "Relais 6", type: "out" }, 
+            { id: "O_7", label: "Relais 7", type: "out" }, 
+            { id: "O_8", label: "Relais 8", type: "out" },
+            { id: "O_9", label: "Relais 9", type: "out" },
+            { id: "O_10", label: "Relais 10", type: "out" }, 
+            { id: "O_11", label: "Relais 11", type: "out" }, 
+            { id: "O_12", label: "Relais 12", type: "out" },
+            { id: "O_13", label: "Relais 13", type: "out" },
+            { id: "O_14", label: "Relais 14", type: "out" }, 
+            { id: "O_15", label: "Relais 15", type: "out" }, 
+            { id: "O_16", label: "Relais 16", type: "out" },
         ] 
     },
     { 
