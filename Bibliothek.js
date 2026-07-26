@@ -45,7 +45,18 @@ const iconConfigList = [
         ] 
     },
     { 
-        file: "SCH3-3-T13.png", 
+        file: "SCH3-T13.png", 
+        label: "SCH 3 + T13 (Kombi)", 
+        group: "Licht & Relais", 
+        io: [
+            { id: "TA_1_1", label: "Taster 1 Schliesser", type: "in" },
+            { id: "TA_1_2", label: "Taster 2 Öffner", type: "in" },
+            { id: "TA_2_2", label: "Steckdose", type: "out" }
+            
+        ] 
+    },
+    { 
+        file: "SCH-3-3-T13.png", 
         label: "SCH 3-3 + T13 (Kombi)", 
         group: "Licht & Relais", 
         io: [
@@ -53,7 +64,7 @@ const iconConfigList = [
             { id: "TA_1_2", label: "Taster 2 Öffner", type: "in" },
             { id: "TA_2_1", label: "Taster 1 Schliesser", type: "in" },
             { id: "TA_2_2", label: "Taster 2 Öffner", type: "in" },
-            { id: "TA_2_2", label: "Steckdose", type: "out" },
+            { id: "TA_2_2", label: "Steckdose", type: "out" }
             
         ] 
     },
@@ -92,7 +103,7 @@ const iconConfigList = [
             { id: "TA_K1_AUF", label: "K1 Auf", type: "in" }, 
             { id: "TA_K1_AB", label: "K1 Ab", type: "in" }, 
             { id: "TA_K2_AUF", label: "K2 Auf", type: "in" }, 
-            { id: "TA_K2_AB", label: "K2 Ab", type: "in" }, 
+            { id: "TA_K2_AB", label: "K2 Ab", type: "in" } 
         ] 
     },
     { 
@@ -122,7 +133,7 @@ const iconConfigList = [
             { id: "TA_3", label: "Unten Links", type: "in" }, 
             { id: "TA_4", label: "Unten Rechts", type: "in" }
         ] 
-    }
+    },
     { 
         file: "Universaltaster-3x2.png", 
         label: "Universaltaster 3x2", 
