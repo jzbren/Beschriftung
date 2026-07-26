@@ -368,7 +368,7 @@ const hardwareConfigList = [
     { 
         id: "lox_rgbw_tree", 
         name: "Loxone RGBW 24V Dimmer Tree", 
-        image: "RGBW-Dimmer-Tree.jpg", 
+        image: "RGBW-Dimmer-Tree.png", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Tree Ast"], 
         io: [
@@ -378,7 +378,7 @@ const hardwareConfigList = [
     { 
         id: "lox_rgbw_air", 
         name: "Loxone RGBW 24V Dimmer Air", 
-        image: "RGBW-Dimmer-Air.png", 
+        image: "RGBW-Dimmer-Air.jpg", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Air Link"], 
         io: [
@@ -466,17 +466,6 @@ const hardwareConfigList = [
             { id: "PRES", label: "Präsenz", type: "in" }, 
             { id: "LUX", label: "Helligkeit", type: "in" }, 
             { id: "VOL", label: "Lautstärke", type: "in" }
-        ] 
-    },
-    { 
-        id: "lox_dali_rgbw", 
-        name: "Dali-Dimmer", 
-        image: "Dali-Dimmer.jpg", 
-        power: null, 
-        defaultPower: 1.0, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "DALI Bus"], 
-        io: [
-            { id: "O_1", label: "Kanal (DALI)", type: "out" }
         ] 
     }
 ];
