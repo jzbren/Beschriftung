@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V1.8</title>
+    <title>ServiceProDetail Konfigurator V1.9</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -235,26 +235,46 @@
     ];
 
     const hardwareConfigList = [
-        { id: "lox_miniserver", name: "Loxone Miniserver Gen. 2", image: "Miniserver.jpg", power: 2.2, fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], io: [{ id: "DI_1", label: "DI 1", type: "in" }, { id: "DI_2", label: "DI 2", type: "in" }, { id: "O_1", label: "Relais 1", type: "out" }, { id: "TREE_1", label: "Tree Ast 1", type: "bus", max: 50 }, { id: "TREE_2", label: "Tree Ast 2", type: "bus", max: 50 }, { id: "LINK_1", label: "Loxone Link", type: "bus", max: 30 }] },
-        { id: "lox_miniserver_go", name: "Loxone Miniserver Go", image: "Miniserver-Go.jpg", power: 2.0, fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], io: [{ id: "AIR_BASE", label: "Air Geräte (Max 128)", type: "bus", max: 128 }] },
+        // Core Server
+        { id: "lox_miniserver", name: "Loxone Miniserver Gen. 2", image: "Miniserver.jpg", power: 2.2, fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], io: [{ id: "DI_1", label: "DI 1-4", type: "in" }, { id: "O_1", label: "Relais 1-4", type: "out" }, { id: "TREE_1", label: "Tree Ast 1", type: "bus", max: 50 }, { id: "TREE_2", label: "Tree Ast 2", type: "bus", max: 50 }, { id: "LINK_1", label: "Loxone Link", type: "bus", max: 30 }] },
+        { id: "lox_miniserver_go", name: "Loxone Miniserver Go", image: "Miniserver-Go.jpg", power: 2.0, fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], io: [{ id: "AIR_BASE", label: "Air Geräte (Max 128)", type: "bus", max: 128 }, { id: "LINK_1", label: "Loxone Link", type: "bus", max: 30 }] },
+        { id: "lox_miniserver_compact", name: "Loxone Miniserver Compact", image: "Miniserver-Compact.jpg", power: 2.5, fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], io: [{ id: "DI_1", label: "DI 1-4", type: "in" }, { id: "O_1", label: "Relais 1-2", type: "out" }, { id: "TREE_1", label: "Tree Ast", type: "bus", max: 50 }, { id: "AIR_BASE", label: "Air Geräte (Max 128)", type: "bus", max: 128 }, { id: "LINK_1", label: "Loxone Link", type: "bus", max: 30 }] },
+        { id: "lox_audioserver", name: "Loxone Audioserver", image: "Audioserver.jpg", power: 5.0, fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], io: [{ id: "TREE_TURBO", label: "Tree Turbo", type: "bus", max: 10 }, { id: "LINK_1", label: "Loxone Link", type: "bus", max: 30 }, { id: "AUDIO_OUT", label: "Stereo Ausgänge", type: "out" }] },
         
+        // Link Extensions
         { id: "lox_tree_extension", name: "Loxone Tree Extension", image: "Tree-Extension.jpg", power: 1.3, fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], io: [{ id: "TREE_LEFT", label: "Tree Ast Links", type: "bus", max: 50 }, { id: "TREE_RIGHT", label: "Tree Ast Rechts", type: "bus", max: 50 }] },
         { id: "lox_air_base", name: "Loxone Air Base Extension", image: "Air-Base.jpg", power: 1.5, fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], io: [{ id: "AIR_OUT", label: "Air Geräte (Max 128)", type: "bus", max: 128 }] },
         { id: "lox_dali_extension", name: "Loxone DALI Extension", image: "Dali-Extension.jpg", power: 1.5, fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], io: [{ id: "DALI_1", label: "DALI Bus 1 (Max 64)", type: "bus", max: 64, isDaliBus: true }, { id: "DALI_2", label: "DALI Bus 2 (Max 64)", type: "bus", max: 64, isDaliBus: true }] },
-        
-        { id: "lox_nano_di_tree", name: "Loxone Nano DI Tree", image: "DI-Tree.jpg", power: 0.2, fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], io: [{ id: "DI_1", label: "DI 1", type: "in" }, { id: "DI_2", label: "DI 2", type: "in" }, { id: "DI_3", label: "DI 3", type: "in" }, { id: "DI_4", label: "DI 4", type: "in" }] },
+        { id: "lox_relay_extension", name: "Loxone Relay Extension", image: "Relay-Extension.jpg", power: 1.5, fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], io: [{ id: "O_1", label: "Relais 1-7", type: "out" }, { id: "O_2", label: "Relais 8-14", type: "out" }] },
+        { id: "lox_di_extension", name: "Loxone DI Extension", image: "DI-Extension.jpg", power: 1.0, fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], io: [{ id: "DI_1", label: "DI 1-10", type: "in" }, { id: "DI_2", label: "DI 11-20", type: "in" }] },
+        { id: "lox_dimmer_extension", name: "Loxone Dimmer Extension", image: "Dimmer-Extension.jpg", power: 1.5, fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], io: [{ id: "DIM_1", label: "Dimmer 1-2", type: "out" }, { id: "DIM_2", label: "Dimmer 3-4", type: "out" }] },
+        { id: "lox_modbus_extension", name: "Loxone Modbus Extension", image: "Modbus-Extension.jpg", power: 1.0, fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], io: [{ id: "MODBUS", label: "Modbus RTU", type: "bus", max: 32 }] },
+        { id: "lox_1wire_extension", name: "Loxone 1-Wire Extension", image: "1Wire-Extension.jpg", power: 1.0, fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], io: [{ id: "ONEWIRE", label: "1-Wire Bus", type: "bus", max: 20 }] },
+
+        // Tree / Air / Nano Devices
+        { id: "lox_nano_di_tree", name: "Loxone Nano DI Tree", image: "DI-Tree.jpg", power: 0.2, fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], io: [{ id: "DI_1", label: "DI 1", type: "in" }, { id: "DI_2", label: "DI 2", type: "in" }, { id: "DI_3", label: "DI 3", type: "in" }, { id: "DI_4", label: "DI 4", type: "in" }, { id: "DI_5", label: "DI 5", type: "in" }, { id: "DI_6", label: "DI 6", type: "in" }] },
         { id: "lox_nano_2_relay", name: "Loxone Nano 2 Relay Tree", image: "Nano-2-Relay.jpg", power: 0.5, fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], io: [{ id: "I_1", label: "I1", type: "in" }, { id: "I_2", label: "I2", type: "in" }, { id: "O_1", label: "Relais 1", type: "out" }, { id: "O_2", label: "Relais 2", type: "out" }] },
-        { id: "lox_touch_tree", name: "Loxone Touch Tree", image: "Touch-Tree.jpg", power: 0.2, fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"], io: [{ id: "T_1", label: "Punkt 1", type: "in" }, { id: "T_2", label: "Punkt 2", type: "in" }] },
+        { id: "lox_touch_tree", name: "Loxone Touch Tree", image: "Touch-Tree.jpg", power: 0.2, fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"], io: [{ id: "T_1", label: "Tasterpunkte 1-5", type: "in" }, { id: "TEMP", label: "Temperatur", type: "in" }, { id: "HUM", label: "Feuchtigkeit", type: "in" }] },
+        { id: "lox_touch_pure_tree", name: "Loxone Touch Pure Tree", image: "Touch-Pure.jpg", power: 0.2, fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"], io: [{ id: "T_1", label: "Tasterpunkte 1-5", type: "in" }, { id: "TEMP", label: "Temperatur", type: "in" }, { id: "HUM", label: "Feuchtigkeit", type: "in" }, { id: "LIGHT", label: "Orientierungslicht", type: "out" }] },
+        
+        { id: "lox_rgbw_tree", name: "Loxone RGBW 24V Dimmer Tree", image: "RGBW-Dimmer.jpg", power: 0.5, fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Tree Ast"], io: [{ id: "PWM_1", label: "Kanal 1-4 (RGBW)", type: "out" }] },
+        { id: "lox_rgbw_air", name: "Loxone RGBW 24V Dimmer Air", image: "RGBW-Dimmer.jpg", power: 0.5, fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Air Link"], io: [{ id: "PWM_1", label: "Kanal 1-4 (RGBW)", type: "out" }] },
         
         { id: "lox_nano_dimmer_air", name: "Loxone Nano Dimmer Air", image: "Nano-Dimmer-Air.jpg", power: null, defaultPower: 0.5, fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Montagehöhe", "Air Link"], io: [{ id: "I_1", label: "I1", type: "in" }, { id: "I_2", label: "I2", type: "in" }, { id: "O_1", label: "Dimmer", type: "out" }] },
         { id: "lox_nano_io_air", name: "Loxone Nano IO Air", image: "Nano-IO-Air.jpg", power: 0.5, fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], io: [{ id: "I_1", label: "I1", type: "in" }, { id: "I_2", label: "I2", type: "in" }, { id: "O_1", label: "Relais 1", type: "out" }, { id: "O_2", label: "Relais 2", type: "out" }] },
+        { id: "lox_multi_air", name: "Loxone Multi Extension Air", image: "Multi-Extension-Air.jpg", power: 1.5, fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], io: [{ id: "DI_1", label: "DI 1-12", type: "in" }, { id: "1WIRE", label: "1-Wire", type: "bus", max: 20 }, { id: "O_1", label: "Relais 1-4", type: "out" }, { id: "PWM", label: "PWM 1-4", type: "out" }] },
         
-        { id: "lox_dali_rgbw", name: "Loxone DALI RGBW Dimmer", image: "Dali-Dimmer.jpg", power: null, defaultPower: 1.0, fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "DALI Bus"], io: [{ id: "O_1", label: "RGBW Licht", type: "out" }] },
-        { id: "lox_dali_air", name: "Loxone DALI Air", image: "Dali-Air.jpg", power: 0.5, fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], io: [{ id: "DALI_OUT", label: "DALI Geräte (Max 10)", type: "bus", max: 10, isDaliBus: true }] }
+        { id: "lox_dali_air", name: "Loxone DALI Air", image: "Dali-Air.jpg", power: 0.5, fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], io: [{ id: "DALI_OUT", label: "DALI Geräte (Max 10)", type: "bus", max: 10, isDaliBus: true }] },
+        { id: "lox_tree_to_air", name: "Loxone Tree to Air Bridge", image: "Tree-to-Air.jpg", power: 0.5, fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], io: [{ id: "AIR_OUT", label: "Air Geräte (Max 50)", type: "bus", max: 50 }] },
+        
+        { id: "lox_presence_tree", name: "Loxone Präsenzmelder Tree", image: "Presence-Tree.jpg", power: 0.2, fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], io: [{ id: "PRES", label: "Präsenz", type: "in" }, { id: "LUX", label: "Helligkeit", type: "in" }, { id: "VOL", label: "Lautstärke", type: "in" }] },
+        { id: "lox_presence_air", name: "Loxone Präsenzmelder Air", image: "Presence-Tree.jpg", power: 0.2, fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], io: [{ id: "PRES", label: "Präsenz", type: "in" }, { id: "LUX", label: "Helligkeit", type: "in" }, { id: "VOL", label: "Lautstärke", type: "in" }] },
+        
+        { id: "lox_dali_rgbw", name: "DALI RGBW / Tunable White Dimmer", image: "Dali-Dimmer.jpg", power: null, defaultPower: 1.0, fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "DALI Bus"], io: [{ id: "O_1", label: "Kanal (DALI)", type: "out" }] }
     ];
 
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
-    let projectData = { version: "1.8", projectName: "Neues Projekt", location: "", details: [] };
+    let projectData = { version: "1.9", projectName: "Neues Projekt", location: "", details: [] };
     let activeDetailId = null; let draggedSlot = null;
 
     document.addEventListener('keydown', e => { if (e.ctrlKey || e.metaKey) { if (e.key.toLowerCase() === 's') { e.preventDefault(); exportProject(); } else if (e.key.toLowerCase() === 'p') { e.preventDefault(); printCurrentDetail(); } } });
@@ -279,9 +299,46 @@
 
     function resetProject() {
         if(confirm("Komplettes Projekt löschen und neu starten?")) {
-            localStorage.removeItem(LOCAL_STORAGE_KEY); projectData = { version: "1.8", projectName: "Neues Projekt", location: "", details: [] }; activeDetailId = null; addNewDetail();
+            localStorage.removeItem(LOCAL_STORAGE_KEY); projectData = { version: "1.9", projectName: "Neues Projekt", location: "", details: [] }; activeDetailId = null; addNewDetail();
         }
     }
+
+    // --- NEU: Globale Umbenennungs-Logik (Kaskadierung) ---
+    window.replaceStringInAllReferences = function(oldStr, newStr) {
+        if (!oldStr || !newStr || oldStr === newStr) return;
+        projectData.details.forEach(pd => {
+            if (pd.hardware) {
+                pd.hardware.forEach(hw => {
+                    for(let key in hw.fields) {
+                        if (hw.fields[key] === oldStr) hw.fields[key] = newStr;
+                    }
+                    for(let key in hw.mappings) {
+                        if (hw.mappings[key] === oldStr) hw.mappings[key] = newStr;
+                    }
+                });
+            }
+            if (pd.frames) {
+                pd.frames.forEach(f => {
+                    for(let slotKey in f.slots) {
+                        const slot = f.slots[slotKey];
+                        if(slot && slot.ioData) {
+                            for(let ioKey in slot.ioData) {
+                                let cData = slot.ioData[ioKey];
+                                if(cData && cData.eingabegerat) {
+                                    let items = cData.eingabegerat.split(',').map(x=>x.trim());
+                                    let idx = items.indexOf(oldStr);
+                                    if (idx !== -1) {
+                                        items[idx] = newStr;
+                                        cData.eingabegerat = items.join(', ');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    };
 
     window.filterDetails = function() {
         renderSidebarList();
@@ -358,7 +415,43 @@
     }
 
     function updateProjectField(field, value) { projectData[field] = value; saveToLocal(); }
-    function updateActiveDetailField(field, value) { const d = projectData.details.find(x => x.id === activeDetailId); if (d) { d[field] = value; renderApp(); } }
+    
+    // NEU: Kaskadierung auch beim Detail-Namen
+    window.updateActiveDetailField = function(field, value) { 
+        const d = projectData.details.find(x => x.id === activeDetailId); 
+        if (d) { 
+            if (field === 'name') {
+                const oldDetailName = d.name;
+                const newDetailName = value;
+                
+                // Hardware Referenzen aktualisieren
+                d.hardware.forEach(hw => {
+                    const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+                    if(cfg && cfg.io) {
+                        const hwName = hw.fields['Geräte-Bez.'] || cfg.name;
+                        cfg.io.forEach(io => {
+                            replaceStringInAllReferences(`${oldDetailName} ${hwName} ${io.label}`, `${newDetailName} ${hwName} ${io.label}`);
+                        });
+                    }
+                });
+                // Schalter Referenzen aktualisieren
+                d.frames.forEach(f => {
+                    for(let key in f.slots) {
+                        const slot = f.slots[key];
+                        const ic = iconConfigList.find(x => x.file === slot.iconFile);
+                        if(ic && ic.io) {
+                            ic.io.forEach(io => {
+                                const cData = slot.ioData?.[io.id] || {};
+                                replaceStringInAllReferences(`${oldDetailName} ${cData.bezeichnung || ic.label}`, `${newDetailName} ${cData.bezeichnung || ic.label}`);
+                            });
+                        }
+                    }
+                });
+            }
+            d[field] = value; 
+            renderApp(); 
+        } 
+    }
 
     function addFrameToDetail() {
         const d = projectData.details.find(x => x.id === activeDetailId);
@@ -499,6 +592,28 @@
         }
     }
 
+    // --- NEU: Kaskadierung beim Ändern von Hardware-Eigenschaften ---
+    window.updateHardwareField = function(hwInstanceId, field, val) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        const hw = d.hardware.find(x => x.instanceId === hwInstanceId);
+        if(!hw) return;
+
+        if (field === 'Geräte-Bez.') {
+            const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+            if(cfg && cfg.io) {
+                const oldName = hw.fields[field] || cfg.name;
+                const newName = val || cfg.name;
+                cfg.io.forEach(io => {
+                    replaceStringInAllReferences(`${d.name} ${oldName} ${io.label}`, `${d.name} ${newName} ${io.label}`);
+                });
+            }
+        }
+        
+        hw.fields[field] = val;
+        saveToLocal();
+        renderApp();
+    };
+
     // --- DALI INLINE MANAGEMENT ---
     window.addDaliSubDevice = function(hwInstanceId, ioId) {
         projectData.details.forEach(d => {
@@ -527,11 +642,7 @@
             }
         });
         saveToLocal();
-        
-        // Neu: Sofortiger UI Refresh, wenn die Kanal-Auswahl geändert wird!
-        if (field === 'channels') {
-            renderApp();
-        }
+        if (field === 'channels') renderApp();
     }
 
     window.deleteDaliSubDevice = function(hwInstanceId, ioId, subId) {
@@ -598,6 +709,17 @@
         const d = projectData.details.find(x => x.id === activeDetailId); const f = d.frames.find(x => x.id === fId);
         if(!f.slots[`slot-${slotN}`].ioData) f.slots[`slot-${slotN}`].ioData = {};
         const slot = f.slots[`slot-${slotN}`]; const cData = slot.ioData[ioId] || {bezeichnung:''};
+        
+        // NEU: Kaskadierung beim Ändern der Schalter-Bezeichnung
+        if (field === 'bezeichnung') {
+            const ic = iconConfigList.find(x => x.file === slot.iconFile);
+            if(ic) {
+                const oldBezeichnung = cData.bezeichnung || ic.label;
+                const newBezeichnung = val || ic.label;
+                replaceStringInAllReferences(`${d.name} ${oldBezeichnung}`, `${d.name} ${newBezeichnung}`);
+            }
+        }
+
         const oldVal = cData[field]; cData[field] = val; slot.ioData[ioId] = cData;
 
         if (field === 'eingabegerat') {
@@ -638,12 +760,12 @@
                     window[fn] = (v, ev) => { 
                         if(ev){ev.preventDefault();ev.stopPropagation();} 
                         document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
-                        setTimeout(() => { hw.fields[f] = v; renderApp(); }, 10); 
+                        setTimeout(() => { updateHardwareField(hw.instanceId, f, v); }, 10); 
                     };
                     const busNodes = getAllBusNodes(detectBusType(f));
                     fHtml += `<div class="form-group"><label>${f}</label><div>${renderSearchableDropdown(`hf-${hw.instanceId}-${sanitizeFnName(f)}`, hw.fields[f]||'', [{value:'', label:'--- Keine Zuordnung ---'}, ...busNodes], fn, 'Bus...')}</div></div>`;
                 } else {
-                    fHtml += `<div class="form-group"><label>${f}</label><input type="text" value="${hw.fields[f]||''}" oninput="const hObj = projectData.details.find(d=>d.id==='${d.id}').hardware.find(h=>h.instanceId==='${hw.instanceId}'); if(hObj) hObj.fields['${f}'] = this.value; saveToLocal();"></div>`;
+                    fHtml += `<div class="form-group"><label>${f}</label><input type="text" value="${hw.fields[f]||''}" onchange="updateHardwareField('${hw.instanceId}', '${f}', this.value)"></div>`;
                 }
             });
 
@@ -778,10 +900,9 @@
         return list;
     }
 
-    // --- NEUE BUS ÜBERSICHT (MODAL) MIT VERSCHACHTELUNG ---
+    // --- BUS ÜBERSICHT (MODAL) MIT VERSCHACHTELUNG ---
     function getParentBusId(hw) {
         for (let fieldName in hw.fields) {
-            // Suchen nach Feldern, die für Bus-Links verwendet werden
             if (/ast|bus|link|bridge|dali/i.test(fieldName) && hw.fields[fieldName]) {
                 return hw.fields[fieldName];
             }
@@ -792,7 +913,6 @@
     function openBusOverviewModal() {
         const c = document.getElementById('bus-tree-content'); c.innerHTML = ''; let h = '';
         
-        // Alle Hardware-Komponenten sammeln
         const allHw = [];
         projectData.details.forEach(d => d.hardware && d.hardware.forEach(hw => {
             const cfg = hardwareConfigList.find(x => x.id === hw.configId);
@@ -802,7 +922,6 @@
         const totalPower = getProjectTotalPower();
         h += `<div style="margin-bottom:25px; font-weight:bold; color:#0f766e; font-size:1.1rem; padding-bottom:10px; border-bottom:1px solid #cbd5e1;">⚡ Gesamtstromaufnahme Projekt: ${totalPower.toFixed(1)} W</div>`;
 
-        // Haupt-Geräte (Master) finden (kein Parent zugewiesen ODER Parent existiert nicht)
         const roots = allHw.filter(item => {
             const parentId = getParentBusId(item.hw);
             if (!parentId) return true;
@@ -811,17 +930,15 @@
                 if (!possibleParent.cfg.io) return false;
                 return possibleParent.cfg.io.some(io => io.type === 'bus' && getBusIdString(possibleParent.d, possibleParent.hw, io) === parentId);
             });
-            return !parentExists; // Wenn der Parent gelöscht wurde, wird es auch ein Root
+            return !parentExists;
         });
 
-        // Fallback für den sehr seltenen Fall von Endlos-Schleifen
         if (roots.length === 0 && allHw.length > 0) roots.push(...allHw);
 
         if(roots.length === 0) {
             h += '<div style="color:#64748b; font-style:italic;">Keine Hardware im Projekt vorhanden.</div>';
         }
 
-        // Rekursive Render-Funktion
         function renderTopoNode(item, level) {
             const isRoot = level === 0;
             let html = `<div class="topo-master" style="${isRoot ? '' : 'margin-top: 10px; margin-bottom: 5px; border-color:#e2e8f0; box-shadow:none;'}">
@@ -833,7 +950,6 @@
             if (item.cfg.io) {
                 item.cfg.io.filter(i => i.type === 'bus').forEach(io => {
                     const busIdStr = getBusIdString(item.d, item.hw, io);
-                    // Finde alle Untergeräte, die genau auf diesen Bus dieses Masters verweisen
                     const children = allHw.filter(c => getParentBusId(c.hw) === busIdStr);
                     
                     if (io.isDaliBus) {
@@ -872,7 +988,7 @@
                         
                         if (children.length > 0) {
                             children.forEach(child => {
-                                html += renderTopoNode(child, level + 1); // Verschachtelter Aufruf
+                                html += renderTopoNode(child, level + 1); 
                             });
                         } else {
                             html += `<div class="topo-device" style="color:#94a3b8; font-style:italic; justify-content:center; background:transparent; border:none; box-shadow:none;">Keine Geräte angehängt</div>`;
