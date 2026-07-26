@@ -225,7 +225,7 @@ const hardwareConfigList = [
     { 
         id: "lox_air_base", 
         name: "Loxone Air Base Extension", 
-        image: "Air-Base.jpg", 
+        image: "Air-Extension.jpg", 
         power: 1.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
         io: [
@@ -303,7 +303,7 @@ const hardwareConfigList = [
     { 
         id: "lox_1wire_extension", 
         name: "Loxone 1-Wire Extension", 
-        image: "1Wire-Extension.jpg", 
+        image: "1-Wire-Extension.jpg", 
         power: 1.0, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
         io: [
