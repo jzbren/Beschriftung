@@ -30,7 +30,6 @@ const iconConfigList = [
         io: [
             { id: "TA_1", label: "Taster Schliesser", type: "in" },
             { id: "TA_2", label: "Taster Öffner", type: "in" }
-            
         ]
     },
     { 
@@ -52,7 +51,6 @@ const iconConfigList = [
             { id: "TA_1_1", label: "Taster 1 Schliesser", type: "in" },
             { id: "TA_1_2", label: "Taster 2 Öffner", type: "in" },
             { id: "TA_2_2", label: "Steckdose", type: "out" }
-            
         ] 
     },
     { 
@@ -65,7 +63,6 @@ const iconConfigList = [
             { id: "TA_2_1", label: "Taster 1 Schliesser", type: "in" },
             { id: "TA_2_2", label: "Taster 2 Öffner", type: "in" },
             { id: "TA_2_2", label: "Steckdose", type: "out" }
-            
         ] 
     },
     { 
@@ -103,7 +100,7 @@ const iconConfigList = [
             { id: "TA_K1_AUF", label: "K1 Auf", type: "in" }, 
             { id: "TA_K1_AB", label: "K1 Ab", type: "in" }, 
             { id: "TA_K2_AUF", label: "K2 Auf", type: "in" }, 
-            { id: "TA_K2_AB", label: "K2 Ab", type: "in" } 
+            { id: "TA_K2_AB", label: "K2 Ab", type: "in" }
         ] 
     },
     { 
@@ -154,7 +151,7 @@ const hardwareConfigList = [
     { 
         id: "lox_miniserver", 
         name: "Loxone Miniserver Gen. 2", 
-        image: "Miniserver.jpg", 
+        image: "Miniserver-Gen-2.jpg", 
         power: 2.2, 
         fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], 
         io: [
@@ -203,7 +200,7 @@ const hardwareConfigList = [
     { 
         id: "lox_audioserver", 
         name: "Loxone Audioserver", 
-        image: "Audioserver.jpg", 
+        image: "Stereo-Extension.jpg", 
         power: 5.0, 
         fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], 
         io: [
@@ -228,7 +225,7 @@ const hardwareConfigList = [
     { 
         id: "lox_air_base", 
         name: "Loxone Air Base Extension", 
-        image: "Air-Base.jpg", 
+        image: "Air-Extension.jpg", 
         power: 1.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
         io: [
@@ -268,7 +265,7 @@ const hardwareConfigList = [
             { id: "O_13", label: "Relais 13", type: "out" },
             { id: "O_14", label: "Relais 14", type: "out" }, 
             { id: "O_15", label: "Relais 15", type: "out" }, 
-            { id: "O_16", label: "Relais 16", type: "out" },
+            { id: "O_16", label: "Relais 16", type: "out" }
         ] 
     },
     { 
@@ -306,7 +303,7 @@ const hardwareConfigList = [
     { 
         id: "lox_1wire_extension", 
         name: "Loxone 1-Wire Extension", 
-        image: "1Wire-Extension.jpg", 
+        image: "1-Wire-Extension.jpg", 
         power: 1.0, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
         io: [
@@ -318,7 +315,7 @@ const hardwareConfigList = [
     { 
         id: "lox_nano_di_tree", 
         name: "Loxone Nano DI Tree", 
-        image: "DI-Tree.jpg", 
+        image: "DI-Extension.jpg", 
         power: 0.2, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], 
         io: [
@@ -333,7 +330,7 @@ const hardwareConfigList = [
     { 
         id: "lox_nano_2_relay", 
         name: "Loxone Nano 2 Relay Tree", 
-        image: "Nano-2-Relay.jpg", 
+        image: "Relay-Extension.jpg", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], 
         io: [
@@ -346,7 +343,7 @@ const hardwareConfigList = [
     { 
         id: "lox_touch_tree", 
         name: "Loxone Touch Tree", 
-        image: "Touch-Tree.jpg", 
+        image: "Tree-Extension.jpg", 
         power: 0.2, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"], 
         io: [
@@ -358,7 +355,7 @@ const hardwareConfigList = [
     { 
         id: "lox_touch_pure_tree", 
         name: "Loxone Touch Pure Tree", 
-        image: "Touch-Pure.jpg", 
+        image: "Tree-Extension.jpg", 
         power: 0.2, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"], 
         io: [
@@ -371,7 +368,7 @@ const hardwareConfigList = [
     { 
         id: "lox_rgbw_tree", 
         name: "Loxone RGBW 24V Dimmer Tree", 
-        image: "RGBW-Dimmer.jpg", 
+        image: "Dimmer-Extension.jpg", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Tree Ast"], 
         io: [
@@ -381,7 +378,7 @@ const hardwareConfigList = [
     { 
         id: "lox_rgbw_air", 
         name: "Loxone RGBW 24V Dimmer Air", 
-        image: "RGBW-Dimmer.jpg", 
+        image: "Dimmer-Extension.jpg", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Air Link"], 
         io: [
@@ -391,7 +388,7 @@ const hardwareConfigList = [
     { 
         id: "lox_nano_dimmer_air", 
         name: "Loxone Nano Dimmer Air", 
-        image: "Nano-Dimmer-Air.jpg", 
+        image: "Dimmer-Extension.jpg", 
         power: null, 
         defaultPower: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Montagehöhe", "Air Link"], 
@@ -404,7 +401,7 @@ const hardwareConfigList = [
     { 
         id: "lox_nano_io_air", 
         name: "Loxone Nano IO Air", 
-        image: "Nano-IO-Air.jpg", 
+        image: "Relay-Extension.jpg", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], 
         io: [
@@ -430,7 +427,7 @@ const hardwareConfigList = [
     { 
         id: "lox_dali_air", 
         name: "Loxone DALI Air", 
-        image: "Dali-Air.jpg", 
+        image: "Dali-Extension.jpg", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], 
         io: [
@@ -440,7 +437,7 @@ const hardwareConfigList = [
     { 
         id: "lox_tree_to_air", 
         name: "Loxone Tree to Air Bridge", 
-        image: "Tree-to-Air.jpg", 
+        image: "Tree-Extension.jpg", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], 
         io: [
@@ -450,7 +447,7 @@ const hardwareConfigList = [
     { 
         id: "lox_presence_tree", 
         name: "Loxone Präsenzmelder Tree", 
-        image: "Presence-Tree.jpg", 
+        image: "Tree-Extension.jpg", 
         power: 0.2, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], 
         io: [
@@ -462,7 +459,7 @@ const hardwareConfigList = [
     { 
         id: "lox_presence_air", 
         name: "Loxone Präsenzmelder Air", 
-        image: "Presence-Tree.jpg", 
+        image: "Air-Extension.jpg", 
         power: 0.2, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], 
         io: [
@@ -474,7 +471,7 @@ const hardwareConfigList = [
     { 
         id: "lox_dali_rgbw", 
         name: "DALI RGBW / Tunable White Dimmer", 
-        image: "Dali-Dimmer.jpg", 
+        image: "Dali-Extension.jpg", 
         power: null, 
         defaultPower: 1.0, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "DALI Bus"], 
