@@ -3,24 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <script>
-        document.addEventListener('contextmenu', event => event.preventDefault());
-
-        document.addEventListener('keydown', event => {
-            if (
-                event.key === 'F12' ||
-                (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'i' || event.key === 'J' || event.key === 'j')) ||
-                (event.ctrlKey && (event.key === 'U' || event.key === 'u'))
-            ) {
-                event.preventDefault();
-                return false;
-            }
-        });
-    </script>
-
-    <title>ServiceProDetail Konfigurator V1.0</title>
-    <script src="icons.js"></script>
+    <title>ServiceProDetail Konfigurator V1.1</title>
     <style>
         :root {
             --feller-white: #f7f9f9;
@@ -35,60 +18,29 @@
             --panel-bg: #ffffff;
             --sidebar-width: 320px;
         }
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
 
         /* Sidebar & Layout */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: #1e293b;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            padding: 20px 15px;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            flex-shrink: 0;
-            box-sizing: border-box;
-            z-index: 100;
-        }
+        .sidebar { width: var(--sidebar-width); background: #1e293b; color: white; display: flex; flex-direction: column; padding: 20px 15px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); flex-shrink: 0; box-sizing: border-box; z-index: 100; }
         .sidebar.collapsed { margin-left: calc(-1 * var(--sidebar-width)); }
-
-        .sidebar-header {
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 15px;
-        }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 15px; }
         .sidebar-header h2 { margin: 0; font-size: 1.2rem; }
 
-        /* Sidebar Suche */
         .sidebar-search { margin-bottom: 15px; }
-        .sidebar-search input {
-            width: 100%; padding: 8px 12px; border-radius: 4px; border: 1px solid #475569; 
-            background: #334155; color: white; box-sizing: border-box; font-size: 0.9rem;
-        }
+        .sidebar-search input { width: 100%; padding: 8px 12px; border-radius: 4px; border: 1px solid #475569; background: #334155; color: white; box-sizing: border-box; font-size: 0.9rem; }
         .sidebar-search input::placeholder { color: #94a3b8; }
         .sidebar-search input:focus { outline: none; border-color: #10b981; background: #475569; }
 
         .detail-list { flex: 1; overflow-y: auto; }
-        .detail-item {
-            padding: 10px; background: #334155; margin-bottom: 8px; border-radius: 4px; cursor: pointer; 
-            display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;
-        }
+        .detail-item { padding: 10px; background: #334155; margin-bottom: 8px; border-radius: 4px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
         .detail-item:hover { background: #475569; }
         .detail-item.active { background: var(--primary); border-left: 4px solid #10b981; }
+        .detail-item-info { display: flex; flex-direction: column; }
+        .detail-item-room { font-size: 0.75rem; color: #94a3b8; margin-bottom: 2px; }
 
         .sidebar-actions { display: flex; align-items: center; gap: 5px; }
-        .icon-btn { background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; color: white; }
-        .icon-btn img { width: 16px; height: 16px; opacity: 0.7; transition: opacity 0.2s; filter: invert(1); }
-        .icon-btn:hover img { opacity: 1; }
+        .icon-btn { background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; color: white; font-size: 1.2rem; }
+        .icon-btn:hover { opacity: 0.8; }
         .delete-btn { background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 1.1rem; padding: 0 4px; border-radius: 3px; }
         .delete-btn:hover { color: #f87171; background: rgba(255,0,0,0.1); }
         .sidebar-btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; }
@@ -99,9 +51,7 @@
         .top-bar { display: flex; flex-direction: column; gap: 10px; background: var(--panel-bg); padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .top-bar-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .header-left { display: flex; align-items: center; gap: 10px; }
-
-        .toggle-sidebar-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 1.2rem; cursor: pointer; color: #475569; padding: 4px 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-        .toggle-sidebar-btn:hover { background: #e2e8f0; color: var(--primary); }
+        .toggle-sidebar-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 1.2rem; cursor: pointer; color: #475569; padding: 4px 10px; }
 
         .top-bar input[type="text"] { font-size: 1.2rem; font-weight: bold; border: 1px solid transparent; padding: 5px; background: transparent; width: 350px; }
         .top-bar input[type="text"].location-input { font-size: 0.95rem; font-weight: normal; color: #475569; width: 450px; margin-left: 55px; }
@@ -109,14 +59,12 @@
         .action-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
 
         button.btn { background: white; border: 1px solid #d1d5db; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
-        button.btn img { width: 16px; height: 16px; }
         button.btn:hover { background: #f3f4f6; }
         button.btn.primary { background: var(--primary); color: white; border: none; }
-        button.btn.primary img { filter: invert(1); }
         button.btn.primary:hover { background: var(--primary-hover); }
-
         button.btn.danger { background: white; border: 1px solid #fca5a5; color: var(--danger); }
         button.btn.danger:hover { background: #fef2f2; border-color: var(--danger); }
+        button.btn.warning { background: var(--warning); color: white; border: none; }
 
         /* Workspace Grid */
         .workspace { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -127,7 +75,6 @@
         .visualizer-container { display: flex; justify-content: center; align-items: center; min-height: 250px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; margin-bottom: 15px; }
         .switch-frame { background-color: var(--feller-white); border: 2px solid #e2e8f0; padding: 20px; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), inset 0 0 10px rgba(255,255,255,0.5); display: grid; gap: 2px; background-image: linear-gradient(145deg, #ffffff, #f1f5f9); }
         .switch-slot { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 3px; display: flex; justify-content: center; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; overflow: hidden; width: 80px; height: 80px; cursor: grab; }
-        .switch-slot:active { cursor: grabbing; }
         .switch-slot.drag-over { border: 2px solid var(--primary); opacity: 0.7; }
         .switch-slot img { width: 100%; height: 100%; object-fit: fill; padding: 0; box-sizing: border-box; opacity: 0.9; pointer-events: none; }
         .slot-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: bold; color: #64748b; z-index: 2; pointer-events: none; }
@@ -142,13 +89,10 @@
         /* Custom Searchable Dropdown */
         .custom-select { position: relative; flex: 1; font-family: inherit; }
         .select-selected { background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px 8px; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .select-selected:hover { border-color: #94a3b8; }
         .select-items { position: absolute; background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; top: 100%; left: 0; right: 0; z-index: 99; margin-top: 4px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto; }
         .dropdown-search { width: calc(100% - 16px) !important; margin: 8px; padding: 6px; box-sizing: border-box; border: 1px solid #cbd5e1 !important; border-radius: 3px; }
         .dropdown-group-label { padding: 6px 10px; background: #f1f5f9; font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; border-top: 1px solid #e2e8f0; }
-        .dropdown-group-label:first-of-type { border-top: none; }
         .dropdown-option { padding: 8px 10px; font-size: 0.9rem; cursor: pointer; border-bottom: 1px solid #f8fafc; }
-        .dropdown-option:last-child { border-bottom: none; }
         .dropdown-option:hover { background-color: #f1f5f9; color: var(--primary); }
 
         .io-section { margin-top: 10px; }
@@ -163,16 +107,14 @@
         .io-fields-grid input { padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.8rem; width: 100%; box-sizing: border-box; }
         .io-fields-grid .io-full-width { grid-column: 1 / -1; }
 
-        /* Hardware Editor Layout */
+        /* Hardware Editor */
         .hardware-list { margin-top: 20px; }
         .hw-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--primary); display: grid; grid-template-columns: 100px 1fr; gap: 15px; align-items: start; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .hw-card-image img { width: 100%; height: auto; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; padding: 4px; background: #fff; }
-        .hw-card-body { position: relative; }
+        .hw-card-image img { width: 100%; height: auto; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; padding: 4px; }
         .hw-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
         .hw-card-header h4 { margin: 0; font-size: 1.1rem; color: #0f172a; }
         .hw-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
 
-        /* Smarte Bus Anzeige */
         .bus-container { margin-top:15px; background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0; }
         .bus-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 8px; }
         .bus-header h5 { margin: 0; font-size: 0.9rem; color: #1e293b; }
@@ -180,1126 +122,549 @@
         .bus-limit-badge.ok { background: #dcfce7; color: #166534; }
         .bus-limit-badge.full { background: #fee2e2; color: #991b1b; }
         .bus-item { display:flex; justify-content: space-between; align-items:center; font-size:0.85rem; padding:4px 8px; background:#fff; border:1px solid #e2e8f0; border-radius:4px; margin-bottom:4px; }
-        .bus-item-name { color: #334155; font-weight: 500; }
 
-        /* ==================== DRUCK-STILE ==================== */
+        /* Modal Bus-Übersicht */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 80%; max-width: 800px; max-height: 80vh; border-radius: 8px; padding: 20px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
+        .modal-header h2 { margin: 0; color: #1e293b; }
+        .tree-view { font-family: monospace; font-size: 0.95rem; }
+        .tree-master { font-weight: bold; color: #0f766e; margin-top: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+        .tree-bus { margin-left: 20px; color: #92400e; margin-top: 5px; font-weight: bold; }
+        .tree-slave { margin-left: 40px; color: #334155; padding: 2px 0; border-left: 1px solid #cbd5e1; padding-left: 10px; }
+
+        .collision-warn { color: var(--warning); font-size: 1.1rem; cursor: help; margin-left: 5px; }
+
         @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; height: auto; overflow: visible; }
-            .sidebar, .top-bar, .action-buttons, .no-print, .delete-btn, .sidebar-actions { display: none !important; }
-            .main-content { padding: 0; overflow: visible; margin: 0 !important; }
-            .pane { box-shadow: none; border: none; padding: 0; margin-bottom: 0; }
-            .workspace { display: block; }
-            .print-detail-page { page-break-after: always; page-break-inside: avoid; }
-            .print-detail-page:last-child { page-break-after: auto; }
-            .print-header-block { margin-bottom: 10px; border-bottom: 2px solid #0f766e; padding-bottom: 5px; }
-            .print-header-block h2 { margin: 0 0 2px 0; font-size: 1.4rem; color: #1e293b; }
-            .print-header-block p { margin: 0; color: #475569; font-size: 0.9rem; }
-            .print-section-title { font-size: 1rem; font-weight: bold; color: #0f766e; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px; margin: 15px 0 10px 0; }
-
-            .print-visualizer-wrapper { display: flex; justify-content: center; margin-bottom: 15px; }
-            .print-switch-frame { background-color: #f8fafc; border: 2px solid #cbd5e1; padding: 10px; border-radius: 6px; display: grid; gap: 4px; }
-            .print-switch-slot { background-color: #fff; border: 1px solid #94a3b8; border-radius: 3px; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; width: 60px; height: 60px; }
-            .print-switch-slot img { width: 100%; height: 100%; object-fit: fill; }
-            .print-slot-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 8px; color: #64748b; font-weight: bold; }
-
-            .print-slots-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: start; }
-            .print-slot-item-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; margin-bottom: 10px; page-break-inside: avoid; }
-            .print-slot-item-title { font-weight: bold; font-size: 0.9rem; color: var(--primary); margin-bottom: 6px; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px; }
-            .print-io-item { margin-bottom: 6px; font-size: 0.8rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 6px; }
-            .print-io-header { font-weight: bold; color: #334155; margin-bottom: 4px; font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; padding-bottom: 2px; }
-            .print-io-line { display: flex; margin-bottom: 3px; }
-            .print-io-label { width: 90px; color: #64748b; font-size: 0.75rem; }
-            .print-io-val { flex: 1; color: #0f172a; font-weight: 500; font-size: 0.8rem; }
-
-            .print-hw-container { display: grid; grid-template-columns: 80px 1fr; gap: 12px; align-items: start; background: #fff; border: 1px solid #cbd5e1; border-left: 4px solid var(--primary); border-radius: 6px; padding: 10px; margin-bottom: 10px; page-break-inside: avoid; }
-            .print-hw-image img { width: 100%; height: auto; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2px; background: #fff; }
-            .print-hw-header-title { font-weight: bold; font-size: 0.95rem; margin-bottom: 5px; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px; }
-            .print-hw-meta-row { display: flex; margin-bottom: 3px; font-size: 0.8rem; }
-            .print-hw-meta-label { width: 90px; color: #64748b; }
-            .print-hw-meta-val { flex: 1; color: #0f172a; font-weight: 500; }
-            .print-hw-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; border-top: 1px solid #e2e8f0; padding-top: 6px; }
-            .print-hw-io-subcol h6 { margin: 0 0 4px 0; font-size: 0.75rem; text-transform: uppercase; color: #64748b; }
-
-            .print-bus-container { margin-top: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 6px; }
-            .print-bus-title { font-size: 0.8rem; font-weight: bold; color: #334155; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px; margin-bottom: 4px; }
-            .print-bus-list { padding-left: 0; margin: 0; list-style: none; }
-            .print-bus-item { font-size: 0.75rem; color: #0f172a; margin-bottom: 2px; padding-left: 8px; border-left: 2px solid #cbd5e1; }
+            body { background: white; height: auto; overflow: visible; }
+            .sidebar, .top-bar, .action-buttons, .no-print, .delete-btn { display: none !important; }
+            .main-content { padding: 0; margin: 0 !important; }
+            .pane { box-shadow: none; border: none; padding: 0; }
+            .print-detail-page { page-break-after: always; }
+            .print-header-block { border-bottom: 2px solid #0f766e; padding-bottom: 5px; margin-bottom: 15px; }
+            .print-section-title { font-size: 1rem; font-weight: bold; color: #0f766e; border-bottom: 1px solid #cbd5e1; margin: 15px 0 10px 0; }
+            .print-switch-frame { display: grid; gap: 4px; background: #f8fafc; border: 2px solid #cbd5e1; padding: 10px; border-radius: 6px; }
+            .print-switch-slot { background: #fff; border: 1px solid #94a3b8; display: flex; justify-content: center; align-items: center; position: relative; width: 60px; height: 60px; }
+            .print-switch-slot img { width: 100%; height: 100%; }
+            .print-slots-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+            .print-slot-item-block { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; margin-bottom: 10px; page-break-inside: avoid; }
+            .print-hw-container { display: grid; grid-template-columns: 80px 1fr; gap: 12px; border: 1px solid #cbd5e1; border-left: 4px solid var(--primary); padding: 10px; margin-bottom: 10px; page-break-inside: avoid; }
+            .print-hw-image img { width: 100%; object-fit: contain; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2>ServiceProDetails</h2>
-            <button class="icon-btn toggle-sidebar-btn-inner no-print" onclick="toggleSidebar()" title="Einklappen" style="font-size: 1.5rem; padding: 0;">×</button>
+            <button class="icon-btn toggle-sidebar-btn-inner no-print" onclick="toggleSidebar()">×</button>
         </div>
-
         <div class="sidebar-search">
-            <input type="text" id="detail-search-input" placeholder="Details suchen..." onkeyup="filterDetails()">
+            <input type="text" id="detail-search-input" placeholder="Nach Detail oder Raum suchen..." onkeyup="filterDetails()">
         </div>
-
         <div class="detail-list" id="detail-list"></div>
         <button class="sidebar-btn" onclick="addNewDetail()">+ Neues Detail</button>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
         <div class="top-bar">
             <div class="top-bar-row">
                 <div class="header-left">
-                    <button class="toggle-sidebar-btn no-print" onclick="toggleSidebar()" title="Sidebar umschalten">☰</button>
+                    <button class="toggle-sidebar-btn no-print" onclick="toggleSidebar()">☰</button>
                     <input type="text" id="project-name" value="Schalterdetail EFH Odermatt" onchange="updateProjectField('projectName', this.value)">
                 </div>
                 <div class="action-buttons">
                     <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
-                    <button class="btn danger" onclick="resetProject()"><img src="icons/Radierer.svg" alt="Neu anfangen"> Neu anfangen</button>
-                    <button class="btn" onclick="document.getElementById('file-input').click()"><img src="icons/Hochladen.svg" alt="Öffnen"> Öffnen</button>
-                    <button class="btn primary" onclick="exportProject()"><img src="icons/Download.svg" alt="Speichern"> Speichern</button>
-                    <button class="btn" onclick="printAllDetails()"><img src="icons/Drucken.svg" alt="Drucken"> Alles Drucken</button>
-                    <button class="btn" onclick="printCurrentDetail()"><img src="icons/Drucken.svg" alt="Drucken"> Aktuelles Detail</button>
+                    <button class="btn warning" onclick="openBusOverviewModal()">🖧 Bus-Übersicht</button>
+                    <button class="btn danger" onclick="resetProject()">Neu anfangen</button>
+                    <button class="btn" onclick="document.getElementById('file-input').click()">Öffnen</button>
+                    <button class="btn primary" onclick="exportProject()">Speichern</button>
+                    <button class="btn" onclick="printAllDetails()">Alles Drucken</button>
+                    <button class="btn" onclick="printCurrentDetail()">Aktuelles Detail</button>
                 </div>
             </div>
             <div class="top-bar-row">
-                <input type="text" class="location-input" id="project-location" value="" placeholder="Standort eingeben (z.B. Hagrain 8, 6213 Knutwil)" onchange="updateProjectField('location', this.value)">
+                <input type="text" class="location-input" id="project-location" placeholder="Standort eingeben..." onchange="updateProjectField('location', this.value)">
             </div>
         </div>
 
         <div id="workspace-container"></div>
-
         <div id="print-all-container" style="display: none;"></div>
         <div id="print-single-container" style="display: none;"></div>
     </div>
 
+    <!-- Bus Overview Modal -->
+    <div id="bus-modal" class="modal-overlay" onclick="closeBusOverviewModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Loxone Bus-Übersicht</h2>
+                <button class="icon-btn" onclick="closeBusOverviewModal(null)" style="color:black; font-size:1.5rem;">×</button>
+            </div>
+            <div id="bus-tree-content" class="tree-view"></div>
+        </div>
+    </div>
+
 <script>
+    // --- KONFIGURATIONEN ---
+    const iconConfigList = [
+        { file: "", label: "--- Leerplatz ---", group: "Allgemein", io: [] },
+        { file: "Drehschalter-Hand-Auto.png", label: "Drehschalter Hand-Auto", group: "Schalter & Taster", io: [{ id: "TA_HAND_AUTO", label: "Hand/Auto Schalter", type: "in" }] },
+        { file: "Raumthermostaat.png", label: "Raumthermostat", group: "Thermostate & Sensoren", io: [{ id: "TEMP_IN", label: "Temperatur Ist", type: "out" }, { id: "HEIZ_OUT", label: "Heizung Ventil", type: "out" }] },
+        { file: "SCH3.png", label: "SCH 3 (Schalter 1-fach)", group: "Licht & Relais", io: [{ id: "TA_1", label: "Taster / Schalter", type: "in" }, { id: "LI_1", label: "Licht / Relais", type: "out" }] },
+        { file: "SCH3-3.png", label: "SCH 3-3 (Schalter 2-fach)", group: "Licht & Relais", io: [{ id: "TA_1", label: "Taster Oben", type: "in" }, { id: "LI_1", label: "Licht Oben", type: "out" }, { id: "TA_2", label: "Taster Unten", type: "in" }, { id: "LI_2", label: "Licht Unten", type: "out" }] },
+        { file: "SCH3-3-T13.png", label: "SCH 3-3 + T13 (Kombi)", group: "Licht & Relais", io: [{ id: "TA_1", label: "Taster / Schalter", type: "in" }, { id: "LI_1", label: "Licht / Relais", type: "out" }, { id: "SE_1", label: "Steckdose Messung", type: "out" }] },
+        { file: "SCH3-Bel.png", label: "SCH 3 mit Beleuchtung", group: "Licht & Relais", io: [{ id: "TA_1", label: "Taster", type: "in" }, { id: "LI_1", label: "Licht / Relais", type: "out" }, { id: "LED_CTRL", label: "Orientierungslicht", type: "out" }] },
+        { file: "Sonnerie.png", label: "Sonnerie / Klingel", group: "Signalisierung", io: [{ id: "TA_KLINGEL", label: "Klingeltaster", type: "in" }, { id: "GONG_OUT", label: "Gong / Signal", type: "out" }] },
+        { file: "Storenschalter-1-Kanal.png", label: "Storenschalter 1-Kanal", group: "Storen & Jalousien", io: [{ id: "TA_AUF", label: "Taster Auf", type: "in" }, { id: "TA_AB", label: "Taster Ab", type: "in" }, { id: "MO_AUF", label: "Motor Auf", type: "out" }, { id: "MO_AB", label: "Motor Ab", type: "out" }] },
+        { file: "Storenschalter-2-Kanal.png", label: "Storenschalter 2-Kanal", group: "Storen & Jalousien", io: [{ id: "TA_K1_AUF", label: "K1 Auf", type: "in" }, { id: "TA_K1_AB", label: "K1 Ab", type: "in" }, { id: "TA_K2_AUF", label: "K2 Auf", type: "in" }, { id: "TA_K2_AB", label: "K2 Ab", type: "in" }, { id: "MO_K1", label: "Motor K1", type: "out" }, { id: "MO_K2", label: "Motor K2", type: "out" }] },
+        { file: "T13.png", label: "T13 Steckdose", group: "Steckdosen", io: [{ id: "POWER_MON", label: "Energiemessung", type: "out" }] },
+        { file: "Universaltaster-1x2.png", label: "Universaltaster 1x2", group: "Schalter & Taster", io: [{ id: "TA_1", label: "Taste Links", type: "in" }, { id: "TA_2", label: "Taste Rechts", type: "in" }] },
+        { file: "Universaltaster-2x2.png", label: "Universaltaster 2x2", group: "Schalter & Taster", io: [{ id: "TA_1", label: "Oben Links", type: "in" }, { id: "TA_2", label: "Oben Rechts", type: "in" }, { id: "TA_3", label: "Unten Links", type: "in" }, { id: "TA_4", label: "Unten Rechts", type: "in" }] }
+    ];
+
+    const hardwareConfigList = [
+        { id: "lox_miniserver", name: "Loxone Miniserver Gen. 2", image: "Miniserver.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], io: [{ id: "DI_1", label: "DI 1", type: "in" }, { id: "DI_2", label: "DI 2", type: "in" }, { id: "O_1", label: "Relais 1", type: "out" }, { id: "TREE_1", label: "Tree Ast 1", type: "bus", max: 50 }, { id: "TREE_2", label: "Tree Ast 2", type: "bus", max: 50 }, { id: "LINK_1", label: "Loxone Link", type: "bus", max: 30 }] },
+        { id: "lox_miniserver_go", name: "Loxone Miniserver Go", image: "Miniserver-Go.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], io: [{ id: "AIR_BASE", label: "Air Geräte (Max 128)", type: "bus", max: 128 }] },
+        
+        { id: "lox_tree_extension", name: "Loxone Tree Extension", image: "Tree-Extension.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], io: [{ id: "TREE_LEFT", label: "Tree Ast Links", type: "bus", max: 50 }, { id: "TREE_RIGHT", label: "Tree Ast Rechts", type: "bus", max: 50 }] },
+        { id: "lox_air_base", name: "Loxone Air Base Extension", image: "Air-Base.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], io: [{ id: "AIR_OUT", label: "Air Geräte (Max 128)", type: "bus", max: 128 }] },
+        { id: "lox_dali_extension", name: "Loxone DALI Extension", image: "Dali-Extension.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], io: [{ id: "DALI_1", label: "DALI Bus 1 (Max 64)", type: "bus", max: 64 }, { id: "DALI_2", label: "DALI Bus 2 (Max 64)", type: "bus", max: 64 }] },
+        
+        { id: "lox_nano_di_tree", name: "Loxone Nano DI Tree", image: "DI-Tree.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], io: [{ id: "DI_1", label: "DI 1", type: "in" }, { id: "DI_2", label: "DI 2", type: "in" }, { id: "DI_3", label: "DI 3", type: "in" }, { id: "DI_4", label: "DI 4", type: "in" }] },
+        { id: "lox_nano_2_relay", name: "Loxone Nano 2 Relay Tree", image: "Nano-2-Relay.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], io: [{ id: "I_1", label: "I1", type: "in" }, { id: "I_2", label: "I2", type: "in" }, { id: "O_1", label: "Relais 1", type: "out" }, { id: "O_2", label: "Relais 2", type: "out" }] },
+        { id: "lox_touch_tree", name: "Loxone Touch Tree", image: "Touch-Tree.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"], io: [{ id: "T_1", label: "Punkt 1", type: "in" }, { id: "T_2", label: "Punkt 2", type: "in" }] },
+        
+        { id: "lox_nano_dimmer_air", name: "Loxone Nano Dimmer Air", image: "Nano-Dimmer-Air.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Montagehöhe", "Air Link"], io: [{ id: "I_1", label: "I1", type: "in" }, { id: "I_2", label: "I2", type: "in" }, { id: "O_1", label: "Dimmer", type: "out" }] },
+        { id: "lox_nano_io_air", name: "Loxone Nano IO Air", image: "Nano-IO-Air.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], io: [{ id: "I_1", label: "I1", type: "in" }, { id: "I_2", label: "I2", type: "in" }, { id: "O_1", label: "Relais 1", type: "out" }, { id: "O_2", label: "Relais 2", type: "out" }] },
+        
+        { id: "lox_dali_rgbw", name: "Loxone DALI RGBW Dimmer", image: "Dali-Dimmer.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "DALI Bus"], io: [{ id: "O_1", label: "RGBW Licht", type: "out" }] },
+        { id: "lox_dali_air", name: "Loxone DALI Air", image: "Dali-Air.jpg", fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], io: [{ id: "DALI_OUT", label: "DALI Geräte (Max 10)", type: "bus", max: 10 }] }
+    ];
+
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
+    let projectData = { version: "1.1", projectName: "Neues Projekt", location: "", details: [] };
+    let activeDetailId = null; let draggedSlotNum = null;
 
-    let projectData = {
-        projectName: "Schalterdetail EFH Odermatt",
-        location: "",
-        details: []
-    };
-    let activeDetailId = null;
-    let draggedSlotNum = null;
-
-    document.addEventListener('keydown', function(e) {
-        if (e.ctrlKey || e.metaKey) {
-            if (e.key.toLowerCase() === 's') { e.preventDefault(); exportProject(); }
-            else if (e.key.toLowerCase() === 'p') { e.preventDefault(); printCurrentDetail(); }
-        }
-    });
-
-    document.addEventListener("click", function (e) {
-        document.querySelectorAll('.select-items').forEach(item => { item.style.display = 'none'; });
-    });
+    document.addEventListener('keydown', e => { if (e.ctrlKey || e.metaKey) { if (e.key.toLowerCase() === 's') { e.preventDefault(); exportProject(); } else if (e.key.toLowerCase() === 'p') { e.preventDefault(); printCurrentDetail(); } } });
+    document.addEventListener("click", () => document.querySelectorAll('.select-items').forEach(item => item.style.display = 'none'));
 
     window.onload = () => {
-        const savedData = loadFromLocal();
-        if (savedData && savedData.details && savedData.details.length > 0) {
-            projectData = savedData;
-            activeDetailId = projectData.details[0].id;
-            renderApp();
-        } else {
-            if (projectData.details.length === 0) addNewDetail(); else renderApp();
-        }
+        let savedData = loadFromLocal();
+        if (savedData && savedData.details) {
+            // Migration for older versions
+            if(!savedData.version) { savedData.version = "1.1"; savedData.details.forEach(d => { if(d.room === undefined) d.room = ""; }); }
+            projectData = savedData; activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null;
+            if(!activeDetailId) addNewDetail(); else renderApp();
+        } else addNewDetail();
     };
 
     function saveToLocal() { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(projectData)); }
-    function loadFromLocal() {
-        const data = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (data) { try { return JSON.parse(data); } catch(e) { console.error(e); } }
-        return null;
-    }
+    function loadFromLocal() { const data = localStorage.getItem(LOCAL_STORAGE_KEY); return data ? JSON.parse(data) : null; }
     function generateId() { return Math.random().toString(36).substr(2, 9); }
-
     function sanitizeFnName(str) { return str.replace(/[^a-zA-Z0-9_]/g, '_'); }
-
-    function toggleSidebar() { 
-        document.getElementById('sidebar').classList.toggle('collapsed'); 
-    }
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
 
     function resetProject() {
-        if(confirm("Möchtest du wirklich das gesamte Projekt löschen und ganz von vorne anfangen? Alle nicht gespeicherten Daten gehen verloren.")) {
-            localStorage.removeItem(LOCAL_STORAGE_KEY);
-            projectData = { projectName: "Neues Projekt", location: "", details: [] };
-            activeDetailId = null;
-            addNewDetail();
+        if(confirm("Komplettes Projekt löschen und neu starten?")) {
+            localStorage.removeItem(LOCAL_STORAGE_KEY); projectData = { version: "1.1", projectName: "Neues Projekt", location: "", details: [] }; activeDetailId = null; addNewDetail();
         }
     }
 
-    // --- SUCHBARE AUSWAHLFELDER MIT KATEGORIEN ---
-    function renderSearchableDropdown(dropdownId, currentValue, optionsList, onSelectCallbackName, placeholder = "Wählen...") {
-        let optionsHtml = '';
-
-        const hasCategories = optionsList.some(opt => typeof opt === 'object' && opt.category);
-
-        if (hasCategories) {
-            const groups = {};
-            optionsList.forEach(opt => {
-                const cat = (typeof opt === 'object' && opt.category) ? opt.category : 'Sonstige';
-                if (!groups[cat]) groups[cat] = [];
-                groups[cat].push(opt);
-            });
-
-            for (const cat in groups) {
-                optionsHtml += `<div class="dropdown-group-label">${cat}</div>`;
-                groups[cat].forEach(opt => {
-                    const val = typeof opt === 'string' ? opt : opt.value;
-                    const label = typeof opt === 'string' ? opt : opt.label;
-                    optionsHtml += `<div class="dropdown-option" data-label="${label.toLowerCase()}" onclick="${onSelectCallbackName}('${val.replace(/'/g, "\\'")}', event)">${label}</div>`;
-                });
-            }
-        } else {
-            optionsList.forEach(opt => {
-                const val = typeof opt === 'string' ? opt : opt.value;
-                const label = typeof opt === 'string' ? opt : opt.label;
-                optionsHtml += `<div class="dropdown-option" data-label="${label.toLowerCase()}" onclick="${onSelectCallbackName}('${val.replace(/'/g, "\\'")}', event)">${label}</div>`;
-            });
-        }
-
-        const displayLabel = currentValue ? (optionsList.find(o => (typeof o === 'string' ? o : o.value) === currentValue)?.label || currentValue) : placeholder;
-
-        return `
-            <div class="custom-select" onclick="toggleGenericDropdown('${dropdownId}', event)">
-                <div class="select-selected">${displayLabel} <span>▼</span></div>
-                <div class="select-items" id="dd-${dropdownId}" style="display:none;" onclick="event.stopPropagation()">
-                    <input type="text" class="dropdown-search" placeholder="Suchen..." onkeyup="filterGenericDropdown('${dropdownId}', this.value)" onclick="event.stopPropagation()">
-                    <div class="dropdown-list" id="dd-list-${dropdownId}">${optionsHtml}</div>
-                </div>
-            </div>
-        `;
-    }
-
-    function toggleGenericDropdown(id, event) {
-        event.stopPropagation();
-        document.querySelectorAll('.select-items').forEach(dd => { if (dd.id !== `dd-${id}`) dd.style.display = 'none'; });
-        const dd = document.getElementById(`dd-${id}`);
-        const isOpening = dd.style.display !== 'block';
-        dd.style.display = isOpening ? 'block' : 'none';
-        if (isOpening) { setTimeout(() => { const searchInput = dd.querySelector('.dropdown-search'); if (searchInput) searchInput.focus(); }, 50); }
-    }
-
-    function filterGenericDropdown(id, term) {
-        const search = term.toLowerCase();
-        const list = document.getElementById(`dd-list-${id}`);
-        let currentGroupLabel = null;
-        let groupHasVisibleItems = false;
-
-        Array.from(list.children).forEach(child => {
-            if (child.classList.contains('dropdown-group-label')) {
-                if (currentGroupLabel && !groupHasVisibleItems) currentGroupLabel.style.display = 'none';
-                currentGroupLabel = child;
-                groupHasVisibleItems = false;
-                child.style.display = 'block';
-            } else if (child.classList.contains('dropdown-option')) {
-                const isMatch = child.getAttribute('data-label').includes(search);
-                child.style.display = isMatch ? 'block' : 'none';
-                if (isMatch) groupHasVisibleItems = true;
-            }
-        });
-        if (currentGroupLabel && !groupHasVisibleItems) currentGroupLabel.style.display = 'none';
-    }
-
-    // --- IDENTIFIKATOREN UND COMPUTED BUS-LOGIK (NEU & INTELLIGENT) ---
-    
-    // Helfer für Bus-Typ-Erkennung (Smart Bus Logic)
+    // --- CORE LOGIC ---
     function detectBusType(text) {
-        if (!text) return 'unknown';
-        const t = text.toLowerCase();
-        if (t.includes('tree')) return 'tree';
-        if (t.includes('air')) return 'air';
-        if (t.includes('dali')) return 'dali';
-        if (t.includes('link') || t.includes('loxalink')) return 'link';
-        if (t.includes('modbus')) return 'modbus';
-        if (t.includes('knx')) return 'knx';
-        return 'unknown';
+        if (!text) return 'unknown'; const t = text.toLowerCase();
+        if (t.includes('tree')) return 'tree'; if (t.includes('air')) return 'air';
+        if (t.includes('dali')) return 'dali'; if (t.includes('link') || t.includes('loxalink')) return 'link';
+        if (t.includes('modbus')) return 'modbus'; if (t.includes('knx')) return 'knx'; return 'unknown';
     }
 
     function getHwIdString(detail, hw) {
         const config = hardwareConfigList.find(c => c.id === hw.configId);
-        return `[${detail.name}] ${hw.fields['Geräte-Bez.'] || config.name}`;
+        return `[${detail.room ? detail.room + ' - ' : ''}${detail.name}] ${hw.fields['Geräte-Bez.'] || config.name}`;
     }
 
-    function getBusIdString(detail, hw, io) {
-        return `${getHwIdString(detail, hw)} - ${io.label}`;
-    }
+    function getBusIdString(detail, hw, io) { return `${getHwIdString(detail, hw)} - ${io.label}`; }
 
-    // Sucht alle Slaves, auch Typenübergreifend, die an diesem BusIdString hängen
     function findSlavesForBus(busIdString) {
         let results = [];
         projectData.details.forEach(d => {
-            if(d.hardware) {
-                d.hardware.forEach(h => {
-                    const config = hardwareConfigList.find(c => c.id === h.configId);
-                    if(config && config.fields) {
-                        config.fields.forEach(f => {
-                            const fLower = f.toLowerCase();
-                            if(fLower.includes('ast') || fLower.includes('bus') || fLower.includes('bridge') || fLower.includes('dali') || fLower.includes('link')) {
-                                if(h.fields[f] === busIdString) {
-                                    results.push({ detail: d, hw: h, fieldName: f, config: config });
-                                }
-                            }
-                        });
-                    }
+            if(d.hardware) d.hardware.forEach(h => {
+                const config = hardwareConfigList.find(c => c.id === h.configId);
+                if(config && config.fields) config.fields.forEach(f => {
+                    if(/ast|bus|bridge|dali|link/i.test(f) && h.fields[f] === busIdString) results.push({ detail: d, hw: h, fieldName: f, config: config });
                 });
-            }
+            });
         });
         return results;
     }
 
-    // Liefert alle Slaves gefiltert nach dem Typ des anfragenden Master-Ports (Tree, Dali, Air, etc.)
-    function getAllBusSlaves(masterBusType = null) {
-        let list = [];
+    function checkCollision(switchIdentifier) {
+        let count = 0;
         projectData.details.forEach(d => {
-            if(d.hardware) {
-                d.hardware.forEach(h => {
-                    const config = hardwareConfigList.find(c => c.id === h.configId);
-                    if(config && config.fields) {
-                        config.fields.forEach(f => {
-                            const fLower = f.toLowerCase();
-                            if(fLower.includes('ast') || fLower.includes('bus') || fLower.includes('bridge') || fLower.includes('dali') || fLower.includes('link')) {
-                                const slaveType = detectBusType(f);
-                                
-                                // Nur aufnehmen, wenn kompatibel oder unbekannt
-                                if (!masterBusType || masterBusType === slaveType || masterBusType === 'unknown' || slaveType === 'unknown') {
-                                    list.push({
-                                        value: `${d.id}|${h.instanceId}|${f}`, 
-                                        label: getHwIdString(d, h),
-                                        category: `Detail: ${d.name}`
-                                    });
-                                }
-                            }
-                        });
-                    }
-                });
-            }
-        });
-        return list;
-    }
-
-    // Liefert alle Master-Bus-Anschlüsse gefiltert nach dem Typ des anfragenden Slaves
-    function getAllBusNodes(slaveBusType = null) {
-        let list = [];
-        projectData.details.forEach(detail => {
-            if(detail.hardware) {
-                detail.hardware.forEach(hw => {
-                    const config = hardwareConfigList.find(c => c.id === hw.configId);
-                    if(config && config.io) {
-                        config.io.forEach(io => {
-                            if(io.type === 'bus') {
-                                const masterType = detectBusType(io.label);
-                                
-                                // Nur aufnehmen, wenn kompatibel oder unbekannt
-                                if (!slaveBusType || slaveBusType === masterType || slaveBusType === 'unknown' || masterType === 'unknown') {
-                                    const identifier = getBusIdString(detail, hw, io);
-                                    list.push({ value: identifier, label: identifier, category: `Detail: ${detail.name}` });
-                                }
-                            }
-                        });
-                    }
-                });
-            }
-        });
-        return list;
-    }
-
-    window.assignSlaveToBus = function(payload, masterBusIdString, ev) {
-        if(ev) ev.stopPropagation();
-        document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
-
-        if(!payload) return;
-        const [detailId, hwInstId, fieldName] = payload.split('|');
-        const d = projectData.details.find(x => x.id === detailId);
-        if(d) {
-            const h = d.hardware.find(x => x.instanceId === hwInstId);
-            if(h) h.fields[fieldName] = masterBusIdString;
-        }
-        renderApp();
-    };
-
-    window.removeSlaveFromBus = function(detailId, hwInstId, fieldName, ev) {
-        if(ev) ev.stopPropagation();
-        const d = projectData.details.find(x => x.id === detailId);
-        if(d) {
-            const h = d.hardware.find(x => x.instanceId === hwInstId);
-            if(h) h.fields[fieldName] = "";
-        }
-        renderApp();
-    };
-
-    function getAllAvailableConnections() {
-        let list = [];
-        projectData.details.forEach(detail => {
-            if(detail.hardware) {
-                detail.hardware.forEach(hw => {
-                    const config = hardwareConfigList.find(c => c.id === hw.configId);
-                    if(config && config.io) {
-                        config.io.forEach(io => {
-                            if(io.type !== 'bus') {
-                                const identifier = getBusIdString(detail, hw, io);
-                                list.push({ value: identifier, label: identifier, category: `Detail: ${detail.name}` });
-                            }
-                        });
-                    }
-                });
-            }
-        });
-        return list;
-    }
-
-    function getAllAvailableSwitches() {
-        let list = [];
-        projectData.details.forEach(detail => {
-            const [rows, cols] = detail.layout.split('x').map(Number);
-            const totalSlots = rows * cols;
-            for(let i=1; i<=totalSlots; i++) {
-                const slot = detail.slots[`slot-${i}`];
-                if(slot && slot.iconFile) {
-                    const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
-                    if(iconDef && iconDef.io) {
-                        iconDef.io.forEach(io => {
-                            const data = (slot.ioData && slot.ioData[io.id]) ? (typeof slot.ioData[io.id] === 'string' ? {bezeichnung: slot.ioData[io.id]} : slot.ioData[io.id]) : {};
-                            const bez = data.bezeichnung ? data.bezeichnung : (iconDef.label || slot.iconFile);
-                            const identifier = `[${detail.name}] ${bez}`;
-                            list.push({ value: identifier, label: identifier, category: `Detail: ${detail.name}` });
-                        });
-                    }
+            if(d.hardware) d.hardware.forEach(h => {
+                for (const key in h.mappings) {
+                    if (h.mappings[key] === switchIdentifier) count++;
                 }
-            }
+            });
         });
-        return list;
+        return count > 1; // True = Warnung
     }
 
-    function addNewDetail() {
-        const newDetail = { id: generateId(), name: `Detail ${projectData.details.length + 1}`, layout: "2x2", slots: {}, hardware: [] };
-        projectData.details.push(newDetail); activeDetailId = newDetail.id; renderApp();
-    }
-
-    function duplicateDetail(id, event) {
-        event.stopPropagation();
-        const detailToCopy = projectData.details.find(d => d.id === id);
-        if (detailToCopy) {
-            const newDetail = JSON.parse(JSON.stringify(detailToCopy));
-            newDetail.id = generateId(); newDetail.name = newDetail.name + " (Kopie)";
-            if (newDetail.hardware) newDetail.hardware.forEach(hw => hw.instanceId = generateId());
-            projectData.details.push(newDetail); activeDetailId = newDetail.id; renderApp();
-        }
-    }
-
-    function selectDetail(id) { activeDetailId = id; renderApp(); }
-
-    function deleteDetail(id, event) {
-        event.stopPropagation();
-        if(confirm("Möchtest du dieses Detail wirklich löschen?")) {
-            projectData.details = projectData.details.filter(d => d.id !== id);
-            if(projectData.details.length > 0) activeDetailId = projectData.details[0].id;
-            else { addNewDetail(); return; }
-            renderApp();
-        }
-    }
-
-    function updateProjectField(field, value) { projectData[field] = value; saveToLocal(); }
-
-    function updateActiveDetailField(field, value) {
-        const detail = projectData.details.find(d => d.id === activeDetailId);
-        if (detail) { detail[field] = value; if (field === 'layout' || field === 'name') renderApp(); else saveToLocal(); }
-    }
-
+    // --- UI RENDERERS ---
     function renderApp() {
         document.getElementById('project-name').value = projectData.projectName;
         document.getElementById('project-location').value = projectData.location || '';
-        renderSidebarList(); 
-        renderWorkspace(); 
-        saveToLocal();
+        renderSidebarList(); renderWorkspace(); saveToLocal();
     }
 
-    function filterDetails() { renderSidebarList(); }
-
     function renderSidebarList() {
-        const list = document.getElementById('detail-list'); 
-        list.innerHTML = '';
-
-        const searchInput = document.getElementById('detail-search-input');
-        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+        const list = document.getElementById('detail-list'); list.innerHTML = '';
+        const search = (document.getElementById('detail-search-input')?.value || '').toLowerCase();
 
         projectData.details.forEach(detail => {
-            if(searchTerm && !detail.name.toLowerCase().includes(searchTerm)) return;
+            const searchStr = `${detail.name} ${detail.room || ''}`.toLowerCase();
+            if(search && !searchStr.includes(search)) return;
 
             const div = document.createElement('div');
             div.className = `detail-item ${detail.id === activeDetailId ? 'active' : ''}`;
-            div.onclick = () => selectDetail(detail.id);
+            div.onclick = () => { activeDetailId = detail.id; renderApp(); };
             div.innerHTML = `
-                <span>${detail.name}</span>
+                <div class="detail-item-info">
+                    <span class="detail-item-room">${detail.room || 'Kein Raum'}</span>
+                    <span>${detail.name}</span>
+                </div>
                 <div class="sidebar-actions">
-                    <button class="icon-btn" title="Duplizieren" onclick="duplicateDetail('${detail.id}', event)"><img src="icons/Dublizieren.svg" alt="Kopieren"></button>
-                    <button class="delete-btn" title="Löschen" onclick="deleteDetail('${detail.id}', event)">×</button>
+                    <button class="icon-btn" title="Duplizieren" onclick="event.stopPropagation(); duplicateDetail('${detail.id}')">📋</button>
+                    <button class="delete-btn" title="Löschen" onclick="event.stopPropagation(); deleteDetail('${detail.id}')">×</button>
                 </div>
             `;
             list.appendChild(div);
         });
     }
 
-    function handleDragStart(e, slotNum) { draggedSlotNum = slotNum; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', slotNum); }
-    function handleDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; e.currentTarget.classList.add('drag-over'); }
-    function handleDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
-    function handleDrop(e, targetSlotNum) {
-        e.preventDefault(); e.currentTarget.classList.remove('drag-over');
-        if (draggedSlotNum && draggedSlotNum !== targetSlotNum) {
-            const detail = projectData.details.find(d => d.id === activeDetailId);
-            if (!detail.slots[`slot-${targetSlotNum}`]) detail.slots[`slot-${targetSlotNum}`] = { iconFile: '', ioData: {} };
-            if (!detail.slots[`slot-${draggedSlotNum}`]) detail.slots[`slot-${draggedSlotNum}`] = { iconFile: '', ioData: {} };
-            const temp = JSON.parse(JSON.stringify(detail.slots[`slot-${targetSlotNum}`]));
-            detail.slots[`slot-${targetSlotNum}`] = JSON.parse(JSON.stringify(detail.slots[`slot-${draggedSlotNum}`]));
-            detail.slots[`slot-${draggedSlotNum}`] = temp;
-            renderApp();
-        }
-        draggedSlotNum = null;
+    function addNewDetail() {
+        // Standardmäßig "0x0" (Kein Schalter)
+        const newDetail = { id: generateId(), name: `Detail ${projectData.details.length + 1}`, room: "", layout: "0x0", slots: {}, hardware: [] };
+        projectData.details.push(newDetail); activeDetailId = newDetail.id; renderApp();
     }
+    
+    function duplicateDetail(id) {
+        const d = projectData.details.find(x => x.id === id);
+        if (d) { const nd = JSON.parse(JSON.stringify(d)); nd.id = generateId(); nd.name += " (Kopie)"; if(nd.hardware) nd.hardware.forEach(h => h.instanceId = generateId()); projectData.details.push(nd); activeDetailId = nd.id; renderApp(); }
+    }
+    
+    function deleteDetail(id) {
+        if(confirm("Detail wirklich löschen?")) { projectData.details = projectData.details.filter(x => x.id !== id); activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null; if(!activeDetailId) addNewDetail(); else renderApp(); }
+    }
+
+    function updateProjectField(field, value) { projectData[field] = value; saveToLocal(); }
+    function updateActiveDetailField(field, value) { const d = projectData.details.find(x => x.id === activeDetailId); if (d) { d[field] = value; renderApp(); } }
+
+    function renderSearchableDropdown(dropdownId, currentValue, optionsList, callbackName, placeholder) {
+        let optsHtml = optionsList.map(opt => `<div class="dropdown-option" data-label="${(opt.label || opt.value).toLowerCase()}" onclick="${callbackName}('${opt.value.replace(/'/g, "\\'")}', event)">${opt.label || opt.value}</div>`).join('');
+        const dLabel = optionsList.find(o => o.value === currentValue)?.label || currentValue || placeholder;
+        return `<div class="custom-select" onclick="toggleGenericDropdown('${dropdownId}', event)"><div class="select-selected">${dLabel} <span>▼</span></div><div class="select-items" id="dd-${dropdownId}" onclick="event.stopPropagation()"><input type="text" class="dropdown-search" placeholder="Suchen..." onkeyup="filterGenericDropdown('${dropdownId}', this.value)"><div id="dd-list-${dropdownId}">${optsHtml}</div></div></div>`;
+    }
+    window.toggleGenericDropdown = function(id, ev) { ev.stopPropagation(); document.querySelectorAll('.select-items').forEach(dd => { if(dd.id !== `dd-${id}`) dd.style.display = 'none'; }); const d = document.getElementById(`dd-${id}`); d.style.display = d.style.display === 'block' ? 'none' : 'block'; if(d.style.display === 'block') setTimeout(()=>d.querySelector('.dropdown-search')?.focus(), 50); };
+    window.filterGenericDropdown = function(id, term) { const t = term.toLowerCase(); Array.from(document.getElementById(`dd-list-${id}`).children).forEach(c => c.style.display = c.getAttribute('data-label').includes(t) ? 'block' : 'none'); };
 
     function renderWorkspace() {
-        const container = document.getElementById('workspace-container');
-        const detail = projectData.details.find(d => d.id === activeDetailId);
-        if (!detail) { container.innerHTML = '<p>Kein Detail ausgewählt.</p>'; return; }
+        const c = document.getElementById('workspace-container'); const d = projectData.details.find(x => x.id === activeDetailId);
+        if (!d) return;
 
-        const [rows, cols] = detail.layout.split('x').map(Number);
-        const totalSlots = rows * cols;
-        for(let i=1; i<=totalSlots; i++) { if(!detail.slots[`slot-${i}`]) detail.slots[`slot-${i}`] = { iconFile: '', ioData: {} }; }
-        if(!detail.hardware) detail.hardware = [];
+        let totalSlots = 0; let rows = 0; let cols = 0;
+        if(d.layout !== "0x0") { const parts = d.layout.split('x'); rows = +parts[0]; cols = +parts[1]; totalSlots = rows * cols; }
+        for(let i=1; i<=totalSlots; i++) { if(!d.slots[`slot-${i}`]) d.slots[`slot-${i}`] = { iconFile: '', ioData: {} }; }
+        if(!d.hardware) d.hardware = [];
 
-        const hwConfigListSafe = (typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : []);
-        const hwOptions = hwConfigListSafe.map(hw => ({ value: hw.id, label: hw.name, category: 'Hardware' }));
+        window.selectNewHw = (val, ev) => { if(ev) ev.stopPropagation(); document.querySelectorAll('.select-items').forEach(x=>x.style.display='none'); if(val) { addHardwareComponent(val); } };
+        const hwPicker = renderSearchableDropdown('new-hw', '', hardwareConfigList.map(h => ({value: h.id, label: h.name})), 'selectNewHw', '+ Hardware hinzufügen');
 
-        window.selectNewHardwareType = function(val, event) {
-            if(event) event.stopPropagation();
-            document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
-            addHardwareComponent(val);
-        };
-        const newHwPickerHtml = renderSearchableDropdown('new-hw-picker', '', hwOptions, 'selectNewHardwareType', '+ Hardware hinzufügen');
-
-        let html = `
-            <div class="workspace">
-                <div>
-                    <div class="pane">
-                        <div class="form-group">
-                            <label>Detail Name:</label>
-                            <input type="text" value="${detail.name}" onchange="updateActiveDetailField('name', this.value)">
-                        </div>
-                        <div class="form-group no-print">
-                            <label>Layout:</label>
-                            <select onchange="updateActiveDetailField('layout', this.value)">
-                                <option value="1x1" ${detail.layout==='1x1'?'selected':''}>1 x 1</option>
-                                <option value="2x1" ${detail.layout==='2x1'?'selected':''}>2 x 1 (Vertikal)</option>
-                                <option value="1x2" ${detail.layout==='1x2'?'selected':''}>1 x 2 (Horizontal)</option>
-                                <option value="2x2" ${detail.layout==='2x2'?'selected':''}>2 x 2</option>
-                                <option value="3x2" ${detail.layout==='3x2'?'selected':''}>3 x 2</option>
-                                <option value="4x2" ${detail.layout==='4x2'?'selected':''}>4 x 2</option>
-                                <option value="3x3" ${detail.layout==='3x3'?'selected':''}>3 x 3</option>
-                            </select>
-                        </div>
-                        <div class="visualizer-container">
-                            <div class="switch-frame" style="grid-template-columns: repeat(${cols}, 80px); grid-template-rows: repeat(${rows}, 80px);">
-                                ${generateVisualizerHtml(detail, rows, cols)}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pane" style="margin-top: 20px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                            <h3>Hardware Komponenten</h3>
-                            <div class="no-print" style="display:flex; gap:10px; align-items:center;">
-                                <div style="width: 250px;" id="hw-picker-container">
-                                    ${newHwPickerHtml}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="hardware-list">
-                            ${generateHardwareHtml(detail)}
-                        </div>
-                    </div>
-                </div>
-                <div class="pane">
-                    <h3>Schalter Belegungen</h3>
-                    <div class="slots-container">
-                        ${generateSlotsHtml(detail, totalSlots)}
-                    </div>
-                </div>
+        let html = `<div class="workspace"><div><div class="pane">
+            <div class="form-group"><label>Raum / Zone:</label><input type="text" value="${d.room || ''}" placeholder="z.B. Wohnzimmer" onchange="updateActiveDetailField('room', this.value)"></div>
+            <div class="form-group"><label>Detail Name:</label><input type="text" value="${d.name}" onchange="updateActiveDetailField('name', this.value)"></div>
+            <div class="form-group no-print"><label>Rahmen Layout:</label>
+                <select onchange="updateActiveDetailField('layout', this.value)">
+                    <option value="0x0" ${d.layout==='0x0'?'selected':''}>Kein Schalterrahmen</option>
+                    <option value="1x1" ${d.layout==='1x1'?'selected':''}>1 x 1</option>
+                    <option value="2x1" ${d.layout==='2x1'?'selected':''}>2 x 1 (Vertikal)</option>
+                    <option value="1x2" ${d.layout==='1x2'?'selected':''}>1 x 2 (Horizontal)</option>
+                    <option value="2x2" ${d.layout==='2x2'?'selected':''}>2 x 2</option>
+                </select>
             </div>
-        `;
-        container.innerHTML = html; updatePrintContainers();
-    }
-
-    function generateVisualizerHtml(detail, rows, cols) {
-        let html = ''; let count = 1;
-        for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-                const slot = detail.slots[`slot-${count}`];
-                const iconPath = slot.iconFile ? `icons-schalter/${slot.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1" stroke-width="1"><circle cx="12" cy="12" r="8"></circle></svg>';
-                html += `
-                    <div class="switch-slot" draggable="true" ondragstart="handleDragStart(event, ${count})" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, ${count})">
-                        <span class="slot-badge">${count}</span>
-                        <img src="${iconPath}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;%23ef4444&quot; stroke-width=&quot;2&quot;><line x1=&quot;18&quot; y1=&quot;6&quot; x2=&quot;6&quot; y2=&quot;18&quot;></line><line x1=&quot;6&quot; y1=&quot;6&quot; x2=&quot;18&quot; y2=&quot;18&quot;></line></svg>'">
-                    </div>
-                `;
-                count++;
-            }
-        }
-        return html;
-    }
-
-    function renderCustomIconDropdown(slotNum, currentIcon) {
-        const iconList = (typeof iconConfigList !== 'undefined' ? iconConfigList : []);
-        const options = iconList.map(ic => ({ 
-            value: ic.file, 
-            label: ic.label || ic.file || '--- Kein Icon ---',
-            category: ic.group || 'Allgemein'
-        }));
-        const safeFnName = `selectIconDropdown_${slotNum}`;
-        return renderSearchableDropdown(`icon-picker-${slotNum}`, currentIcon, options, safeFnName, 'Icon wählen...');
-    }
-
-    function getIOObject(slot, ioId) {
-        let val = slot.ioData ? slot.ioData[ioId] : null;
-        if (typeof val === 'string') return { bezeichnung: val, art: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
-        return val || { bezeichnung: '', art: '', gruppe: '', eingabegerat: '', funktion: '', bemerkung: '' };
-    }
-
-    function generateSlotsHtml(detail, totalSlots) {
-        let html = '';
-        const allConnections = getAllAvailableConnections();
-
-        for(let i=1; i<=totalSlots; i++) {
-            const slot = detail.slots[`slot-${i}`];
-            const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
-            let ioHtml = '';
-
-            if(iconDef && iconDef.io && iconDef.io.length > 0) {
-                let ioRows = iconDef.io.map(io => {
-                    const data = getIOObject(slot, io.id);
-                    const ioTypeText = io.type === 'in' ? 'Eingang' : 'Ausgang';
-
-                    const pickerId = `slot-io-${i}-${io.id}`;
-                    const safeFnName = `select_` + sanitizeFnName(pickerId);
-                    window[safeFnName] = function(val, ev) {
-                        if(ev) ev.stopPropagation();
-                        document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
-                        updateSlotIOField(i, io.id, 'eingabegerat', val);
-                        
-                        // FIX: Die Oberfläche muss sich hier direkt neuladen, 
-                        // damit der neue Wert im Dropdown auch grafisch angezeigt wird!
-                        renderApp(); 
-                    };
-                    const eingabegeratPicker = renderSearchableDropdown(pickerId, data.eingabegerat, allConnections, safeFnName, 'Verknüpfung wählen...');
-
-                    return `
-                        <div class="io-complex-row">
-                            <div class="io-header"><span class="io-type ${io.type}">${ioTypeText}</span> ${io.label}</div>
-                            <div class="io-fields-grid">
-                                <input type="text" placeholder="Bezeichnung" value="${data.bezeichnung}" onchange="updateSlotIOField('${i}', '${io.id}', 'bezeichnung', this.value)">
-                                <input type="text" placeholder="Art. (z.B. Taster)" value="${data.art}" onchange="updateSlotIOField('${i}', '${io.id}', 'art', this.value)">
-                                <input type="text" placeholder="Gruppe" value="${data.gruppe}" onchange="updateSlotIOField('${i}', '${io.id}', 'gruppe', this.value)">
-                                <div>${eingabegeratPicker}</div>
-                                <input type="text" placeholder="Funktion" value="${data.funktion}" onchange="updateSlotIOField('${i}', '${io.id}', 'funktion', this.value)">
-                                <input type="text" class="io-full-width" placeholder="Bemerkung" value="${data.bemerkung}" onchange="updateSlotIOField('${i}', '${io.id}', 'bemerkung', this.value)">
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-                ioHtml = `<div class="io-section">${ioRows}</div>`;
-            }
-
-            window[`selectIconDropdown_${i}`] = function(file, ev) {
-                if(ev) ev.stopPropagation();
-                document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
-                updateSlotIcon(i, file);
-            };
-
-            const printVisibilityClass = slot.iconFile ? '' : 'no-print';
-            html += `
-                <div class="slot-form ${printVisibilityClass}">
-                    <h4>Platz ${i}</h4>
-                    <div class="form-group no-print">
-                        <label>Icon / Typ</label>
-                        ${renderCustomIconDropdown(i, slot.iconFile)}
-                    </div>
-                    ${ioHtml}
-                </div>
-            `;
-        }
-        return html;
-    }
-
-    function updateSlotIcon(slotNum, iconFile) { 
-        const detail = projectData.details.find(d => d.id === activeDetailId); 
-        detail.slots[`slot-${slotNum}`].iconFile = iconFile; 
-        renderApp(); 
-    }
-
-    function updateSlotIOField(slotNum, ioId, field, value) {
-        const detail = projectData.details.find(d => d.id === activeDetailId);
-        if(!detail.slots[`slot-${slotNum}`].ioData) detail.slots[`slot-${slotNum}`].ioData = {};
-
-        let currentData = getIOObject(detail.slots[`slot-${slotNum}`], ioId);
-        const oldValue = currentData[field];
-        currentData[field] = value; 
-        detail.slots[`slot-${slotNum}`].ioData[ioId] = currentData; 
-
-        if (field === 'eingabegerat') {
-            const slotIconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === detail.slots[`slot-${slotNum}`].iconFile);
-            const switchLabelName = currentData.bezeichnung ? currentData.bezeichnung : (slotIconDef ? slotIconDef.label : 'Schalter');
-            const switchTargetString = `[${detail.name}] ${switchLabelName}`;
-
-            if (oldValue) {
-                const oldItems = oldValue.split(',').map(s => s.trim());
-                projectData.details.forEach(d => {
-                    if (d.hardware) {
-                        d.hardware.forEach(hw => {
-                            const cfg = hardwareConfigList.find(c => c.id === hw.configId);
-                            if (cfg && cfg.io) {
-                                cfg.io.forEach(h_io => {
-                                    if (h_io.type !== 'bus' && hw.mappings[h_io.id] === switchTargetString) {
-                                        const devBez = hw.fields['Geräte-Bez.'] ? hw.fields['Geräte-Bez.'] : cfg.name;
-                                        const matchString = `[${d.name}] ${devBez} - ${h_io.label}`;
-                                        if (oldItems.includes(matchString)) { hw.mappings[h_io.id] = ""; }
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
-            }
-
-            if (value) {
-                const newItems = value.split(',').map(s => s.trim());
-                projectData.details.forEach(d => {
-                    if (d.hardware) {
-                        d.hardware.forEach(hw => {
-                            const cfg = hardwareConfigList.find(c => c.id === hw.configId);
-                            if (cfg && cfg.io) {
-                                const devBez = hw.fields['Geräte-Bez.'] ? hw.fields['Geräte-Bez.'] : cfg.name;
-                                cfg.io.forEach(h_io => {
-                                    if (h_io.type !== 'bus') {
-                                        const matchString = `[${d.name}] ${devBez} - ${h_io.label}`;
-                                        if (newItems.includes(matchString)) { hw.mappings[h_io.id] = switchTargetString; }
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
-            }
-        }
-        saveToLocal();
+            ${totalSlots > 0 ? `<div class="visualizer-container"><div class="switch-frame" style="grid-template-columns: repeat(${cols}, 80px); grid-template-rows: repeat(${rows}, 80px);">${generateVisualizerHtml(d, rows, cols)}</div></div>` : ''}
+        </div>
+        <div class="pane" style="margin-top:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;"><h3>Hardware Komponenten</h3><div class="no-print" style="width:220px;">${hwPicker}</div></div>
+            <div class="hardware-list">${generateHardwareHtml(d)}</div>
+        </div></div>
+        <div class="pane"><h3>Schalter Belegungen</h3>${totalSlots > 0 ? generateSlotsHtml(d, totalSlots) : '<p style="color:#64748b;">Kein Schalterrahmen ausgewählt.</p>'}</div></div>`;
+        c.innerHTML = html; updatePrintContainers();
     }
 
     function addHardwareComponent(hwId) {
-        if(!hwId) return;
-        const hwConfig = hardwareConfigList.find(h => h.id === hwId); if(!hwConfig) return;
-        const detail = projectData.details.find(d => d.id === activeDetailId);
-        const ioMapping = {};
-        if(hwConfig.io) hwConfig.io.forEach(io => { ioMapping[io.id] = ""; });
-        const fieldsData = {};
+        const c = hardwareConfigList.find(x => x.id === hwId); const d = projectData.details.find(x => x.id === activeDetailId);
+        const cnt = d.hardware.filter(x => x.configId === hwId).length + 1;
+        const fields = {}; if(c.fields) c.fields.forEach(f => fields[f] = f === 'Geräte-Bez.' ? `${c.name} ${cnt}` : "");
+        const maps = {}; if(c.io) c.io.forEach(io => maps[io.id] = "");
+        d.hardware.push({ instanceId: generateId(), configId: hwId, fields: fields, mappings: maps }); renderApp();
+    }
 
-        const count = detail.hardware.filter(h => h.configId === hwId).length + 1;
+    function generateVisualizerHtml(d, r, c) {
+        let h = ''; let cnt = 1;
+        for(let i=0; i<r*c; i++) {
+            const path = d.slots[`slot-${cnt}`].iconFile ? `icons-schalter/${d.slots[`slot-${cnt}`].iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
+            h += `<div class="switch-slot"><span class="slot-badge">${cnt}</span><img src="${path}"></div>`; cnt++;
+        }
+        return h;
+    }
 
-        if(hwConfig.fields) hwConfig.fields.forEach(f => { 
-            if(f === 'Geräte-Bez.') fieldsData[f] = `${hwConfig.name} ${count}`;
-            else fieldsData[f] = ""; 
-        });
+    function generateSlotsHtml(d, total) {
+        let h = ''; const allConns = getAllAvailableConnections();
+        for(let i=1; i<=total; i++) {
+            const slot = d.slots[`slot-${i}`]; const ic = iconConfigList.find(x => x.file === slot.iconFile); let ioHtml = '';
+            if(ic && ic.io) {
+                ioHtml = `<div class="io-section">` + ic.io.map(io => {
+                    const data = slot.ioData?.[io.id] || {bezeichnung:'', art:'', gruppe:'', eingabegerat:'', funktion:'', bemerkung:''};
+                    if(typeof data === 'string') data = {bezeichnung: data, eingabegerat:''}; // legacy fix
+                    const fn = `setIO_${i}_${io.id}`;
+                    window[fn] = (v, ev) => { if(ev) ev.stopPropagation(); document.querySelectorAll('.select-items').forEach(x=>x.style.display='none'); updateSlotField(i, io.id, 'eingabegerat', v); };
+                    
+                    const switchIdent = `[${d.room ? d.room + ' - ' : ''}${d.name}] ${data.bezeichnung || ic.label}`;
+                    const hasWarn = checkCollision(switchIdent);
+                    const warnHtml = hasWarn ? `<span class="collision-warn" title="Achtung: Dieser Taster ist an mehrere Hardware-Eingänge zugewiesen!">⚠️</span>` : '';
 
-        detail.hardware.push({ instanceId: generateId(), configId: hwConfig.id, fields: fieldsData, mappings: ioMapping });
+                    return `<div class="io-complex-row"><div class="io-header"><span class="io-type ${io.type}">${io.type==='in'?'Eingang':'Ausgang'}</span> ${io.label} ${warnHtml}</div>
+                    <div class="io-fields-grid">
+                        <input type="text" placeholder="Bezeichnung" value="${data.bezeichnung}" onchange="updateSlotField('${i}','${io.id}','bezeichnung',this.value)">
+                        <input type="text" placeholder="Art" value="${data.art||''}" onchange="updateSlotField('${i}','${io.id}','art',this.value)">
+                        <input type="text" placeholder="Gruppe" value="${data.gruppe||''}" onchange="updateSlotField('${i}','${io.id}','gruppe',this.value)">
+                        <div>${renderSearchableDropdown(`picker-${i}-${io.id}`, data.eingabegerat, allConns, fn, 'Verknüpfung...')}</div>
+                    </div></div>`;
+                }).join('') + `</div>`;
+            }
+            window[`setIcon_${i}`] = (v, ev) => { if(ev) ev.stopPropagation(); document.querySelectorAll('.select-items').forEach(x=>x.style.display='none'); d.slots[`slot-${i}`].iconFile = v; renderApp(); };
+            h += `<div class="slot-form ${slot.iconFile ? '' : 'no-print'}"><h4>Platz ${i}</h4><div class="form-group no-print"><label>Icon</label>${renderSearchableDropdown(`icon-${i}`, slot.iconFile, iconConfigList.map(x=>({value:x.file, label:x.label})), `setIcon_${i}`, 'Icon...')}</div>${ioHtml}</div>`;
+        }
+        return h;
+    }
+
+    function updateSlotField(slotN, ioId, field, val) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        if(!d.slots[`slot-${slotN}`].ioData) d.slots[`slot-${slotN}`].ioData = {};
+        const slot = d.slots[`slot-${slotN}`]; const cData = slot.ioData[ioId] || {bezeichnung:''};
+        const oldVal = cData[field]; cData[field] = val; slot.ioData[ioId] = cData;
+
+        if (field === 'eingabegerat') {
+            const ic = iconConfigList.find(x => x.file === slot.iconFile);
+            const swIdent = `[${d.room ? d.room + ' - ' : ''}${d.name}] ${cData.bezeichnung || ic.label}`;
+            
+            projectData.details.forEach(pd => pd.hardware && pd.hardware.forEach(hw => {
+                const hc = hardwareConfigList.find(x => x.id === hw.configId);
+                if(hc && hc.io) hc.io.forEach(hio => {
+                    if(hio.type !== 'bus') {
+                        const targetIdent = `[${pd.room ? pd.room + ' - ' : ''}${pd.name}] ${hw.fields['Geräte-Bez.'] || hc.name} - ${hio.label}`;
+                        if(oldVal && oldVal.includes(targetIdent) && hw.mappings[hio.id] === swIdent) hw.mappings[hio.id] = "";
+                        if(val && val.includes(targetIdent)) hw.mappings[hio.id] = swIdent;
+                    }
+                });
+            }));
+        }
         renderApp();
     }
 
-    function removeHardware(instanceId) {
-        if(confirm("Komponente entfernen? Alle Verbindungen gehen verloren.")) {
-            const detail = projectData.details.find(d => d.id === activeDetailId);
-            detail.hardware = detail.hardware.filter(h => h.instanceId !== instanceId); 
-            renderApp();
-        }
-    }
-
-    function updateHwField(instanceId, field, value) {
-        const detail = projectData.details.find(d => d.id === activeDetailId);
-        const hw = detail.hardware.find(h => h.instanceId === instanceId); 
-        hw.fields[field] = value; 
-        renderApp(); 
-    }
-
-    function updateHwMapping(instanceId, ioId, value) {
-        const detail = projectData.details.find(d => d.id === activeDetailId);
-        const hw = detail.hardware.find(h => h.instanceId === instanceId); 
-        if(!hw) return;
-
-        const oldValue = hw.mappings[ioId];
-        hw.mappings[ioId] = value;
-
-        const cfg = hardwareConfigList.find(c => c.id === hw.configId);
-        const devBez = hw.fields['Geräte-Bez.'] ? hw.fields['Geräte-Bez.'] : cfg.name;
-        const hwInputIdentifier = `[${detail.name}] ${devBez} - ${cfg.io.find(i => i.id === ioId)?.label || ioId}`;
-
-        if (oldValue) {
-            projectData.details.forEach(d => {
-                const totalSlots = d.layout.split('x').map(Number).reduce((a,b)=>a*b, 1);
-                for(let i=1; i<=totalSlots; i++) {
-                    const slot = d.slots[`slot-${i}`];
-                    if(slot && slot.iconFile && slot.ioData) {
-                        const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
-                        if(iconDef && iconDef.io) {
-                            iconDef.io.forEach(s_io => {
-                                const data = getIOObject(slot, s_io.id);
-                                const bez = data.bezeichnung ? data.bezeichnung : (iconDef.label || slot.iconFile);
-                                const fullSwitchName = `[${d.name}] ${bez}`;
-
-                                if (fullSwitchName === oldValue && data.eingabegerat) {
-                                    let items = data.eingabegerat.split(',').map(s => s.trim());
-                                    items = items.filter(item => item !== hwInputIdentifier); 
-                                    data.eingabegerat = items.join(', ');
-                                    slot.ioData[s_io.id] = data;
-                                }
-                            });
-                        }
-                    }
-                }
-            });
-        }
-
-        if (value) {
-            projectData.details.forEach(d => {
-                const totalSlots = d.layout.split('x').map(Number).reduce((a,b)=>a*b, 1);
-                for(let i=1; i<=totalSlots; i++) {
-                    const slot = d.slots[`slot-${i}`];
-                    if(slot && slot.iconFile) {
-                        const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
-                        if(iconDef && iconDef.io) {
-                            iconDef.io.forEach(s_io => {
-                                const data = getIOObject(slot, s_io.id);
-                                const bez = data.bezeichnung ? data.bezeichnung : (iconDef.label || slot.iconFile);
-                                const fullSwitchName = `[${d.name}] ${bez}`;
-
-                                if (fullSwitchName === value) {
-                                    if (data.eingabegerat) {
-                                        let items = data.eingabegerat.split(',').map(s => s.trim());
-                                        if (!items.includes(hwInputIdentifier)) {
-                                            items.push(hwInputIdentifier);
-                                            data.eingabegerat = items.join(', ');
-                                        }
-                                    } else { data.eingabegerat = hwInputIdentifier; }
-                                    if(!slot.ioData) slot.ioData = {};
-                                    slot.ioData[s_io.id] = data;
-                                }
-                            });
-                        }
-                    }
-                }
-            });
-        }
-        saveToLocal();
-    }
-
-    function generateHardwareHtml(detail) {
-        if(!detail.hardware || detail.hardware.length === 0) return '<p style="color:#64748b; font-size:0.9rem;" class="no-print">Noch keine Komponenten zugewiesen.</p>';
-
-        let html = '';
+    function generateHardwareHtml(d) {
+        if(!d.hardware.length) return '<p class="no-print">Keine Komponenten.</p>';
         const allSwitches = getAllAvailableSwitches();
+        return d.hardware.map(hw => {
+            const cfg = hardwareConfigList.find(x => x.id === hw.configId); if(!cfg) return '';
+            let fHtml = ''; let inHtml = ''; let outHtml = ''; let busHtml = '';
 
-        detail.hardware.forEach(hw => {
-            const config = hardwareConfigList.find(c => c.id === hw.configId); if(!config) return;
-            let fieldsHtml = '';
+            if(cfg.fields) cfg.fields.forEach(f => {
+                if(/ast|bus|bridge|dali|link/i.test(f)) {
+                    const fn = `setHwF_${hw.instanceId}_${sanitizeFnName(f)}`;
+                    window[fn] = (v, ev) => { if(ev) ev.stopPropagation(); document.querySelectorAll('.select-items').forEach(x=>x.style.display='none'); hw.fields[f] = v; renderApp(); };
+                    fHtml += `<div class="form-group"><label>${f}</label><div>${renderSearchableDropdown(`hf-${hw.instanceId}-${sanitizeFnName(f)}`, hw.fields[f]||'', getAllBusNodes(detectBusType(f)), fn, 'Bus...')}</div></div>`;
+                } else fHtml += `<div class="form-group"><label>${f}</label><input type="text" value="${hw.fields[f]||''}" onchange="hw.fields['${f}']=this.value; renderApp();"></div>`;
+            });
 
-            if(config.fields) {
-                config.fields.forEach(f => {
-                    const fLower = f.toLowerCase();
-                    // SMART BUS FILTER FÜR SLAVES
-                    if(fLower.includes('ast') || fLower.includes('bus') || fLower.includes('bridge') || fLower.includes('dali') || fLower.includes('link')) {
-                        
-                        const slaveBusType = detectBusType(f); // Typ des benötigen Busses erkennen (Dali, Tree...)
-                        const compatibleBusNodes = getAllBusNodes(slaveBusType); // Nur passende Masternodes laden
+            if(cfg.io) cfg.io.forEach(io => {
+                if(io.type === 'bus') {
+                    const bId = getBusIdString(d, hw, io); const slaves = findSlavesForBus(bId);
+                    const bHtml = slaves.length ? slaves.map((s,i) => `<div class="bus-item"><span>${i+1}. ${getHwIdString(s.detail, s.hw)}</span><button class="delete-btn" onclick="s.hw.fields['${s.fieldName}']=''; renderApp();">×</button></div>`).join('') : '<div style="font-size:0.8rem; color:#94a3b8;">Leer</div>';
+                    const fn = `addSlave_${hw.instanceId}_${io.id}`;
+                    window[fn] = (v, ev) => { if(ev) ev.stopPropagation(); document.querySelectorAll('.select-items').forEach(x=>x.style.display='none'); const [did, hid, fname] = v.split('|'); const sd = projectData.details.find(x=>x.id===did); if(sd) { const sh = sd.hardware.find(x=>x.instanceId===hid); if(sh) sh.fields[fname] = bId; } renderApp(); };
+                    busHtml += `<div class="bus-container"><div class="bus-header"><h5>${io.label}</h5><span class="bus-limit-badge ${io.max && slaves.length>=io.max?'full':'ok'}">${slaves.length}${io.max?'/'+io.max:''}</span></div>${bHtml}${!io.max||slaves.length<io.max ? `<div style="margin-top:5px;">${renderSearchableDropdown(`as-${hw.instanceId}-${io.id}`,'',getAllBusSlaves(detectBusType(io.label)),fn,'+ Gerät...')}</div>` : ''}</div>`;
+                } else {
+                    const fn = `setHwM_${hw.instanceId}_${io.id}`;
+                    window[fn] = (v, ev) => { if(ev) ev.stopPropagation(); document.querySelectorAll('.select-items').forEach(x=>x.style.display='none'); updateHwMapping(hw, io.id, v, cfg); renderApp(); };
+                    
+                    const hasWarn = hw.mappings[io.id] ? checkCollision(hw.mappings[io.id]) : false;
+                    const warnHtml = hasWarn ? `<span class="collision-warn" title="Dieser Taster ist mehrfach verknüpft!">⚠️</span>` : '';
 
-                        const pickerId = `hw-field-${hw.instanceId}-${f}`;
-                        const safeFnName = `select_` + sanitizeFnName(pickerId);
-                        window[safeFnName] = function(val, ev) {
-                            if(ev) ev.stopPropagation();
-                            document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
-                            updateHwField(hw.instanceId, f, val);
-                        };
-                        const busPicker = renderSearchableDropdown(pickerId, hw.fields[f] || '', compatibleBusNodes, safeFnName, 'Zugehöriger Bus...');
-                        fieldsHtml += `<div class="form-group" style="margin-bottom:5px;"><label style="width:110px;">${f}</label><div style="flex:1;">${busPicker}</div></div>`;
-                    } else {
-                        fieldsHtml += `<div class="form-group" style="margin-bottom:5px;"><label style="width:110px;">${f}</label><input type="text" value="${hw.fields[f] || ''}" onchange="updateHwField('${hw.instanceId}', '${f}', this.value)"></div>`;
-                    }
-                });
-            }
+                    const row = `<div class="form-group"><label style="width:110px;">${io.label} ${warnHtml}</label><div>${renderSearchableDropdown(`hm-${hw.instanceId}-${io.id}`, hw.mappings[io.id]||'', allSwitches, fn, 'Taster...')}</div></div>`;
+                    if(io.type === 'in') inHtml += row; else outHtml += row;
+                }
+            });
 
-            let inputsHtml = ''; let outputsHtml = ''; let busesHtml = '';
-
-            if(config.io) {
-                config.io.forEach(io => {
-                    if (io.type === 'bus') {
-                        const busIdString = getBusIdString(detail, hw, io);
-                        const connectedSlaves = findSlavesForBus(busIdString);
-                        const maxLimit = io.max || null;
-                        const isFull = maxLimit && (connectedSlaves.length >= maxLimit);
-
-                        const badgeClass = isFull ? 'full' : 'ok';
-                        const limitText = maxLimit ? `${connectedSlaves.length} / ${maxLimit} belegt` : `${connectedSlaves.length} Geräte`;
-
-                        let itemsHtml = '';
-                        if(connectedSlaves.length > 0) {
-                            itemsHtml = connectedSlaves.map((slave, idx) => {
-                                const slaveName = getHwIdString(slave.detail, slave.hw);
-                                return `
-                                    <div class="bus-item">
-                                        <div><span style="color:#64748b; margin-right:5px;">${idx+1}.</span><span class="bus-item-name">${slaveName}</span></div>
-                                        <button class="delete-btn" title="Entfernen" onclick="removeSlaveFromBus('${slave.detail.id}', '${slave.hw.instanceId}', '${slave.fieldName}', event)">×</button>
-                                    </div>
-                                `;
-                            }).join('');
-                        } else {
-                            itemsHtml = `<div style="font-size:0.8rem; color:#94a3b8; font-style:italic; padding:4px;">Noch keine Geräte verbunden.</div>`;
-                        }
-
-                        let addBtnHtml = '';
-                        if(!isFull) {
-                            // SMART BUS FILTER FÜR MASTER
-                            const masterBusType = detectBusType(io.label); 
-                            const compatibleBusSlaves = getAllBusSlaves(masterBusType); // Nur passende Slaves anbieten
-
-                            const pickerId = `add-slave-${hw.instanceId}-${io.id}`;
-                            const safeFnName = `select_` + sanitizeFnName(pickerId);
-                            window[safeFnName] = function(payload, ev) {
-                                assignSlaveToBus(payload, busIdString, ev);
-                            };
-
-                            const addPicker = renderSearchableDropdown(pickerId, '', compatibleBusSlaves, safeFnName, '+ Neues Gerät zuweisen...');
-                            addBtnHtml = `<div style="margin-top:6px;">${addPicker}</div>`;
-                        }
-
-                        busesHtml += `
-                            <div class="bus-container">
-                                <div class="bus-header">
-                                    <h5>${io.label}</h5>
-                                    <span class="bus-limit-badge ${badgeClass}">${limitText}</span>
-                                </div>
-                                <div>${itemsHtml}</div>
-                                ${addBtnHtml}
-                            </div>
-                        `;
-
-                    } else {
-                        const assignedVal = hw.mappings[io.id] || '';
-                        const pickerId = `hw-io-${hw.instanceId}-${io.id}`;
-                        const safeFnName = `select_` + sanitizeFnName(pickerId);
-                        window[safeFnName] = function(v, ev) {
-                            if(ev) ev.stopPropagation();
-                            document.querySelectorAll('.select-items').forEach(d => d.style.display = 'none');
-                            updateHwMapping(hw.instanceId, io.id, v);
-                            renderApp(); 
-                        };
-                        const ioPicker = renderSearchableDropdown(pickerId, assignedVal, allSwitches, safeFnName, 'Schalter/Taster wählen...');
-
-                        const row = `<div class="form-group" style="margin-bottom:5px;"><label style="width:110px; font-size:0.85rem;">${io.label}</label><div style="flex:1;">${ioPicker}</div></div>`;
-                        if(io.type === 'in') inputsHtml += row;
-                        if(io.type === 'out') outputsHtml += row;
-                    }
-                });
-            }
-
-            let hwImageTag = config.image ? `<div class="hw-card-image"><img src="icons-schalter/${config.image}"></div>` : '<div></div>';
-
-            html += `
-                <div class="hw-card">
-                    ${hwImageTag}
-                    <div class="hw-card-body">
-                        <div class="hw-card-header">
-                            <h4>${config.name}</h4>
-                            <button class="delete-btn" onclick="removeHardware('${hw.instanceId}')">Löschen</button>
-                        </div>
-                        ${fieldsHtml}
-                        <div class="hw-io-grid">
-                            ${inputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5 style="margin-top:0; color:#1e40af;">Eingänge</h5>${inputsHtml}</div>` : '<div></div>'}
-                            ${outputsHtml ? `<div class="io-section" style="margin-top:0; padding-top:0; border:none;"><h5 style="margin-top:0; color:#9f1239;">Ausgänge</h5>${outputsHtml}</div>` : '<div></div>'}
-                        </div>
-                        ${busesHtml ? `<div class="io-section" style="margin-top:10px;"><h5 style="margin-top:10px; color:#92400e; border-bottom:1px solid #f1f5f9; padding-bottom:5px;">Bus-Verbindungen</h5>${busesHtml}</div>` : ''}
-                    </div>
-                </div>
-            `;
-        });
-        return html;
+            return `<div class="hw-card"><div class="hw-card-image"><img src="icons-schalter/${cfg.image}"></div><div class="hw-card-body"><div class="hw-card-header"><h4>${cfg.name}</h4><button class="delete-btn" onclick="if(confirm('Löschen?')){ d.hardware = d.hardware.filter(x=>x.instanceId!=='${hw.instanceId}'); renderApp(); }">Löschen</button></div>${fHtml}<div class="hw-io-grid">${inHtml?`<div><h5>Eingänge</h5>${inHtml}</div>`:''} ${outHtml?`<div><h5>Ausgänge</h5>${outHtml}</div>`:''}</div>${busHtml}</div></div>`;
+        }).join('');
     }
 
-    function buildDetailPrintHtml(detail) {
-        const [rows, cols] = detail.layout.split('x').map(Number);
-        const totalSlots = rows * cols;
+    function updateHwMapping(hw, ioId, val, cfg) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        const oldVal = hw.mappings[ioId]; hw.mappings[ioId] = val;
+        const targetIdent = `[${d.room ? d.room + ' - ' : ''}${d.name}] ${hw.fields['Geräte-Bez.'] || cfg.name} - ${cfg.io.find(i=>i.id===ioId)?.label || ioId}`;
 
-        let hasIcons = false;
-        for(let i=1; i<=totalSlots; i++) {
-            if(detail.slots[`slot-${i}`] && detail.slots[`slot-${i}`].iconFile) {
-                hasIcons = true;
-                break;
+        projectData.details.forEach(pd => {
+            const tot = pd.layout === '0x0' ? 0 : pd.layout.split('x').reduce((a,b)=>a*b,1);
+            for(let i=1; i<=tot; i++) {
+                const s = pd.slots[`slot-${i}`]; if(!s || !s.iconFile || !s.ioData) continue;
+                const ic = iconConfigList.find(x => x.file === s.iconFile); if(!ic || !ic.io) continue;
+                ic.io.forEach(sio => {
+                    const cData = s.ioData[sio.id] || {};
+                    const swIdent = `[${pd.room ? pd.room + ' - ' : ''}${pd.name}] ${cData.bezeichnung || ic.label}`;
+                    if(swIdent === oldVal && cData.eingabegerat) { cData.eingabegerat = cData.eingabegerat.split(',').map(x=>x.trim()).filter(x=>x!==targetIdent).join(', '); }
+                    if(swIdent === val) { const items = cData.eingabegerat ? cData.eingabegerat.split(',').map(x=>x.trim()) : []; if(!items.includes(targetIdent)) items.push(targetIdent); cData.eingabegerat = items.join(', '); }
+                });
             }
-        }
+        });
+    }
 
-        let printVisualizerHtml = '';
-        let slotsGridHtml = '';
+    function getAllAvailableConnections() {
+        let list = [];
+        projectData.details.forEach(d => d.hardware && d.hardware.forEach(hw => {
+            const c = hardwareConfigList.find(x => x.id === hw.configId);
+            if(c && c.io) c.io.forEach(io => { if(io.type !== 'bus') list.push({value: `[${d.room ? d.room + ' - ' : ''}${d.name}] ${hw.fields['Geräte-Bez.'] || c.name} - ${io.label}`}); });
+        }));
+        return list;
+    }
 
-        if (hasIcons) {
-            let printVisualizerSlots = '';
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    let slotIdx = (r * cols) + c + 1;
-                    const slot = detail.slots[`slot-${slotIdx}`];
-                    const iconPath = (slot && slot.iconFile) ? `icons-schalter/${slot.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1" stroke-width="1"><circle cx="12" cy="12" r="8"></circle></svg>';
-                    printVisualizerSlots += `<div class="print-switch-slot"><span class="print-slot-badge">${slotIdx}</span><img src="${iconPath}"></div>`;
-                }
+    function getAllAvailableSwitches() {
+        let list = [];
+        projectData.details.forEach(d => {
+            if(d.layout === '0x0') return;
+            const tot = d.layout.split('x').reduce((a,b)=>a*b,1);
+            for(let i=1; i<=tot; i++) {
+                const s = d.slots[`slot-${i}`]; if(!s || !s.iconFile) continue;
+                const ic = iconConfigList.find(x => x.file === s.iconFile);
+                if(ic && ic.io) ic.io.forEach(io => {
+                    list.push({value: `[${d.room ? d.room + ' - ' : ''}${d.name}] ${(s.ioData && s.ioData[io.id] && s.ioData[io.id].bezeichnung) || ic.label}`});
+                });
             }
-            printVisualizerHtml = `<div class="print-visualizer-wrapper"><div class="print-switch-frame" style="grid-template-columns: repeat(${cols}, 60px); grid-template-rows: repeat(${rows}, 60px);">${printVisualizerSlots}</div></div>`;
+        });
+        return list;
+    }
 
-            let slotBlocks = [];
-            for(let i=1; i<=totalSlots; i++) {
-                const slot = detail.slots[`slot-${i}`];
-                if(!slot || !slot.iconFile) continue;
-                const iconDef = (typeof iconConfigList !== 'undefined' ? iconConfigList : []).find(ic => ic.file === slot.iconFile);
-                const slotTitle = iconDef ? (iconDef.label || slot.iconFile) : `Platz ${i}`;
-
-                let printIoRows = '';
-                if(iconDef && iconDef.io) {
-                    iconDef.io.forEach(io => {
-                        const data = getIOObject(slot, io.id);
-                        const ioTypeText = io.type === 'in' ? 'Eingang' : 'Ausgang';
-                        printIoRows += `
-                            <div class="print-io-item">
-                                <div class="print-io-header">${ioTypeText}: ${io.label}</div>
-                                <div class="print-io-line"><span class="print-io-label">Bezeichnung:</span><span class="print-io-val">${data.bezeichnung || ''}</span></div>
-                                ${data.art ? `<div class="print-io-line"><span class="print-io-label">Art:</span><span class="print-io-val">${data.art}</span></div>` : ''}
-                                <div class="print-io-line"><span class="print-io-label">Gruppe:</span><span class="print-io-val">${data.gruppe || ''}</span></div>
-                                <div class="print-io-line"><span class="print-io-label">Eingabegerät:</span><span class="print-io-val">${data.eingabegerat || ''}</span></div>
-                                <div class="print-io-line"><span class="print-io-label">Funktion:</span><span class="print-io-val">${data.funktion || ''}</span></div>
-                                <div class="print-io-line"><span class="print-io-label">Bemerkung:</span><span class="print-io-val">${data.bemerkung || ''}</span></div>
-                            </div>
-                        `;
-                    });
+    function getAllBusNodes(slaveType=null) {
+        let list = [];
+        projectData.details.forEach(d => d.hardware && d.hardware.forEach(hw => {
+            const c = hardwareConfigList.find(x => x.id === hw.configId);
+            if(c && c.io) c.io.forEach(io => {
+                if(io.type === 'bus') {
+                    const mt = detectBusType(io.label);
+                    if(!slaveType || slaveType === mt || slaveType === 'unknown' || mt === 'unknown') list.push({value: getBusIdString(d,hw,io)});
                 }
-                slotBlocks.push(`<div class="print-slot-item-block"><div class="print-slot-item-title">Platz ${i} – ${slotTitle}</div>${printIoRows}</div>`);
-            }
-
-            for (let i = 0; i < slotBlocks.length; i += 2) {
-                slotsGridHtml += `<div class="print-slots-grid-2col">${slotBlocks[i]}${slotBlocks[i+1] || '<div></div>'}</div>`;
-            }
-            slotsGridHtml = `<div class="print-section-title">Schalter Belegungen</div>` + slotsGridHtml;
-        }
-
-        let hwHtml = '';
-        if(detail.hardware && detail.hardware.length > 0) {
-            let hwCardsHtml = '';
-            detail.hardware.forEach(hw => {
-                const config = hardwareConfigList.find(c => c.id === hw.configId); if(!config) return;
-                let printFieldsHtml = '';
-                if(config.fields && config.fields.length > 0) {
-                    config.fields.forEach(f => { printFieldsHtml += `<div class="print-hw-meta-row"><span class="print-hw-meta-label">${f}:</span><span class="print-hw-meta-val">${hw.fields[f] || ''}</span></div>`; });
-                }
-
-                let inputsHtml = ''; let outputsHtml = ''; let busesHtml = '';
-                if(config.io) {
-                    config.io.forEach(io => {
-                        if (io.type === 'bus') {
-                            const busIdString = getBusIdString(detail, hw, io);
-                            const connectedSlaves = findSlavesForBus(busIdString);
-
-                            if(connectedSlaves.length > 0) {
-                                let busItems = connectedSlaves.map((slave, idx) => `<li class="print-bus-item">${idx+1}. ${getHwIdString(slave.detail, slave.hw)}</li>`).join('');
-                                busesHtml += `
-                                    <div class="print-bus-container">
-                                        <div class="print-bus-title">${io.label} (${connectedSlaves.length} Geräte)</div>
-                                        <ul class="print-bus-list">${busItems}</ul>
-                                    </div>
-                                `;
-                            }
-                        } else {
-                            const assignedVal = hw.mappings[io.id] || '';
-                            const row = `<div style="display:flex; margin-bottom:2px; font-size:0.75rem;"><span style="width:50px; color:#64748b;">${io.label}:</span><span style="flex:1; color:#0f172a; font-weight:500;">${assignedVal}</span></div>`;
-                            if(io.type === 'in') inputsHtml += row;
-                            if(io.type === 'out') outputsHtml += row;
-                        }
-                    });
-                }
-
-                let printHwImageTag = config.image ? `<div class="print-hw-image"><img src="icons-schalter/${config.image}"></div>` : '<div></div>';
-                hwCardsHtml += `
-                    <div class="print-hw-container">
-                        ${printHwImageTag}
-                        <div>
-                            <div class="print-hw-header-title">${config.name}</div>
-                            ${printFieldsHtml ? `<div style="margin-bottom:8px;">${printFieldsHtml}</div>` : ''}
-                            <div class="print-hw-io-grid">
-                                <div>${inputsHtml ? `<h6>Eingänge</h6>${inputsHtml}` : ''}</div>
-                                <div>${outputsHtml ? `<h6>Ausgänge</h6>${outputsHtml}` : ''}</div>
-                            </div>
-                            ${busesHtml}
-                        </div>
-                    </div>
-                `;
             });
-            if(hwCardsHtml) hwHtml = `<div class="print-section-title">Hardware Komponenten</div>${hwCardsHtml}`;
+        }));
+        return list;
+    }
+
+    function getAllBusSlaves(masterType=null) {
+        let list = [];
+        projectData.details.forEach(d => d.hardware && d.hardware.forEach(hw => {
+            const c = hardwareConfigList.find(x => x.id === hw.configId);
+            if(c && c.fields) c.fields.forEach(f => {
+                if(/ast|bus|bridge|dali|link/i.test(f)) {
+                    const st = detectBusType(f);
+                    if(!masterType || masterType === st || masterType === 'unknown' || st === 'unknown') list.push({value: `${d.id}|${hw.instanceId}|${f}`, label: getHwIdString(d,hw)});
+                }
+            });
+        }));
+        return list;
+    }
+
+    // --- BUS ÜBERSICHT (MODAL) ---
+    function openBusOverviewModal() {
+        const c = document.getElementById('bus-tree-content'); c.innerHTML = '';
+        let h = '';
+        // Alle Master-Geräte finden (Geräte mit Bus-IOs)
+        const masters = [];
+        projectData.details.forEach(d => d.hardware && d.hardware.forEach(hw => {
+            const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+            if(cfg && cfg.io && cfg.io.some(i => i.type === 'bus')) masters.push({d, hw, cfg});
+        }));
+
+        if(masters.length === 0) h = '<div>Keine Bus-Master (z.B. Miniserver, Extensions) im Projekt vorhanden.</div>';
+        
+        masters.forEach(m => {
+            h += `<div class="tree-master">🖥️ ${m.hw.fields['Geräte-Bez.'] || m.cfg.name} <span style="color:#94a3b8; font-size:0.8em; font-weight:normal;">(${m.d.room ? m.d.room + ' - ' : ''}${m.d.name})</span></div>`;
+            m.cfg.io.filter(i => i.type === 'bus').forEach(io => {
+                const bId = getBusIdString(m.d, m.hw, io);
+                const slaves = findSlavesForBus(bId);
+                h += `<div class="tree-bus">↳ 🔌 ${io.label} (${slaves.length} Geräte)</div>`;
+                slaves.forEach(s => {
+                    h += `<div class="tree-slave">▪ ${getHwIdString(s.detail, s.hw)} <span style="color:#94a3b8; font-size:0.8em;">(Eingang: ${s.fieldName})</span></div>`;
+                });
+                if(slaves.length === 0) h += `<div class="tree-slave" style="color:#cbd5e1; font-style:italic;">Keine Geräte verbunden</div>`;
+            });
+        });
+
+        c.innerHTML = h;
+        document.getElementById('bus-modal').style.display = 'flex';
+    }
+
+    window.closeBusOverviewModal = function(ev) {
+        if(ev && ev.target.id !== 'bus-modal') return;
+        document.getElementById('bus-modal').style.display = 'none';
+    }
+
+    // --- DRUCK FUNKTIONEN ---
+    function buildDetailPrintHtml(d) {
+        let visHtml = ''; let slotsHtml = '';
+        if(d.layout !== '0x0') {
+            const [r, c] = d.layout.split('x').map(Number); let vSlots = ''; let blocks = [];
+            for(let i=1; i<=r*c; i++) {
+                const s = d.slots[`slot-${i}`]; const ic = iconConfigList.find(x=>x.file===s?.iconFile);
+                if(ic) {
+                    vSlots += `<div class="print-switch-slot"><img src="icons-schalter/${ic.file}"></div>`;
+                    let ioRows = ic.io.map(io => {
+                        const dat = s.ioData?.[io.id] || {};
+                        return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;"><b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>Bezeichnung: ${dat.bezeichnung||''}<br>Ziel: ${dat.eingabegerat||''}</div>`;
+                    }).join('');
+                    blocks.push(`<div class="print-slot-item-block"><b>Platz ${i} - ${ic.label}</b><div style="margin-top:5px;">${ioRows}</div></div>`);
+                }
+            }
+            if(blocks.length) {
+                visHtml = `<div style="display:flex; justify-content:center; margin: 15px 0;"><div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px);">${vSlots}</div></div>`;
+                let bStr = ''; for(let i=0; i<blocks.length; i+=2) bStr += `<div class="print-slots-grid-2col">${blocks[i]}${blocks[i+1]||'<div></div>'}</div>`;
+                slotsHtml = `<div class="print-section-title">Schalter Belegungen</div>${bStr}`;
+            }
+        }
+        
+        let hwHtml = '';
+        if(d.hardware.length) {
+            hwHtml = `<div class="print-section-title">Hardware</div>` + d.hardware.map(hw => {
+                const cfg = hardwareConfigList.find(x=>x.id===hw.configId); if(!cfg) return '';
+                let fh = ''; if(cfg.fields) cfg.fields.forEach(f => fh += `<div style="font-size:0.8rem;"><b>${f}:</b> ${hw.fields[f]||''}</div>`);
+                let ioh = ''; if(cfg.io) cfg.io.forEach(io => { if(io.type!=='bus') ioh += `<div style="font-size:0.8rem; margin-top:2px;"><b>${io.label}:</b> ${hw.mappings[io.id]||''}</div>`; });
+                return `<div class="print-hw-container"><div class="print-hw-image"><img src="icons-schalter/${cfg.image}"></div><div><b>${cfg.name}</b>${fh}<div style="margin-top:5px;">${ioh}</div></div></div>`;
+            }).join('');
         }
 
-        return `
-            <div class="print-detail-page">
-                <div class="print-header-block"><h2>${projectData.projectName}</h2>${projectData.location ? `<p>${projectData.location}</p>` : ''}</div>
-                <div class="print-section-title">${detail.name}</div>
-                ${printVisualizerHtml}
-                ${slotsGridHtml}
-                ${hwHtml}
-            </div>
-        `;
+        return `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName}</h2><p>${projectData.location||''}</p></div><h3 style="color:#0f766e; margin:0;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}</h3>${visHtml}${slotsHtml}${hwHtml}</div>`;
     }
 
     function updatePrintContainers() {
-        const allContainer = document.getElementById('print-all-container'); let allHtml = '';
-        projectData.details.forEach(detail => { allHtml += buildDetailPrintHtml(detail); });
-        allContainer.innerHTML = allHtml;
-        const singleContainer = document.getElementById('print-single-container');
-        const activeDetail = projectData.details.find(d => d.id === activeDetailId);
-        singleContainer.innerHTML = activeDetail ? buildDetailPrintHtml(activeDetail) : '';
+        document.getElementById('print-all-container').innerHTML = projectData.details.map(buildDetailPrintHtml).join('');
+        const ad = projectData.details.find(x=>x.id===activeDetailId);
+        document.getElementById('print-single-container').innerHTML = ad ? buildDetailPrintHtml(ad) : '';
     }
-
-    function printAllDetails() {
-        updatePrintContainers();
-        const mainContent = document.getElementById('workspace-container'); const allContainer = document.getElementById('print-all-container'); const singleContainer = document.getElementById('print-single-container');
-        mainContent.style.display = 'none'; allContainer.style.display = 'block'; singleContainer.style.display = 'none';
-        window.print();
-        mainContent.style.display = 'block'; allContainer.style.display = 'none';
-    }
-
-    function printCurrentDetail() {
-        updatePrintContainers();
-        const mainContent = document.getElementById('workspace-container'); const allContainer = document.getElementById('print-all-container'); const singleContainer = document.getElementById('print-single-container');
-        mainContent.style.display = 'none'; allContainer.style.display = 'none'; singleContainer.style.display = 'block';
-        window.print();
-        mainContent.style.display = 'block'; singleContainer.style.display = 'none';
-    }
-
-    function exportProject() {
-        const dataStr = JSON.stringify(projectData, null, 2); const blob = new Blob([dataStr], { type: "application/json" }); const dataUrl = URL.createObjectURL(blob);
-        const a = document.createElement("a"); a.href = dataUrl; a.download = (projectData.projectName.replace(/[^a-z0-9]/gi, '_').toLowerCase() || "projekt") + ".ServiceProDetail"; a.click(); URL.revokeObjectURL(dataUrl);
-    }
-
-    function importProject(event) {
-        const file = event.target.files[0]; if (!file) return;
-        if(!file.name.endsWith('.ServiceProDetail')) { alert("Bitte eine gültige .ServiceProDetail Datei auswählen!"); return; }
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const parsed = JSON.parse(e.target.result);
-                if(parsed && parsed.details) {
-                    projectData = parsed;
-                    if(!projectData.location) projectData.location = "";
-                    if(projectData.details.length > 0) activeDetailId = projectData.details[0].id;
-                    renderApp();
-                } else alert("Dateiformat ungültig!");
-            } catch (err) { alert("Fehler beim Laden der Datei."); }
-        };
-        reader.readAsText(file); event.target.value = '';
-    }
+    function printAllDetails() { updatePrintContainers(); document.getElementById('workspace-container').style.display='none'; document.getElementById('print-all-container').style.display='block'; window.print(); document.getElementById('workspace-container').style.display='block'; document.getElementById('print-all-container').style.display='none'; }
+    function printCurrentDetail() { updatePrintContainers(); document.getElementById('workspace-container').style.display='none'; document.getElementById('print-single-container').style.display='block'; window.print(); document.getElementById('workspace-container').style.display='block'; document.getElementById('print-single-container').style.display='none'; }
+    function exportProject() { const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: "application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = (projectData.projectName.replace(/[^a-z0-9]/gi, '_').toLowerCase() || "projekt") + ".ServiceProDetail"; a.click(); }
+    function importProject(ev) { const f = ev.target.files[0]; if(!f || !f.name.endsWith('.ServiceProDetail')) return alert("Ungültige Datei!"); const r = new FileReader(); r.onload = e => { try { const p = JSON.parse(e.target.result); if(p && p.details) { projectData = p; activeDetailId = p.details[0]?.id; renderApp(); window.onload(); } } catch (err) { alert("Fehler beim Laden."); } }; r.readAsText(f); ev.target.value = ''; }
 </script>
 </body>
 </html>
