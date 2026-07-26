@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V1.4</title>
+    <title>ServiceProDetail Konfigurator V1.6</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -114,13 +114,16 @@
         .hw-card-header h4 { margin: 0; font-size: 1.1rem; color: #0f172a; }
         .hw-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
 
+        /* DALI Inline Sub-Device Styling */
         .bus-container { margin-top:15px; background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0; }
         .bus-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 8px; }
         .bus-header h5 { margin: 0; font-size: 0.9rem; color: #1e293b; }
         .bus-limit-badge { font-size: 0.75rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
         .bus-limit-badge.ok { background: #dcfce7; color: #166534; }
         .bus-limit-badge.full { background: #fee2e2; color: #991b1b; }
-        .bus-item { display:flex; justify-content: space-between; align-items:center; font-size:0.85rem; padding:4px 8px; background:#fff; border:1px solid #e2e8f0; border-radius:4px; margin-bottom:4px; }
+        
+        .dali-device-row { background: #fff; border: 1px solid #cbd5e1; border-radius: 5px; padding: 8px; margin-bottom: 6px; display: grid; grid-template-columns: 2fr 1.5fr 1fr 100px auto; gap: 6px; align-items: center; font-size: 0.85rem; }
+        .dali-device-row input, .dali-device-row select { padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box; }
 
         /* Modal Bus-Übersicht */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
@@ -228,7 +231,7 @@
         
         { id: "lox_tree_extension", name: "Loxone Tree Extension", image: "Tree-Extension.jpg", power: 1.3, fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], io: [{ id: "TREE_LEFT", label: "Tree Ast Links", type: "bus", max: 50 }, { id: "TREE_RIGHT", label: "Tree Ast Rechts", type: "bus", max: 50 }] },
         { id: "lox_air_base", name: "Loxone Air Base Extension", image: "Air-Base.jpg", power: 1.5, fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], io: [{ id: "AIR_OUT", label: "Air Geräte (Max 128)", type: "bus", max: 128 }] },
-        { id: "lox_dali_extension", name: "Loxone DALI Extension", image: "Dali-Extension.jpg", power: 1.5, fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], io: [{ id: "DALI_1", label: "DALI Bus 1 (Max 64)", type: "bus", max: 64 }, { id: "DALI_2", label: "DALI Bus 2 (Max 64)", type: "bus", max: 64 }] },
+        { id: "lox_dali_extension", name: "Loxone DALI Extension", image: "Dali-Extension.jpg", power: 1.5, fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], io: [{ id: "DALI_1", label: "DALI Bus 1 (Max 64)", type: "bus", max: 64, isDaliBus: true }, { id: "DALI_2", label: "DALI Bus 2 (Max 64)", type: "bus", max: 64, isDaliBus: true }] },
         
         { id: "lox_nano_di_tree", name: "Loxone Nano DI Tree", image: "DI-Tree.jpg", power: 0.2, fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], io: [{ id: "DI_1", label: "DI 1", type: "in" }, { id: "DI_2", label: "DI 2", type: "in" }, { id: "DI_3", label: "DI 3", type: "in" }, { id: "DI_4", label: "DI 4", type: "in" }] },
         { id: "lox_nano_2_relay", name: "Loxone Nano 2 Relay Tree", image: "Nano-2-Relay.jpg", power: 0.5, fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], io: [{ id: "I_1", label: "I1", type: "in" }, { id: "I_2", label: "I2", type: "in" }, { id: "O_1", label: "Relais 1", type: "out" }, { id: "O_2", label: "Relais 2", type: "out" }] },
@@ -238,14 +241,11 @@
         { id: "lox_nano_io_air", name: "Loxone Nano IO Air", image: "Nano-IO-Air.jpg", power: 0.5, fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], io: [{ id: "I_1", label: "I1", type: "in" }, { id: "I_2", label: "I2", type: "in" }, { id: "O_1", label: "Relais 1", type: "out" }, { id: "O_2", label: "Relais 2", type: "out" }] },
         
         { id: "lox_dali_rgbw", name: "Loxone DALI RGBW Dimmer", image: "Dali-Dimmer.jpg", power: null, defaultPower: 1.0, fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "DALI Bus"], io: [{ id: "O_1", label: "RGBW Licht", type: "out" }] },
-        { id: "lox_dali_air", name: "Loxone DALI Air", image: "Dali-Air.jpg", power: 0.5, fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], io: [{ id: "DALI_OUT", label: "DALI Geräte (Max 10)", type: "bus", max: 10, isDaliMaster: true }] },
-        
-        // NEU / KORRIGIERT: Spezielles DALI-Gerät (EVG / Leuchte) für die Bus-Zuordnung mit Gruppen & Kanalanzahl
-        { id: "dali_device_slave", name: "DALI Gerät / EVG / Mehrkanal", image: "SCH3.png", power: 0.2, fields: ["S.-Nr.", "Geräte-Bez.", "DALI Bus", "DALI Gruppen", "Belegte Adressen (1-4)"], io: [{ id: "DALI_KANAL", label: "DALI Lichtkanal", type: "out" }] }
+        { id: "lox_dali_air", name: "Loxone DALI Air", image: "Dali-Air.jpg", power: 0.5, fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], io: [{ id: "DALI_OUT", label: "DALI Geräte (Max 10)", type: "bus", max: 10, isDaliBus: true }] }
     ];
 
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
-    let projectData = { version: "1.5", projectName: "Neues Projekt", location: "", details: [] };
+    let projectData = { version: "1.6", projectName: "Neues Projekt", location: "", details: [] };
     let activeDetailId = null; let draggedSlot = null;
 
     document.addEventListener('keydown', e => { if (e.ctrlKey || e.metaKey) { if (e.key.toLowerCase() === 's') { e.preventDefault(); exportProject(); } else if (e.key.toLowerCase() === 'p') { e.preventDefault(); printCurrentDetail(); } } });
@@ -270,7 +270,7 @@
 
     function resetProject() {
         if(confirm("Komplettes Projekt löschen und neu starten?")) {
-            localStorage.removeItem(LOCAL_STORAGE_KEY); projectData = { version: "1.5", projectName: "Neues Projekt", location: "", details: [] }; activeDetailId = null; addNewDetail();
+            localStorage.removeItem(LOCAL_STORAGE_KEY); projectData = { version: "1.6", projectName: "Neues Projekt", location: "", details: [] }; activeDetailId = null; addNewDetail();
         }
     }
 
@@ -468,12 +468,12 @@
             c.fields.forEach(f => {
                 if(f === 'Geräte-Bez.') fields[f] = `${c.name} ${cnt}`;
                 else if(f === 'Leistung (W)') fields[f] = c.defaultPower ? c.defaultPower.toString() : "0";
-                else if(f === 'Belegte Adressen (1-4)') fields[f] = "1";
                 else fields[f] = "";
             });
         }
         const maps = {}; if(c.io) c.io.forEach(io => maps[io.id] = "");
-        d.hardware.push({ instanceId: generateId(), configId: hwId, fields: fields, mappings: maps }); renderApp();
+        const daliDevices = {}; if(c.io) c.io.forEach(io => { if(io.isDaliBus) daliDevices[io.id] = []; });
+        d.hardware.push({ instanceId: generateId(), configId: hwId, fields: fields, mappings: maps, daliDevices: daliDevices }); renderApp();
     }
 
     function deleteHardwareComponent(instanceId) {
@@ -484,6 +484,51 @@
                 renderApp();
             }
         }
+    }
+
+    // --- DALI INLINE MANAGEMENT ---
+    window.addDaliSubDevice = function(hwInstanceId, ioId) {
+        projectData.details.forEach(d => {
+            if(d.hardware) {
+                d.hardware.forEach(hw => {
+                    if(hw.instanceId === hwInstanceId) {
+                        if(!hw.daliDevices) hw.daliDevices = {};
+                        if(!hw.daliDevices[ioId]) hw.daliDevices[ioId] = [];
+                        hw.daliDevices[ioId].push({ id: generateId(), name: "DALI Leuchte / EVG", location: d.room || "", group: "1", channels: 1 });
+                    }
+                });
+            }
+        });
+        renderApp();
+    }
+
+    window.updateDaliSubDevice = function(hwInstanceId, ioId, subId, field, val) {
+        projectData.details.forEach(d => {
+            if(d.hardware) {
+                d.hardware.forEach(hw => {
+                    if(hw.instanceId === hwInstanceId && hw.daliDevices && hw.daliDevices[ioId]) {
+                        const dev = hw.daliDevices[ioId].find(x => x.id === subId);
+                        if(dev) {
+                            dev[field] = val;
+                        }
+                    }
+                });
+            }
+        });
+        saveToLocal();
+    }
+
+    window.deleteDaliSubDevice = function(hwInstanceId, ioId, subId) {
+        projectData.details.forEach(d => {
+            if(d.hardware) {
+                d.hardware.forEach(hw => {
+                    if(hw.instanceId === hwInstanceId && hw.daliDevices && hw.daliDevices[ioId]) {
+                        hw.daliDevices[ioId] = hw.daliDevices[ioId].filter(x => x.id !== subId);
+                    }
+                });
+            }
+        });
+        renderApp();
     }
 
     function generateVisualizerHtml(d, f, r, c) {
@@ -564,17 +609,6 @@
         if (t.includes('modbus')) return 'modbus'; if (t.includes('knx')) return 'knx'; return 'unknown';
     }
 
-    function findSlavesForBus(busIdString) {
-        let results = [];
-        projectData.details.forEach(d => d.hardware && d.hardware.forEach(h => {
-            const config = hardwareConfigList.find(c => c.id === h.configId);
-            if(config && config.fields) config.fields.forEach(f => {
-                if(/ast|bus|bridge|dali|link/i.test(f) && h.fields[f] === busIdString) results.push({ detail: d, hw: h, fieldName: f, config: config });
-            });
-        }));
-        return results;
-    }
-
     function generateHardwareHtml(d) {
         if(!d.hardware.length) return '<p class="no-print" style="color:#64748b;">Noch keine Komponenten zugewiesen.</p>';
         const allSwitches = getAllAvailableSwitches();
@@ -599,29 +633,33 @@
 
             if(cfg.io) cfg.io.forEach(io => {
                 if(io.type === 'bus') {
-                    const bId = getBusIdString(d, hw, io); const slaves = findSlavesForBus(bId);
-                    
-                    let totalDaliAddressesUsed = 0;
-                    slaves.forEach(s => {
-                        let addrs = parseInt(s.hw.fields['Belegte Adressen (1-4)']) || 1;
-                        totalDaliAddressesUsed += addrs;
-                    });
-                    const maxLimit = io.max || (io.isDaliMaster ? 64 : null);
-                    const isFull = maxLimit && totalDaliAddressesUsed >= maxLimit;
+                    if(io.isDaliBus) {
+                        if(!hw.daliDevices) hw.daliDevices = {};
+                        if(!hw.daliDevices[io.id]) hw.daliDevices[io.id] = [];
+                        const subs = hw.daliDevices[io.id];
 
-                    const bHtml = slaves.length ? slaves.map((s,i) => {
-                        let addrs = s.hw.fields['Belegte Adressen (1-4)'] ? ` | ${s.hw.fields['Belegte Adressen (1-4)']} Adr.` : '';
-                        let groupInfo = s.hw.fields['DALI Gruppen'] ? ` | Grp: ${s.hw.fields['DALI Gruppen']}` : '';
-                        return `<div class="bus-item"><span>${i+1}. ${getHwIdString(s.detail, s.hw)}${groupInfo}${addrs}</span><button class="delete-btn" onclick="s.hw.fields['${s.fieldName}']=''; renderApp();">×</button></div>`;
-                    }).join('') : '<div style="font-size:0.8rem; color:#94a3b8;">Leer</div>';
+                        let totalAddresses = 0;
+                        subs.forEach(s => { totalAddresses += parseInt(s.channels) || 1; });
+                        const maxLimit = io.max || 64;
+                        const isFull = totalAddresses >= maxLimit;
 
-                    const fn = `addSlave_${hw.instanceId}_${io.id}`;
-                    window[fn] = (v, ev) => { 
-                        if(ev){ev.preventDefault();ev.stopPropagation();} 
-                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
-                        setTimeout(() => { const [did, hid, fname] = v.split('|'); const sd = projectData.details.find(x=>x.id===did); if(sd) { const sh = sd.hardware.find(x=>x.instanceId===hid); if(sh) sh.fields[fname] = bId; } renderApp(); }, 10); 
-                    };
-                    busHtml += `<div class="bus-container"><div class="bus-header"><h5>${io.label}</h5><span class="bus-limit-badge ${isFull?'full':'ok'}">${totalDaliAddressesUsed}${maxLimit?'/'+maxLimit+' Adr.':''}</span></div>${bHtml}${!maxLimit || totalDaliAddressesUsed < maxLimit ? `<div style="margin-top:5px;">${renderSearchableDropdown(`as-${hw.instanceId}-${io.id}`,'',getAllBusSlaves(detectBusType(io.label)),fn,'+ Gerät...')}</div>` : ''}</div>`;
+                        let subsHtml = subs.map((sub, sIdx) => {
+                            return `<div class="dali-device-row">
+                                <input type="text" value="${sub.name}" placeholder="Gerätebezeichnung..." oninput="updateDaliSubDevice('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)">
+                                <input type="text" value="${sub.location}" placeholder="Montageort / Raum..." oninput="updateDaliSubDevice('${hw.instanceId}', '${io.id}', '${sub.id}', 'location', this.value)">
+                                <input type="text" value="${sub.group}" placeholder="Gr." title="DALI Gruppe(n)" oninput="updateDaliSubDevice('${hw.instanceId}', '${io.id}', '${sub.id}', 'group', this.value)">
+                                <select onchange="updateDaliSubDevice('${hw.instanceId}', '${io.id}', '${sub.id}', 'channels', this.value)" title="Belegte Kanäle / Adressen">
+                                    <option value="1" ${sub.channels==1?'selected':''}>1 Adr.</option>
+                                    <option value="2" ${sub.channels==2?'selected':''}>2 Adr.</option>
+                                    <option value="3" ${sub.channels==3?'selected':''}>3 Adr.</option>
+                                    <option value="4" ${sub.channels==4?'selected':''}>4 Adr.</option>
+                                </select>
+                                <button class="delete-btn" onclick="deleteDaliSubDevice('${hw.instanceId}', '${io.id}', '${sub.id}')">×</button>
+                            </div>`;
+                        }).join('') || '<div style="font-size:0.8rem; color:#94a3b8; margin-bottom:5px;">Keine DALI-Leuchten/Geräte angelegt.</div>';
+
+                        busHtml += `<div class="bus-container"><div class="bus-header"><h5>${io.label}</h5><span class="bus-limit-badge ${isFull?'full':'ok'}">${totalAddresses}/${maxLimit} Adr.</span></div>${subsHtml}<button class="btn" style="margin-top:6px; padding:4px 10px; font-size:0.8rem;" onclick="addDaliSubDevice('${hw.instanceId}', '${io.id}')">+ DALI-Gerät hinzufügen</button></div>`;
+                    }
                 } else {
                     const fn = `setHwM_${hw.instanceId}_${io.id}`;
                     window[fn] = (v, ev) => { 
@@ -695,7 +733,7 @@
         projectData.details.forEach(d => d.hardware && d.hardware.forEach(hw => {
             const c = hardwareConfigList.find(x => x.id === hw.configId);
             if(c && c.io) c.io.forEach(io => {
-                if(io.type === 'bus') {
+                if(io.type === 'bus' && !io.isDaliBus) {
                     const mt = detectBusType(io.label);
                     if(!slaveType || slaveType === mt || slaveType === 'unknown' || mt === 'unknown') list.push({value: getBusIdString(d,hw,io)});
                 }
@@ -704,21 +742,7 @@
         return list;
     }
 
-    function getAllBusSlaves(masterType=null) {
-        let list = [];
-        projectData.details.forEach(d => d.hardware && d.hardware.forEach(hw => {
-            const c = hardwareConfigList.find(x => x.id === hw.configId);
-            if(c && c.fields) c.fields.forEach(f => {
-                if(/ast|bus|bridge|dali|link/i.test(f)) {
-                    const st = detectBusType(f);
-                    if(!masterType || masterType === st || masterType === 'unknown' || st === 'unknown') list.push({value: `${d.id}|${hw.instanceId}|${f}`, label: getHwIdString(d,hw)});
-                }
-            });
-        }));
-        return list;
-    }
-
-    // --- BUS ÜBERSICHT (MODAL) MIT STROMAUFNAHME ---
+    // --- BUS ÜBERSICHT (MODAL) MIT DALI UNTERGERÄTEN ---
     function openBusOverviewModal() {
         const c = document.getElementById('bus-tree-content'); c.innerHTML = ''; let h = '';
         const masters = [];
@@ -735,69 +759,22 @@
         masters.forEach(m => {
             h += `<div class="tree-master">🖥️ ${m.hw.fields['Geräte-Bez.'] || m.cfg.name} <span style="color:#94a3b8; font-size:0.8em; font-weight:normal;">(${m.d.room ? m.d.room + ' - ' : ''}${m.d.name})</span></div>`;
             m.cfg.io.filter(i => i.type === 'bus').forEach(io => {
-                const bId = getBusIdString(m.d, m.hw, io); const slaves = findSlavesForBus(bId);
-                let astPower = 0;
-                let daliAddressCount = 0;
-                let slavesHtml = slaves.map(s => {
-                    let sPower = 0;
-                    if(s.config.power !== null && s.config.power !== undefined) {
-                        sPower = s.config.power;
-                    } else if(s.hw.fields['Leistung (W)'] !== undefined) {
-                        sPower = parseFloat(s.hw.fields['Leistung (W)']) || 0;
-                    } else if(s.config.defaultPower) {
-                        sPower = s.config.defaultPower;
-                    }
-                    astPower += sPower;
-
-                    let addrs = parseInt(s.hw.fields['Belegte Adressen (1-4)']) || 1;
-                    daliAddressCount += addrs;
-                    let groupInfo = s.hw.fields['DALI Gruppen'] ? ` [Grp: ${s.hw.fields['DALI Gruppen']}]` : '';
-
-                    return `<div class="tree-slave">▪ ${getHwIdString(s.detail, s.hw)}${groupInfo} <span style="color:#94a3b8; font-size:0.8em;">(⚡ ${sPower.toFixed(1)} W | 🔌 ${addrs} Adr.)</span></div>`;
-                }).join('');
-
-                let labelSuffix = io.max ? ` (${slaves.length} Geräte / ${daliAddressCount} von ${io.max} Adr. | ⚡ ${astPower.toFixed(1)} W)` : ` (${slaves.length} Geräte | ⚡ ${astPower.toFixed(1)} W)`;
-                h += `<div class="tree-bus">↳ 🔌 ${io.label}${labelSuffix}</div>`;
-                h += slavesHtml;
-                if(slaves.length === 0) h += `<div class="tree-slave" style="color:#cbd5e1; font-style:italic;">Keine Geräte verbunden</div>`;
+                if(io.isDaliBus) {
+                    const subs = (m.hw.daliDevices && m.hw.daliDevices[io.id]) || [];
+                    let totalAddrs = 0;
+                    let subsHtml = subs.map(sub => {
+                        let ch = parseInt(sub.channels) || 1;
+                        totalAddrs += ch;
+                        let locStr = sub.location ? ` [Ort: ${sub.location}]` : '';
+                        let grpStr = sub.group ? ` [Grp: ${sub.group}]` : '';
+                        return `<div class="tree-slave">▪ ${sub.name}${locStr}${grpStr} <span style="color:#94a3b8; font-size:0.8em;">(🔌 ${ch} Adr.)</span></div>`;
+                    }).join('');
+                    h += `<div class="tree-bus">↳ 🔌 ${io.label} (${subs.length} DALI-Geräte / ${totalAddrs} Adr.)</div>`;
+                    h += subsHtml;
+                    if(subs.length === 0) h += `<div class="tree-slave" style="color:#cbd5e1; font-style:italic;">Keine DALI-Geräte angelegt</div>`;
+                }
             });
         });
-
-        // --- NICHT ZUGEORDNETE HARDWARE ---
-        let unassignedHw = [];
-        projectData.details.forEach(d => {
-            if(d.hardware) {
-                d.hardware.forEach(hw => {
-                    const cfg = hardwareConfigList.find(x => x.id === hw.configId);
-                    if(cfg && cfg.fields) {
-                        const hasBusField = cfg.fields.some(f => /ast|bus|bridge|dali|link/i.test(f));
-                        if(hasBusField) {
-                            const isAssigned = cfg.fields.some(f => {
-                                if(/ast|bus|bridge|dali|link/i.test(f)) {
-                                    return hw.fields[f] && hw.fields[f].trim() !== "";
-                                }
-                                return false;
-                            });
-                            if(!isAssigned) {
-                                unassignedHw.push({ d, hw, cfg });
-                            }
-                        }
-                    }
-                });
-            }
-        });
-
-        if(unassignedHw.length > 0) {
-            h += `<div class="tree-master" style="color:var(--danger); border-bottom-color:var(--danger); margin-top:25px;">⚠️ Nicht zugeordnete Hardware</div>`;
-            unassignedHw.forEach(u => {
-                let uPower = 0;
-                if(u.cfg.power !== null && u.cfg.power !== undefined) uPower = u.cfg.power;
-                else if(u.hw.fields['Leistung (W)'] !== undefined) uPower = parseFloat(u.hw.fields['Leistung (W)']) || 0;
-                else if(u.cfg.defaultPower) uPower = u.cfg.defaultPower;
-
-                h += `<div class="tree-slave" style="border-left-color:var(--danger); color:var(--danger);">▪ ${getHwIdString(u.d, u.hw)} <span style="color:#94a3b8; font-size:0.8em;">(${u.d.name} | ⚡ ${uPower.toFixed(1)} W)</span></div>`;
-            });
-        }
 
         c.innerHTML = h; document.getElementById('bus-modal').style.display = 'flex';
     }
@@ -833,7 +810,15 @@
             hwHtml = `<div class="print-section-title">Hardware</div>` + d.hardware.map(hw => {
                 const cfg = hardwareConfigList.find(x=>x.id===hw.configId); if(!cfg) return '';
                 let fh = ''; if(cfg.fields) cfg.fields.forEach(f => fh += `<div style="font-size:0.8rem;"><b>${f}:</b> ${hw.fields[f]||''}</div>`);
-                let ioh = ''; if(cfg.io) cfg.io.forEach(io => { if(io.type!=='bus') ioh += `<div style="font-size:0.8rem; margin-top:2px;"><b>${io.label}:</b> ${hw.mappings[io.id]||''}</div>`; });
+                let ioh = ''; if(cfg.io) cfg.io.forEach(io => { 
+                    if(io.isDaliBus && hw.daliDevices && hw.daliDevices[io.id]) {
+                        hw.daliDevices[io.id].forEach(sub => {
+                            ioh += `<div style="font-size:0.8rem; margin-top:2px; border-left:2px solid var(--primary); padding-left:6px;"><b>DALI:</b> ${sub.name} (Ort: ${sub.location || 'k.A.'}, Grp: ${sub.group || '-'}, ${sub.channels} Adr.)</div>`;
+                        });
+                    } else if(io.type!=='bus') {
+                        ioh += `<div style="font-size:0.8rem; margin-top:2px;"><b>${io.label}:</b> ${hw.mappings[io.id]||''}</div>`; 
+                    }
+                });
                 return `<div class="print-hw-container"><div class="print-hw-image"><img src="icons-schalter/${cfg.image}"></div><div><b>${cfg.name}</b>${fh}<div style="margin-top:5px;">${ioh}</div></div></div>`;
             }).join('');
         }
