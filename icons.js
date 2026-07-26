@@ -10,7 +10,8 @@ const iconConfigList = [
         label: "Drehschalter Hand-Auto", 
         group: "Schalter & Taster", 
         io: [
-            { id: "TA_HAND_AUTO", label: "Hand/Auto Schalter", type: "in" }
+            { id: "TA_HAND", label: "Hand", type: "in" },
+            { id: "TA_AUTO", label: "AUTO", type: "in" }
         ] 
     },
     {
@@ -18,8 +19,8 @@ const iconConfigList = [
         label: "Raumthermostat",
         group: "Thermostate & Sensoren",
         io: [
-            { id: "TEMP_IN", label: "Temperatur Ist", type: "out" },
-            { id: "HEIZ_OUT", label: "Heizung Ventil", type: "out" }
+            { id: "COOL_OUT", label: "Kühlen", type: "out" },
+            { id: "HEIZ_OUT", label: "Heizen", type: "out" }
         ]
     },
     {
@@ -27,8 +28,9 @@ const iconConfigList = [
         label: "SCH 3 (Schalter 1-fach)",
         group: "Licht & Relais",
         io: [
-            { id: "TA_1", label: "Taster / Schalter", type: "in" },
-            { id: "LI_1", label: "Licht / Relais", type: "out" }
+            { id: "TA_1", label: "Taster Schliesser", type: "in" },
+            { id: "TA_2", label: "Taster Öffner", type: "in" }
+            
         ]
     },
     { 
@@ -36,10 +38,10 @@ const iconConfigList = [
         label: "SCH 3-3 (Schalter 2-fach)", 
         group: "Licht & Relais", 
         io: [
-            { id: "TA_1", label: "Taster Oben", type: "in" }, 
-            { id: "LI_1", label: "Licht Oben", type: "out" }, 
-            { id: "TA_2", label: "Taster Unten", type: "in" }, 
-            { id: "LI_2", label: "Licht Unten", type: "out" }
+            { id: "TA_1_1", label: "Taster 1 Schliesser", type: "in" },
+            { id: "TA_1_2", label: "Taster 2 Öffner", type: "in" },
+            { id: "TA_2_1", label: "Taster 1 Schliesser", type: "in" },
+            { id: "TA_2_2", label: "Taster 2 Öffner", type: "in" }
         ] 
     },
     { 
@@ -47,19 +49,22 @@ const iconConfigList = [
         label: "SCH 3-3 + T13 (Kombi)", 
         group: "Licht & Relais", 
         io: [
-            { id: "TA_1", label: "Taster / Schalter", type: "in" }, 
-            { id: "LI_1", label: "Licht / Relais", type: "out" }, 
-            { id: "SE_1", label: "Steckdose Messung", type: "out" }
+            { id: "TA_1_1", label: "Taster 1 Schliesser", type: "in" },
+            { id: "TA_1_2", label: "Taster 2 Öffner", type: "in" },
+            { id: "TA_2_1", label: "Taster 1 Schliesser", type: "in" },
+            { id: "TA_2_2", label: "Taster 2 Öffner", type: "in" },
+            { id: "TA_2_2", label: "Steckdose", type: "out" },
+            
         ] 
     },
     { 
         file: "SCH3-Bel.png", 
-        label: "SCH 3 mit Beleuchtung", 
+        label: "SCH 3 Bel.", 
         group: "Licht & Relais", 
         io: [
-            { id: "TA_1", label: "Taster", type: "in" }, 
-            { id: "LI_1", label: "Licht / Relais", type: "out" }, 
-            { id: "LED_CTRL", label: "Orientierungslicht", type: "out" }
+            { id: "TA_1", label: "Taster Schliesser", type: "in" },
+            { id: "TA_2", label: "Taster Öffner", type: "in" },
+            { id: "LED_CTRL", label: "LED", type: "out" }
         ] 
     },
     { 
@@ -67,8 +72,7 @@ const iconConfigList = [
         label: "Sonnerie / Klingel", 
         group: "Signalisierung", 
         io: [
-            { id: "TA_KLINGEL", label: "Klingeltaster", type: "in" }, 
-            { id: "GONG_OUT", label: "Gong / Signal", type: "out" }
+            { id: "TA_KLINGEL", label: "Taster", type: "in" }
         ] 
     },
     { 
@@ -76,10 +80,8 @@ const iconConfigList = [
         label: "Storenschalter 1-Kanal", 
         group: "Storen & Jalousien", 
         io: [
-            { id: "TA_AUF", label: "Taster Auf", type: "in" }, 
-            { id: "TA_AB", label: "Taster Ab", type: "in" }, 
-            { id: "MO_AUF", label: "Motor Auf", type: "out" }, 
-            { id: "MO_AB", label: "Motor Ab", type: "out" }
+            { id: "TA_AUF", label: "K1 Auf", type: "in" }, 
+            { id: "TA_AB", label: "K1 Ab", type: "in" }
         ] 
     },
     { 
@@ -91,8 +93,6 @@ const iconConfigList = [
             { id: "TA_K1_AB", label: "K1 Ab", type: "in" }, 
             { id: "TA_K2_AUF", label: "K2 Auf", type: "in" }, 
             { id: "TA_K2_AB", label: "K2 Ab", type: "in" }, 
-            { id: "MO_K1", label: "Motor K1", type: "out" }, 
-            { id: "MO_K2", label: "Motor K2", type: "out" }
         ] 
     },
     { 
@@ -100,7 +100,7 @@ const iconConfigList = [
         label: "T13 Steckdose", 
         group: "Steckdosen", 
         io: [
-            { id: "POWER_MON", label: "Energiemessung", type: "out" }
+            { id: "T13_STD", label: "Steckdose", type: "out" }
         ] 
     },
     { 
@@ -121,6 +121,19 @@ const iconConfigList = [
             { id: "TA_2", label: "Oben Rechts", type: "in" }, 
             { id: "TA_3", label: "Unten Links", type: "in" }, 
             { id: "TA_4", label: "Unten Rechts", type: "in" }
+        ] 
+    }
+    { 
+        file: "Universaltaster-3x2.png", 
+        label: "Universaltaster 3x2", 
+        group: "Schalter & Taster", 
+        io: [
+            { id: "TA_1", label: "Oben Links", type: "in" }, 
+            { id: "TA_2", label: "Oben Rechts", type: "in" }, 
+            { id: "TA_3", label: "Mitte Links", type: "in" }, 
+            { id: "TA_4", label: "Mitte Rechts", type: "in" },
+            { id: "TA_5", label: "Unten Links", type: "in" }, 
+            { id: "TA_6", label: "Unten Rechts", type: "in" }
         ] 
     }
 ];
