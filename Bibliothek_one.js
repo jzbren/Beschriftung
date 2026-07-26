@@ -1,12 +1,30 @@
-// Bibliothek_one.js
+// Globale System-Konfiguration für maximale Flexibilität
+const SYSTEM_CONFIG = {
+    // Gewerke / Kategorien für Ausgänge und Eingänge
+    categories: [
+        "Licht / Beleuchtung",
+        "Beschattung / Storen",
+        "Heizung / Klima",
+        "Lüftung",
+        "Multimedia / Audio",
+        "Sicherheit",
+        "System / Netzwerk",
+        "Allgemein"
+    ],
+    // Definition aller aktuellen und zukünftigen Bus-Technologien
+    busTypes: {
+        "tree": { label: "Tree", icon: "🌳", hasSubDevices: false },
+        "air": { label: "Air", icon: "📻", hasSubDevices: false },
+        "link": { label: "Loxone Link", icon: "🔗", hasSubDevices: false },
+        "dali": { label: "DALI", icon: "💡", hasSubDevices: true, defaultLimit: 64, subDeviceLabel: "Leuchte/EVG" },
+        "modbus": { label: "Modbus RTU", icon: "🔌", hasSubDevices: true, defaultLimit: 32, subDeviceLabel: "Modbus-Gerät" },
+        "1wire": { label: "1-Wire", icon: "🌡️", hasSubDevices: true, defaultLimit: 20, subDeviceLabel: "1-Wire Sensor" }
+        // Beispiel Zukunft: "matter": { label: "Matter", icon: "🌐", hasSubDevices: true, defaultLimit: 100, subDeviceLabel: "Node" }
+    }
+};
 
 const iconConfigList = [
-    { 
-        file: "", 
-        label: "--- Leerplatz ---", 
-        group: "Allgemein", 
-        io: [] 
-    },
+    { file: "", label: "--- Leerplatz ---", group: "Allgemein", io: [] },
     { 
         file: "Drehschalter-Hand-Auto.png", 
         label: "Drehschalter Hand-Auto", 
@@ -25,14 +43,14 @@ const iconConfigList = [
             { id: "HEIZ_OUT", label: "Heizen", type: "out" }
         ]
     },
-    {
-        file: "SCH3.png",
-        label: "SCH 3 (Schalter 1-fach)",
-        group: "Licht & Relais",
+    { 
+        file: "SCH3.png", 
+        label: "SCH 3 (Schalter 1-fach)", 
+        group: "Licht & Relais", 
         io: [
             { id: "TA_1", label: "Taster Schliesser", type: "in" },
             { id: "TA_2", label: "Taster Öffner", type: "in" }
-        ]
+        ] 
     },
     { 
         file: "SCH3-3.png", 
@@ -149,7 +167,7 @@ const iconConfigList = [
 ];
 
 const hardwareConfigList = [
-    // Core Server
+    // --- Core Server ---
     { 
         id: "lox_miniserver", 
         name: "Loxone Miniserver Gen. 2", 
@@ -165,9 +183,9 @@ const hardwareConfigList = [
             { id: "O_2", label: "Relais 2", type: "out" }, 
             { id: "O_3", label: "Relais 3", type: "out" }, 
             { id: "O_4", label: "Relais 4", type: "out" }, 
-            { id: "TREE_1", label: "Tree Ast 1", type: "bus", max: 50 }, 
-            { id: "TREE_2", label: "Tree Ast 2", type: "bus", max: 50 }, 
-            { id: "LINK_1", label: "Loxone Link", type: "bus", max: 30 }
+            { id: "TREE_1", label: "Tree Ast 1", type: "bus", busType: "tree" }, 
+            { id: "TREE_2", label: "Tree Ast 2", type: "bus", busType: "tree" }, 
+            { id: "LINK_1", label: "Loxone Link", type: "bus", busType: "link" }
         ] 
     },
     { 
@@ -177,8 +195,8 @@ const hardwareConfigList = [
         power: 2.0, 
         fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], 
         io: [
-            { id: "AIR_BASE", label: "Air Geräte (Max 128)", type: "bus", max: 128 }, 
-            { id: "LINK_1", label: "Loxone Link", type: "bus", max: 30 }
+            { id: "AIR_BASE", label: "Air Geräte (Max 128)", type: "bus", busType: "air" }, 
+            { id: "LINK_1", label: "Loxone Link", type: "bus", busType: "link" }
         ] 
     },
     { 
@@ -194,9 +212,9 @@ const hardwareConfigList = [
             { id: "DI_4", label: "DI 4", type: "in" }, 
             { id: "O_1", label: "Relais 1", type: "out" },
             { id: "O_2", label: "Relais 2", type: "out" }, 
-            { id: "TREE_1", label: "Tree Ast", type: "bus", max: 50 }, 
-            { id: "AIR_BASE", label: "Air Geräte (Max 128)", type: "bus", max: 128 }, 
-            { id: "LINK_1", label: "Loxone Link", type: "bus", max: 30 }
+            { id: "TREE_1", label: "Tree Ast", type: "bus", busType: "tree" }, 
+            { id: "AIR_BASE", label: "Air Geräte", type: "bus", busType: "air" }, 
+            { id: "LINK_1", label: "Loxone Link", type: "bus", busType: "link" }
         ] 
     },
     { 
@@ -206,13 +224,13 @@ const hardwareConfigList = [
         power: 5.0, 
         fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], 
         io: [
-            { id: "TREE_TURBO", label: "Tree Turbo", type: "bus", max: 10 }, 
-            { id: "LINK_1", label: "Loxone Link", type: "bus", max: 30 }, 
+            { id: "TREE_TURBO", label: "Tree Turbo", type: "bus", busType: "tree" }, 
+            { id: "LINK_1", label: "Loxone Link", type: "bus", busType: "link" }, 
             { id: "AUDIO_OUT", label: "Stereo Ausgänge", type: "out" }
         ] 
     },
 
-    // Link Extensions
+    // --- Extensions ---
     { 
         id: "lox_tree_extension", 
         name: "Loxone Tree Extension", 
@@ -220,8 +238,8 @@ const hardwareConfigList = [
         power: 1.3, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
         io: [
-            { id: "TREE_LEFT", label: "Tree Ast Links", type: "bus", max: 50 }, 
-            { id: "TREE_RIGHT", label: "Tree Ast Rechts", type: "bus", max: 50 }
+            { id: "TREE_LEFT", label: "Tree Ast Links", type: "bus", busType: "tree" }, 
+            { id: "TREE_RIGHT", label: "Tree Ast Rechts", type: "bus", busType: "tree" }
         ] 
     },
     { 
@@ -231,7 +249,7 @@ const hardwareConfigList = [
         power: 1.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
         io: [
-            { id: "AIR_OUT", label: "Air Geräte (Max 128)", type: "bus", max: 128 }
+            { id: "AIR_OUT", label: "Air Geräte", type: "bus", busType: "air" }
         ] 
     },
     { 
@@ -241,8 +259,8 @@ const hardwareConfigList = [
         power: 1.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
         io: [
-            { id: "DALI_1", label: "DALI Bus 1 (Max 64)", type: "bus", max: 64, isDaliBus: true }, 
-            { id: "DALI_2", label: "DALI Bus 2 (Max 64)", type: "bus", max: 64, isDaliBus: true }
+            { id: "DALI_1", label: "DALI Bus 1", type: "bus", busType: "dali" }, 
+            { id: "DALI_2", label: "DALI Bus 2", type: "bus", busType: "dali" }
         ] 
     },
     { 
@@ -252,22 +270,14 @@ const hardwareConfigList = [
         power: 1.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
         io: [
-            { id: "O_1", label: "Relais 1", type: "out" },
-            { id: "O_2", label: "Relais 2", type: "out" }, 
-            { id: "O_3", label: "Relais 3", type: "out" }, 
-            { id: "O_4", label: "Relais 4", type: "out" },
-            { id: "O_5", label: "Relais 5", type: "out" },
-            { id: "O_6", label: "Relais 6", type: "out" }, 
-            { id: "O_7", label: "Relais 7", type: "out" }, 
-            { id: "O_8", label: "Relais 8", type: "out" },
-            { id: "O_9", label: "Relais 9", type: "out" },
-            { id: "O_10", label: "Relais 10", type: "out" }, 
-            { id: "O_11", label: "Relais 11", type: "out" }, 
-            { id: "O_12", label: "Relais 12", type: "out" },
-            { id: "O_13", label: "Relais 13", type: "out" },
-            { id: "O_14", label: "Relais 14", type: "out" }, 
-            { id: "O_15", label: "Relais 15", type: "out" }, 
-            { id: "O_16", label: "Relais 16", type: "out" }
+            { id: "O_1", label: "Relais 1", type: "out" }, { id: "O_2", label: "Relais 2", type: "out" }, 
+            { id: "O_3", label: "Relais 3", type: "out" }, { id: "O_4", label: "Relais 4", type: "out" },
+            { id: "O_5", label: "Relais 5", type: "out" }, { id: "O_6", label: "Relais 6", type: "out" }, 
+            { id: "O_7", label: "Relais 7", type: "out" }, { id: "O_8", label: "Relais 8", type: "out" },
+            { id: "O_9", label: "Relais 9", type: "out" }, { id: "O_10", label: "Relais 10", type: "out" }, 
+            { id: "O_11", label: "Relais 11", type: "out" }, { id: "O_12", label: "Relais 12", type: "out" },
+            { id: "O_13", label: "Relais 13", type: "out" }, { id: "O_14", label: "Relais 14", type: "out" }, 
+            { id: "O_15", label: "Relais 15", type: "out" }, { id: "O_16", label: "Relais 16", type: "out" }
         ] 
     },
     { 
@@ -299,7 +309,7 @@ const hardwareConfigList = [
         power: 1.0, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
         io: [
-            { id: "MODBUS", label: "Modbus RTU", type: "bus", max: 32 }
+            { id: "MODBUS", label: "Modbus RTU", type: "bus", busType: "modbus" }
         ] 
     },
     { 
@@ -309,11 +319,11 @@ const hardwareConfigList = [
         power: 1.0, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
         io: [
-            { id: "ONEWIRE", label: "1-Wire Bus", type: "bus", max: 20 }
+            { id: "ONEWIRE", label: "1-Wire Bus", type: "bus", busType: "1wire" }
         ] 
     },
 
-    // Tree / Air / Nano Devices
+    // --- Tree / Air / Nano Devices ---
     { 
         id: "lox_nano_di_tree", 
         name: "Loxone Nano DI Tree", 
@@ -321,12 +331,9 @@ const hardwareConfigList = [
         power: 0.2, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], 
         io: [
-            { id: "DI_1", label: "DI 1", type: "in" }, 
-            { id: "DI_2", label: "DI 2", type: "in" }, 
-            { id: "DI_3", label: "DI 3", type: "in" }, 
-            { id: "DI_4", label: "DI 4", type: "in" }, 
-            { id: "DI_5", label: "DI 5", type: "in" }, 
-            { id: "DI_6", label: "DI 6", type: "in" }
+            { id: "DI_1", label: "DI 1", type: "in" }, { id: "DI_2", label: "DI 2", type: "in" }, 
+            { id: "DI_3", label: "DI 3", type: "in" }, { id: "DI_4", label: "DI 4", type: "in" }, 
+            { id: "DI_5", label: "DI 5", type: "in" }, { id: "DI_6", label: "DI 6", type: "in" }
         ] 
     },
     { 
@@ -334,13 +341,30 @@ const hardwareConfigList = [
         name: "Loxone Nano 2 Relay Tree", 
         image: "Nano-2-Relay.jpg", 
         power: 0.5, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], 
-        io: [
-            { id: "I_1", label: "I1", type: "in" }, 
-            { id: "I_2", label: "I2", type: "in" }, 
-            { id: "O_1", label: "Relais 1", type: "out" }, 
-            { id: "O_2", label: "Relais 2", type: "out" }
-        ] 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"],
+        // PROFILE anstelle fixer IOs
+        profiles: [
+            {
+                id: "2x_relay",
+                label: "2x Einzelrelais / Taster",
+                io: [
+                    { id: "I_1", label: "I1", type: "in" }, 
+                    { id: "I_2", label: "I2", type: "in" }, 
+                    { id: "O_1", label: "Relais 1", type: "out" }, 
+                    { id: "O_2", label: "Relais 2", type: "out" }
+                ]
+            },
+            {
+                id: "1x_shading",
+                label: "1x Storenaktor (Auf/Ab)",
+                io: [
+                    { id: "I_1", label: "Taster Auf", type: "in" }, 
+                    { id: "I_2", label: "Taster Ab", type: "in" }, 
+                    { id: "O_UP", label: "Motor Auf", type: "out" }, 
+                    { id: "O_DOWN", label: "Motor Ab", type: "out" }
+                ]
+            }
+        ]
     },
     { 
         id: "lox_touch_tree", 
@@ -373,12 +397,31 @@ const hardwareConfigList = [
         image: "RGBW-Dimmer-Tree.png", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Tree Ast"], 
-        io: [
-            { id: "CH_1", label: "Kanal 1 (Rot / Einzel)", type: "out" },
-            { id: "CH_2", label: "Kanal 2 (Grün / Einzel)", type: "out" },
-            { id: "CH_3", label: "Kanal 3 (Blau / Einzel)", type: "out" },
-            { id: "CH_4", label: "Kanal 4 (Weiß / Einzel)", type: "out" },
-            { id: "CH_ALL", label: "Virtueller Kombi-Kanal (RGBW Zusammen)", type: "out" }
+        profiles: [
+            {
+                id: "4x_single",
+                label: "4x Einzelkanäle (z.B. Spots)",
+                io: [
+                    { id: "PWM_1", label: "Kanal 1", type: "out" }, { id: "PWM_2", label: "Kanal 2", type: "out" },
+                    { id: "PWM_3", label: "Kanal 3", type: "out" }, { id: "PWM_4", label: "Kanal 4", type: "out" }
+                ]
+            },
+            {
+                id: "1x_rgbw",
+                label: "1x RGBW (Farbe + Weiß)",
+                io: [
+                    { id: "PWM_RGBW", label: "RGBW Kanal", type: "out" }
+                ]
+            },
+            {
+                id: "1x_tw_2x_single",
+                label: "1x Tunable White + 2x Einzel",
+                io: [
+                    { id: "PWM_TW", label: "Tunable White", type: "out" },
+                    { id: "PWM_3", label: "Kanal 3", type: "out" },
+                    { id: "PWM_4", label: "Kanal 4", type: "out" }
+                ]
+            }
         ] 
     },
     { 
@@ -387,12 +430,22 @@ const hardwareConfigList = [
         image: "RGBW-Dimmer-Air.jpg", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Air Link"], 
-        io: [
-            { id: "CH_1", label: "Kanal 1 (Rot / Einzel)", type: "out" },
-            { id: "CH_2", label: "Kanal 2 (Grün / Einzel)", type: "out" },
-            { id: "CH_3", label: "Kanal 3 (Blau / Einzel)", type: "out" },
-            { id: "CH_4", label: "Kanal 4 (Weiß / Einzel)", type: "out" },
-            { id: "CH_ALL", label: "Virtueller Kombi-Kanal (RGBW Zusammen)", type: "out" }
+        profiles: [
+            {
+                id: "4x_single",
+                label: "4x Einzelkanäle (z.B. Spots)",
+                io: [
+                    { id: "PWM_1", label: "Kanal 1", type: "out" }, { id: "PWM_2", label: "Kanal 2", type: "out" },
+                    { id: "PWM_3", label: "Kanal 3", type: "out" }, { id: "PWM_4", label: "Kanal 4", type: "out" }
+                ]
+            },
+            {
+                id: "1x_rgbw",
+                label: "1x RGBW (Farbe + Weiß)",
+                io: [
+                    { id: "PWM_RGBW", label: "RGBW Kanal", type: "out" }
+                ]
+            }
         ] 
     },
     { 
@@ -414,12 +467,28 @@ const hardwareConfigList = [
         image: "Nano-IO-Air.jpg", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], 
-        io: [
-            { id: "I_1", label: "I1", type: "in" }, 
-            { id: "I_2", label: "I2", type: "in" }, 
-            { id: "O_1", label: "Relais 1", type: "out" }, 
-            { id: "O_2", label: "Relais 2", type: "out" }
-        ] 
+        profiles: [
+            {
+                id: "2x_relay",
+                label: "2x Einzelrelais",
+                io: [
+                    { id: "I_1", label: "I1", type: "in" }, 
+                    { id: "I_2", label: "I2", type: "in" }, 
+                    { id: "O_1", label: "Relais 1", type: "out" }, 
+                    { id: "O_2", label: "Relais 2", type: "out" }
+                ]
+            },
+            {
+                id: "1x_shading",
+                label: "1x Storenaktor (Auf/Ab)",
+                io: [
+                    { id: "I_1", label: "Taster Auf", type: "in" }, 
+                    { id: "I_2", label: "Taster Ab", type: "in" }, 
+                    { id: "O_UP", label: "Motor Auf", type: "out" }, 
+                    { id: "O_DOWN", label: "Motor Ab", type: "out" }
+                ]
+            }
+        ]
     },
     { 
         id: "lox_multi_air", 
@@ -429,7 +498,7 @@ const hardwareConfigList = [
         fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], 
         io: [
             { id: "DI_1", label: "DI 1-12", type: "in" }, 
-            { id: "1WIRE", label: "1-Wire", type: "bus", max: 20 }, 
+            { id: "1WIRE", label: "1-Wire", type: "bus", busType: "1wire" }, 
             { id: "O_1", label: "Relais 1-4", type: "out" }, 
             { id: "PWM", label: "PWM 1-4", type: "out" }
         ] 
@@ -441,7 +510,7 @@ const hardwareConfigList = [
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], 
         io: [
-            { id: "DALI_OUT", label: "DALI Geräte (Max 10)", type: "bus", max: 10, isDaliBus: true }
+            { id: "DALI_OUT", label: "DALI Geräte", type: "bus", busType: "dali", limit: 10 }
         ] 
     },
     { 
@@ -451,7 +520,7 @@ const hardwareConfigList = [
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], 
         io: [
-            { id: "AIR_OUT", label: "Air Geräte (Max 50)", type: "bus", max: 50 }
+            { id: "AIR_OUT", label: "Air Geräte", type: "bus", busType: "air", limit: 50 }
         ] 
     },
     { 
@@ -485,10 +554,8 @@ const hardwareConfigList = [
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], 
         io: [
-            { id: "SH_1_UP", label: "Motor 1 - Auf", type: "out" },
-            { id: "SH_1_DOWN", label: "Motor 1 - Ab", type: "out" },
-            { id: "SH_2_UP", label: "Motor 2 - Auf", type: "out" },
-            { id: "SH_2_DOWN", label: "Motor 2 - Ab", type: "out" }
+            { id: "M_1_UP", label: "Motor(Auf )", type: "out" },
+            { id: "M_1_DOWN", label: "Motor(Ab)", type: "out" }
         ] 
     }
 ];
