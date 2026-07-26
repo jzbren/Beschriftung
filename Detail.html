@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V1.6</title>
+    <title>ServiceProDetail Konfigurator V1.7</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -114,7 +114,7 @@
         .hw-card-header h4 { margin: 0; font-size: 1.1rem; color: #0f172a; }
         .hw-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
 
-        /* DALI Inline Sub-Device Styling */
+        /* DALI Inline Sub-Device Styling (NEU: Tabelle) */
         .bus-container { margin-top:15px; background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0; }
         .bus-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 8px; }
         .bus-header h5 { margin: 0; font-size: 0.9rem; color: #1e293b; }
@@ -122,19 +122,28 @@
         .bus-limit-badge.ok { background: #dcfce7; color: #166534; }
         .bus-limit-badge.full { background: #fee2e2; color: #991b1b; }
         
-        .dali-device-row { background: #fff; border: 1px solid #cbd5e1; border-radius: 5px; padding: 8px; margin-bottom: 6px; display: grid; grid-template-columns: 2fr 1.5fr 1fr 100px auto; gap: 6px; align-items: center; font-size: 0.85rem; }
-        .dali-device-row input, .dali-device-row select { padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box; }
+        .dali-table { width: 100%; border-collapse: collapse; margin-top: 5px; background: #fff; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
+        .dali-table th { background: #f1f5f9; padding: 6px 8px; text-align: left; font-size: 0.8rem; color: #475569; border-bottom: 1px solid #cbd5e1; font-weight: 600;}
+        .dali-table td { padding: 4px; border-bottom: 1px solid #f1f5f9; }
+        .dali-table tr:last-child td { border-bottom: none; }
+        .dali-table input, .dali-table select { width: 100%; border: 1px solid transparent; padding: 4px 6px; border-radius: 4px; background: transparent; font-size: 0.85rem; box-sizing: border-box; }
+        .dali-table input:focus, .dali-table select:focus { border: 1px solid #cbd5e1; background: #fff; outline: none; }
+        .dali-table input:hover, .dali-table select:hover { background: #f8fafc; border: 1px solid #e2e8f0; }
 
-        /* Modal Bus-Übersicht */
+        /* Modal Bus-Übersicht (NEU: Topologie) */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: white; width: 80%; max-width: 800px; max-height: 80vh; border-radius: 8px; padding: 30px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-content { background: white; width: 85%; max-width: 900px; max-height: 85vh; border-radius: 8px; padding: 30px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
         .modal-header h2 { margin: 0; color: #1e293b; }
-        .tree-view { font-family: monospace; font-size: 0.95rem; }
-        .tree-master { font-weight: bold; color: #0f766e; margin-top: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
-        .tree-bus { margin-left: 20px; color: #92400e; margin-top: 5px; font-weight: bold; }
-        .tree-slave { margin-left: 40px; color: #334155; padding: 2px 0; border-left: 1px solid #cbd5e1; padding-left: 10px; }
-        .collision-warn { color: var(--warning); font-size: 1.1rem; cursor: help; margin-left: 5px; }
+        
+        .topo-master { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .topo-master-title { font-size: 1.1rem; font-weight: bold; color: #0f766e; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+        .topo-bus { margin-left: 20px; border-left: 2px solid #94a3b8; padding-left: 15px; margin-top: 15px; position: relative; }
+        .topo-bus::before { content: ''; position: absolute; left: -2px; top: 12px; width: 12px; border-top: 2px solid #94a3b8; }
+        .topo-bus-title { font-weight: bold; color: #1e293b; margin-bottom: 10px; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center;}
+        .topo-device { margin-left: 15px; padding: 8px 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+        .topo-device-info { display: flex; gap: 15px; color: #64748b; font-size: 0.8rem; }
+        .topo-badge { background: #e2e8f0; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; color: #475569; font-weight: normal; }
 
         @media print {
             body { background: white; height: auto; overflow: visible; }
@@ -178,12 +187,12 @@
                 </div>
                 <div class="action-buttons">
                     <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
-                    <button class="btn warning" onclick="openBusOverviewModal()"><img src="icons/Switch.svg" alt="Bus"> Bus-Topologie</button>
-                    <button class="btn danger" onclick="resetProject()"><img src="icons/Radierer.svg" alt="Neu"> Neu anfangen</button>
-                    <button class="btn" onclick="document.getElementById('file-input').click()"><img src="icons/Hochladen.svg" alt="Öffnen"> Öffnen</button>
-                    <button class="btn primary" onclick="exportProject()"><img src="icons/Download.svg" alt="Speichern"> Speichern</button>
-                    <button class="btn" onclick="printAllDetails()"><img src="icons/Drucken.svg" alt="Drucken"> Alles Drucken</button>
-                    <button class="btn" onclick="printCurrentDetail()"><img src="icons/Drucken.svg" alt="Drucken"> Aktuelles Detail</button>
+                    <button class="btn warning" onclick="openBusOverviewModal()"><img src="icons/Switch.svg" alt="Bus" style="height:16px;"> Bus-Topologie</button>
+                    <button class="btn danger" onclick="resetProject()"><img src="icons/Radierer.svg" alt="Neu" style="height:16px;"> Neu anfangen</button>
+                    <button class="btn" onclick="document.getElementById('file-input').click()"><img src="icons/Hochladen.svg" alt="Öffnen" style="height:16px;"> Öffnen</button>
+                    <button class="btn primary" onclick="exportProject()"><img src="icons/Download.svg" alt="Speichern" style="height:16px;"> Speichern</button>
+                    <button class="btn" onclick="printAllDetails()"><img src="icons/Drucken.svg" alt="Drucken" style="height:16px;"> Alles Drucken</button>
+                    <button class="btn" onclick="printCurrentDetail()"><img src="icons/Drucken.svg" alt="Drucken" style="height:16px;"> Aktuelles Detail</button>
                 </div>
             </div>
             <div class="top-bar-row">
@@ -203,7 +212,7 @@
                 <h2>Loxone Bus-Topologie</h2>
                 <button class="icon-btn" onclick="closeBusOverviewModal(null)" style="color:black; font-size:1.5rem;">×</button>
             </div>
-            <div id="bus-tree-content" class="tree-view"></div>
+            <div id="bus-tree-content"></div>
         </div>
     </div>
 
@@ -245,7 +254,7 @@
     ];
 
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
-    let projectData = { version: "1.6", projectName: "Neues Projekt", location: "", details: [] };
+    let projectData = { version: "1.7", projectName: "Neues Projekt", location: "", details: [] };
     let activeDetailId = null; let draggedSlot = null;
 
     document.addEventListener('keydown', e => { if (e.ctrlKey || e.metaKey) { if (e.key.toLowerCase() === 's') { e.preventDefault(); exportProject(); } else if (e.key.toLowerCase() === 'p') { e.preventDefault(); printCurrentDetail(); } } });
@@ -270,9 +279,14 @@
 
     function resetProject() {
         if(confirm("Komplettes Projekt löschen und neu starten?")) {
-            localStorage.removeItem(LOCAL_STORAGE_KEY); projectData = { version: "1.6", projectName: "Neues Projekt", location: "", details: [] }; activeDetailId = null; addNewDetail();
+            localStorage.removeItem(LOCAL_STORAGE_KEY); projectData = { version: "1.7", projectName: "Neues Projekt", location: "", details: [] }; activeDetailId = null; addNewDetail();
         }
     }
+
+    // GANZ WICHTIG: Die fehlende Suchfunktion!
+    window.filterDetails = function() {
+        renderSidebarList();
+    };
 
     function getHwIdString(d, hw) {
         const config = hardwareConfigList.find(c => c.id === hw.configId);
@@ -643,22 +657,43 @@
                         const maxLimit = io.max || 64;
                         const isFull = totalAddresses >= maxLimit;
 
-                        let subsHtml = subs.map((sub, sIdx) => {
-                            return `<div class="dali-device-row">
-                                <input type="text" value="${sub.name}" placeholder="Gerätebezeichnung..." oninput="updateDaliSubDevice('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)">
-                                <input type="text" value="${sub.location}" placeholder="Montageort / Raum..." oninput="updateDaliSubDevice('${hw.instanceId}', '${io.id}', '${sub.id}', 'location', this.value)">
-                                <input type="text" value="${sub.group}" placeholder="Gr." title="DALI Gruppe(n)" oninput="updateDaliSubDevice('${hw.instanceId}', '${io.id}', '${sub.id}', 'group', this.value)">
-                                <select onchange="updateDaliSubDevice('${hw.instanceId}', '${io.id}', '${sub.id}', 'channels', this.value)" title="Belegte Kanäle / Adressen">
-                                    <option value="1" ${sub.channels==1?'selected':''}>1 Adr.</option>
-                                    <option value="2" ${sub.channels==2?'selected':''}>2 Adr.</option>
-                                    <option value="3" ${sub.channels==3?'selected':''}>3 Adr.</option>
-                                    <option value="4" ${sub.channels==4?'selected':''}>4 Adr.</option>
-                                </select>
-                                <button class="delete-btn" onclick="deleteDaliSubDevice('${hw.instanceId}', '${io.id}', '${sub.id}')">×</button>
-                            </div>`;
-                        }).join('') || '<div style="font-size:0.8rem; color:#94a3b8; margin-bottom:5px;">Keine DALI-Leuchten/Geräte angelegt.</div>';
+                        // NEU: Saubere Tabellendarstellung für DALI Geräte
+                        let subsHtml = '';
+                        if (subs.length > 0) {
+                            subsHtml = `
+                            <table class="dali-table">
+                                <thead>
+                                    <tr>
+                                        <th>Gerät / Bezeichnung</th>
+                                        <th>Montageort</th>
+                                        <th>Gruppe</th>
+                                        <th>Kanäle / Adr.</th>
+                                        <th style="width: 30px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                            ` + subs.map(sub => {
+                                return `
+                                <tr>
+                                    <td><input type="text" value="${sub.name}" placeholder="Bezeichnung..." oninput="updateDaliSubDevice('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)"></td>
+                                    <td><input type="text" value="${sub.location}" placeholder="Raum..." oninput="updateDaliSubDevice('${hw.instanceId}', '${io.id}', '${sub.id}', 'location', this.value)"></td>
+                                    <td><input type="text" value="${sub.group}" placeholder="Gr." title="DALI Gruppe(n)" oninput="updateDaliSubDevice('${hw.instanceId}', '${io.id}', '${sub.id}', 'group', this.value)"></td>
+                                    <td>
+                                        <select onchange="updateDaliSubDevice('${hw.instanceId}', '${io.id}', '${sub.id}', 'channels', this.value)" title="Belegte Kanäle / Adressen">
+                                            <option value="1" ${sub.channels==1?'selected':''}>1 (z.B. Weiß)</option>
+                                            <option value="2" ${sub.channels==2?'selected':''}>2 (z.B. Tunable W.)</option>
+                                            <option value="3" ${sub.channels==3?'selected':''}>3 (z.B. RGB)</option>
+                                            <option value="4" ${sub.channels==4?'selected':''}>4 (z.B. RGBW)</option>
+                                        </select>
+                                    </td>
+                                    <td style="text-align: right;"><button class="delete-btn" style="padding: 2px 4px;" title="Löschen" onclick="deleteDaliSubDevice('${hw.instanceId}', '${io.id}', '${sub.id}')">✕</button></td>
+                                </tr>`;
+                            }).join('') + `</tbody></table>`;
+                        } else {
+                            subsHtml = '<div style="font-size:0.85rem; color:#94a3b8; margin:10px 0;">Keine DALI-Leuchten/Geräte angelegt.</div>';
+                        }
 
-                        busHtml += `<div class="bus-container"><div class="bus-header"><h5>${io.label}</h5><span class="bus-limit-badge ${isFull?'full':'ok'}">${totalAddresses}/${maxLimit} Adr.</span></div>${subsHtml}<button class="btn" style="margin-top:6px; padding:4px 10px; font-size:0.8rem;" onclick="addDaliSubDevice('${hw.instanceId}', '${io.id}')">+ DALI-Gerät hinzufügen</button></div>`;
+                        busHtml += `<div class="bus-container"><div class="bus-header"><h5>${io.label}</h5><span class="bus-limit-badge ${isFull?'full':'ok'}">${totalAddresses}/${maxLimit} Adr. belegt</span></div>${subsHtml}<button class="btn" style="margin-top:10px; padding:6px 12px; font-size:0.85rem;" onclick="addDaliSubDevice('${hw.instanceId}', '${io.id}')">+ Neues DALI-Gerät hinzufügen</button></div>`;
                     }
                 } else {
                     const fn = `setHwM_${hw.instanceId}_${io.id}`;
@@ -742,7 +777,7 @@
         return list;
     }
 
-    // --- BUS ÜBERSICHT (MODAL) MIT DALI UNTERGERÄTEN ---
+    // --- BUS ÜBERSICHT (MODAL) NEUES DESIGN ---
     function openBusOverviewModal() {
         const c = document.getElementById('bus-tree-content'); c.innerHTML = ''; let h = '';
         const masters = [];
@@ -752,32 +787,55 @@
         }));
 
         const totalPower = getProjectTotalPower();
-        h += `<div style="margin-bottom:20px; font-weight:bold; color:#0f766e; font-size:1.1rem; padding-bottom:10px; border-bottom:1px solid #cbd5e1;">⚡ Gesamtstromaufnahme Projekt: ${totalPower.toFixed(1)} W</div>`;
+        h += `<div style="margin-bottom:25px; font-weight:bold; color:#0f766e; font-size:1.1rem; padding-bottom:10px; border-bottom:1px solid #cbd5e1;">⚡ Gesamtstromaufnahme Projekt: ${totalPower.toFixed(1)} W</div>`;
 
-        if(masters.length === 0) h += '<div>Keine Bus-Master (z.B. Miniserver, Extensions) im Projekt vorhanden.</div>';
+        if(masters.length === 0) h += '<div style="color:#64748b; font-style:italic;">Keine Bus-Master (z.B. Miniserver, Extensions) im Projekt vorhanden.</div>';
         
         masters.forEach(m => {
-            h += `<div class="tree-master">🖥️ ${m.hw.fields['Geräte-Bez.'] || m.cfg.name} <span style="color:#94a3b8; font-size:0.8em; font-weight:normal;">(${m.d.room ? m.d.room + ' - ' : ''}${m.d.name})</span></div>`;
+            h += `<div class="topo-master">
+                    <div class="topo-master-title">
+                        🖥️ ${m.hw.fields['Geräte-Bez.'] || m.cfg.name} 
+                        <span style="color:#64748b; font-size:0.9rem; font-weight:normal;">(${m.d.room ? m.d.room + ' - ' : ''}${m.d.name})</span>
+                    </div>`;
+            
             m.cfg.io.filter(i => i.type === 'bus').forEach(io => {
                 if(io.isDaliBus) {
                     const subs = (m.hw.daliDevices && m.hw.daliDevices[io.id]) || [];
                     let totalAddrs = 0;
-                    let subsHtml = subs.map(sub => {
-                        let ch = parseInt(sub.channels) || 1;
-                        totalAddrs += ch;
-                        let locStr = sub.location ? ` [Ort: ${sub.location}]` : '';
-                        let grpStr = sub.group ? ` [Grp: ${sub.group}]` : '';
-                        return `<div class="tree-slave">▪ ${sub.name}${locStr}${grpStr} <span style="color:#94a3b8; font-size:0.8em;">(🔌 ${ch} Adr.)</span></div>`;
-                    }).join('');
-                    h += `<div class="tree-bus">↳ 🔌 ${io.label} (${subs.length} DALI-Geräte / ${totalAddrs} Adr.)</div>`;
-                    h += subsHtml;
-                    if(subs.length === 0) h += `<div class="tree-slave" style="color:#cbd5e1; font-style:italic;">Keine DALI-Geräte angelegt</div>`;
+                    subs.forEach(s => { totalAddrs += parseInt(s.channels) || 1; });
+                    
+                    h += `<div class="topo-bus">
+                            <div class="topo-bus-title">
+                                <span>🔌 ${io.label}</span>
+                                <span class="topo-badge">${subs.length} Geräte / ${totalAddrs} Adr. belegt</span>
+                            </div>`;
+                    
+                    if(subs.length === 0) {
+                        h += `<div class="topo-device" style="color:#94a3b8; font-style:italic; justify-content:center;">Keine DALI-Geräte angelegt</div>`;
+                    } else {
+                        subs.forEach(sub => {
+                            let ch = parseInt(sub.channels) || 1;
+                            h += `<div class="topo-device">
+                                    <div style="font-weight:600; color:#1e293b;">${sub.name || 'Ohne Bezeichnung'}</div>
+                                    <div class="topo-device-info">
+                                        <span>📍 ${sub.location || '-'}</span>
+                                        <span>👥 Grp: ${sub.group || '-'}</span>
+                                        <span style="color:#0f766e; font-weight:bold;">🔌 ${ch} Adr.</span>
+                                    </div>
+                                  </div>`;
+                        });
+                    }
+                    h += `</div>`;
+                } else {
+                    h += `<div class="topo-bus"><div class="topo-bus-title">🔌 ${io.label} <span class="topo-badge">Anderer Bus / Link</span></div></div>`;
                 }
             });
+            h += `</div>`;
         });
 
         c.innerHTML = h; document.getElementById('bus-modal').style.display = 'flex';
     }
+    
     window.closeBusOverviewModal = function(ev) { if(ev && ev.target.id !== 'bus-modal') return; document.getElementById('bus-modal').style.display = 'none'; }
 
     // --- DRUCK FUNKTIONEN ---
