@@ -217,6 +217,9 @@
     </div>
 
 <script>
+
+    const BASE_ICON_PATH = "icons-schalter/";
+    
     // --- CONFIGS ---
     const iconConfigList = [
         { file: "", label: "--- Leerplatz ---", group: "Allgemein", io: [] },
@@ -661,7 +664,7 @@
     function generateVisualizerHtml(d, f, r, c) {
         let h = ''; let cnt = 1;
         for(let i=0; i<r*c; i++) {
-            const path = f.slots[`slot-${cnt}`].iconFile ? `icons-schalter/${f.slots[`slot-${cnt}`].iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
+            const path = f.slots[`slot-${cnt}`].iconFile ? `${BASE_ICON_PATH}${f.slots[`slot-${cnt}`].iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
             h += `<div class="switch-slot" draggable="true" ondragstart="handleDragStart(event, '${f.id}', ${cnt})" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${f.id}', ${cnt})"><span class="slot-badge">${cnt}</span><img src="${path}"></div>`; cnt++;
         }
         return h;
@@ -832,7 +835,7 @@
                 }
             });
 
-            return `<div class="hw-card"><div class="hw-card-image"><img src="icons-schalter/${cfg.image}"></div><div class="hw-card-body"><div class="hw-card-header"><h4>${cfg.name}</h4><button class="delete-btn" onclick="deleteHardwareComponent('${hw.instanceId}')">Löschen</button></div>${fHtml}<div class="hw-io-grid">${inHtml?`<div><h5>Eingänge</h5>${inHtml}</div>`:''} ${outHtml?`<div><h5>Ausgänge</h5>${outHtml}</div>`:''}</div>${busHtml}</div></div>`;
+            return `<div class="hw-card"><div class="hw-card-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div><div class="hw-card-body"><div class="hw-card-header"><h4>${cfg.name}</h4><button class="delete-btn" onclick="deleteHardwareComponent('${hw.instanceId}')">Löschen</button></div>${fHtml}<div class="hw-io-grid">${inHtml?`<div><h5>Eingänge</h5>${inHtml}</div>`:''} ${outHtml?`<div><h5>Ausgänge</h5>${outHtml}</div>`:''}</div>${busHtml}</div></div>`;
         }).join('');
     }
 
