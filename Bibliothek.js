@@ -355,7 +355,7 @@ const hardwareConfigList = [
     { 
         id: "lox_touch_pure_tree", 
         name: "Loxone Touch Pure Tree", 
-        image: "Touch-Pure.jpg", 
+        image: "Touch-Pure-Tree.jpg", 
         power: 0.2, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"], 
         io: [
@@ -368,7 +368,7 @@ const hardwareConfigList = [
     { 
         id: "lox_rgbw_tree", 
         name: "Loxone RGBW 24V Dimmer Tree", 
-        image: "RGBW-Dimmer.jpg", 
+        image: "RGBW-Dimmer-Tree.jpg", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Tree Ast"], 
         io: [
@@ -378,7 +378,7 @@ const hardwareConfigList = [
     { 
         id: "lox_rgbw_air", 
         name: "Loxone RGBW 24V Dimmer Air", 
-        image: "RGBW-Dimmer.jpg", 
+        image: "RGBW-Dimmer-Air.png", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Air Link"], 
         io: [
@@ -447,7 +447,7 @@ const hardwareConfigList = [
     { 
         id: "lox_presence_tree", 
         name: "Loxone Präsenzmelder Tree", 
-        image: "Presence-Tree.jpg", 
+        image: "Präsenzmelder.jpg", 
         power: 0.2, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], 
         io: [
@@ -459,7 +459,7 @@ const hardwareConfigList = [
     { 
         id: "lox_presence_air", 
         name: "Loxone Präsenzmelder Air", 
-        image: "Presence-Tree.jpg", 
+        image: "Präsenzmelder.jpg", 
         power: 0.2, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], 
         io: [
