@@ -87,12 +87,12 @@
         .slot-form h4 { margin: 0 0 10px 0; color: var(--primary); }
 
         /* Custom Searchable Dropdown */
-        .custom-select { position: relative; flex: 1; font-family: inherit; min-width: 160px; }
-        .select-selected { background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px 8px; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .select-items { display: none; position: absolute; background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; top: 100%; left: 0; right: 0; z-index: 99; margin-top: 4px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto; min-width: 100%; }
+        .custom-select { position: relative; flex: 1; font-family: inherit; min-width: 140px; }
+        .select-selected { background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px 8px; font-size: 0.85rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .select-items { display: none; position: absolute; background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; top: 100%; left: 0; right: 0; z-index: 999; margin-top: 4px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto; min-width: 100%; }
         .select-items.show { display: block !important; }
         .dropdown-search { width: calc(100% - 16px) !important; margin: 8px; padding: 6px; box-sizing: border-box; border: 1px solid #cbd5e1 !important; border-radius: 3px; }
-        .dropdown-option { padding: 8px 10px; font-size: 0.9rem; cursor: pointer; border-bottom: 1px solid #f8fafc; }
+        .dropdown-option { padding: 8px 10px; font-size: 0.85rem; cursor: pointer; border-bottom: 1px solid #f8fafc; }
         .dropdown-option:hover { background-color: #f1f5f9; color: var(--primary); }
 
         .io-section { margin-top: 10px; }
@@ -115,16 +115,16 @@
         .hw-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
 
         /* DALI Inline Sub-Device Styling */
-        .bus-container { margin-top:15px; background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0; }
+        .bus-container { margin-top:15px; background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0; overflow: visible; }
         .bus-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 8px; }
         .bus-header h5 { margin: 0; font-size: 0.9rem; color: #1e293b; }
         .bus-limit-badge { font-size: 0.75rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
         .bus-limit-badge.ok { background: #dcfce7; color: #166534; }
         .bus-limit-badge.full { background: #fee2e2; color: #991b1b; }
         
-        .dali-table { width: 100%; border-collapse: collapse; margin-top: 5px; background: #fff; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.02);}
+        .dali-table { width: 100%; border-collapse: collapse; margin-top: 5px; background: #fff; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.02); overflow: visible;}
         .dali-table th { background: #f1f5f9; padding: 6px 8px; text-align: left; font-size: 0.8rem; color: #475569; border-bottom: 1px solid #cbd5e1; font-weight: 600;}
-        .dali-table td { padding: 4px; border-bottom: 1px solid #f1f5f9; }
+        .dali-table td { padding: 4px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
         .dali-table tr:last-child td { border-bottom: none; }
         .dali-table input, .dali-table select { width: 100%; border: 1px solid transparent; padding: 4px 6px; border-radius: 4px; background: transparent; font-size: 0.85rem; box-sizing: border-box; }
         .dali-table input:focus, .dali-table select:focus { border: 1px solid #cbd5e1; background: #fff; outline: none; }
@@ -215,11 +215,12 @@
             <div id="bus-tree-content"></div>
         </div>
     </div>
+    
 <script src="Bibliothek_one.js"></script>
 <script>
     const BASE_ICON_PATH = "icons-schalter/";
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
-    let projectData = { version: "2.0", projectName: "Neues Projekt", location: "", details: [] };
+    let projectData = { version: "2.1", projectName: "Neues Projekt", location: "", details: [] };
     let activeDetailId = null; let draggedSlot = null;
 
     document.addEventListener('keydown', e => { if (e.ctrlKey || e.metaKey) { if (e.key.toLowerCase() === 's') { e.preventDefault(); exportProject(); } else if (e.key.toLowerCase() === 'p') { e.preventDefault(); printCurrentDetail(); } } });
@@ -244,7 +245,7 @@
 
     function resetProject() {
         if(confirm("Komplettes Projekt löschen und neu starten?")) {
-            localStorage.removeItem(LOCAL_STORAGE_KEY); projectData = { version: "2.0", projectName: "Neues Projekt", location: "", details: [] }; activeDetailId = null; addNewDetail();
+            localStorage.removeItem(LOCAL_STORAGE_KEY); projectData = { version: "2.1", projectName: "Neues Projekt", location: "", details: [] }; activeDetailId = null; addNewDetail();
         }
     }
 
@@ -256,6 +257,14 @@
                 pd.hardware.forEach(hw => {
                     for(let key in hw.fields) { if (hw.fields[key] === oldStr) hw.fields[key] = newStr; }
                     for(let key in hw.mappings) { if (hw.mappings[key] === oldStr) hw.mappings[key] = newStr; }
+                    
+                    if (hw.subNodes) {
+                        for(let ioKey in hw.subNodes) {
+                            hw.subNodes[ioKey].forEach(sub => {
+                                if (sub.mapping === oldStr) sub.mapping = newStr;
+                            });
+                        }
+                    }
                 });
             }
             if (pd.frames) {
@@ -367,7 +376,16 @@
                         const activeIo = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
                         const hwName = hw.fields['Geräte-Bez.'] || cfg.name;
                         if(activeIo) activeIo.forEach(io => {
-                            replaceStringInAllReferences(`${oldDetailName} ${hwName} ${io.label}`, `${newDetailName} ${hwName} ${io.label}`);
+                            if (io.type === 'bus') {
+                                const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
+                                if (busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
+                                    hw.subNodes[io.id].forEach(sub => {
+                                        replaceStringInAllReferences(`${oldDetailName} ${hwName} ${sub.name || 'Neues Gerät'}`, `${newDetailName} ${hwName} ${sub.name || 'Neues Gerät'}`);
+                                    });
+                                }
+                            } else {
+                                replaceStringInAllReferences(`${oldDetailName} ${hwName} ${io.label}`, `${newDetailName} ${hwName} ${io.label}`);
+                            }
                         });
                     }
                 });
@@ -427,7 +445,18 @@
 
     function checkCollision(switchIdentifier) {
         if (!switchIdentifier) return false;
-        let count = 0; projectData.details.forEach(d => { if(d.hardware) d.hardware.forEach(h => { for (const key in h.mappings) { if (h.mappings[key] === switchIdentifier) count++; } }); });
+        let count = 0; projectData.details.forEach(d => { 
+            if(d.hardware) d.hardware.forEach(h => { 
+                for (const key in h.mappings) { if (h.mappings[key] === switchIdentifier) count++; } 
+                if (h.subNodes) {
+                    for(const ioKey in h.subNodes) {
+                        h.subNodes[ioKey].forEach(sub => {
+                            if (sub.mapping === switchIdentifier) count++;
+                        });
+                    }
+                }
+            }); 
+        });
         return count > 1;
     }
 
@@ -560,7 +589,16 @@
                 const oldName = hw.fields[field] || cfg.name;
                 const newName = val || cfg.name;
                 if(activeIo) activeIo.forEach(io => {
-                    replaceStringInAllReferences(`${d.name} ${oldName} ${io.label}`, `${d.name} ${newName} ${io.label}`);
+                    if (io.type === 'bus') {
+                        const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
+                        if (busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
+                            hw.subNodes[io.id].forEach(sub => {
+                                replaceStringInAllReferences(`${d.name} ${oldName} ${sub.name || 'Neues Gerät'}`, `${d.name} ${newName} ${sub.name || 'Neues Gerät'}`);
+                            });
+                        }
+                    } else {
+                        replaceStringInAllReferences(`${d.name} ${oldName} ${io.label}`, `${d.name} ${newName} ${io.label}`);
+                    }
                 });
             }
         }
@@ -575,7 +613,7 @@
                     if(hw.instanceId === hwInstanceId) {
                         if(!hw.subNodes) hw.subNodes = {};
                         if(!hw.subNodes[ioId]) hw.subNodes[ioId] = [];
-                        hw.subNodes[ioId].push({ id: generateId(), name: "Neues Gerät", location: d.room || "", group: "1", channels: 1 });
+                        hw.subNodes[ioId].push({ id: generateId(), name: "Neues Gerät", location: d.room || "", group: "1", channels: 1, mapping: "" });
                     }
                 });
             }
@@ -588,12 +626,22 @@
             if(d.hardware) d.hardware.forEach(hw => {
                 if(hw.instanceId === hwInstanceId && hw.subNodes && hw.subNodes[ioId]) {
                     const dev = hw.subNodes[ioId].find(x => x.id === subId);
-                    if(dev) dev[field] = val;
+                    if(dev) {
+                        // Kaskadierung, wenn der Name des Sub-Gerätes (z.B. DALI Leuchte) geändert wird
+                        if (field === 'name') {
+                            const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+                            const hwName = hw.fields['Geräte-Bez.'] || (cfg ? cfg.name : '');
+                            const oldTarget = `${d.name} ${hwName} ${dev.name || 'Neues Gerät'}`;
+                            const newTarget = `${d.name} ${hwName} ${val || 'Neues Gerät'}`;
+                            replaceStringInAllReferences(oldTarget, newTarget);
+                        }
+                        dev[field] = val;
+                    }
                 }
             });
         });
         saveToLocal();
-        if (field === 'channels') renderApp();
+        if (field === 'channels' || field === 'name') renderApp(); // Re-render für Namensänderung bei Dropdowns nötig
     }
 
     window.deleteSubNode = function(hwInstanceId, ioId, subId) {
@@ -683,6 +731,15 @@
                             const targetIdent = `${pd.name} ${hw.fields['Geräte-Bez.'] || hc.name} ${hio.label}`;
                             if(oldVal && oldVal.includes(targetIdent) && hw.mappings[hio.id] === swIdent) hw.mappings[hio.id] = "";
                             if(val && val !== "" && val.includes(targetIdent)) hw.mappings[hio.id] = swIdent;
+                        } else {
+                            const busCfg = SYSTEM_CONFIG.busTypes[hio.busType];
+                            if (busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[hio.id]) {
+                                hw.subNodes[hio.id].forEach(sub => {
+                                    const targetIdent = `${pd.name} ${hw.fields['Geräte-Bez.'] || hc.name} ${sub.name || 'Neues Gerät'}`;
+                                    if(oldVal && oldVal.includes(targetIdent) && sub.mapping === swIdent) sub.mapping = "";
+                                    if(val && val !== "" && val.includes(targetIdent)) sub.mapping = swIdent;
+                                });
+                            }
                         }
                     });
                 }
@@ -758,15 +815,28 @@
                             subsHtml = `<table class="dali-table">
                                 <thead><tr>
                                     <th>Bezeichnung (${busCfg.subDeviceLabel})</th>
-                                    <th>Montageort</th><th>Gruppe</th><th>Adressen/Kanäle</th><th style="width: 30px;"></th>
-                                </tr></thead><tbody>` + subs.map(sub => `
+                                    <th>Montageort</th><th>Gruppe</th><th>Kanäle</th>
+                                    <th>Taster / App</th>
+                                    <th style="width: 30px;"></th>
+                                </tr></thead><tbody>` + subs.map(sub => {
+                                
+                                const fnSub = `setSubM_${hw.instanceId}_${io.id}_${sub.id}`;
+                                window[fnSub] = (v, ev) => { 
+                                    if(ev){ev.preventDefault();ev.stopPropagation();} 
+                                    document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+                                    setTimeout(() => { updateSubNodeMapping(hw.instanceId, io.id, sub.id, v, cfg); renderApp(); }, 10); 
+                                };
+
+                                return `
                                 <tr>
                                     <td><input type="text" value="${sub.name}" oninput="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)"></td>
                                     <td><input type="text" value="${sub.location}" oninput="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'location', this.value)"></td>
                                     <td><input type="text" value="${sub.group}" oninput="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'group', this.value)"></td>
                                     <td><input type="number" min="1" max="16" value="${sub.channels}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'channels', this.value)" style="width:60px; border:1px solid transparent; background:transparent;"></td>
+                                    <td style="min-width:180px;">${renderSearchableDropdown(`subm-${hw.instanceId}-${io.id}-${sub.id}`, sub.mapping||'', [{value:'', label:'--- Keine Zuordnung ---'}, ...allSwitches], fnSub, 'Taster wählen...')}</td>
                                     <td style="text-align: right;"><button class="delete-btn" style="padding: 2px 4px;" title="Löschen" onclick="deleteSubNode('${hw.instanceId}', '${io.id}', '${sub.id}')">✕</button></td>
-                                </tr>`).join('') + `</tbody></table>`;
+                                </tr>`;
+                            }).join('') + `</tbody></table>`;
                         } else {
                             subsHtml = `<div style="font-size:0.85rem; color:#94a3b8; margin:10px 0;">Keine ${busCfg.subDeviceLabel} angelegt.</div>`;
                         }
@@ -845,13 +915,61 @@
         });
     }
 
+    // Neue Funktion zum Updaten des Mappings auf DALI / Sub-Nodes
+    window.updateSubNodeMapping = function(hwId, ioId, subId, val, cfg) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        const hw = d.hardware.find(h => h.instanceId === hwId);
+        const sub = hw.subNodes[ioId].find(s => s.id === subId);
+        
+        const oldVal = sub.mapping; 
+        sub.mapping = val;
+        
+        const targetIdent = `${d.name} ${hw.fields['Geräte-Bez.'] || cfg.name} ${sub.name || 'Neues Gerät'}`;
+
+        projectData.details.forEach(pd => {
+            if(!pd.frames) return;
+            pd.frames.forEach(f => {
+                const tot = f.layout.split('x').reduce((a,b)=>a*b,1);
+                for(let i=1; i<=tot; i++) {
+                    const s = f.slots[`slot-${i}`]; if(!s || !s.iconFile || !s.ioData) continue;
+                    const ic = iconConfigList.find(x => x.file === s.iconFile); if(!ic || !ic.io) continue;
+                    ic.io.forEach(sio => {
+                        const cData = s.ioData[sio.id] || {};
+                        const swIdent = `${pd.name} ${cData.bezeichnung || ic.label}`;
+                        
+                        if(swIdent === oldVal && cData.eingabegerat) { 
+                            cData.eingabegerat = cData.eingabegerat.split(',').map(x=>x.trim()).filter(x=>x!==targetIdent).join(', '); 
+                        }
+                        if(swIdent === val && val !== "") { 
+                            const items = cData.eingabegerat ? cData.eingabegerat.split(',').map(x=>x.trim()) : []; 
+                            if(!items.includes(targetIdent)) items.push(targetIdent); 
+                            cData.eingabegerat = items.join(', '); 
+                        }
+                    });
+                }
+            });
+        });
+        saveToLocal();
+    }
+
     function getAllAvailableConnections() {
         let list = [];
         projectData.details.forEach(d => d.hardware && d.hardware.forEach(hw => {
             const c = hardwareConfigList.find(x => x.id === hw.configId);
             if(c) {
                 const activeIo = c.profiles ? (c.profiles.find(p=>p.id===hw.activeProfile)?.io || c.profiles[0].io) : c.io;
-                if(activeIo) activeIo.forEach(io => { if(io.type !== 'bus') list.push({value: `${d.name} ${hw.fields['Geräte-Bez.'] || c.name} ${io.label}`}); });
+                if(activeIo) activeIo.forEach(io => { 
+                    if(io.type === 'bus') {
+                        const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
+                        if (busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
+                            hw.subNodes[io.id].forEach(sub => {
+                                list.push({value: `${d.name} ${hw.fields['Geräte-Bez.'] || c.name} ${sub.name || 'Neues Gerät'}`});
+                            });
+                        }
+                    } else {
+                        list.push({value: `${d.name} ${hw.fields['Geräte-Bez.'] || c.name} ${io.label}`}); 
+                    }
+                });
             }
         }));
         return list;
@@ -1049,7 +1167,8 @@
                     const busCfg = io.type==='bus' ? SYSTEM_CONFIG.busTypes[io.busType] : null;
                     if(busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
                         hw.subNodes[io.id].forEach(sub => {
-                            ioh += `<div style="font-size:0.8rem; margin-top:2px; border-left:2px solid var(--primary); padding-left:6px;"><b>${busCfg.subDeviceLabel}:</b> ${sub.name} (Ort: ${sub.location || 'k.A.'}, Grp: ${sub.group || '-'}, ${sub.channels} Adr.)</div>`;
+                            const mappingStr = sub.mapping ? ` | Taster: ${sub.mapping}` : '';
+                            ioh += `<div style="font-size:0.8rem; margin-top:2px; border-left:2px solid var(--primary); padding-left:6px;"><b>${busCfg.subDeviceLabel}:</b> ${sub.name} (Ort: ${sub.location || 'k.A.'}, Grp: ${sub.group || '-'}, ${sub.channels} Adr.)${mappingStr}</div>`;
                         });
                     } else if(io.type!=='bus') {
                         const cat = hw.categories?.[io.id] || '-';
