@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ServiceProDetail Konfigurator V2.0 (Flex)</title>
+    <style>
+        :root {
+            --feller-white: #f7f9f9; --feller-border: #d1d5db;
+            --primary: #0f766e; --primary-hover: #0d9488;
+            --danger: #ef4444; --danger-hover: #dc2626;
+            --warning: #f59e0b; --bg-color: #f3f4f6;
+            --text-color: #1f2937; --panel-bg: #ffffff;
+            --sidebar-width: 320px;
+        }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
+
+        .sidebar { width: var(--sidebar-width); background: #1e293b; color: white; display: flex; flex-direction: column; padding: 20px 15px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); transition: margin-left 0.3s; flex-shrink: 0; z-index: 100; box-sizing: border-box; }
+        .sidebar.collapsed { margin-left: calc(-1 * var(--sidebar-width)); }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 15px; }
+        .sidebar-header h2 { margin: 0; font-size: 1.2rem; }
+        .sidebar-search input { width: 100%; padding: 8px 12px; border-radius: 4px; border: 1px solid #475569; background: #334155; color: white; box-sizing: border-box; }
+        .detail-list { flex: 1; overflow-y: auto; }
+        .detail-item { padding: 10px; background: #334155; margin-bottom: 8px; border-radius: 4px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .detail-item.active { background: var(--primary); border-left: 4px solid #10b981; }
+        .sidebar-btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; }
+
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px 40px; min-width: 0; }
+        .top-bar { display: flex; flex-direction: column; gap: 10px; background: var(--panel-bg); padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .top-bar-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        .toggle-sidebar-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; padding: 4px 10px; }
+        .top-bar input[type="text"] { font-size: 1.2rem; font-weight: bold; border: 1px solid transparent; padding: 5px; background: transparent; width: 350px; }
+        .top-bar input.location-input { font-size: 0.95rem; font-weight: normal; color: #475569; width: 450px; margin-left: 35px; }
+
+        .action-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+        button.btn { background: white; border: 1px solid #d1d5db; padding: 8px 15px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.9rem; }
+        button.btn.primary { background: var(--primary); color: white; border: none; }
+        button.btn.danger { background: white; border: 1px solid #fca5a5; color: var(--danger); }
+        button.btn.warning { background: var(--warning); color: white; border: none; }
+
+        .workspace { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 1200px; margin: 0 auto; }
+        .pane { background: var(--panel-bg); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .pane h3 { margin-top: 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+
+        .frame-header-row { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .frame-header-row input { font-weight: bold; flex: 1; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; }
+        .visualizer-container { display: flex; justify-content: center; padding: 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; margin-bottom: 15px; }
+        .switch-frame { background-color: var(--feller-white); border: 2px solid #e2e8f0; padding: 20px; border-radius: 6px; display: grid; gap: 2px; }
+        .switch-slot { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 3px; display: flex; justify-content: center; align-items: center; position: relative; width: 80px; height: 80px; cursor: grab; }
+        .switch-slot img { width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
+        .slot-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: bold; color: #64748b; }
+
+        .form-group { display: flex; margin-bottom: 10px; align-items: center; }
+        .form-group label { width: 140px; font-size: 0.85rem; font-weight: 500; color: #475569; }
+        .form-group input, .form-group select { flex: 1; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.9rem; }
+        .slot-form { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
+
+        .custom-select { position: relative; flex: 1; min-width: 160px; }
+        .select-selected { background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px 8px; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .select-items { display: none; position: absolute; background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; top: 100%; left: 0; right: 0; z-index: 99; margin-top: 4px; max-height: 250px; overflow-y: auto; box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+        .select-items.show { display: block !important; }
+        .dropdown-search { width: calc(100% - 16px) !important; margin: 8px; padding: 6px; border: 1px solid #cbd5e1 !important; border-radius: 3px; }
+        .dropdown-option { padding: 8px 10px; font-size: 0.9rem; cursor: pointer; border-bottom: 1px solid #f8fafc; }
+        .dropdown-option:hover { background-color: #f1f5f9; color: var(--primary); }
+
+        .io-complex-row { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px; padding: 8px; }
+        .io-header { display: flex; align-items: center; font-size: 0.8rem; font-weight: bold; color: #334155; margin-bottom: 6px; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; }
+        .io-type { font-size: 0.65rem; padding: 2px 4px; border-radius: 3px; margin-right: 6px; text-transform: uppercase; }
+        .io-fields-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+        .io-fields-grid input { padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.8rem; width: 100%; box-sizing: border-box; }
+
+        .hw-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--primary); display: grid; grid-template-columns: 100px 1fr; gap: 15px; }
+        .hw-card-image img { width: 100%; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; padding: 4px; }
+        .hw-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+
+        .bus-container { margin-top:15px; background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0; }
+        .dali-table { width: 100%; border-collapse: collapse; margin-top: 5px; background: #fff; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; }
+        .dali-table th { background: #f1f5f9; padding: 6px 8px; text-align: left; font-size: 0.8rem; color: #475569; }
+        .dali-table td { padding: 4px; border-bottom: 1px solid #f1f5f9; }
+        .dali-table input, .dali-table select { width: 100%; border: 1px solid #cbd5e1; padding: 4px 6px; border-radius: 4px; font-size: 0.85rem; box-sizing: border-box; }
+        
+        .delete-btn { background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 1.1rem; }
+        .delete-btn:hover { color: #f87171; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>ServiceProDetails</h2>
+            <button class="btn" style="padding: 2px 6px;" onclick="toggleSidebar()">×</button>
+        </div>
+        <div class="sidebar-search">
+            <input type="text" id="detail-search-input" placeholder="Suche..." onkeyup="filterDetails()">
+        </div>
+        <div class="detail-list" id="detail-list"></div>
+        <button class="sidebar-btn" onclick="addNewDetail()">+ Neues Detail / Raum</button>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="top-bar-row">
+                <div class="header-left">
+                    <button class="toggle-sidebar-btn" onclick="toggleSidebar()">☰</button>
+                    <input type="text" id="project-name" value="Flexibles Projekt" onchange="updateProjectField('projectName', this.value)">
+                </div>
+                <div class="action-buttons">
+                    <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
+                    <button class="btn danger" onclick="resetProject()">Neu anfangen</button>
+                    <button class="btn" onclick="document.getElementById('file-input').click()">Öffnen</button>
+                    <button class="btn primary" onclick="exportProject()">Speichern</button>
+                </div>
+            </div>
+            <div class="top-bar-row">
+                <input type="text" class="location-input" id="project-location" placeholder="Standort eingeben..." onchange="updateProjectField('location', this.value)">
+            </div>
+        </div>
+
+        <div id="workspace-container"></div>
+    </div>
+
+<!-- WICHTIG: Korrekter Verweis auf Bibliothek_one.js -->
+<script src="Bibliothek_one.js"></script>
+<script>
+    const BASE_ICON_PATH = "icons-schalter/";
+    const LOCAL_STORAGE_KEY = 'serviceProDetailFlexData';
+    let projectData = { version: "2.0", projectName: "Flexibles Projekt", location: "", details: [] };
+    let activeDetailId = null;
+
+    window.onload = () => {
+        let saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (saved) {
+            try { projectData = JSON.parse(saved); } catch(e){}
+        }
+        if (!projectData.details || projectData.details.length === 0) {
+            addNewDetail();
+        } else {
+            activeDetailId = projectData.details[0].id;
+            renderApp();
+        }
+    };
+
+    function saveToLocal() { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(projectData)); }
+    function generateId() { return Math.random().toString(36).substr(2, 9); }
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+
+    function resetProject() {
+        if(confirm("Alles zurücksetzen?")) {
+            localStorage.removeItem(LOCAL_STORAGE_KEY);
+            projectData = { version: "2.0", projectName: "Neues Projekt", location: "", details: [] };
+            addNewDetail();
+        }
+    }
+
+    function renderApp() {
+        document.getElementById('project-name').value = projectData.projectName;
+        document.getElementById('project-location').value = projectData.location || '';
+        renderSidebar();
+        renderWorkspace();
+        saveToLocal();
+    }
+
+    function renderSidebar() {
+        const list = document.getElementById('detail-list'); list.innerHTML = '';
+        projectData.details.forEach(d => {
+            const div = document.createElement('div');
+            div.className = `detail-item ${d.id === activeDetailId ? 'active' : ''}`;
+            div.onclick = () => { activeDetailId = d.id; renderApp(); };
+            div.innerHTML = `<div><div style="font-size:0.75rem; color:#94a3b8;">${d.room||'Raum'}</div><div>${d.name}</div></div><button class="delete-btn" onclick="event.stopPropagation(); deleteDetail('${d.id}')">×</button>`;
+            list.appendChild(div);
+        });
+    }
+
+    function addNewDetail() {
+        const nd = { id: generateId(), name: `Detail ${projectData.details.length + 1}`, room: "", frames: [], hardware: [] };
+        projectData.details.push(nd); activeDetailId = nd.id; renderApp();
+    }
+
+    function deleteDetail(id) {
+        projectData.details = projectData.details.filter(x => x.id !== id);
+        if(projectData.details.length === 0) addNewDetail();
+        activeDetailId = projectData.details[0].id;
+        renderApp();
+    }
+
+    function updateProjectField(f, v) { projectData[f] = v; saveToLocal(); }
+
+    function renderSearchableDropdown(dropdownId, currentValue, optionsList, callbackName, placeholder) {
+        let optsHtml = optionsList.map(opt => `<div class="dropdown-option" data-label="${(opt.label || opt.value).toLowerCase()}" onclick="${callbackName}('${opt.value.replace(/'/g, "\\'")}', event)">${opt.label || opt.value}</div>`).join('');
+        const dLabel = optionsList.find(o => o.value === currentValue)?.label || currentValue || placeholder;
+        return `<div class="custom-select" onclick="toggleGenericDropdown('${dropdownId}', event)"><div class="select-selected">${dLabel} <span>▼</span></div><div class="select-items" id="dd-${dropdownId}" onclick="event.stopPropagation()"><input type="text" class="dropdown-search" placeholder="Suchen..." onkeyup="filterGenericDropdown('${dropdownId}', this.value)"><div id="dd-list-${dropdownId}">${optsHtml}</div></div></div>`;
+    }
+
+    window.toggleGenericDropdown = function(id, ev) {
+        ev.stopPropagation();
+        const target = document.getElementById(`dd-${id}`);
+        const isOpen = target.classList.contains('show');
+        document.querySelectorAll('.select-items').forEach(x => x.classList.remove('show'));
+        if(!isOpen) target.classList.add('show');
+    };
+
+    window.filterGenericDropdown = function(id, term) {
+        const t = term.toLowerCase();
+        Array.from(document.getElementById(`dd-list-${id}`).children).forEach(c => {
+            c.style.display = c.getAttribute('data-label').includes(t) ? 'block' : 'none';
+        });
+    };
+
+    window.onclick = () => document.querySelectorAll('.select-items').forEach(x => x.classList.remove('show'));
+
+    function getAllUniversalTargets() {
+        let targets = [];
+        projectData.details.forEach(d => {
+            if(d.frames) {
+                d.frames.forEach(f => {
+                    const tot = f.layout.split('x').reduce((a,b)=>a*b,1);
+                    for(let i=1; i<=tot; i++) {
+                        const s = f.slots[`slot-${i}`];
+                        if(s && s.iconFile) {
+                            const ic = iconConfigList.find(x => x.file === s.iconFile);
+                            if(ic && ic.io) {
+                                ic.io.forEach(io => {
+                                    const dat = s.ioData?.[io.id] || {};
+                                    targets.push({ value: `${d.name} -> ${dat.bezeichnung || ic.label} (${io.label})`, label: `${d.name}: ${dat.bezeichnung || ic.label} [${io.label}]` });
+                                });
+                            }
+                        }
+                    }
+                });
+            }
+            if(d.hardware) {
+                d.hardware.forEach(hw => {
+                    const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+                    if(cfg && hw.daliDevices) {
+                        for(let busId in hw.daliDevices) {
+                            hw.daliDevices[busId].forEach(sub => {
+                                targets.push({ value: `DALI: ${sub.name} (Grp ${sub.group})`, label: `DALI-Gerät: ${sub.name} (Gruppe ${sub.group})` });
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        return targets;
+    }
+
+    function renderWorkspace() {
+        const container = document.getElementById('workspace-container');
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        if(!d) return;
+
+        window.selectNewHw = (val, ev) => { if(ev){ev.preventDefault();ev.stopPropagation();} if(val) addHw(val); };
+        const hwPicker = renderSearchableDropdown('new-hw', '', hardwareConfigList.map(h => ({value: h.id, label: h.name})), 'selectNewHw', '+ Hardware hinzufügen');
+
+        let framesHtml = d.frames.map(f => {
+            const [r, col] = f.layout.split('x').map(Number);
+            const tot = r * col;
+            for(let i=1; i<=tot; i++) { if(!f.slots[`slot-${i}`]) f.slots[`slot-${i}`] = { iconFile: '', ioData: {} }; }
+            
+            let vis = '';
+            for(let i=1; i<=tot; i++) {
+                const s = f.slots[`slot-${i}`];
+                const path = s.iconFile ? `${BASE_ICON_PATH}${s.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
+                vis += `<div class="switch-slot"><span class="slot-badge">${i}</span><img src="${path}"></div>`;
+            }
+
+            let slotsForm = '';
+            for(let i=1; i<=tot; i++) {
+                const s = f.slots[`slot-${i}`];
+                const ic = iconConfigList.find(x => x.file === s.iconFile);
+                window[`setIcon_${f.id}_${i}`] = (v, ev) => { if(ev){ev.preventDefault();ev.stopPropagation();} s.iconFile = v; renderApp(); };
+                
+                let ioHtml = '';
+                if(ic && ic.io) {
+                    ioHtml = ic.io.map(io => {
+                        const dat = s.ioData?.[io.id] || {bezeichnung:'', art:'', funktion:''};
+                        return `<div class="io-complex-row">
+                            <div class="io-header"><span class="io-type" style="background:#e0f2fe; color:#0369a1;">${io.label}</span></div>
+                            <div class="io-fields-grid">
+                                <input type="text" placeholder="Bezeichnung" value="${dat.bezeichnung||''}" onchange="updateSlotIO('${f.id}', ${i}, '${io.id}', 'bezeichnung', this.value)">
+                                <input type="text" placeholder="Art (z.B. Taster)" value="${dat.art||''}" onchange="updateSlotIO('${f.id}', ${i}, '${io.id}', 'art', this.value)">
+                                <input type="text" placeholder="Funktion / Ziel" value="${dat.funktion||''}" onchange="updateSlotIO('${f.id}', ${i}, '${io.id}', 'funktion', this.value)">
+                            </div>
+                        </div>`;
+                    }).join('');
+                }
+
+                slotsForm += `<div class="slot-form">
+                    <h4>Platz ${i}</h4>
+                    <div class="form-group"><label>Modul / Taster</label>${renderSearchableDropdown(`icon-${f.id}-${i}`, s.iconFile, [{value:'', label:'--- Leer ---'}, ...iconConfigList.map(x=>({value:x.file, label:x.label}))], `setIcon_${f.id}_${i}`, 'Wählen...')}</div>
+                    ${ioHtml}
+                </div>`;
+            }
+
+            return `<div class="pane">
+                <div class="frame-header-row">
+                    <input type="text" value="${f.name}" onchange="updateFrame('${f.id}', 'name', this.value)">
+                    <select onchange="updateFrame('${f.id}', 'layout', this.value)">
+                        <option value="1x1" ${f.layout==='1x1'?'selected':''}>1 x 1</option>
+                        <option value="2x1" ${f.layout==='2x1'?'selected':''}>2 x 1</option>
+                        <option value="2x2" ${f.layout==='2x2'?'selected':''}>2 x 2</option>
+                        <option value="3x3" ${f.layout==='3x3'?'selected':''}>3 x 3</option>
+                    </select>
+                    <button class="delete-btn" onclick="deleteFrame('${f.id}')">×</button>
+                </div>
+                <div class="visualizer-container"><div class="switch-frame" style="grid-template-columns: repeat(${col}, 80px);">${vis}</div></div>
+                <div>${slotsForm}</div>
+            </div>`;
+        }).join('');
+
+        container.innerHTML = `
+        <div class="workspace">
+            <div class="pane">
+                <div class="form-group"><label>Raum:</label><input type="text" value="${d.room||''}" onchange="updateDetail('room', this.value)"></div>
+                <div class="form-group"><label>Detail-Name:</label><input type="text" value="${d.name}" onchange="updateDetail('name', this.value)"></div>
+                <button class="btn" style="width:100%; justify-content:center;" onclick="addFrame()">+ Schaltstelle hinzufügen</button>
+            </div>
+            ${framesHtml}
+            <div class="pane">
+                <h3><span>Hardware & DALI</span><div style="width:250px;">${hwPicker}</div></h3>
+                <div style="margin-top:15px;">${renderHardware(d)}</div>
+            </div>
+        </div>`;
+    }
+
+    function addFrame() {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        d.frames.push({ id: generateId(), name: `Schaltstelle ${d.frames.length + 1}`, layout: "1x1", slots: {} });
+        renderApp();
+    }
+    function updateFrame(fId, k, v) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        const f = d.frames.find(x => x.id === fId);
+        f[k] = v; renderApp();
+    }
+    function deleteFrame(fId) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        d.frames = d.frames.filter(x => x.id !== fId);
+        renderApp();
+    }
+    function updateDetail(k, v) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        d[k] = v; renderApp();
+    }
+    function updateSlotIO(fId, sNum, ioId, field, val) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        const f = d.frames.find(x => x.id === fId);
+        const s = f.slots[`slot-${sNum}`];
+        if(!s.ioData) s.ioData = {};
+        if(!s.ioData[ioId]) s.ioData[ioId] = {};
+        s.ioData[ioId][field] = val;
+        saveToLocal();
+    }
+
+    function addHw(cfgId) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        const cfg = hardwareConfigList.find(x => x.id === cfgId);
+        const fields = {};
+        if(cfg.fields) cfg.fields.forEach(f => fields[f] = f === 'Geräte-Bez.' ? `${cfg.name}` : '');
+        const mappings = {};
+        if(cfg.io) cfg.io.forEach(io => mappings[io.id] = '');
+        d.hardware.push({ instanceId: generateId(), configId: cfgId, fields, mappings, daliDevices: {} });
+        renderApp();
+    }
+    function deleteHw(instId) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        d.hardware = d.hardware.filter(x => x.instanceId !== instId);
+        renderApp();
+    }
+
+    function renderHardware(d) {
+        if(!d.hardware || d.hardware.length === 0) return '<p style="color:#64748b;">Keine Hardware vorhanden.</p>';
+        const allTargets = getAllUniversalTargets();
+
+        return d.hardware.map(hw => {
+            const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+            if(!cfg) return '';
+
+            let fieldsHtml = '';
+            cfg.fields.forEach(f => {
+                fieldsHtml += `<div class="form-group"><label>${f}</label><input type="text" value="${hw.fields[f]||''}" onchange="updateHwField('${hw.instanceId}', '${f}', this.value)"></div>`;
+            });
+
+            let ioHtml = '';
+            if(cfg.io) {
+                cfg.io.forEach(io => {
+                    if(io.isDaliBus) {
+                        if(!hw.daliDevices[io.id]) hw.daliDevices[io.id] = [];
+                        const subs = hw.daliDevices[io.id];
+                        let rows = subs.map(sub => `<tr>
+                            <td><input type="text" value="${sub.name}" oninput="updateDali('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)"></td>
+                            <td><input type="text" value="${sub.group}" oninput="updateDali('${hw.instanceId}', '${io.id}', '${sub.id}', 'group', this.value)"></td>
+                            <td><button class="delete-btn" onclick="delDali('${hw.instanceId}', '${io.id}', '${sub.id}')">×</button></td>
+                        </tr>`).join('');
+
+                        ioHtml += `<div class="bus-container">
+                            <h5>${io.label}</h5>
+                            <table class="dali-table"><thead><tr><th>Geräte / Gruppen-Name</th><th>DALI-Gruppe</th><th style="width:30px;"></th></tr></thead><tbody>${rows}</tbody></table>
+                            <button class="btn" style="margin-top:8px; font-size:0.8rem;" onclick="addDali('${hw.instanceId}', '${io.id}')">+ DALI / Gruppe hinzufügen</button>
+                        </div>`;
+                    } else {
+                        const cbName = `setMap_${hw.instanceId}_${io.id}`;
+                        window[cbName] = (v, ev) => {
+                            if(ev){ev.preventDefault();ev.stopPropagation();}
+                            document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show'));
+                            hw.mappings[io.id] = v;
+                            saveToLocal();
+                        };
+                        ioHtml += `<div class="form-group"><label>${io.label}</label>${renderSearchableDropdown(`map-${hw.instanceId}-${io.id}`, hw.mappings[io.id]||'', [{value:'', label:'--- Frei / Direkt ---'}, ...allTargets], cbName, 'Verknüpfen...')}</div>`;
+                    }
+                });
+            }
+
+            return `<div class="hw-card">
+                <div class="hw-card-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div>
+                <div>
+                    <div class="hw-card-header"><h4>${cfg.name}</h4><button class="delete-btn" onclick="deleteHw('${hw.instanceId}')">Löschen</button></div>
+                    ${fieldsHtml}
+                    <div style="margin-top:10px;">${ioHtml}</div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function updateHwField(instId, field, val) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        const hw = d.hardware.find(x => x.instanceId === instId);
+        hw.fields[field] = val; saveToLocal();
+    }
+
+    function addDali(instId, ioId) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        const hw = d.hardware.find(x => x.instanceId === instId);
+        if(!hw.daliDevices[ioId]) hw.daliDevices[ioId] = [];
+        hw.daliDevices[ioId].push({ id: generateId(), name: "DALI Leuchte / Gruppe 1", group: "1" });
+        renderApp();
+    }
+    function updateDali(instId, ioId, subId, field, val) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        const hw = d.hardware.find(x => x.instanceId === instId);
+        const sub = hw.daliDevices[ioId].find(x => x.id === subId);
+        sub[field] = val; saveToLocal();
+    }
+    function delDali(instId, ioId, subId) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        const hw = d.hardware.find(x => x.instanceId === instId);
+        hw.daliDevices[ioId] = hw.daliDevices[ioId].filter(x => x.id !== subId);
+        renderApp();
+    }
+
+    function exportProject() {
+        const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: "application/json" });
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+        a.download = "projekt.ServiceProDetail"; a.click();
+    }
+    function importProject(ev) {
+        const f = ev.target.files[0];
+        if(!f) return;
+        const r = new FileReader();
+        r.onload = e => {
+            try {
+                projectData = JSON.parse(e.target.result);
+                activeDetailId = projectData.details[0]?.id;
+                renderApp();
+            } catch(err) { alert("Fehler beim Laden."); }
+        };
+        r.readAsText(f);
+    }
+</script>
+</body>
+</html>
