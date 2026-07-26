@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V1.3</title>
+    <title>ServiceProDetail Konfigurator V1.4</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -61,7 +61,7 @@
         button.btn.danger:hover { background: #fef2f2; border-color: var(--danger); }
         button.btn.warning { background: var(--warning); color: white; border: none; }
 
-        /* Workspace Grid - Einspaltiges Layout von Oben nach Unten */
+        /* Workspace Grid - Einspaltig */
         .workspace { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 1200px; margin: 0 auto; }
 
         .pane { background: var(--panel-bg); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
@@ -89,7 +89,8 @@
         /* Custom Searchable Dropdown */
         .custom-select { position: relative; flex: 1; font-family: inherit; min-width: 160px; }
         .select-selected { background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px 8px; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .select-items { position: absolute; background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; top: 100%; left: 0; right: 0; z-index: 99; margin-top: 4px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto; min-width: 100%; }
+        .select-items { display: none; position: absolute; background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; top: 100%; left: 0; right: 0; z-index: 99; margin-top: 4px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto; min-width: 100%; }
+        .select-items.show { display: block !important; }
         .dropdown-search { width: calc(100% - 16px) !important; margin: 8px; padding: 6px; box-sizing: border-box; border: 1px solid #cbd5e1 !important; border-radius: 3px; }
         .dropdown-group-label { padding: 6px 10px; background: #f1f5f9; font-size: 0.75rem; font-weight: bold; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; border-top: 1px solid #e2e8f0; }
         .dropdown-option { padding: 8px 10px; font-size: 0.9rem; cursor: pointer; border-bottom: 1px solid #f8fafc; }
@@ -176,7 +177,7 @@
                 </div>
                 <div class="action-buttons">
                     <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
-                    <button class="btn warning" onclick="openBusOverviewModal()">🖧 Bus-Übersicht</button>
+                    <button class="btn warning" onclick="openBusOverviewModal()">🖧 Bus-Topologie</button>
                     <button class="btn danger" onclick="resetProject()">Neu anfangen</button>
                     <button class="btn" onclick="document.getElementById('file-input').click()">Öffnen</button>
                     <button class="btn primary" onclick="exportProject()">Speichern</button>
@@ -206,7 +207,7 @@
     </div>
 
 <script>
-    // --- KONFIGURATIONEN ---
+    // --- CONFIGS ---
     const iconConfigList = [
         { file: "", label: "--- Leerplatz ---", group: "Allgemein", io: [] },
         { file: "Drehschalter-Hand-Auto.png", label: "Drehschalter Hand-Auto", group: "Schalter & Taster", io: [{ id: "TA_HAND_AUTO", label: "Hand/Auto Schalter", type: "in" }] },
@@ -243,11 +244,15 @@
     ];
 
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
-    let projectData = { version: "1.3", projectName: "Neues Projekt", location: "", details: [] };
+    let projectData = { version: "1.4", projectName: "Neues Projekt", location: "", details: [] };
     let activeDetailId = null; let draggedSlot = null;
 
     document.addEventListener('keydown', e => { if (e.ctrlKey || e.metaKey) { if (e.key.toLowerCase() === 's') { e.preventDefault(); exportProject(); } else if (e.key.toLowerCase() === 'p') { e.preventDefault(); printCurrentDetail(); } } });
-    document.addEventListener("click", () => document.querySelectorAll('.select-items').forEach(item => item.style.display = 'none'));
+    
+    // Globaler Klick schließt absolut ALLE Dropdowns sauber
+    document.addEventListener("click", () => {
+        document.querySelectorAll('.select-items').forEach(item => item.classList.remove('show'));
+    });
 
     window.onload = () => {
         let savedData = loadFromLocal();
@@ -265,12 +270,10 @@
 
     function resetProject() {
         if(confirm("Komplettes Projekt löschen und neu starten?")) {
-            localStorage.removeItem(LOCAL_STORAGE_KEY); projectData = { version: "1.3", projectName: "Neues Projekt", location: "", details: [] }; activeDetailId = null; addNewDetail();
+            localStorage.removeItem(LOCAL_STORAGE_KEY); projectData = { version: "1.4", projectName: "Neues Projekt", location: "", details: [] }; activeDetailId = null; addNewDetail();
         }
     }
 
-    // --- IDENTIFIER LOGIK (Kurze saubere Namen) ---
-    // Erzeugt zz.B.: "Detail 1 1.1.1 DI 1" (Wenn Detail "Detail 1" und Gerät "1.1.1" heißt)
     function getHwIdString(d, hw) {
         const config = hardwareConfigList.find(c => c.id === hw.configId);
         return `${d.name} ${hw.fields['Geräte-Bez.'] || config.name}`;
@@ -353,8 +356,27 @@
         return `<div class="custom-select" onclick="toggleGenericDropdown('${dropdownId}', event)"><div class="select-selected">${dLabel} <span>▼</span></div><div class="select-items" id="dd-${dropdownId}" onclick="event.stopPropagation()"><input type="text" class="dropdown-search" placeholder="Suchen..." onkeyup="filterGenericDropdown('${dropdownId}', this.value)"><div id="dd-list-${dropdownId}">${optsHtml}</div></div></div>`;
     }
     
-    window.toggleGenericDropdown = function(id, ev) { ev.stopPropagation(); document.querySelectorAll('.select-items').forEach(dd => { if(dd.id !== `dd-${id}`) dd.style.display = 'none'; }); const d = document.getElementById(`dd-${id}`); d.style.display = d.style.display === 'block' ? 'none' : 'block'; if(d.style.display === 'block') setTimeout(()=>d.querySelector('.dropdown-search')?.focus(), 50); };
-    window.filterGenericDropdown = function(id, term) { const t = term.toLowerCase(); Array.from(document.getElementById(`dd-list-${id}`).children).forEach(c => c.style.display = c.getAttribute('data-label').includes(t) ? 'block' : 'none'); };
+    window.toggleGenericDropdown = function(id, ev) { 
+        ev.stopPropagation(); 
+        const targetDropdown = document.getElementById(`dd-${id}`);
+        const willBeOpen = !targetDropdown.classList.contains('show');
+        
+        // Schließe erst alle anderen Dropdowns
+        document.querySelectorAll('.select-items').forEach(dd => dd.classList.remove('show'));
+        
+        // Schalte das Ziel-Dropdown um
+        if(willBeOpen) {
+            targetDropdown.classList.add('show');
+            setTimeout(() => targetDropdown.querySelector('.dropdown-search')?.focus(), 50);
+        }
+    };
+
+    window.filterGenericDropdown = function(id, term) { 
+        const t = term.toLowerCase(); 
+        Array.from(document.getElementById(`dd-list-${id}`).children).forEach(c => {
+            c.style.display = c.getAttribute('data-label').includes(t) ? 'block' : 'none';
+        }); 
+    };
 
     function checkCollision(switchIdentifier) {
         let count = 0; projectData.details.forEach(d => { if(d.hardware) d.hardware.forEach(h => { for (const key in h.mappings) { if (h.mappings[key] === switchIdentifier) count++; } }); });
@@ -365,7 +387,11 @@
         const c = document.getElementById('workspace-container'); const d = projectData.details.find(x => x.id === activeDetailId);
         if (!d) return;
 
-        window.selectNewHw = (val, ev) => { if(ev){ev.preventDefault();ev.stopPropagation();} document.querySelectorAll('.select-items').forEach(x=>x.style.display='none'); if(val) { setTimeout(() => { addHardwareComponent(val); }, 10); } };
+        window.selectNewHw = (val, ev) => { 
+            if(ev){ev.preventDefault();ev.stopPropagation();} 
+            document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+            if(val) { setTimeout(() => { addHardwareComponent(val); }, 10); } 
+        };
         const hwPicker = renderSearchableDropdown('new-hw', '', hardwareConfigList.map(h => ({value: h.id, label: h.name})), 'selectNewHw', '+ Hardware hinzufügen');
 
         let framesHtml = d.frames.map(f => {
@@ -452,7 +478,11 @@
                     let data = slot.ioData?.[io.id] || {bezeichnung:'', art:'', gruppe:'', eingabegerat:'', funktion:'', bemerkung:''};
                     if(typeof data === 'string') data = {bezeichnung: data, eingabegerat:''};
                     const fn = `setIO_${f.id}_${i}_${io.id}`;
-                    window[fn] = (v, ev) => { if(ev){ev.preventDefault();ev.stopPropagation();} document.querySelectorAll('.select-items').forEach(x=>x.style.display='none'); setTimeout(()=>updateSlotField(f.id, i, io.id, 'eingabegerat', v), 10); };
+                    window[fn] = (v, ev) => { 
+                        if(ev){ev.preventDefault();ev.stopPropagation();} 
+                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+                        setTimeout(()=>updateSlotField(f.id, i, io.id, 'eingabegerat', v), 10); 
+                    };
                     
                     const switchIdent = `${d.name} ${data.bezeichnung || ic.label}`;
                     const hasWarn = checkCollision(switchIdent);
@@ -467,7 +497,11 @@
                     </div></div>`;
                 }).join('') + `</div>`;
             }
-            window[`setIcon_${f.id}_${i}`] = (v, ev) => { if(ev){ev.preventDefault();ev.stopPropagation();} document.querySelectorAll('.select-items').forEach(x=>x.style.display='none'); setTimeout(() => { f.slots[`slot-${i}`].iconFile = v; renderApp(); }, 10); };
+            window[`setIcon_${f.id}_${i}`] = (v, ev) => { 
+                if(ev){ev.preventDefault();ev.stopPropagation();} 
+                document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+                setTimeout(() => { f.slots[`slot-${i}`].iconFile = v; renderApp(); }, 10); 
+            };
             h += `<div class="slot-form ${slot.iconFile ? '' : 'no-print'}"><h4>Platz ${i}</h4><div class="form-group no-print"><label>Icon</label>${renderSearchableDropdown(`icon-${f.id}-${i}`, slot.iconFile, iconConfigList.map(x=>({value:x.file, label:x.label})), `setIcon_${f.id}_${i}`, 'Icon wählen...')}</div>${ioHtml}</div>`;
         }
         return h;
@@ -525,7 +559,11 @@
             if(cfg.fields) cfg.fields.forEach(f => {
                 if(/ast|bus|bridge|dali|link/i.test(f)) {
                     const fn = `setHwF_${hw.instanceId}_${sanitizeFnName(f)}`;
-                    window[fn] = (v, ev) => { if(ev){ev.preventDefault();ev.stopPropagation();} document.querySelectorAll('.select-items').forEach(x=>x.style.display='none'); setTimeout(() => { hw.fields[f] = v; renderApp(); }, 10); };
+                    window[fn] = (v, ev) => { 
+                        if(ev){ev.preventDefault();ev.stopPropagation();} 
+                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+                        setTimeout(() => { hw.fields[f] = v; renderApp(); }, 10); 
+                    };
                     fHtml += `<div class="form-group"><label>${f}</label><div>${renderSearchableDropdown(`hf-${hw.instanceId}-${sanitizeFnName(f)}`, hw.fields[f]||'', getAllBusNodes(detectBusType(f)), fn, 'Bus...')}</div></div>`;
                 } else fHtml += `<div class="form-group"><label>${f}</label><input type="text" value="${hw.fields[f]||''}" onchange="hw.fields['${f}']=this.value; renderApp();"></div>`;
             });
@@ -535,11 +573,19 @@
                     const bId = getBusIdString(d, hw, io); const slaves = findSlavesForBus(bId);
                     const bHtml = slaves.length ? slaves.map((s,i) => `<div class="bus-item"><span>${i+1}. ${getHwIdString(s.detail, s.hw)}</span><button class="delete-btn" onclick="s.hw.fields['${s.fieldName}']=''; renderApp();">×</button></div>`).join('') : '<div style="font-size:0.8rem; color:#94a3b8;">Leer</div>';
                     const fn = `addSlave_${hw.instanceId}_${io.id}`;
-                    window[fn] = (v, ev) => { if(ev){ev.preventDefault();ev.stopPropagation();} document.querySelectorAll('.select-items').forEach(x=>x.style.display='none'); setTimeout(() => { const [did, hid, fname] = v.split('|'); const sd = projectData.details.find(x=>x.id===did); if(sd) { const sh = sd.hardware.find(x=>x.instanceId===hid); if(sh) sh.fields[fname] = bId; } renderApp(); }, 10); };
+                    window[fn] = (v, ev) => { 
+                        if(ev){ev.preventDefault();ev.stopPropagation();} 
+                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+                        setTimeout(() => { const [did, hid, fname] = v.split('|'); const sd = projectData.details.find(x=>x.id===did); if(sd) { const sh = sd.hardware.find(x=>x.instanceId===hid); if(sh) sh.fields[fname] = bId; } renderApp(); }, 10); 
+                    };
                     busHtml += `<div class="bus-container"><div class="bus-header"><h5>${io.label}</h5><span class="bus-limit-badge ${io.max && slaves.length>=io.max?'full':'ok'}">${slaves.length}${io.max?'/'+io.max:''}</span></div>${bHtml}${!io.max||slaves.length<io.max ? `<div style="margin-top:5px;">${renderSearchableDropdown(`as-${hw.instanceId}-${io.id}`,'',getAllBusSlaves(detectBusType(io.label)),fn,'+ Gerät...')}</div>` : ''}</div>`;
                 } else {
                     const fn = `setHwM_${hw.instanceId}_${io.id}`;
-                    window[fn] = (v, ev) => { if(ev){ev.preventDefault();ev.stopPropagation();} document.querySelectorAll('.select-items').forEach(x=>x.style.display='none'); setTimeout(() => { updateHwMapping(hw, io.id, v, cfg); renderApp(); }, 10); };
+                    window[fn] = (v, ev) => { 
+                        if(ev){ev.preventDefault();ev.stopPropagation();} 
+                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+                        setTimeout(() => { updateHwMapping(hw, io.id, v, cfg); renderApp(); }, 10); 
+                    };
                     const hasWarn = hw.mappings[io.id] ? checkCollision(hw.mappings[io.id]) : false;
                     const warnHtml = hasWarn ? `<span class="collision-warn" title="Dieser Taster ist mehrfach verknüpft!">⚠️</span>` : '';
                     const row = `<div class="form-group"><label style="width:110px;">${io.label} ${warnHtml}</label><div>${renderSearchableDropdown(`hm-${hw.instanceId}-${io.id}`, hw.mappings[io.id]||'', allSwitches, fn, 'Taster wählen...')}</div></div>`;
