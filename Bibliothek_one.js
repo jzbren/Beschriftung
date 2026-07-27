@@ -170,7 +170,7 @@ const hardwareConfigList = [
     // --- Core Server ---
     { 
         id: "lox_miniserver", 
-        name: "Loxone Miniserver Gen. 2", 
+        name: "Miniserver Gen. 2", 
         image: "Miniserver-Gen-2.jpg", 
         power: 2.2, 
         fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], 
@@ -201,7 +201,7 @@ const hardwareConfigList = [
     },
     { 
         id: "lox_miniserver_go", 
-        name: "Loxone Miniserver Go", 
+        name: "Miniserver Go", 
         image: "Miniserver-Go.jpg", 
         power: 2.0, 
         fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], 
@@ -212,30 +212,15 @@ const hardwareConfigList = [
     },
     { 
         id: "lox_miniserver_compact", 
-        name: "Loxone Miniserver Compact", 
+        name: "Miniserver Compact", 
         image: "Miniserver-Compact.jpg", 
         power: 2.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], 
         profiles: [
-            {
-                id: "tree_standard",
-                label: "Tree Ast (Standard)",
-                io: [
-                    { id: "DI_1", label: "DI 1", type: "in" },
-                    { id: "DI_2", label: "DI 2", type: "in" }, 
-                    { id: "DI_3", label: "DI 3", type: "in" }, 
-                    { id: "DI_4", label: "DI 4", type: "in" }, 
-                    { id: "O_1", label: "Relais 1", type: "out" },
-                    { id: "O_2", label: "Relais 2", type: "out" }, 
-                    { id: "TREE_1", label: "Tree Ast Links", type: "bus", busType: "tree" }, 
-                    { id: "TREE_2", label: "Tree Ast Rechts", type: "bus", busType: "tree" }, 
-                    { id: "AIR_BASE", label: "Air Geräte", type: "bus", busType: "air" },
-                    { id: "LINK_1", label: "Loxone Link", type: "bus", busType: "link" }
-                ]
-            },
+            
             {
                 id: "tree_turbo",
-                label: "Tree Turbo",
+                label: "Tree Turbo (Standard)",
                 io: [
                     { id: "DI_1", label: "DI 1", type: "in" },
                     { id: "DI_2", label: "DI 2", type: "in" }, 
@@ -245,6 +230,22 @@ const hardwareConfigList = [
                     { id: "O_2", label: "Relais 2", type: "out" }, 
                     { id: "TREE_1", label: "Tree Ast Links", type: "bus", busType: "tree" }, 
                     { id: "TREE_TURBO", label: "Tree Turbo", type: "bus", busType: "tree" }, 
+                    { id: "AIR_BASE", label: "Air Geräte", type: "bus", busType: "air" },
+                    { id: "LINK_1", label: "Loxone Link", type: "bus", busType: "link" }
+                ]
+            },
+            {
+                id: "tree_standard",
+                label: "2x Tree Ast",
+                io: [
+                    { id: "DI_1", label: "DI 1", type: "in" },
+                    { id: "DI_2", label: "DI 2", type: "in" }, 
+                    { id: "DI_3", label: "DI 3", type: "in" }, 
+                    { id: "DI_4", label: "DI 4", type: "in" }, 
+                    { id: "O_1", label: "Relais 1", type: "out" },
+                    { id: "O_2", label: "Relais 2", type: "out" }, 
+                    { id: "TREE_1", label: "Tree Ast Links", type: "bus", busType: "tree" }, 
+                    { id: "TREE_2", label: "Tree Ast Rechts", type: "bus", busType: "tree" }, 
                     { id: "AIR_BASE", label: "Air Geräte", type: "bus", busType: "air" },
                     { id: "LINK_1", label: "Loxone Link", type: "bus", busType: "link" }
                 ]
