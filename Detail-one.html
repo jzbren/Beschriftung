@@ -1533,6 +1533,20 @@
                         const subs = (item.hw.subNodes && item.hw.subNodes[io.id]) || [];
                         let totalAddrs = 0;
                         subs.forEach(s => { totalAddrs += parseInt(s.channels) || 1; });
+
+                        // --- NEU: Auch angeschlossene Hardware-Komponenten (wie DALI-Aktoren mit Kanälen) einrechnen ---
+                        children.forEach(child => {
+                            const childIoList = child.cfg.profiles ? (child.cfg.profiles.find(p=>p.id===child.hw.activeProfile)?.io || child.cfg.profiles[0].io) : child.cfg.io;
+                            // Prüfen, ob die Hardware Kanäle besitzt oder über Felder/Profile Kanäle definiert
+                            let childChannels = parseInt(child.hw.fields['Kanäle'] || child.hw.fields['Channels'] || 0);
+                            if (!childChannels && childIoList) {
+                                // Zähle Ausgänge als Standard-Adressen, falls keine expliziten Kanäle definiert sind
+                                childChannels = childIoList.filter(cio => cio.type === 'out').length || 1;
+                            }
+                            totalAddrs += childChannels;
+                        });
+                        // -------------------------------------------------------------------------------------------------
+
                         const isFull = totalAddrs >= maxLimit;
                         
                         html += `<div class="topo-bus">
@@ -1541,9 +1555,10 @@
                                 <span class="topo-badge ${isFull ? 'full' : 'ok'}">${totalAddrs}/${maxLimit} Belegt</span>
                             </div>`;
                     
-                        if(subs.length === 0) {
-                            html += `<div class="topo-device" style="color:#94a3b8; font-style:italic; justify-content:center;">Keine ${busCfg.subDeviceLabel} angelegt</div>`;
+                        if(subs.length === 0 && children.length === 0) {
+                            html += `<div class="topo-device" style="color:#94a3b8; font-style:italic; justify-content:center;">Keine Geräte angelegt</div>`;
                         } else {
+                            // Interne Untergeräte (z.B. EVGs) anzeigen
                             subs.forEach(sub => {
                                 let ch = parseInt(sub.channels) || 1;
                                 html += `<div class="topo-device">
@@ -1551,6 +1566,17 @@
                                         <div class="topo-device-info">
                                             <span>📍 ${sub.location || '-'}</span>
                                             <span style="color:#0f766e; font-weight:bold;">💡 ${ch} Adr.</span>
+                                        </div>
+                                       </div>`;
+                            });
+                            // Externe Hardware-Kinder (z.B. der 4-Kanal Aktor) direkt in der Bus-Liste anzeigen
+                            children.forEach(child => {
+                                let childCh = parseInt(child.hw.fields['Kanäle'] || child.hw.fields['Channels'] || 4);
+                                html += `<div class="topo-device">
+                                        <div style="font-weight:600; color:#1e293b;">🔌 ${child.hw.fields['Geräte-Bez.'] || child.cfg.name}</div>
+                                        <div class="topo-device-info">
+                                            <span>📍 ${child.d.name}</span>
+                                            <span style="color:#0f766e; font-weight:bold;">💡 ${childCh} Adr.</span>
                                         </div>
                                        </div>`;
                             });
