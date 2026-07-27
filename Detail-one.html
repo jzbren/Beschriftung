@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V4.5</title>
+    <title>ServiceProDetail Konfigurator V4.6</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -297,30 +297,33 @@
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
     const DEFAULT_PROJECT_DATA = { 
-    version: "4.5", 
-    projectName: "Projekt", 
-    location: "", 
-    details: [],
-    appFunctions: [
-        
-    ],
-    globalGroups: [
-        { name: "Zentral Auf /Ab", description: "Beschattung Fährt Komplett Auf oder Ab" },
-        { name: "Zentral Ein/ Aus", description: "Licht Schaltet überall Ein oder Aus" },
-        { name: "Storen Auf /Ab", description: "Kurzer Tastendruck (Beschatung Richten), Langer Tastendruck >3s (Komplett Auf oder Ab bei erneutem kurzen Tippen Stop)" },
-        { name: "Licht Auf /Ab", description: "Ein und Ausschalten des Lichts" }
-    ],
-    globalFunctions: [
-        { name: "Zentral Ein/ Aus", description: "Licht Zentral Ein/ Aus" },
-        { name: "Zentral Auf/ Ab", description: "Beschattung Fährt Komplett Auf oder Ab" }
-    ]
-};
+        version: "4.5", 
+        projectName: "Projekt", 
+        location: "", 
+        details: [],
+        appFunctions: [],
+        globalGroups: [
+            { name: "Zentral Auf /Ab", description: "Beschattung Fährt Komplett Auf oder Ab" },
+            { name: "Zentral Ein/ Aus", description: "Licht Schaltet überall Ein oder Aus" },
+            { name: "Storen Auf /Ab", description: "Kurzer Tastendruck (Beschatung Richten), Langer Tastendruck >3s (Komplett Auf oder Ab bei erneutem kurzen Tippen Stop)" },
+            { name: "Licht Auf /Ab", description: "Ein und Ausschalten des Lichts" }
+        ],
+        globalFunctions: [
+            { name: "Zentral Ein/ Aus", description: "Licht Zentral Ein/ Aus" },
+            { name: "Zentral Auf/ Ab", description: "Beschattung Fährt Komplett Auf oder Ab" }
+        ]
+    };
 
-let projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
-    
-    let activeDetailId = null; let draggedSlot = null;
+    let projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
+    let activeDetailId = null; 
+    let draggedSlot = null;
 
-    document.addEventListener('keydown', e => { if (e.ctrlKey || e.metaKey) { if (e.key.toLowerCase() === 's') { e.preventDefault(); exportProject(); } else if (e.key.toLowerCase() === 'p') { e.preventDefault(); printCurrentDetail(); } } });
+    document.addEventListener('keydown', e => { 
+        if (e.ctrlKey || e.metaKey) { 
+            if (e.key.toLowerCase() === 's') { e.preventDefault(); exportProject(); } 
+            else if (e.key.toLowerCase() === 'p') { e.preventDefault(); printCurrentDetail(); } 
+        } 
+    });
     
     document.addEventListener("click", () => {
         document.querySelectorAll('.select-items').forEach(item => item.classList.remove('show'));
@@ -366,22 +369,21 @@ let projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
 
     function resetProject() {
-    if(confirm("Komplettes Projekt löschen und neu starten?")) {
-        localStorage.removeItem(LOCAL_STORAGE_KEY); 
-        projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA)); 
-        activeDetailId = null; 
-        
-        // Suchfeld in der Sidebar und offene Modals sauber zurücksetzen
-        const searchInput = document.getElementById('detail-search-input');
-        if(searchInput) searchInput.value = '';
-        
-        document.querySelectorAll('.modal-overlay').forEach(modal => {
-            modal.style.display = 'none';
-        });
-        
-        renderApp(); 
+        if(confirm("Komplettes Projekt löschen und neu starten?")) {
+            localStorage.removeItem(LOCAL_STORAGE_KEY); 
+            projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA)); 
+            activeDetailId = null; 
+            
+            const searchInput = document.getElementById('detail-search-input');
+            if(searchInput) searchInput.value = '';
+            
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                modal.style.display = 'none';
+            });
+            
+            renderApp(); 
+        }
     }
-}
 
     function openGlobalsModal() {
         renderGlobalsLists();
@@ -751,7 +753,6 @@ let projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
         if(confirm("Schaltstelle wirklich löschen?")) { const d = projectData.details.find(x => x.id === activeDetailId); if(d) { d.frames = d.frames.filter(x => x.id !== fId); renderApp(); } }
     }
 
-    // Modal Funktionen für Checkbox-Zuweisung
     window.openAssignModal = function(type, sourceName, switchRef = null) {
         document.getElementById('assign-title').innerText = sourceName;
         
@@ -955,7 +956,6 @@ let projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
         saveToLocal();
         renderApp();
     };
-
 
     function renderStandardDropdown(dropdownId, currentValue, optionsList, callbackName, placeholder) {
         let optsHtml = optionsList.map(opt => `<div class="dropdown-option" data-label="${(opt.label || opt.value).toLowerCase()}" onclick="${callbackName}('${opt.value.replace(/'/g, "\\'")}', event)">${opt.label || opt.value}</div>`).join('');
@@ -1500,7 +1500,7 @@ let projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
                                 <span>${busCfg.icon} ${io.label}</span>
                                 <span class="topo-badge ${isFull ? 'full' : 'ok'}">${totalAddrs}/${maxLimit} Belegt</span>
                             </div>`;
-                        
+                    
                         if(subs.length === 0) {
                             html += `<div class="topo-device" style="color:#94a3b8; font-style:italic; justify-content:center;">Keine ${busCfg.subDeviceLabel} angelegt</div>`;
                         } else {
@@ -1525,7 +1525,7 @@ let projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
                                 <span>📶 ${io.label}</span>
                                 <span class="topo-badge ${isFull ? 'full' : 'ok'}">${usedCount}/${maxLimit} Belegt</span>
                             </div>`;
-                        
+                    
                         if (children.length > 0) {
                             children.forEach(child => { html += renderTopoNode(child, level + 1); });
                         } else {
