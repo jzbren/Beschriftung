@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V3.0</title>
+    <title>ServiceProDetail Konfigurator V3.1</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -236,13 +236,13 @@
     <div id="globals-modal" class="modal-overlay" onclick="closeModal('globals-modal', event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h2>Zentrale Einstellungen (App-Funktionen & Gruppen)</h2>
+                <h2>Zentrale Einstellungen (Zusatz-Funktionen)</h2>
                 <button class="icon-btn" onclick="closeModal('globals-modal')" style="color:black; font-size:1.5rem;">×</button>
             </div>
             <div class="globals-grid">
                 <div class="globals-section">
                     <h3>📱 App-Funktionen</h3>
-                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Zentrale Funktionen (z.B. Beleuchtung Kochen, Szene TV). Taster und Hardware werden mit diesen Funktionen logisch verknüpft.</p>
+                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Optionale Funktionen (z.B. Beleuchtung Kochen, Szene TV), die Tastern oder Hardware als Zusatz-Tag mitgegeben werden können.</p>
                     <div class="add-global-row">
                         <input type="text" id="new-appfn-input" placeholder="Neue App-Funktion..." onkeydown="if(event.key==='Enter') addAppFunction()">
                         <button class="btn primary" onclick="addAppFunction()">Hinzufügen</button>
@@ -251,7 +251,7 @@
                 </div>
                 <div class="globals-section">
                     <h3>📂 Globale Gruppen</h3>
-                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Hardware-übergreifende Gruppen (z.B. Zentral Aus, Alle Jalousien), um mehrere Relais oder DALI-Geräte zusammenzufassen.</p>
+                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Optionale Gruppen (z.B. Zentral Aus, Alle Jalousien), um mehrere Relais oder DALI-Geräte logisch zusammenzufassen.</p>
                     <div class="add-global-row">
                         <input type="text" id="new-glbgrp-input" placeholder="Neue globale Gruppe..." onkeydown="if(event.key==='Enter') addGlobalGroup()">
                         <button class="btn primary" onclick="addGlobalGroup()">Hinzufügen</button>
@@ -267,13 +267,14 @@
     const BASE_ICON_PATH = "icons-schalter/";
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
+    // Keine Migration! Frisches Projekt-Setup.
     let projectData = { 
-        version: "3.0", 
+        version: "3.1", 
         projectName: "Neues Projekt", 
         location: "", 
         details: [],
-        appFunctions: ["Beleuchtung", "Beschattung", "Heizung", "Zentral"],
-        globalGroups: ["Zentral Aus", "Alle Lichter", "Zentral Beschattung"]
+        appFunctions: [],
+        globalGroups: []
     };
     
     let activeDetailId = null; let draggedSlot = null;
@@ -287,34 +288,11 @@
     window.onload = () => {
         let savedData = loadFromLocal();
         if (savedData && savedData.details) {
-            migrateDataV3(savedData);
             projectData = savedData; 
             activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null;
             if(!activeDetailId) addNewDetail(); else renderApp();
         } else addNewDetail();
     };
-
-    function migrateDataV3(data) {
-        if (!data.appFunctions) data.appFunctions = ["Beleuchtung", "Beschattung", "Heizung", "Zentral"];
-        if (!data.globalGroups) data.globalGroups = ["Zentral Aus", "Alle Lichter", "Zentral Beschattung"];
-        
-        data.details.forEach(d => {
-            if(d.hardware) {
-                d.hardware.forEach(hw => {
-                    if(!hw.bezeichnung) hw.bezeichnung = {};
-                    if(!hw.appFunction) hw.appFunction = {};
-                    if(!hw.globalGroup) hw.globalGroup = {};
-                    
-                    // Cleanup old structures if needed (e.g. migrate customLabels to bezeichnung)
-                    if(hw.customLabels) {
-                        for(let ioKey in hw.customLabels) {
-                            if(!hw.bezeichnung[ioKey] && hw.customLabels[ioKey]) hw.bezeichnung[ioKey] = hw.customLabels[ioKey];
-                        }
-                    }
-                });
-            }
-        });
-    }
 
     function saveToLocal() { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(projectData)); }
     function loadFromLocal() { const data = localStorage.getItem(LOCAL_STORAGE_KEY); return data ? JSON.parse(data) : null; }
@@ -325,7 +303,7 @@
     function resetProject() {
         if(confirm("Komplettes Projekt löschen und neu starten?")) {
             localStorage.removeItem(LOCAL_STORAGE_KEY); 
-            projectData = { version: "3.0", projectName: "Neues Projekt", location: "", details: [], appFunctions: ["Beleuchtung", "Beschattung"], globalGroups: ["Zentral Aus"] }; 
+            projectData = { version: "3.1", projectName: "Neues Projekt", location: "", details: [], appFunctions: [], globalGroups: [] }; 
             activeDetailId = null; addNewDetail();
         }
     }
@@ -339,22 +317,20 @@
     window.closeModal = function(id, ev) { 
         if(ev && ev.target.id !== id) return; 
         document.getElementById(id).style.display = 'none'; 
-        renderApp(); // Always re-render app when closing modals to reflect changes in dropdowns
+        renderApp();
     }
 
     function renderGlobalsLists() {
-        // App Functions
         const appFnList = document.getElementById('appfn-list');
-        appFnList.innerHTML = projectData.appFunctions.map((fn, idx) => `
+        appFnList.innerHTML = projectData.appFunctions.map(fn => `
             <div class="global-item">
                 <input type="text" value="${fn}" onchange="renameGlobalItem('appFunctions', '${fn.replace(/'/g, "\\'")}', this.value)">
                 <button class="delete-btn" onclick="deleteGlobalItem('appFunctions', '${fn.replace(/'/g, "\\'")}')">✕</button>
             </div>
         `).join('');
 
-        // Global Groups
         const glbGrpList = document.getElementById('glbgrp-list');
-        glbGrpList.innerHTML = projectData.globalGroups.map((grp, idx) => `
+        glbGrpList.innerHTML = projectData.globalGroups.map(grp => `
             <div class="global-item">
                 <input type="text" value="${grp}" onchange="renameGlobalItem('globalGroups', '${grp.replace(/'/g, "\\'")}', this.value)">
                 <button class="delete-btn" onclick="deleteGlobalItem('globalGroups', '${grp.replace(/'/g, "\\'")}')">✕</button>
@@ -391,9 +367,7 @@
         if(idx !== -1) {
             projectData[type][idx] = newName;
             
-            // Kaskadierung überall
             projectData.details.forEach(d => {
-                // Schalter (nur bei App-Funktionen relevant)
                 if (type === 'appFunctions' && d.frames) {
                     d.frames.forEach(f => {
                         for(let slotKey in f.slots) {
@@ -407,7 +381,6 @@
                     });
                 }
                 
-                // Hardware
                 if(d.hardware) {
                     d.hardware.forEach(hw => {
                         if (type === 'appFunctions' && hw.appFunction) {
@@ -417,7 +390,6 @@
                             for(let ioKey in hw.globalGroup) { if(hw.globalGroup[ioKey] === oldName) hw.globalGroup[ioKey] = newName; }
                         }
                         
-                        // SubNodes (DALI)
                         if (hw.subNodes) {
                             for(let ioKey in hw.subNodes) {
                                 hw.subNodes[ioKey].forEach(sub => {
@@ -832,7 +804,6 @@
         hw.fields[field] = val; saveToLocal(); renderApp();
     };
 
-    // Generische Sub-Nodes Steuerung (DALI, Modbus, etc.)
     window.addSubNode = function(hwInstanceId, ioId) {
         projectData.details.forEach(d => {
             if(d.hardware) {
@@ -854,7 +825,6 @@
                 if(hw.instanceId === hwInstanceId && hw.subNodes && hw.subNodes[ioId]) {
                     const dev = hw.subNodes[ioId].find(x => x.id === subId);
                     if(dev) {
-                        // Kaskadierung, wenn der Name des Sub-Gerätes (z.B. DALI Leuchte) geändert wird
                         if (field === 'name') {
                             const cfg = hardwareConfigList.find(x => x.id === hw.configId);
                             const hwName = hw.fields['Geräte-Bez.'] || (cfg ? cfg.name : '');
@@ -868,7 +838,7 @@
             });
         });
         saveToLocal();
-        if (field === 'channels' || field === 'name') renderApp(); // Re-render für Namensänderung bei Dropdowns nötig
+        if (field === 'channels' || field === 'name') renderApp(); 
     }
 
     window.deleteSubNode = function(hwInstanceId, ioId, subId) {
@@ -924,8 +894,8 @@
                     <div class="io-fields-grid">
                         <input type="text" placeholder="Taster Beschriftung" value="${data.bezeichnung||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','bezeichnung',this.value)">
                         <input type="text" placeholder="Klickart (z.B. Doppelklick)" value="${data.art||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','art',this.value)">
-                        <div>${renderSearchableDropdown(`appfn-${f.id}-${i}-${io.id}`, data.appFunction, [{value:'', label:'-- App-Funktion --'}, ...appFnOpts], fnApp, 'App-Funktion...')}</div>
-                        <div>${renderSearchableDropdown(`dir-${f.id}-${i}-${io.id}`, data.eingabegerat, [{value:'', label:'-- Hardware Direkt --'}, ...allConns], fnDir, 'Hardware Verknüpfung...')}</div>
+                        <div>${renderSearchableDropdown(`dir-${f.id}-${i}-${io.id}`, data.eingabegerat, [{value:'', label:'-- Direktverknüpfung --'}, ...allConns], fnDir, 'Hardware (Direkt)...')}</div>
+                        <div>${renderSearchableDropdown(`appfn-${f.id}-${i}-${io.id}`, data.appFunction, [{value:'', label:'-- App-Funktion (Optional) --'}, ...appFnOpts], fnApp, 'App-Funktion (Optional)...')}</div>
                     </div></div>`;
                 }).join('') + `</div>`;
             }
@@ -955,6 +925,7 @@
 
         const oldVal = cData[field]; cData[field] = val; slot.ioData[ioId] = cData;
 
+        // Zwei-Wege-Sync bei Direktverknüpfung
         if (field === 'eingabegerat') {
             const ic = iconConfigList.find(x => x.file === slot.iconFile);
             const swIdent = `${d.name} ${cData.bezeichnung || ic.label}`;
@@ -1006,7 +977,6 @@
         return d.hardware.map(hw => {
             const cfg = hardwareConfigList.find(x => x.id === hw.configId); if(!cfg) return '';
             
-            // Safety defaults init
             if(!hw.bezeichnung) hw.bezeichnung = {};
             if(!hw.appFunction) hw.appFunction = {};
             if(!hw.globalGroup) hw.globalGroup = {};
@@ -1061,9 +1031,9 @@
                                 <thead><tr>
                                     <th>Bezeichnung (${busCfg.subDeviceLabel})</th>
                                     <th>Montageort</th>
-                                    <th>Zentral (App/Grp)</th>
+                                    <th>Zusatz (App/Grp)</th>
                                     <th>Kanäle</th>
-                                    <th>Taster (Direkt)</th>
+                                    <th>Direktverknüpfung (Taster)</th>
                                     <th style="width: 30px;"></th>
                                 </tr></thead><tbody>` + subs.map(sub => {
                                 
@@ -1080,11 +1050,11 @@
                                     <td><input type="text" value="${sub.name}" oninput="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)"></td>
                                     <td><input type="text" value="${sub.location}" oninput="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'location', this.value)"></td>
                                     <td style="min-width:140px;">
-                                        <div style="margin-bottom:4px;">${renderSearchableDropdown(`subA-${hw.instanceId}-${io.id}-${sub.id}`, sub.appFunction||'', [{value:'', label:'-- App-Fn --'}, ...appFnOpts], fnSubApp, 'App-Funktion...')}</div>
-                                        <div>${renderSearchableDropdown(`subG-${hw.instanceId}-${io.id}-${sub.id}`, sub.globalGroup||'', [{value:'', label:'-- Gruppe --'}, ...glbGrpOpts], fnSubGrp, 'Globale Gruppe...')}</div>
+                                        <div style="margin-bottom:4px;">${renderSearchableDropdown(`subA-${hw.instanceId}-${io.id}-${sub.id}`, sub.appFunction||'', [{value:'', label:'-- App-Fn --'}, ...appFnOpts], fnSubApp, 'App-Funktion (Optional)...')}</div>
+                                        <div>${renderSearchableDropdown(`subG-${hw.instanceId}-${io.id}-${sub.id}`, sub.globalGroup||'', [{value:'', label:'-- Gruppe --'}, ...glbGrpOpts], fnSubGrp, 'Globale Gruppe (Optional)...')}</div>
                                     </td>
                                     <td><input type="number" min="1" max="16" value="${sub.channels}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'channels', this.value)" style="width:50px; border:1px solid transparent; background:transparent;"></td>
-                                    <td style="min-width:140px;">${renderSearchableDropdown(`subM-${hw.instanceId}-${io.id}-${sub.id}`, sub.mapping||'', [{value:'', label:'-- Kein --'}, ...allSwitches], fnSubMap, 'Taster...')}</td>
+                                    <td style="min-width:140px;">${renderSearchableDropdown(`subM-${hw.instanceId}-${io.id}-${sub.id}`, sub.mapping||'', [{value:'', label:'-- Keine Verknüpfung --'}, ...allSwitches], fnSubMap, 'Taster (Direkt)...')}</td>
                                     <td style="text-align: right;"><button class="delete-btn" style="padding: 2px 4px;" title="Löschen" onclick="deleteSubNode('${hw.instanceId}', '${io.id}', '${sub.id}')">✕</button></td>
                                 </tr>`;
                             }).join('') + `</tbody></table>`;
@@ -1111,9 +1081,9 @@
                         <div style="font-weight:bold; font-size:0.85rem; margin-bottom:8px; color:#334155;">${io.label}</div>
                         <div class="io-fields-grid">
                             <input type="text" placeholder="Bezeichnung (z.B. Deckenlicht)" value="${currentBez}" onchange="updateHwFieldEx('${hw.instanceId}', 'bezeichnung', '${io.id}', this.value)">
-                            <div>${renderSearchableDropdown(`ha-${hw.instanceId}-${io.id}`, currentApp, [{value:'', label:'-- App-Funktion --'}, ...appFnOpts], fnApp, 'App-Funktion...')}</div>
-                            <div>${renderSearchableDropdown(`hg-${hw.instanceId}-${io.id}`, currentGrp, [{value:'', label:'-- Globale Gruppe --'}, ...glbGrpOpts], fnGrp, 'Globale Gruppe...')}</div>
-                            <div>${renderSearchableDropdown(`hm-${hw.instanceId}-${io.id}`, currentMap, [{value:'', label:'-- Taster (Direkt) --'}, ...allSwitches], fnMap, 'Taster (Direkt)...')}</div>
+                            <div>${renderSearchableDropdown(`hm-${hw.instanceId}-${io.id}`, currentMap, [{value:'', label:'-- Direktverknüpfung --'}, ...allSwitches], fnMap, 'Taster (Direkt)...')}</div>
+                            <div>${renderSearchableDropdown(`ha-${hw.instanceId}-${io.id}`, currentApp, [{value:'', label:'-- App-Funktion (Optional) --'}, ...appFnOpts], fnApp, 'App-Funktion (Optional)...')}</div>
+                            <div>${renderSearchableDropdown(`hg-${hw.instanceId}-${io.id}`, currentGrp, [{value:'', label:'-- Globale Gruppe (Optional) --'}, ...glbGrpOpts], fnGrp, 'Globale Gruppe (Optional)...')}</div>
                         </div>
                     </div>`;
 
@@ -1261,7 +1231,6 @@
         return list;
     }
 
-    // --- BUS ÜBERSICHT (MODAL) MIT VERSCHACHTELUNG ---
     function getParentBusId(hw) {
         for (let fieldName in hw.fields) {
             if (/ast|bus|link|bridge|dali/i.test(fieldName) && hw.fields[fieldName]) {
@@ -1380,7 +1349,7 @@
                                 <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
                                 Bez.: ${dat.bezeichnung||''}<br>
                                 App-Fn: ${dat.appFunction||''}<br>
-                                Hardware (Dir): ${dat.eingabegerat||''}
+                                Direkt: ${dat.eingabegerat||''}
                             </div>`;
                         }).join('');
                         blocks.push(`<div class="print-slot-item-block"><b>Platz ${i} - ${ic.label}</b><div style="margin-top:5px;">${ioRows}</div></div>`);
@@ -1410,7 +1379,7 @@
                     const busCfg = io.type==='bus' ? SYSTEM_CONFIG.busTypes[io.busType] : null;
                     if(busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
                         hw.subNodes[io.id].forEach(sub => {
-                            const mappingStr = sub.mapping ? ` | Taster(Dir): ${sub.mapping}` : '';
+                            const mappingStr = sub.mapping ? ` | Direkt: ${sub.mapping}` : '';
                             ioh += `<div style="font-size:0.8rem; margin-top:2px; border-left:2px solid var(--primary); padding-left:6px;"><b>${busCfg.subDeviceLabel}:</b> ${sub.name} (Ort: ${sub.location || 'k.A.'}, App: ${sub.appFunction || '-'}, Grp: ${sub.globalGroup || '-'}, ${sub.channels} Adr.)${mappingStr}</div>`;
                         });
                     } else if(io.type!=='bus') {
@@ -1418,7 +1387,7 @@
                         const app = hw.appFunction?.[io.id] || '-';
                         const grp = hw.globalGroup?.[io.id] || '-';
                         const map = hw.mappings?.[io.id] || '-';
-                        ioh += `<div style="font-size:0.8rem; margin-top:2px;"><b>${io.label}:</b> Bez: ${bez} | App-Fn: ${app} | Grp: ${grp} | Taster: ${map}</div>`; 
+                        ioh += `<div style="font-size:0.8rem; margin-top:2px;"><b>${io.label}:</b> Bez: ${bez} | Direkt: ${map} | App: ${app} | Grp: ${grp}</div>`; 
                     }
                 });
                 return `<div class="print-hw-container"><div class="print-hw-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div><div><b>${cfg.name}</b>${fh}<div style="margin-top:5px;">${ioh}</div></div></div>`;
