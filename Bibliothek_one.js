@@ -773,5 +773,18 @@ const hardwareConfigList = [
             { id: "M_1_UP", label: "Motor(Auf )", type: "out" },
             { id: "M_1_DOWN", label: "Motor(Ab)", type: "out" }
         ] 
+    },
+    { 
+        id: "dali_4ch_aktor_fix", 
+        name: "4-Kanal DALI Aktor (Fix)", 
+        image: "dali-aktor.jpg", 
+        power: 2.0, 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Dali Bus"], 
+        io: [
+            { id: "CH_1", label: "DALI Kanal 1", type: "out" },
+            { id: "CH_2", label: "DALI Kanal 2", type: "out" },
+            { id: "CH_3", label: "DALI Kanal 3", type: "out" },
+            { id: "CH_4", label: "DALI Kanal 4", type: "out" }
+        ] 
     }
 ];
