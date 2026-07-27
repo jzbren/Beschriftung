@@ -27,7 +27,8 @@ const iconConfigList = [
     { file: "", label: "--- Leerplatz ---", group: "Allgemein", io: [] },
     { 
         file: "Drehschalter-Hand-Auto.png", 
-        label: "Drehschalter Hand-Auto", 
+        label: "Drehschalter Hand-Auto",
+        fields: ["Bemerkung"],
         group: "Schalter & Taster", 
         io: [
             { id: "TA_HAND", label: "Hand", type: "in" },
@@ -38,6 +39,7 @@ const iconConfigList = [
         file: "Raumthermostaat.png",
         label: "Raumthermostat",
         group: "Thermostate & Sensoren",
+        fields: ["Bemerkung"],
         io: [
             { id: "COOL_OUT", label: "Kühlen", type: "out" },
             { id: "HEIZ_OUT", label: "Heizen", type: "out" }
@@ -46,6 +48,7 @@ const iconConfigList = [
     { 
         file: "SCH3.png", 
         label: "SCH 3 (Schalter 1-fach)", 
+        fields: ["Bemerkung"],
         group: "Licht & Relais", 
         io: [
             { id: "TA_1", label: "Taster Schliesser", type: "in" },
@@ -54,7 +57,8 @@ const iconConfigList = [
     },
     { 
         file: "SCH3-3.png", 
-        label: "SCH 3-3 (Schalter 2-fach)", 
+        label: "SCH 3-3 (Schalter 2-fach)",
+        fields: ["Bemerkung"],
         group: "Licht & Relais", 
         io: [
             { id: "TA_1_1", label: "Taster 1 Schliesser", type: "in" },
@@ -65,7 +69,8 @@ const iconConfigList = [
     },
     { 
         file: "SCH3-T13.png", 
-        label: "SCH 3 + T13 (Kombi)", 
+        label: "SCH 3 + T13 (Kombi)",
+        fields: ["Bemerkung"],
         group: "Licht & Relais", 
         io: [
             { id: "TA_1_1", label: "Taster 1 Schliesser", type: "in" },
@@ -75,7 +80,8 @@ const iconConfigList = [
     },
     { 
         file: "SCH-3-3-T13.png", 
-        label: "SCH 3-3 + T13 (Kombi)", 
+        label: "SCH 3-3 + T13 (Kombi)",
+        fields: ["Bemerkung"],
         group: "Licht & Relais", 
         io: [
             { id: "TA_1_1", label: "Taster 1 Schliesser", type: "in" },
@@ -88,6 +94,7 @@ const iconConfigList = [
     { 
         file: "SCH3-Bel.png", 
         label: "SCH 3 Bel.", 
+        fields: ["Bemerkung"],
         group: "Licht & Relais", 
         io: [
             { id: "TA_1", label: "Taster Schliesser", type: "in" },
@@ -97,7 +104,8 @@ const iconConfigList = [
     },
     { 
         file: "Sonnerie.png", 
-        label: "Sonnerie / Klingel", 
+        label: "Sonnerie / Klingel",
+        fields: ["Bemerkung"],
         group: "Signalisierung", 
         io: [
             { id: "TA_KLINGEL", label: "Taster", type: "in" }
@@ -105,7 +113,8 @@ const iconConfigList = [
     },
     { 
         file: "Storenschalter-1-Kanal.png", 
-        label: "Storenschalter 1-Kanal", 
+        label: "Storenschalter 1-Kanal",
+        fields: ["Bemerkung"],
         group: "Storen & Jalousien", 
         io: [
             { id: "TA_AUF", label: "K1 Auf", type: "in" }, 
@@ -114,7 +123,8 @@ const iconConfigList = [
     },
     { 
         file: "Storenschalter-2-Kanal.png", 
-        label: "Storenschalter 2-Kanal", 
+        label: "Storenschalter 2-Kanal",
+        fields: ["Bemerkung"],
         group: "Storen & Jalousien", 
         io: [
             { id: "TA_K1_AUF", label: "K1 Auf", type: "in" }, 
@@ -125,7 +135,8 @@ const iconConfigList = [
     },
     { 
         file: "T13.png", 
-        label: "T13 Steckdose", 
+        label: "T13 Steckdose",
+        fields: ["Bemerkung"],
         group: "Steckdosen", 
         io: [
             { id: "T13_STD", label: "Steckdose", type: "out" }
@@ -133,7 +144,8 @@ const iconConfigList = [
     },
     { 
         file: "Universaltaster-1x2.png", 
-        label: "Universaltaster 1x2", 
+        label: "Universaltaster 1x2",
+        fields: ["Bemerkung"],
         group: "Schalter & Taster", 
         io: [
             { id: "TA_1", label: "Taste Links", type: "in" }, 
@@ -142,7 +154,8 @@ const iconConfigList = [
     },
     { 
         file: "Universaltaster-2x2.png", 
-        label: "Universaltaster 2x2", 
+        label: "Universaltaster 2x2",
+        fields: ["Bemerkung"],
         group: "Schalter & Taster", 
         io: [
             { id: "TA_1", label: "Oben Links", type: "in" }, 
@@ -153,7 +166,8 @@ const iconConfigList = [
     },
     { 
         file: "Universaltaster-3x2.png", 
-        label: "Universaltaster 3x2", 
+        label: "Universaltaster 3x2",
+        fields: ["Bemerkung"],
         group: "Schalter & Taster", 
         io: [
             { id: "TA_1", label: "Oben Links", type: "in" }, 
