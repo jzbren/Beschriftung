@@ -779,7 +779,7 @@ const hardwareConfigList = [
         name: "4-Kanal DALI Aktor (Fix)", 
         image: "dali-aktor.jpg", 
         power: 2.0, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Dali Bus"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Dali Ast"], 
         io: [
             { id: "CH_1", label: "DALI Kanal 1", type: "out" },
             { id: "CH_2", label: "DALI Kanal 2", type: "out" },
