@@ -925,10 +925,18 @@
 
         if(!targetObj) return;
 
-        let list = (targetObj[subId ? targetProp : ioId] || '').split(',').map(x=>x.trim()).filter(x=>x);
-        if(isChecked && !list.includes(sourceName)) list.push(sourceName);
-        if(!isChecked) list = list.filter(x => x !== sourceName);
-        targetObj[subId ? targetProp : ioId] = list.join(', ');
+        const propKey = subId ? targetProp : ioId;
+
+        if (type === 'switch') {
+            // EXKLUSIVE ZUWEISUNG: Ein Hardware-IO kann nur einem Taster zugeordnet sein
+            targetObj[propKey] = isChecked ? sourceName : '';
+        } else {
+            // Mehrfach-Zuweisung für App-Funktionen und Gruppen beibehalten
+            let list = (targetObj[propKey] || '').split(',').map(x=>x.trim()).filter(x=>x);
+            if(isChecked && !list.includes(sourceName)) list.push(sourceName);
+            if(!isChecked) list = list.filter(x => x !== sourceName);
+            targetObj[propKey] = list.join(', ');
+        }
 
         if (type === 'switch' && switchRef && switchRef.fId) {
             let hwNameStr = '';
@@ -938,7 +946,7 @@
                         const hc = hardwareConfigList.find(x => x.id === hw.configId);
                         const baseName = `${pd.name} ${hw.fields['Geräte-Bez.'] || hc.name}`;
                         if(subId) {
-                            const sub = hw.subNodes[io.id].find(x=>x.id===subId);
+                            const sub = hw.subNodes[ioId].find(x=>x.id===subId);
                             hwNameStr = `${baseName} ${sub.name}`;
                         } else {
                             const activeIo = hc.profiles ? (hc.profiles.find(p=>p.id===hw.activeProfile)?.io || hc.profiles[0].io) : hc.io;
@@ -958,12 +966,15 @@
                         if(slot) {
                             if(!slot.ioData) slot.ioData = {};
                             if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
-                            let eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim()).filter(x=>x);
                             
-                            if(isChecked && !eingabeList.includes(hwNameStr)) eingabeList.push(hwNameStr);
-                            if(!isChecked) eingabeList = eingabeList.filter(x => x !== hwNameStr);
-                            
-                            slot.ioData[switchRef.ioId].eingabegerat = eingabeList.join(', ');
+                            // Auch auf der Taster-Seite für Switches exklusiv halten
+                            if(isChecked) {
+                                slot.ioData[switchRef.ioId].eingabegerat = hwNameStr;
+                            } else {
+                                if(slot.ioData[switchRef.ioId].eingabegerat === hwNameStr) {
+                                    slot.ioData[switchRef.ioId].eingabegerat = '';
+                                }
+                            }
                         }
                     }
                 }
