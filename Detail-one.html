@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V3.11</title>
+    <title>ServiceProDetail Konfigurator V4.3</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -297,7 +297,7 @@
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
     let projectData = { 
-        version: "3.11", 
+        version: "3.12", 
         projectName: "Schalterdetail EFH Odermatt", 
         location: "", 
         details: [],
@@ -381,7 +381,7 @@
         if(confirm("Komplettes Projekt löschen und neu starten?")) {
             localStorage.removeItem(LOCAL_STORAGE_KEY); 
             projectData = { 
-                version: "3.11", 
+                version: "3.12", 
                 projectName: "Neues Projekt", 
                 location: "", 
                 details: [], 
@@ -824,6 +824,8 @@
                 const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
                 const f = d.frames.find(x=>x.id===switchRef.fId);
                 const slot = f.slots[`slot-${switchRef.slotN}`];
+                if(!slot.ioData) slot.ioData = {};
+                if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
                 const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
                 const isChecked = eingabeList.includes(af);
 
@@ -838,6 +840,8 @@
                 const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
                 const f = d.frames.find(x=>x.id===switchRef.fId);
                 const slot = f.slots[`slot-${switchRef.slotN}`];
+                if(!slot.ioData) slot.ioData = {};
+                if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
                 const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
                 const isChecked = eingabeList.includes(gg);
 
@@ -925,7 +929,9 @@
                     const f = d.frames.find(x=>x.id===switchRef.fId);
                     if(f) {
                         const slot = f.slots[`slot-${switchRef.slotN}`];
-                        if(slot && slot.ioData && slot.ioData[switchRef.ioId]) {
+                        if(slot) {
+                            if(!slot.ioData) slot.ioData = {};
+                            if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
                             let eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim()).filter(x=>x);
                             
                             if(isChecked && !eingabeList.includes(hwNameStr)) eingabeList.push(hwNameStr);
@@ -948,6 +954,7 @@
         const f = d.frames.find(x=>x.id===fId);
         if(!f) return;
         const slot = f.slots[`slot-${slotN}`];
+        if(!slot.ioData) slot.ioData = {};
         if(!slot.ioData[ioId]) slot.ioData[ioId] = {bezeichnung:'', eingabegerat:''};
         let eingabeList = (slot.ioData[ioId].eingabegerat || '').split(',').map(x=>x.trim()).filter(x=>x);
         
@@ -1199,7 +1206,7 @@
         projectData.details.forEach(d => {
             if(d.hardware) d.hardware.forEach(hw => {
                 if(hw.instanceId === hwInstanceId && hw.subNodes && hw.subNodes[ioId]) {
-                    hw.subNodes[ioId] = hw.subNodes[ioId].filter(x => x.id !== subId);
+                    hw.subNodes[io.id] = hw.subNodes[io.id].filter(x => x.id !== subId);
                 }
             });
         });
@@ -1487,7 +1494,6 @@
                     const children = allHw.filter(c => getParentBusId(c.hw) === busIdStr);
                     const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
                     
-                    // Definiere Limits (Standardwerte für Loxone: Tree = 50, Air = 50, Link = 30, DALI = 64)
                     const maxLimit = io.limit || (busCfg ? busCfg.defaultLimit : null) || (io.busType === 'tree' ? 50 : io.busType === 'air' ? 50 : io.busType === 'link' ? 30 : 64);
                     
                     if (busCfg && busCfg.hasSubDevices) {
