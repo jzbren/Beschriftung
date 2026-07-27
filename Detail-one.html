@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.2</title>
+    <title>ServiceProDetail Konfigurator V5.1</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -284,7 +284,13 @@
                 <button class="icon-btn" onclick="closeModal('assign-modal')" style="color:black; font-size:1.5rem;">×</button>
             </div>
             <div id="assign-extras" style="display:none; margin-bottom: 20px;"></div>
-            <div id="assign-hw-list" style="overflow-y: auto; max-height: 50vh; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px;"></div>
+            
+            <!-- NEU: Suchfeld für das Zuweisungs-Modal -->
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="assign-search-input" placeholder="Nach Raum, Hardware oder Eingang suchen..." onkeyup="filterAssignModal(this.value)" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9rem;">
+            </div>
+
+            <div id="assign-hw-list" style="overflow-y: auto; max-height: 45vh; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px;"></div>
             <div style="margin-top: 20px; text-align: right;">
                 <button class="btn primary" onclick="closeModal('assign-modal')">Fertig</button>
             </div>
@@ -757,10 +763,15 @@
     function deleteFrame(fId) {
         if(confirm("Schaltstelle wirklich löschen?")) { const d = projectData.details.find(x => x.id === activeDetailId); if(d) { d.frames = d.frames.filter(x => x.id !== fId); renderApp(); } }
     }
+    
     let _activeSwitchRef = null;
     window.openAssignModal = function(type, sourceName, switchRef = null) {
         _activeSwitchRef = (type === 'switch') ? switchRef : null;
         document.getElementById('assign-title').innerText = sourceName;
+        
+        // Suchfeld beim Öffnen immer zurücksetzen
+        const searchInput = document.getElementById('assign-search-input');
+        if(searchInput) searchInput.value = '';
         
         let hwHtml = '';
         projectData.details.forEach(d => {
@@ -779,7 +790,7 @@
                             if(type === 'appFunction') currentList = (hw.appFunctions?.[io.id] || '').split(',').map(x=>x.trim());
                             if(type === 'globalGroup') currentList = (hw.globalGroup?.[io.id] || '').split(',').map(x=>x.trim());
                             if(type === 'switch') {
-                                let mapStr = hw.mappings?.[io.id] || (hw.bezeichnung?.[io.id] ? sourceName : ''); 
+                                let mapStr = hw.mappings?.[io.id] || ''; 
                                 currentList = mapStr.split(',').map(x=>x.trim());
                             }
                             isChecked = currentList.includes(sourceName);
@@ -829,12 +840,12 @@
                     });
                     
                     if(hwIoHtml) {
-                        detailHtml += `<div style="margin-bottom: 12px; border-left: 3px solid #0f766e; padding-left: 12px;"><b style="color:#1e293b; font-size:0.95rem;">${hw.fields['Geräte-Bez.'] || cfg.name}</b>${hwIoHtml}</div>`;
+                        detailHtml += `<div class="assign-hw-block" style="margin-bottom: 12px; border-left: 3px solid #0f766e; padding-left: 12px;"><b style="color:#1e293b; font-size:0.95rem;">${hw.fields['Geräte-Bez.'] || cfg.name}</b>${hwIoHtml}</div>`;
                     }
                 });
             }
             if(detailHtml) {
-                hwHtml += `<div style="margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;"><h3 style="margin-top:0; color:#0f766e; font-size:1.05rem; border-bottom:1px solid #cbd5e1; padding-bottom:5px;">${d.name} <span style="color:#64748b;font-size:0.85rem;font-weight:normal;">(${d.room || 'Kein Raum'})</span></h3>${detailHtml}</div>`;
+                hwHtml += `<div class="assign-detail-block" style="margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;"><h3 style="margin-top:0; color:#0f766e; font-size:1.05rem; border-bottom:1px solid #cbd5e1; padding-bottom:5px;">${d.name} <span style="color:#64748b;font-size:0.85rem;font-weight:normal;">(${d.room || 'Kein Raum'})</span></h3>${detailHtml}</div>`;
             }
         });
         
@@ -887,6 +898,34 @@
         }
 
         document.getElementById('assign-modal').style.display = 'flex';
+    };
+
+    // NEU: Saubere Filterfunktion für das Zuweisungs-Modal
+    window.filterAssignModal = function(term) {
+        const query = term.toLowerCase().trim();
+        const hwListContainer = document.getElementById('assign-hw-list');
+        const detailSections = hwListContainer.querySelectorAll('.assign-detail-block');
+        
+        detailSections.forEach(detailSec => {
+            let detailHasVisibleHw = false;
+            const hwBlocks = detailSec.querySelectorAll('.assign-hw-block');
+            
+            hwBlocks.forEach(hwBlock => {
+                const text = hwBlock.innerText.toLowerCase();
+                const detailTitle = detailSec.querySelector('h3').innerText.toLowerCase();
+                
+                // Prüft ob der Suchbegriff im Hardware-Namen, I/O, Subgerät oder direkt im Detail-/Raumnamen vorkommt
+                if(text.includes(query) || detailTitle.includes(query)) {
+                    hwBlock.style.display = '';
+                    detailHasVisibleHw = true;
+                } else {
+                    hwBlock.style.display = 'none';
+                }
+            });
+            
+            // Versteckt ganze Detail-Kästen, wenn keine passende Hardware darin enthalten ist
+            detailSec.style.display = detailHasVisibleHw ? '' : 'none';
+        });
     };
 
     window.toggleHwAssignment = function(type, sourceName, hwId, ioId, subId, isChecked) {
