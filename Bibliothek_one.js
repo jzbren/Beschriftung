@@ -531,24 +531,14 @@ const hardwareConfigList = [
         name: "Loxone Präsenzmelder Tree", 
         image: "Präsenzmelder.jpg", 
         power: 0.2, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], 
-        io: [
-            { id: "PRES", label: "Präsenz", type: "in" }, 
-            { id: "LUX", label: "Helligkeit", type: "in" }, 
-            { id: "VOL", label: "Lautstärke", type: "in" }
-        ] 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"]
     },
     { 
         id: "lox_presence_air", 
         name: "Loxone Präsenzmelder Air", 
         image: "Präsenzmelder.jpg", 
         power: 0.2, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], 
-        io: [
-            { id: "PRES", label: "Präsenz", type: "in" }, 
-            { id: "LUX", label: "Helligkeit", type: "in" }, 
-            { id: "VOL", label: "Lautstärke", type: "in" }
-        ] 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"]     
     },
     { 
         id: "lox_shading_air", 
