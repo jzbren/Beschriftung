@@ -862,6 +862,34 @@
         let switchRef = _activeSwitchRef;
         if (subId === 'null' || !subId) subId = null;
 
+        // Wenn es sich um einen Schalter handelt, vorher alle alten Zuordnungen dieses Schalters im Projekt entfernen (1-zu-1-Zuordnung sicherstellen)
+        if (type === 'switch' && isChecked) {
+            projectData.details.forEach(pd => {
+                if (pd.hardware) {
+                    pd.hardware.forEach(hw => {
+                        if (hw.mappings) {
+                            for (let k in hw.mappings) {
+                                let list = (hw.mappings[k] || '').split(',').map(x => x.trim()).filter(x => x);
+                                list = list.filter(x => x !== sourceName);
+                                hw.mappings[k] = list.join(', ');
+                            }
+                        }
+                        if (hw.subNodes) {
+                            for (let sKey in hw.subNodes) {
+                                hw.subNodes[sKey].forEach(sub => {
+                                    if (sub.mapping) {
+                                        let list = (sub.mapping || '').split(',').map(x => x.trim()).filter(x => x);
+                                        list = list.filter(x => x !== sourceName);
+                                        sub.mapping = list.join(', ');
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
         let targetObj = null;
         let targetProp = '';
 
