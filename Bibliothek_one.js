@@ -356,7 +356,7 @@ const hardwareConfigList = [
                 ]
             },
 
-            */
+            
             {
                 id: "1x_shading",
                 label: "1x Storenaktor (Auf/Ab)",
@@ -368,7 +368,7 @@ const hardwareConfigList = [
                 ]
             }
         ]
-    },
+    },*/
     { 
         id: "lox_touch_tree", 
         name: "Loxone Touch Tree", 
