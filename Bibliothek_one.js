@@ -529,11 +529,35 @@ const hardwareConfigList = [
             { id: "O_5", label: "Relais 5", type: "out" },
             { id: "O_6", label: "Relais 6", type: "out" },
             { id: "O_7", label: "Relais 7", type: "out" },
-            { id: "O_8", label: "Relais 8", type: "out" },
-            { id: "PWM_1", label: "PWM 1", type: "out" },
-            { id: "PWM_2", label: "PWM 2", type: "out" },
-            { id: "PWM_3", label: "PWM 3", type: "out" },
-            { id: "PWM_4", label: "PWM 4", type: "out" }
+            { id: "O_8", label: "Relais 8", type: "out" }
+        ],
+        profiles: [
+            {
+                id: "4x_single",
+                label: "PWM: 4x Einzelkanäle",
+                io: [
+                    { id: "PWM_1", label: "PWM 1", type: "out" },
+                    { id: "PWM_2", label: "PWM 2", type: "out" },
+                    { id: "PWM_3", label: "PWM 3", type: "out" },
+                    { id: "PWM_4", label: "PWM 4", type: "out" }
+                ]
+            },
+            {
+                id: "1x_tw_2x_single",
+                label: "PWM: 1x Tunable White + 2x Einzel",
+                io: [
+                    { id: "PWM_TW", label: "Tunable White", type: "out" },
+                    { id: "PWM_3", label: "PWM 3", type: "out" },
+                    { id: "PWM_4", label: "PWM 4", type: "out" }
+                ]
+            },
+            {
+                id: "1x_rgbw",
+                label: "PWM: 1x RGBW (Farbe + Weiß)",
+                io: [
+                    { id: "PWM_RGBW", label: "RGBW Kanal", type: "out" }
+                ]
+            }
         ] 
     },
     { 
