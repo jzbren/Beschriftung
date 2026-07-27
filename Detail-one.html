@@ -1220,6 +1220,22 @@
 
         for(let i=1; i<=total; i++) {
             const slot = f.slots[`slot-${i}`]; const ic = iconConfigList.find(x => x.file === slot.iconFile); let ioHtml = '';
+            
+            // --- NEU: Dynamische Custom-Fields für das Icon (falls in Bibliothek definiert) ---
+            let customFieldsHtml = '';
+            if (ic && ic.fields && Array.isArray(ic.fields)) {
+                if (!slot.customFields) slot.customFields = {};
+                customFieldsHtml = `<div style="margin-bottom: 10px; display: grid; grid-template-columns: 1fr; gap: 6px;">` + 
+                ic.fields.map(fieldName => {
+                    const fieldValue = slot.customFields[fieldName] || '';
+                    return `<div class="form-group" style="margin-bottom:4px;">
+                        <label style="width: 100px; font-size:0.8rem;">${fieldName}:</label>
+                        <input type="text" value="${fieldValue}" placeholder="${fieldName} eingeben..." onchange="updateSlotCustomField('${f.id}', ${i}, '${fieldName.replace(/'/g, "\\'")}', this.value)" style="flex:1; padding:4px 6px; font-size:0.85rem;">
+                    </div>`;
+                }).join('') + `</div>`;
+            }
+            // ---------------------------------------------------------------------------------
+
             if(ic && ic.io) {
                 ioHtml = `<div class="io-section">` + ic.io.map(io => {
                     let data = slot.ioData?.[io.id] || {bezeichnung:'', art:'TA', funktion:'', gruppe:'', eingabegerat:''};
@@ -1272,7 +1288,7 @@
                 document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
                 setTimeout(() => { f.slots[`slot-${i}`].iconFile = v; renderApp(); }, 10); 
             };
-            h += `<div class="slot-form ${slot.iconFile ? '' : 'no-print'}"><h4>Platz ${i}</h4><div class="form-group no-print"><label>Icon</label>${renderStandardDropdown(`icon-${f.id}-${i}`, slot.iconFile, [{value:'', label:'--- Kein Icon ---'}, ...iconConfigList.map(x=>({value:x.file, label:x.label}))], `setIcon_${f.id}_${i}`, 'Icon wählen...')}</div>${ioHtml}</div>`;
+            h += `<div class="slot-form ${slot.iconFile ? '' : 'no-print'}"><h4>Platz ${i}</h4><div class="form-group no-print"><label>Icon</label>${renderStandardDropdown(`icon-${f.id}-${i}`, slot.iconFile, [{value:'', label:'--- Kein Icon ---'}, ...iconConfigList.map(x=>({value:x.file, label:x.label}))], `setIcon_${f.id}_${i}`, 'Icon wählen...')}</div>${customFieldsHtml}${ioHtml}</div>`;
         }
         return h;
     }
@@ -1292,6 +1308,19 @@
         }
         cData[field] = val; slot.ioData[ioId] = cData;
         renderApp();
+    }
+
+    function updateSlotCustomField(fId, slotN, fieldName, val) {
+        const d = projectData.details.find(x => x.id === activeDetailId); 
+        if(!d) return;
+        const f = d.frames.find(x => x.id === fId);
+        if(!f) return;
+        const slot = f.slots[`slot-${slotN}`];
+        if(!slot) return;
+        
+        if(!slot.customFields) slot.customFields = {};
+        slot.customFields[fieldName] = val;
+        saveToLocal();
     }
 
     function getFieldBusType(fieldName) {
