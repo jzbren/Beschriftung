@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V4.1</title>
+    <title>ServiceProDetail Konfigurator V3.11</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -120,9 +120,9 @@
         .bus-container { margin-top:15px; background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0; overflow: visible; }
         .bus-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 8px; }
         .bus-header h5 { margin: 0; font-size: 0.9rem; color: #1e293b; }
-        .bus-limit-badge { font-size: 0.75rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
-        .bus-limit-badge.ok { background: #dcfce7; color: #166534; }
-        .bus-limit-badge.full { background: #fee2e2; color: #991b1b; }
+        .bus-limit-badge, .topo-badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
+        .bus-limit-badge.ok, .topo-badge.ok { background: #dcfce7; color: #166534; }
+        .bus-limit-badge.full, .topo-badge.full { background: #fee2e2; color: #991b1b; }
         
         .dali-table { width: 100%; border-collapse: collapse; margin-top: 5px; background: #fff; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.02); overflow: visible;}
         .dali-table th { background: #f1f5f9; padding: 6px 8px; text-align: left; font-size: 0.8rem; color: #475569; border-bottom: 1px solid #cbd5e1; font-weight: 600;}
@@ -146,7 +146,6 @@
         .topo-bus-title { font-weight: bold; color: #1e293b; margin-bottom: 10px; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center;}
         .topo-device { margin-left: 15px; padding: 8px 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
         .topo-device-info { display: flex; gap: 15px; color: #64748b; font-size: 0.8rem; }
-        .topo-badge { background: #e2e8f0; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; color: #475569; font-weight: normal; }
 
         /* Globals Manager */
         .globals-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
@@ -298,7 +297,7 @@
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
     let projectData = { 
-        version: "3.10", 
+        version: "3.11", 
         projectName: "Schalterdetail EFH Odermatt", 
         location: "", 
         details: [],
@@ -382,7 +381,7 @@
         if(confirm("Komplettes Projekt löschen und neu starten?")) {
             localStorage.removeItem(LOCAL_STORAGE_KEY); 
             projectData = { 
-                version: "3.10", 
+                version: "3.11", 
                 projectName: "Neues Projekt", 
                 location: "", 
                 details: [], 
@@ -1488,15 +1487,19 @@
                     const children = allHw.filter(c => getParentBusId(c.hw) === busIdStr);
                     const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
                     
+                    // Definiere Limits (Standardwerte für Loxone: Tree = 50, Air = 50, Link = 30, DALI = 64)
+                    const maxLimit = io.limit || (busCfg ? busCfg.defaultLimit : null) || (io.busType === 'tree' ? 50 : io.busType === 'air' ? 50 : io.busType === 'link' ? 30 : 64);
+                    
                     if (busCfg && busCfg.hasSubDevices) {
                         const subs = (item.hw.subNodes && item.hw.subNodes[io.id]) || [];
                         let totalAddrs = 0;
                         subs.forEach(s => { totalAddrs += parseInt(s.channels) || 1; });
+                        const isFull = totalAddrs >= maxLimit;
                         
                         html += `<div class="topo-bus">
                             <div class="topo-bus-title">
                                 <span>${busCfg.icon} ${io.label}</span>
-                                <span class="topo-badge">${subs.length} ${busCfg.subDeviceLabel} / ${totalAddrs} Adr. belegt</span>
+                                <span class="topo-badge ${isFull ? 'full' : 'ok'}">${totalAddrs}/${maxLimit} Belegt</span>
                             </div>`;
                         
                         if(subs.length === 0) {
@@ -1515,10 +1518,13 @@
                         }
                         html += `</div>`;
                     } else {
+                        let usedCount = children.length;
+                        const isFull = usedCount >= maxLimit;
+
                         html += `<div class="topo-bus">
                             <div class="topo-bus-title">
                                 <span>📶 ${io.label}</span>
-                                <span class="topo-badge">${children.length} Gerät(e) verbunden</span>
+                                <span class="topo-badge ${isFull ? 'full' : 'ok'}">${usedCount}/${maxLimit} Belegt</span>
                             </div>`;
                         
                         if (children.length > 0) {
@@ -1620,7 +1626,6 @@
             }).join('');
         }
 
-        // Legende & Funktionserklärungen für den Druck
         let appItems = (projectData.appFunctions || []).map(x => {
             const n = typeof x === 'object' ? x.name : x;
             const desc = typeof x === 'object' ? (x.description || '') : '';
