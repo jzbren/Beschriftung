@@ -327,45 +327,37 @@ let projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
     });
 
     window.onload = () => {
-    let savedData = loadFromLocal();
-    if (savedData && savedData.details) {
-        projectData = savedData; 
-        
-        // Normalisierungen für ältere Speicherstände (falls nötig)
-        if(!projectData.appFunctions) {
-            projectData.appFunctions = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA.appFunctions));
-        }
-        if(!projectData.globalGroups) {
-            projectData.globalGroups = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA.globalGroups));
-        }
-        if(!projectData.globalFunctions) {
-            projectData.globalFunctions = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA.globalFunctions));
-        }
-        
-        projectData.details.forEach(d => {
-            if(d.hardware) d.hardware.forEach(hw => {
-                if(!hw.appFunctions) hw.appFunctions = {};
-                if(!hw.globalGroup) hw.globalGroup = {};
-                if(hw.subNodes) {
-                    for(let ioKey in hw.subNodes) {
-                        hw.subNodes[ioKey].forEach(sub => {
-                            if(sub.appFunctions === undefined) sub.appFunctions = "";
-                            if(sub.globalGroup === undefined) sub.globalGroup = "";
-                        });
+        let savedData = loadFromLocal();
+        if (savedData && savedData.details) {
+            projectData = savedData; 
+            
+            if(!projectData.appFunctions) projectData.appFunctions = [];
+            if(!projectData.globalGroups) projectData.globalGroups = [];
+            if(!projectData.globalFunctions) projectData.globalFunctions = [];
+            
+            projectData.details.forEach(d => {
+                if(d.hardware) d.hardware.forEach(hw => {
+                    if(!hw.appFunctions) hw.appFunctions = {};
+                    if(!hw.globalGroup) hw.globalGroup = {};
+                    if(hw.subNodes) {
+                        for(let ioKey in hw.subNodes) {
+                            hw.subNodes[ioKey].forEach(sub => {
+                                if(sub.appFunctions === undefined) sub.appFunctions = "";
+                                if(sub.globalGroup === undefined) sub.globalGroup = "";
+                            });
+                        }
                     }
-                }
+                });
             });
-        });
-        
-        activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null;
-        renderApp();
-    } else {
-        // Erster Start / Kein Speicherstand: Lade die zentrale Vorlage komplett leer (ohne Detail)
-        projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
-        activeDetailId = null;
-        renderApp();
-    }
-};
+            
+            activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null;
+            renderApp();
+        } else {
+            projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
+            activeDetailId = null;
+            renderApp();
+        }
+    };
 
     function saveToLocal() { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(projectData)); }
     function loadFromLocal() { const data = localStorage.getItem(LOCAL_STORAGE_KEY); return data ? JSON.parse(data) : null; }
@@ -1669,8 +1661,45 @@ let projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
     }
     function printAllDetails() { updatePrintContainers(); document.getElementById('workspace-container').style.display='none'; document.getElementById('print-all-container').style.display='block'; window.print(); document.getElementById('workspace-container').style.display='block'; document.getElementById('print-all-container').style.display='none'; }
     function printCurrentDetail() { updatePrintContainers(); document.getElementById('workspace-container').style.display='none'; document.getElementById('print-single-container').style.display='block'; window.print(); document.getElementById('workspace-container').style.display='block'; document.getElementById('print-single-container').style.display='none'; }
-    function exportProject() { const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: "application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = (projectData.projectName.replace(/[^a-z0-9]/gi, '_').toLowerCase() || "projekt") + ".ServiceProDetail"; a.click(); }
-    function importProject(ev) { const f = ev.target.files[0]; if(!f || !f.name.endsWith('.ServiceProDetail')) return alert("Ungültige Datei!"); const r = new FileReader(); r.onload = e => { try { const p = JSON.parse(e.target.result); if(p && p.details) { projectData = p; activeDetailId = p.details[0]?.id; window.onload(); } } catch (err) { alert("Fehler beim Laden."); } }; r.readAsText(f); ev.target.value = ''; }
+    function exportProject() { 
+        const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: "application/json" }); 
+        const a = document.createElement("a"); 
+        const url = URL.createObjectURL(blob);
+        a.href = url; 
+        a.download = (projectData.projectName.replace(/[^a-z0-9]/gi, '_').toLowerCase() || "projekt") + ".ServiceProDetail"; 
+        a.click(); 
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+    }
+
+    function importProject(ev) { 
+        const f = ev.target.files[0]; 
+        if(!f) return; 
+        
+        const r = new FileReader(); 
+        r.onload = e => { 
+            try { 
+                const p = JSON.parse(e.target.result); 
+                if(p && p.details) { 
+                    projectData = p; 
+                    
+                    if(!projectData.appFunctions) projectData.appFunctions = [];
+                    if(!projectData.globalGroups) projectData.globalGroups = [];
+                    if(!projectData.globalFunctions) projectData.globalFunctions = [];
+
+                    activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null; 
+                    
+                    saveToLocal();
+                    renderApp();
+                } else { 
+                    alert("Die Datei enthält keine gültigen Projektdaten."); 
+                } 
+            } catch (err) { 
+                alert("Fehler beim Laden der Datei."); 
+            } 
+        }; 
+        r.readAsText(f); 
+        ev.target.value = ''; 
+    }
 </script>
 </body>
 </html>
