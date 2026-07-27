@@ -1317,7 +1317,7 @@
                     
                     const slotLabel = ic ? ic.label : 'Platz';
                     const designation = data.bezeichnung ? data.bezeichnung : `${slotLabel} (Platz ${i})`;
-                    const switchIdent = `${d.name} ${designation}`;
+                    const switchIdent = `${d.name} ${f.name} ${designation}`;
                     
                     const hasWarn = checkCollision(switchIdent);
                     const warnHtml = hasWarn ? `<span class="collision-warn" title="Achtung: Dieser Taster ist mehrfach direkt zugewiesen!">⚠️</span>` : '';
