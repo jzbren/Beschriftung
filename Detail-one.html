@@ -1140,9 +1140,6 @@
                     const hasWarn = checkCollision(switchIdent);
                     const warnHtml = hasWarn ? `<span class="collision-warn" title="Achtung: Dieser Taster ist mehrfach direkt zugewiesen!">⚠️</span>` : '';
 
-                    const switchRefObj = {fId: f.id, slotN: i, ioId: io.id};
-                    const switchRefEscaped = JSON.stringify(switchRefObj).replace(/"/g, '&quot;');
-
                     return `<div class="io-complex-row"><div class="io-header"><span class="io-type ${io.type}">${io.type==='in'?'Eingang':'Ausgang'}</span> ${io.label} ${warnHtml}</div>
                     <div class="io-fields-grid">
                         <input type="text" placeholder="Taster Bezeichnung" value="${data.bezeichnung||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','bezeichnung',this.value)">
@@ -1151,7 +1148,7 @@
                         <input type="text" placeholder="Gruppe (Texteingabe)" value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','gruppe',this.value)">
                         
                         <div style="grid-column: span 2; margin-top:5px;">
-                            <button class="btn info" style="width: 100%; justify-content: center; margin-bottom: 5px; font-weight: bold;" onclick="openAssignModal('switch', '${switchIdent.replace(/'/g, "\\'")}', JSON.parse('${switchRefEscaped}'))">🔗 Verknüpfungen / Zuweisen</button>
+                            <button class="btn info" style="width: 100%; justify-content: center; margin-bottom: 5px; font-weight: bold;" onclick="openAssignModal('switch', '${switchIdent.replace(/'/g, "\\'")}', {fId:'${f.id}', slotN:${i}, ioId:'${io.id}'})">🔗 Verknüpfungen / Zuweisen</button>
                             <div style="font-size: 0.8rem; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid #cbd5e1;">
                                 <b>Aktuell verknüpft:</b><br>
                                 <span style="color:#0f766e;">${data.eingabegerat || '-'}</span>
