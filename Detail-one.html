@@ -1295,15 +1295,25 @@
     }
 
     function getFieldBusType(fieldName) {
-        const n = fieldName.toLowerCase();
-        if(n.includes('tree')) return 'tree';
-        if(n.includes('air')) return 'air';
-        if(n.includes('link') || n.includes('bus')) return 'link';
-        if(n.includes('dali')) return 'dali';
-        if(n.includes('modbus')) return 'modbus';
-        if(n.includes('1-wire') || n.includes('1wire')) return '1wire';
-        return 'unknown';
+    if (!fieldName) return null;
+    const name = fieldName.toLowerCase();
+    
+    // Durchsucht automatisch alle in SYSTEM_CONFIG definierten Bus-Typen!
+    for (const [busKey, config] of Object.entries(SYSTEM_CONFIG.busTypes)) {
+        const cleanKey = busKey.toLowerCase();
+        const cleanLabel = config.label.toLowerCase().replace(/[^a-z0-9]/g, ''); // z.B. "loxonelink" -> "link"
+        
+        // Prüft, ob der Feldname den Key (z.B. "dali") oder Teile des Labels enthält
+        if (name.includes(cleanKey) || name.includes(cleanLabel)) {
+            return busKey;
+        }
     }
+    
+    // Kleiner Fallback für Bindestriche (z.B. "1-wire" vs "1wire")
+    if (name.includes('1-wire') || name.includes('wire')) return '1wire';
+    
+    return null;
+}
 
     function generateHardwareHtml(d) {
         if(!d.hardware.length) return '<p class="no-print" style="color:#64748b;">Noch keine Komponenten zugewiesen.</p>';
