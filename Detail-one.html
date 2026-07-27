@@ -740,7 +740,8 @@
                             }
                             isChecked = currentList.includes(sourceName);
                             
-                            let effectiveBez = hw.bezeichnung?.[io.id] || '';
+                            // Wenn keine eigene Bezeichnung da ist, den verknüpften Schalter als Anzeige nutzen
+                            let effectiveBez = hw.bezeichnung?.[io.id] || hw.mappings?.[io.id] || '';
                             const customBez = effectiveBez ? ` — <span style="color:#0f766e; font-weight:600;">"${effectiveBez}"</span>` : '';
                             
                             hwIoHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; font-size:0.9rem; cursor:pointer;">
