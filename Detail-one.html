@@ -708,68 +708,10 @@
 
     function updateProjectField(field, value) { projectData[field] = value; saveToLocal(); }
     
-    window.updateActiveDetailField = function(field, value) { 
-        const d = projectData.details.find(x => x.id === activeDetailId); 
-        if (d) { 
-            if (field === 'name') {
-                const oldDetailName = d.name;
-                const newDetailName = value;
-                
-                d.hardware.forEach(hw => {
-                    const cfg = hardwareConfigList.find(x => x.id === hw.configId);
-                    if(cfg) {
-                        const activeIo = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
-                        const hwName = hw.fields['Geräte-Bez.'] || cfg.name;
-                        if(activeIo) activeIo.forEach(io => {
-                            if (io.type === 'bus') {
-                                const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
-                                if (busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
-                                    hw.subNodes[io.id].forEach(sub => {
-                                        replaceStringInAllReferences(`${oldDetailName} ${hwName} ${sub.name || 'Neues Gerät'}`, `${newDetailName} ${hwName} ${sub.name || 'Neues Gerät'}`);
-                                    });
-                                }
-                            } else {
-                                replaceStringInAllReferences(`${oldDetailName} ${hwName} ${io.label}`, `${newDetailName} ${hwName} ${io.label}`);
-                            }
-                        });
-                    }
-                });
-                d.frames.forEach(f => {
-                    for(let key in f.slots) {
-                        const slot = f.slots[key];
-                        const ic = iconConfigList.find(x => x.file === slot.iconFile);
-                        if(ic && ic.io) {
-                            ic.io.forEach(io => {
-                                const cData = slot.ioData?.[io.id] || {};
-                                replaceStringInAllReferences(`${oldDetailName} ${cData.bezeichnung || ic.label}`, `${newDetailName} ${cData.bezeichnung || ic.label}`);
-                            });
-                        }
-                    }
-                });
-            }
-            d[field] = value; 
-            renderApp(); 
-        } 
-    }
-
-    function addFrameToDetail() {
-        const d = projectData.details.find(x => x.id === activeDetailId);
-        if(d) { d.frames.push({ id: generateId(), name: `Schaltstelle ${d.frames.length + 1}`, layout: "1x1", slots: {} }); renderApp(); }
-    }
-    function updateFrameField(fId, field, val) {
-        const d = projectData.details.find(x => x.id === activeDetailId);
-        if(d) { const f = d.frames.find(x => x.id === fId); if(f) { f[field] = val; renderApp(); } }
-    }
-    function deleteFrame(fId) {
-        if(confirm("Schaltstelle wirklich löschen?")) { const d = projectData.details.find(x => x.id === activeDetailId); if(d) { d.frames = d.frames.filter(x => x.id !== fId); renderApp(); } }
-    }
-    
-    let _activeSwitchRef = null;
     window.openAssignModal = function(type, sourceName, switchRef = null) {
         _activeSwitchRef = (type === 'switch') ? switchRef : null;
         document.getElementById('assign-title').innerText = sourceName;
         
-        // Suchfeld beim Öffnen immer zurücksetzen
         const searchInput = document.getElementById('assign-search-input');
         if(searchInput) searchInput.value = '';
         
@@ -795,14 +737,8 @@
                             }
                             isChecked = currentList.includes(sourceName);
                             
-                            let effectiveBez = hw.bezeichnung?.[io.id];
-                            let isFallback = false;
-                            if(!effectiveBez && hw.mappings?.[io.id]) {
-                                effectiveBez = hw.mappings[io.id];
-                                isFallback = true;
-                            }
-                            
-                            const customBez = effectiveBez ? ` — <span style="color:${isFallback ? '#64748b' : '#0f766e'}; font-weight:${isFallback ? 'normal' : '600'}; font-style:${isFallback ? 'italic' : 'normal'};">"${effectiveBez}"</span>` : '';
+                            let effectiveBez = hw.bezeichnung?.[io.id] || '';
+                            const customBez = effectiveBez ? ` — <span style="color:#0f766e; font-weight:600;">"${effectiveBez}"</span>` : '';
                             
                             hwIoHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; font-size:0.9rem; cursor:pointer;">
                                 <input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', null, this.checked)" style="width:16px;height:16px;cursor:pointer;margin-top:2px;">
@@ -821,11 +757,7 @@
                                     if(type === 'switch') currentList = (sub.mapping || '').split(',').map(x=>x.trim());
                                     isChecked = currentList.includes(sourceName);
     
-                                    let subName = sub.name;
-                                    if((!subName || subName === 'Neues Gerät') && sub.mapping) {
-                                        subName = sub.mapping;
-                                    }
-    
+                                    let subName = sub.name || 'Neues Gerät';
                                     const subLoc = sub.location ? ` <span style="color:#64748b; font-size:0.8rem;">[Ort: ${sub.location}]</span>` : '';
                                     
                                     hwIoHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; margin-left:20px; font-size:0.9rem; cursor:pointer;">
@@ -849,7 +781,7 @@
             }
         });
         
-        document.getElementById('assign-hw-list').innerHTML = hwHtml || '<p style="color:#64748b;">Keine Hardware-Komponenten im Projekt gefunden. Füge zuerst Hardware hinzu.</p>';
+        document.getElementById('assign-hw-list').innerHTML = hwHtml || '<p style="color:#64748b;">Keine Hardware-Komponenten im Projekt gefunden.</p>';
 
         const extrasDiv = document.getElementById('assign-extras');
         if(type === 'switch' && switchRef) {
@@ -900,7 +832,6 @@
         document.getElementById('assign-modal').style.display = 'flex';
     };
 
-    // NEU: Saubere Filterfunktion für das Zuweisungs-Modal
     window.filterAssignModal = function(term) {
         const query = term.toLowerCase().trim();
         const hwListContainer = document.getElementById('assign-hw-list');
@@ -911,10 +842,10 @@
             const hwBlocks = detailSec.querySelectorAll('.assign-hw-block');
             
             hwBlocks.forEach(hwBlock => {
+                // Hier wird jetzt das gesamte Element inkl. der vergebenen Custom-Bezeichnungen und I/Os durchsucht
                 const text = hwBlock.innerText.toLowerCase();
                 const detailTitle = detailSec.querySelector('h3').innerText.toLowerCase();
                 
-                // Prüft ob der Suchbegriff im Hardware-Namen, I/O, Subgerät oder direkt im Detail-/Raumnamen vorkommt
                 if(text.includes(query) || detailTitle.includes(query)) {
                     hwBlock.style.display = '';
                     detailHasVisibleHw = true;
@@ -923,7 +854,6 @@
                 }
             });
             
-            // Versteckt ganze Detail-Kästen, wenn keine passende Hardware darin enthalten ist
             detailSec.style.display = detailHasVisibleHw ? '' : 'none';
         });
     };
@@ -967,10 +897,8 @@
         const propKey = subId ? targetProp : ioId;
 
         if (type === 'switch') {
-            // EXKLUSIVE ZUWEISUNG: Ein Hardware-IO kann nur einem Taster zugeordnet sein
             targetObj[propKey] = isChecked ? sourceName : '';
         } else {
-            // Mehrfach-Zuweisung für App-Funktionen und Gruppen beibehalten
             let list = (targetObj[propKey] || '').split(',').map(x=>x.trim()).filter(x=>x);
             if(isChecked && !list.includes(sourceName)) list.push(sourceName);
             if(!isChecked) list = list.filter(x => x !== sourceName);
@@ -1006,7 +934,6 @@
                             if(!slot.ioData) slot.ioData = {};
                             if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
                             
-                            // Auch auf der Taster-Seite für Switches exklusiv halten
                             if(isChecked) {
                                 slot.ioData[switchRef.ioId].eingabegerat = hwNameStr;
                             } else {
