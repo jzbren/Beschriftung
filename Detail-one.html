@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V3.7</title>
+    <title>ServiceProDetail Konfigurator V3.8</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -172,10 +172,16 @@
             .print-switch-frame { display: grid; gap: 4px; background: #f8fafc; border: 2px solid #cbd5e1; padding: 10px; border-radius: 6px; }
             .print-switch-slot { background: #fff; border: 1px solid #94a3b8; display: flex; justify-content: center; align-items: center; position: relative; width: 60px; height: 60px; }
             .print-switch-slot img { width: 100%; height: 100%; }
-            .print-slots-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-            .print-slot-item-block { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; page-break-inside: avoid; }
-            .print-hw-container { display: grid; grid-template-columns: 80px 1fr; gap: 12px; border: 1px solid #cbd5e1; border-left: 4px solid var(--primary); padding: 10px; margin-bottom: 10px; page-break-inside: avoid; }
+            
+            .print-slot-item-block { background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; margin-bottom: 15px; border-radius: 6px; page-break-inside: avoid; }
+            .print-io-grid { display: grid; grid-template-columns: 100px 1fr; gap: 4px; font-size: 0.85rem; }
+            .print-io-block { margin-bottom: 8px; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; }
+            .print-io-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+            .print-hw-container { display: grid; grid-template-columns: 80px 1fr; gap: 15px; border: 1px solid #cbd5e1; border-left: 4px solid var(--primary); border-radius: 6px; padding: 12px; margin-bottom: 15px; page-break-inside: avoid; }
             .print-hw-image img { width: 100%; object-fit: contain; }
+            .print-hw-io-block { font-size: 0.85rem; margin-top: 6px; padding: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; page-break-inside: avoid; }
+            .print-hw-sub-block { font-size: 0.85rem; margin-top: 6px; padding: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; border-left: 3px solid #166534; page-break-inside: avoid; }
         }
     </style>
 </head>
@@ -306,7 +312,6 @@
             if(!projectData.appFunctions) projectData.appFunctions = ["Beleuchtung", "Beschattung", "Heizung", "Zentral"];
             if(!projectData.globalGroups) projectData.globalGroups = ["Zentral Aus", "Alle Lichter", "Zentral Beschattung"];
             
-            // Backward compatibility checks for hardware assignments
             projectData.details.forEach(d => {
                 if(d.hardware) d.hardware.forEach(hw => {
                     if(!hw.appFunctions) hw.appFunctions = {};
@@ -341,7 +346,6 @@
         }
     }
 
-    // --- GLOBALS MANAGER LOGIK ---
     function openGlobalsModal() {
         renderGlobalsLists();
         document.getElementById('globals-modal').style.display = 'flex';
@@ -699,7 +703,6 @@
                 
                 let hwIoHtml = '';
                 if(activeIo) activeIo.forEach(io => {
-                    // Zeige nur Ausgänge oder Bus-Nodes (Sensoren/Eingänge machen für Gruppen wenig Sinn, aber der Vollständigkeit halber können wir out's zulassen)
                     if(io.type === 'out') {
                         let isChecked = false;
                         let currentList = [];
@@ -707,8 +710,9 @@
                         if(type === 'globalGroup') currentList = (hw.globalGroup?.[io.id] || '').split(',').map(x=>x.trim());
                         if(type === 'switch') currentList = (hw.mappings?.[io.id] || '').split(',').map(x=>x.trim());
                         isChecked = currentList.includes(sourceName);
-
-                        hwIoHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:0.9rem; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', null, this.checked, ${switchRef ? `'${JSON.stringify(switchRef)}'` : null})" style="width:16px;height:16px;cursor:pointer;"> ${io.label}</label>`;
+                        
+                        const switchRefStr = switchRef ? `'${JSON.stringify(switchRef).replace(/"/g, '&quot;')}'` : 'null';
+                        hwIoHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:0.9rem; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', null, this.checked, ${switchRefStr})" style="width:16px;height:16px;cursor:pointer;"> ${io.label}</label>`;
                     } else if(io.type === 'bus') {
                         const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
                         if(busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
@@ -720,7 +724,8 @@
                                 if(type === 'switch') currentList = (sub.mapping || '').split(',').map(x=>x.trim());
                                 isChecked = currentList.includes(sourceName);
 
-                                hwIoHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; margin-left:20px; font-size:0.9rem; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', '${sub.id}', this.checked, ${switchRef ? `'${JSON.stringify(switchRef)}'` : null})" style="width:16px;height:16px;cursor:pointer;"> 🔌 ${busCfg.subDeviceLabel}: ${sub.name}</label>`;
+                                const switchRefStr = switchRef ? `'${JSON.stringify(switchRef).replace(/"/g, '&quot;')}'` : 'null';
+                                hwIoHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; margin-left:20px; font-size:0.9rem; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', '${sub.id}', this.checked, ${switchRefStr})" style="width:16px;height:16px;cursor:pointer;"> 🔌 ${busCfg.subDeviceLabel}: ${sub.name}</label>`;
                             });
                         }
                     }
@@ -777,7 +782,7 @@
         document.getElementById('assign-modal').style.display = 'flex';
     };
 
-    window.toggleHwAssignment = function(type, sourceName, hwId, ioId, subId, isChecked, switchRefStr) {
+    window.toggleHwAssignment = function(type, sourceName, hwId, ioId, subId, isChecked, switchRef) {
         let targetObj = null;
         let targetProp = '';
 
@@ -815,9 +820,7 @@
         if(!isChecked) list = list.filter(x => x !== sourceName);
         targetObj[subId ? targetProp : ioId] = list.join(', ');
 
-        // If it's a switch, we also update the switch's eingabegerat field with the HW target string
-        if (type === 'switch' && switchRefStr) {
-            const switchRef = JSON.parse(switchRefStr);
+        if (type === 'switch' && switchRef) {
             let hwNameStr = '';
             projectData.details.forEach(pd => {
                 if(pd.hardware) pd.hardware.forEach(hw => {
@@ -850,7 +853,7 @@
         }
 
         saveToLocal();
-        renderApp(); // Update UI im Hintergrund
+        renderApp();
     };
 
     window.toggleSwitchExtraTarget = function(fId, slotN, ioId, targetName, isChecked) {
@@ -864,7 +867,7 @@
         
         slot.ioData[ioId].eingabegerat = eingabeList.join(', ');
         saveToLocal();
-        renderApp(); // Update UI im Hintergrund
+        renderApp();
     };
 
 
@@ -1438,19 +1441,23 @@
                         vSlots += `<div class="print-switch-slot"><img src="icons-schalter/${ic.file}"></div>`;
                         let ioRows = ic.io.map(io => {
                             const dat = s.ioData?.[io.id] || {};
-                            return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">
-                                <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
-                                Bez.: ${dat.bezeichnung||''}, Art: ${dat.art||''}<br>
-                                Funktion: ${dat.funktion||''}, Gruppe: ${dat.gruppe||''}<br>
-                                Verknüpfung / App: ${dat.eingabegerat||''}
+                            return `<div class="print-io-block">
+                                <div style="font-weight:bold; color:#0f766e; margin-bottom:4px;">${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</div>
+                                <div class="print-io-grid">
+                                    <span style="color:#64748b;">Bezeichnung:</span> <span>${dat.bezeichnung||'-'}</span>
+                                    <span style="color:#64748b;">Klickart:</span> <span>${dat.art||'-'}</span>
+                                    <span style="color:#64748b;">Funktion:</span> <span>${dat.funktion||'-'}</span>
+                                    <span style="color:#64748b;">Gruppe:</span> <span>${dat.gruppe||'-'}</span>
+                                    <span style="color:#64748b;">Verknüpfung:</span> <span>${dat.eingabegerat||'-'}</span>
+                                </div>
                             </div>`;
                         }).join('');
-                        blocks.push(`<div class="print-slot-item-block"><b>Platz ${i} - ${ic.label}</b><div style="margin-top:5px;">${ioRows}</div></div>`);
+                        blocks.push(`<div class="print-slot-item-block"><b>Platz ${i} - ${ic.label}</b><div style="margin-top:8px;">${ioRows}</div></div>`);
                     }
                 }
                 if(blocks.length === 0) return '';
                 let visHtml = `<div style="display:flex; justify-content:center; margin: 10px 0;"><div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px);">${vSlots}</div></div>`;
-                let bStr = ''; for(let i=0; i<blocks.length; i+=2) bStr += `<div class="print-slots-grid-2col">${blocks[i]}${blocks[i+1]||'<div></div>'}</div>`;
+                let bStr = blocks.map(b => `<div style="margin-bottom: 15px;">${b}</div>`).join('');
                 return `<div><div class="print-frame-title">Schaltstelle: ${f.name}</div>${visHtml}${bStr}</div>`;
             }).join('');
             if(framesHtml) framesHtml = `<div class="print-section-title">Schalter Belegungen</div>${framesHtml}`;
@@ -1462,27 +1469,43 @@
                 const cfg = hardwareConfigList.find(x=>x.id===hw.configId); if(!cfg) return '';
                 const activeIo = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
                 
-                let fh = ''; if(cfg.fields) cfg.fields.forEach(f => fh += `<div style="font-size:0.8rem;"><b>${f}:</b> ${hw.fields[f]||''}</div>`);
+                let fh = `<div style="display:grid; grid-template-columns: 120px 1fr; gap:2px; font-size:0.85rem; margin-top:8px; margin-bottom:12px;">`;
+                if(cfg.fields) cfg.fields.forEach(f => fh += `<div><span style="color:#64748b;">${f}:</span></div> <div><b>${hw.fields[f]||'-'}</b></div>`);
                 if(cfg.profiles) {
                     const pName = cfg.profiles.find(p=>p.id===hw.activeProfile)?.label || '';
-                    fh += `<div style="font-size:0.8rem; color:#0f766e;"><b>Profil:</b> ${pName}</div>`;
+                    fh += `<div><span style="color:#64748b;">Profil:</span></div> <div><b style="color:#0f766e;">${pName}</b></div>`;
                 }
+                fh += `</div>`;
 
                 let ioh = ''; if(activeIo) activeIo.forEach(io => { 
                     const busCfg = io.type==='bus' ? SYSTEM_CONFIG.busTypes[io.busType] : null;
                     if(busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
                         hw.subNodes[io.id].forEach(sub => {
-                            const mappingStr = sub.mapping ? ` | Taster: ${sub.mapping}` : '';
-                            const appStr = sub.appFunctions ? ` | App: ${sub.appFunctions}` : '';
-                            const grpStr = sub.globalGroup ? ` | Gruppe: ${sub.globalGroup}` : '';
-                            ioh += `<div style="font-size:0.8rem; margin-top:2px; border-left:2px solid var(--primary); padding-left:6px;"><b>${busCfg.subDeviceLabel}:</b> ${sub.name} (Ort: ${sub.location || 'k.A.'}, ${sub.channels} Adr.)${mappingStr}${appStr}${grpStr}</div>`;
+                            ioh += `<div class="print-hw-sub-block">
+                                <div style="font-weight:bold; color:#166534; margin-bottom:4px;">${busCfg.subDeviceLabel}: ${sub.name}</div>
+                                <div class="print-io-grid" style="grid-template-columns: 80px 1fr;">
+                                    <span style="color:#64748b;">Ort:</span> <span>${sub.location || 'k.A.'}</span>
+                                    <span style="color:#64748b;">Kanäle:</span> <span>${sub.channels} Adr.</span>
+                                    <span style="color:#64748b;">Taster:</span> <span>${sub.mapping || '-'}</span>
+                                    <span style="color:#64748b;">App:</span> <span>${sub.appFunctions || '-'}</span>
+                                    <span style="color:#64748b;">Gruppe:</span> <span>${sub.globalGroup || '-'}</span>
+                                </div>
+                            </div>`;
                         });
                     } else if(io.type!=='bus') {
                         const bez = hw.bezeichnung?.[io.id] || '-';
                         const grp = hw.globalGroup?.[io.id] || '-';
                         const map = hw.mappings?.[io.id] || '-';
                         const app = hw.appFunctions?.[io.id] || '-';
-                        ioh += `<div style="font-size:0.8rem; margin-top:2px;"><b>${io.label}:</b> Bez: ${bez} | Taster: ${map} | App: ${app} | Gruppe: ${grp}</div>`; 
+                        ioh += `<div class="print-hw-io-block">
+                            <div style="font-weight:bold; color:#1e293b; margin-bottom:4px;">${io.label}</div>
+                            <div class="print-io-grid" style="grid-template-columns: 80px 1fr;">
+                                <span style="color:#64748b;">Bezeichnung:</span> <span>${bez}</span>
+                                <span style="color:#64748b;">Taster:</span> <span>${map}</span>
+                                <span style="color:#64748b;">App:</span> <span>${app}</span>
+                                <span style="color:#64748b;">Gruppe:</span> <span>${grp}</span>
+                            </div>
+                        </div>`; 
                     }
                 });
                 return `<div class="print-hw-container"><div class="print-hw-image"><img src="icons-schalter/${cfg.image}"></div><div><b>${cfg.name}</b>${fh}<div style="margin-top:5px;">${ioh}</div></div></div>`;
