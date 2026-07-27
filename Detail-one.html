@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V4.0</title>
+    <title>ServiceProDetail Konfigurator V4.1</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -298,20 +298,20 @@
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
     let projectData = { 
-        version: "3.9", 
+        version: "3.10", 
         projectName: "Schalterdetail EFH Odermatt", 
         location: "", 
         details: [],
         appFunctions: [
-            { name: "Beleuchtung", description: "" },
-            { name: "Beschattung", description: "" },
-            { name: "Heizung", description: "" },
-            { name: "Zentral", description: "" }
+            { name: "Beleuchtung", description: "Steuerung der Raumbeleuchtung" },
+            { name: "Beschattung", description: "Bedienung von Storen und Rollläden" },
+            { name: "Heizung", description: "Temperaturregelung und Heizkreissteuerung" },
+            { name: "Zentral", description: "Zentrale Funktionen und Sammelbefehle" }
         ],
         globalGroups: [
-            { name: "Zentral Aus", description: "" },
-            { name: "Alle Lichter", description: "" },
-            { name: "Zentral Beschattung", description: "" }
+            { name: "Zentral Aus", description: "Schaltet alle Lichter und Verbraucher zentral aus" },
+            { name: "Alle Lichter", description: "Sammelgruppe für sämtliche Beleuchtungskreise" },
+            { name: "Zentral Beschattung", description: "Steuert alle Storen des Hauses gleichzeitig" }
         ],
         globalFunctions: [
             { name: "Licht Schalten", description: "Schaltet das Licht ein oder aus" },
@@ -382,7 +382,7 @@
         if(confirm("Komplettes Projekt löschen und neu starten?")) {
             localStorage.removeItem(LOCAL_STORAGE_KEY); 
             projectData = { 
-                version: "3.9", 
+                version: "3.10", 
                 projectName: "Neues Projekt", 
                 location: "", 
                 details: [], 
@@ -1231,7 +1231,6 @@
                     const hasWarn = checkCollision(switchIdent);
                     const warnHtml = hasWarn ? `<span class="collision-warn" title="Achtung: Dieser Taster ist mehrfach direkt zugewiesen!">⚠️</span>` : '';
 
-                    // Global Functions Options for Dropdown
                     const fnOptions = [{value:'', label:'--- Funktion wählen ---'}, ...projectData.globalFunctions.map(fnObj => {
                         const fnName = typeof fnObj === 'object' ? fnObj.name : fnObj;
                         return {value: fnName, label: fnName};
@@ -1621,7 +1620,35 @@
             }).join('');
         }
 
-        return `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName}</h2><p>${projectData.location||''}</p></div><h3 style="color:#0f766e; margin:0;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}</h3>${framesHtml}${hwHtml}</div>`;
+        // Legende & Funktionserklärungen für den Druck
+        let appItems = (projectData.appFunctions || []).map(x => {
+            const n = typeof x === 'object' ? x.name : x;
+            const desc = typeof x === 'object' ? (x.description || '') : '';
+            return `<div style="margin-bottom:4px;"><b>${n}</b>${desc ? `:<br><span style="color:#475569; font-size:0.75rem;">${desc}</span>` : ''}</div>`;
+        }).join('');
+
+        let grpItems = (projectData.globalGroups || []).map(x => {
+            const n = typeof x === 'object' ? x.name : x;
+            const desc = typeof x === 'object' ? (x.description || '') : '';
+            return `<div style="margin-bottom:4px;"><b>${n}</b>${desc ? `:<br><span style="color:#475569; font-size:0.75rem;">${desc}</span>` : ''}</div>`;
+        }).join('');
+
+        let fnItems = (projectData.globalFunctions || []).map(x => {
+            const n = typeof x === 'object' ? x.name : x;
+            const desc = typeof x === 'object' ? (x.description || '') : '';
+            return `<div style="margin-bottom:4px;"><b>${n}</b>${desc ? `:<br><span style="color:#475569; font-size:0.75rem;">${desc}</span>` : ''}</div>`;
+        }).join('');
+
+        let legendHtml = `
+            <div class="print-section-title">Legende & Funktionserklärungen</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; font-size: 0.8rem; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; page-break-inside: avoid; margin-bottom: 20px;">
+                <div><div style="font-weight: bold; color: #0f766e; margin-bottom: 6px; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px;">App-Funktionen</div>${appItems || '<span style="color:#94a3b8;">Keine</span>'}</div>
+                <div><div style="font-weight: bold; color: #0f766e; margin-bottom: 6px; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px;">Globale Gruppen</div>${grpItems || '<span style="color:#94a3b8;">Keine</span>'}</div>
+                <div><div style="font-weight: bold; color: #0f766e; margin-bottom: 6px; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px;">Funktionen</div>${fnItems || '<span style="color:#94a3b8;">Keine</span>'}</div>
+            </div>
+        `;
+
+        return `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName}</h2><p>${projectData.location||''}</p></div><h3 style="color:#0f766e; margin:0;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}</h3>${framesHtml}${hwHtml}${legendHtml}</div>`;
     }
 
     function updatePrintContainers() {
