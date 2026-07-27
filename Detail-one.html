@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V3.8</title>
+    <title>ServiceProDetail Konfigurator V3.9</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -153,9 +153,9 @@
         .globals-section { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; }
         .globals-section h3 { margin-top: 0; color: #0f766e; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 15px; }
         .globals-list { max-height: 400px; overflow-y: auto; margin-top: 15px; }
-        .global-item { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 5px; }
-        .global-item input { border: 1px solid transparent; padding: 4px; flex: 1; font-size: 0.9rem; margin-right: 10px; border-radius: 3px; }
-        .global-item input:focus, .global-item input:hover { border: 1px solid #cbd5e1; background: #f8fafc; outline: none; }
+        .global-item { display: flex; flex-direction: column; gap: 6px; background: #fff; padding: 10px; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 8px; }
+        .global-item input { border: 1px solid #cbd5e1; padding: 6px 8px; font-size: 0.9rem; border-radius: 3px; width: 100%; box-sizing: border-box; }
+        .global-item input:focus, .global-item input:hover { border: 1px solid #0f766e; background: #f8fafc; outline: none; }
         
         .add-global-row { display: flex; gap: 10px; }
         .add-global-row input { flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; }
@@ -248,7 +248,7 @@
             <div class="globals-grid">
                 <div class="globals-section">
                     <h3>📱 App-Funktionen</h3>
-                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Zentrale App-Funktionen (z.B. Beleuchtung Kochen, Szene TV).</p>
+                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Zentrale App-Funktionen und deren Beschreibung.</p>
                     <div class="add-global-row">
                         <input type="text" id="new-appfn-input" placeholder="Neue App-Funktion..." onkeydown="if(event.key==='Enter') addAppFunction()">
                         <button class="btn primary" onclick="addAppFunction()">Hinzufügen</button>
@@ -257,7 +257,7 @@
                 </div>
                 <div class="globals-section">
                     <h3>📂 Globale Gruppen</h3>
-                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Globale Gruppen (z.B. Zentral Aus, Alle Jalousien) für Hardware.</p>
+                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Globale Gruppen (z.B. Zentral Aus) und deren Beschreibung.</p>
                     <div class="add-global-row">
                         <input type="text" id="new-glbgrp-input" placeholder="Neue globale Gruppe..." onkeydown="if(event.key==='Enter') addGlobalGroup()">
                         <button class="btn primary" onclick="addGlobalGroup()">Hinzufügen</button>
@@ -289,12 +289,21 @@
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
     let projectData = { 
-        version: "3.2", 
+        version: "3.8", 
         projectName: "Schalterdetail EFH Odermatt", 
         location: "", 
         details: [],
-        appFunctions: ["Beleuchtung", "Beschattung", "Heizung", "Zentral"],
-        globalGroups: ["Zentral Aus", "Alle Lichter", "Zentral Beschattung"]
+        appFunctions: [
+            { name: "Beleuchtung", description: "" },
+            { name: "Beschattung", description: "" },
+            { name: "Heizung", description: "" },
+            { name: "Zentral", description: "" }
+        ],
+        globalGroups: [
+            { name: "Zentral Aus", description: "" },
+            { name: "Alle Lichter", description: "" },
+            { name: "Zentral Beschattung", description: "" }
+        ]
     };
     
     let activeDetailId = null; let draggedSlot = null;
@@ -309,8 +318,25 @@
         let savedData = loadFromLocal();
         if (savedData && savedData.details) {
             projectData = savedData; 
-            if(!projectData.appFunctions) projectData.appFunctions = ["Beleuchtung", "Beschattung", "Heizung", "Zentral"];
-            if(!projectData.globalGroups) projectData.globalGroups = ["Zentral Aus", "Alle Lichter", "Zentral Beschattung"];
+            if(!projectData.appFunctions) {
+                projectData.appFunctions = [
+                    { name: "Beleuchtung", description: "" },
+                    { name: "Beschattung", description: "" },
+                    { name: "Heizung", description: "" },
+                    { name: "Zentral", description: "" }
+                ];
+            } else {
+                projectData.appFunctions = projectData.appFunctions.map(x => typeof x === 'string' ? { name: x, description: "" } : x);
+            }
+            if(!projectData.globalGroups) {
+                projectData.globalGroups = [
+                    { name: "Zentral Aus", description: "" },
+                    { name: "Alle Lichter", description: "" },
+                    { name: "Zentral Beschattung", description: "" }
+                ];
+            } else {
+                projectData.globalGroups = projectData.globalGroups.map(x => typeof x === 'string' ? { name: x, description: "" } : x);
+            }
             
             projectData.details.forEach(d => {
                 if(d.hardware) d.hardware.forEach(hw => {
@@ -341,7 +367,14 @@
     function resetProject() {
         if(confirm("Komplettes Projekt löschen und neu starten?")) {
             localStorage.removeItem(LOCAL_STORAGE_KEY); 
-            projectData = { version: "3.2", projectName: "Neues Projekt", location: "", details: [], appFunctions: ["Beleuchtung", "Beschattung"], globalGroups: ["Zentral Aus"] }; 
+            projectData = { 
+                version: "3.8", 
+                projectName: "Neues Projekt", 
+                location: "", 
+                details: [], 
+                appFunctions: [{ name: "Beleuchtung", description: "" }, { name: "Beschattung", description: "" }], 
+                globalGroups: [{ name: "Zentral Aus", description: "" }] 
+            }; 
             activeDetailId = null; addNewDetail();
         }
     }
@@ -359,29 +392,44 @@
 
     function renderGlobalsLists() {
         const appFnList = document.getElementById('appfn-list');
-        appFnList.innerHTML = projectData.appFunctions.map(fn => `
-            <div class="global-item">
-                <input type="text" value="${fn}" onchange="renameGlobalItem('appFunctions', '${fn.replace(/'/g, "\\'")}', this.value)">
-                <button class="btn info" style="padding: 4px 8px; font-size: 0.8rem;" onclick="openAssignModal('appFunction', '${fn.replace(/'/g, "\\'")}')">🔗 Zuweisen</button>
-                <button class="delete-btn" onclick="deleteGlobalItem('appFunctions', '${fn.replace(/'/g, "\\'")}')">✕</button>
-            </div>
-        `).join('');
+        appFnList.innerHTML = projectData.appFunctions.map((item, idx) => {
+            const name = typeof item === 'object' ? item.name : item;
+            const desc = typeof item === 'object' ? (item.description || '') : '';
+            return `
+                <div class="global-item">
+                    <div style="display: flex; gap: 5px; align-items: center;">
+                        <input type="text" value="${name.replace(/"/g, '&quot;')}" placeholder="Name..." onchange="updateGlobalItem('appFunctions', ${idx}, 'name', this.value)">
+                        <button class="btn info" style="padding: 4px 8px; font-size: 0.8rem; white-space: nowrap;" onclick="openAssignModal('appFunction', '${name.replace(/'/g, "\\'")}')">🔗 Zuweisen</button>
+                        <button class="delete-btn" onclick="deleteGlobalItem('appFunctions', ${idx})">✕</button>
+                    </div>
+                    <input type="text" value="${desc.replace(/"/g, '&quot;')}" placeholder="Beschreibung (Funktionserklärung)..." style="font-size: 0.8rem; color: #475569;" onchange="updateGlobalItem('appFunctions', ${idx}, 'description', this.value)">
+                </div>
+            `;
+        }).join('');
 
         const glbGrpList = document.getElementById('glbgrp-list');
-        glbGrpList.innerHTML = projectData.globalGroups.map(grp => `
-            <div class="global-item">
-                <input type="text" value="${grp}" onchange="renameGlobalItem('globalGroups', '${grp.replace(/'/g, "\\'")}', this.value)">
-                <button class="btn info" style="padding: 4px 8px; font-size: 0.8rem;" onclick="openAssignModal('globalGroup', '${grp.replace(/'/g, "\\'")}')">🔗 Zuweisen</button>
-                <button class="delete-btn" onclick="deleteGlobalItem('globalGroups', '${grp.replace(/'/g, "\\'")}')">✕</button>
-            </div>
-        `).join('');
+        glbGrpList.innerHTML = projectData.globalGroups.map((item, idx) => {
+            const name = typeof item === 'object' ? item.name : item;
+            const desc = typeof item === 'object' ? (item.description || '') : '';
+            return `
+                <div class="global-item">
+                    <div style="display: flex; gap: 5px; align-items: center;">
+                        <input type="text" value="${name.replace(/"/g, '&quot;')}" placeholder="Name..." onchange="updateGlobalItem('globalGroups', ${idx}, 'name', this.value)">
+                        <button class="btn info" style="padding: 4px 8px; font-size: 0.8rem; white-space: nowrap;" onclick="openAssignModal('globalGroup', '${name.replace(/'/g, "\\'")}')">🔗 Zuweisen</button>
+                        <button class="delete-btn" onclick="deleteGlobalItem('globalGroups', ${idx})">✕</button>
+                    </div>
+                    <input type="text" value="${desc.replace(/"/g, '&quot;')}" placeholder="Beschreibung (Funktionserklärung)..." style="font-size: 0.8rem; color: #475569;" onchange="updateGlobalItem('globalGroups', ${idx}, 'description', this.value)">
+                </div>
+            `;
+        }).join('');
     }
 
     window.addAppFunction = function() {
         const input = document.getElementById('new-appfn-input');
         const val = input.value.trim();
-        if(val && !projectData.appFunctions.includes(val)) {
-            projectData.appFunctions.push(val);
+        const names = projectData.appFunctions.map(x => typeof x === 'object' ? x.name : x);
+        if(val && !names.includes(val)) {
+            projectData.appFunctions.push({ name: val, description: "" });
             input.value = '';
             saveToLocal(); renderGlobalsLists();
         }
@@ -390,128 +438,140 @@
     window.addGlobalGroup = function() {
         const input = document.getElementById('new-glbgrp-input');
         const val = input.value.trim();
-        if(val && !projectData.globalGroups.includes(val)) {
-            projectData.globalGroups.push(val);
+        const names = projectData.globalGroups.map(x => typeof x === 'object' ? x.name : x);
+        if(val && !names.includes(val)) {
+            projectData.globalGroups.push({ name: val, description: "" });
             input.value = '';
             saveToLocal(); renderGlobalsLists();
         }
     }
 
-    window.renameGlobalItem = function(type, oldName, newName) {
-        newName = newName.trim();
-        if(!newName || oldName === newName) { renderGlobalsLists(); return; }
-        if(projectData[type].includes(newName)) { alert("Name existiert bereits!"); renderGlobalsLists(); return; }
-        
-        const idx = projectData[type].indexOf(oldName);
-        if(idx !== -1) {
-            projectData[type][idx] = newName;
+    window.updateGlobalItem = function(type, idx, field, val) {
+        val = val.trim();
+        if(!projectData[type][idx]) return;
+        if(typeof projectData[type][idx] === 'string') {
+            projectData[type][idx] = { name: projectData[type][idx], description: "" };
+        }
+        if(field === 'name') {
+            const oldName = projectData[type][idx].name;
+            const newName = val;
+            if(!newName || oldName === newName) { renderGlobalsLists(); return; }
+            const names = projectData[type].map(x => typeof x === 'object' ? x.name : x);
+            if(names.includes(newName)) { alert("Name existiert bereits!"); renderGlobalsLists(); return; }
             
-            projectData.details.forEach(d => {
-                if (d.frames) {
-                    d.frames.forEach(f => {
-                        for(let slotKey in f.slots) {
-                            const slot = f.slots[slotKey];
-                            if(slot && slot.ioData) {
-                                for(let ioKey in slot.ioData) {
-                                    if(slot.ioData[ioKey].eingabegerat && slot.ioData[ioKey].eingabegerat.includes(oldName)) {
-                                        let items = slot.ioData[ioKey].eingabegerat.split(',').map(x=>x.trim());
-                                        let i = items.indexOf(oldName);
-                                        if (i !== -1) { items[i] = newName; slot.ioData[ioKey].eingabegerat = items.join(', '); }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-                if(d.hardware) {
-                    d.hardware.forEach(hw => {
-                        if (type === 'globalGroups' && hw.globalGroup) {
-                            for(let ioKey in hw.globalGroup) {
-                                let list = (hw.globalGroup[ioKey] || '').split(',').map(x=>x.trim()).filter(x=>x);
-                                let i = list.indexOf(oldName); if (i !== -1) { list[i] = newName; hw.globalGroup[ioKey] = list.join(', '); }
-                            }
-                        }
-                        if (type === 'appFunctions' && hw.appFunctions) {
-                            for(let ioKey in hw.appFunctions) {
-                                let list = (hw.appFunctions[ioKey] || '').split(',').map(x=>x.trim()).filter(x=>x);
-                                let i = list.indexOf(oldName); if (i !== -1) { list[i] = newName; hw.appFunctions[ioKey] = list.join(', '); }
-                            }
-                        }
-                        if (hw.subNodes) {
-                            for(let ioKey in hw.subNodes) {
-                                hw.subNodes[ioKey].forEach(sub => {
-                                    if(type === 'globalGroups') {
-                                        let list = (sub.globalGroup || '').split(',').map(x=>x.trim()).filter(x=>x);
-                                        let i = list.indexOf(oldName); if (i !== -1) { list[i] = newName; sub.globalGroup = list.join(', '); }
-                                    }
-                                    if(type === 'appFunctions') {
-                                        let list = (sub.appFunctions || '').split(',').map(x=>x.trim()).filter(x=>x);
-                                        let i = list.indexOf(oldName); if (i !== -1) { list[i] = newName; sub.appFunctions = list.join(', '); }
-                                    }
-                                });
-                            }
-                        }
-                    });
-                }
-            });
+            projectData[type][idx].name = newName;
+            renameGlobalItemReferences(type, oldName, newName);
+        } else {
+            projectData[type][idx][field] = val;
+        }
+        saveToLocal(); renderGlobalsLists();
+    }
+
+    window.deleteGlobalItem = function(type, idx) {
+        const item = projectData[type][idx];
+        const name = typeof item === 'object' ? item.name : item;
+        if(confirm(`"${name}" wirklich löschen? Zuweisungen werden entfernt.`)) {
+            projectData[type].splice(idx, 1);
+            removeGlobalItemReferences(type, name);
             saveToLocal(); renderGlobalsLists();
         }
     }
 
-    window.deleteGlobalItem = function(type, name) {
-        if(confirm(`"${name}" wirklich löschen? Zuweisungen werden entfernt.`)) {
-            projectData[type] = projectData[type].filter(x => x !== name);
-            
-            projectData.details.forEach(d => {
-                if (d.frames) {
-                    d.frames.forEach(f => {
-                        for(let slotKey in f.slots) {
-                            const slot = f.slots[slotKey];
-                            if(slot && slot.ioData) {
-                                for(let ioKey in slot.ioData) {
-                                    if(slot.ioData[ioKey].eingabegerat) {
-                                        let items = slot.ioData[ioKey].eingabegerat.split(',').map(x=>x.trim());
-                                        slot.ioData[ioKey].eingabegerat = items.filter(x => x !== name).join(', ');
-                                    }
+    window.renameGlobalItemReferences = function(oldName, newName) {
+        if (!oldName || !newName || oldName === newName) return;
+        projectData.details.forEach(d => {
+            if (d.frames) {
+                d.frames.forEach(f => {
+                    for(let slotKey in f.slots) {
+                        const slot = f.slots[slotKey];
+                        if(slot && slot.ioData) {
+                            for(let ioKey in slot.ioData) {
+                                if(slot.ioData[ioKey].eingabegerat && slot.ioData[ioKey].eingabegerat.includes(oldName)) {
+                                    let items = slot.ioData[ioKey].eingabegerat.split(',').map(x=>x.trim());
+                                    let i = items.indexOf(oldName);
+                                    if (i !== -1) { items[i] = newName; slot.ioData[ioKey].eingabegerat = items.join(', '); }
                                 }
                             }
                         }
-                    });
-                }
-                if(d.hardware) {
-                    d.hardware.forEach(hw => {
-                        if (type === 'globalGroups' && hw.globalGroup) {
-                            for(let ioKey in hw.globalGroup) {
-                                let list = (hw.globalGroup[ioKey] || '').split(',').map(x=>x.trim()).filter(x=>x);
-                                hw.globalGroup[ioKey] = list.filter(x => x !== name).join(', ');
+                    }
+                });
+            }
+            if(d.hardware) {
+                d.hardware.forEach(hw => {
+                    if (hw.globalGroup) {
+                        for(let ioKey in hw.globalGroup) {
+                            let list = (hw.globalGroup[ioKey] || '').split(',').map(x=>x.trim()).filter(x=>x);
+                            let i = list.indexOf(oldName); if (i !== -1) { list[i] = newName; hw.globalGroup[ioKey] = list.join(', '); }
+                        }
+                    }
+                    if (hw.appFunctions) {
+                        for(let ioKey in hw.appFunctions) {
+                            let list = (hw.appFunctions[ioKey] || '').split(',').map(x=>x.trim()).filter(x=>x);
+                            let i = list.indexOf(oldName); if (i !== -1) { list[i] = newName; hw.appFunctions[ioKey] = list.join(', '); }
+                        }
+                    }
+                    if (hw.subNodes) {
+                        for(let ioKey in hw.subNodes) {
+                            hw.subNodes[ioKey].forEach(sub => {
+                                let listG = (sub.globalGroup || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                let ig = listG.indexOf(oldName); if (ig !== -1) { listG[ig] = newName; sub.globalGroup = listG.join(', '); }
+                                
+                                let listA = (sub.appFunctions || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                let ia = listA.indexOf(oldName); if (ia !== -1) { listA[ia] = newName; sub.appFunctions = listA.join(', '); }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    };
+
+    window.removeGlobalItemReferences = function(name) {
+        projectData.details.forEach(d => {
+            if (d.frames) {
+                d.frames.forEach(f => {
+                    for(let slotKey in f.slots) {
+                        const slot = f.slots[slotKey];
+                        if(slot && slot.ioData) {
+                            for(let ioKey in slot.ioData) {
+                                if(slot.ioData[ioKey].eingabegerat) {
+                                    let items = slot.ioData[ioKey].eingabegerat.split(',').map(x=>x.trim());
+                                    slot.ioData[ioKey].eingabegerat = items.filter(x => x !== name).join(', ');
+                                }
                             }
                         }
-                        if (type === 'appFunctions' && hw.appFunctions) {
-                            for(let ioKey in hw.appFunctions) {
-                                let list = (hw.appFunctions[ioKey] || '').split(',').map(x=>x.trim()).filter(x=>x);
-                                hw.appFunctions[ioKey] = list.filter(x => x !== name).join(', ');
-                            }
+                    }
+                });
+            }
+            if(d.hardware) {
+                d.hardware.forEach(hw => {
+                    if (hw.globalGroup) {
+                        for(let ioKey in hw.globalGroup) {
+                            let list = (hw.globalGroup[ioKey] || '').split(',').map(x=>x.trim()).filter(x=>x);
+                            hw.globalGroup[ioKey] = list.filter(x => x !== name).join(', ');
                         }
-                        if (hw.subNodes) {
-                            for(let ioKey in hw.subNodes) {
-                                hw.subNodes[ioKey].forEach(sub => {
-                                    if(type === 'globalGroups') {
-                                        let list = (sub.globalGroup || '').split(',').map(x=>x.trim()).filter(x=>x);
-                                        sub.globalGroup = list.filter(x => x !== name).join(', ');
-                                    }
-                                    if(type === 'appFunctions') {
-                                        let list = (sub.appFunctions || '').split(',').map(x=>x.trim()).filter(x=>x);
-                                        sub.appFunctions = list.filter(x => x !== name).join(', ');
-                                    }
-                                });
-                            }
+                    }
+                    if (hw.appFunctions) {
+                        for(let ioKey in hw.appFunctions) {
+                            let list = (hw.appFunctions[ioKey] || '').split(',').map(x=>x.trim()).filter(x=>x);
+                            hw.appFunctions[ioKey] = list.filter(x => x !== name).join(', ');
                         }
-                    });
-                }
-            });
-            saveToLocal(); renderGlobalsLists();
-        }
-    }
+                    }
+                    if (hw.subNodes) {
+                        for(let ioKey in hw.subNodes) {
+                            hw.subNodes[ioKey].forEach(sub => {
+                                let listG = (sub.globalGroup || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                sub.globalGroup = listG.filter(x => x !== name).join(', ');
+                                
+                                let listA = (sub.appFunctions || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                sub.appFunctions = listA.filter(x => x !== name).join(', ');
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    };
 
     window.replaceStringInAllReferences = function(oldStr, newStr) {
         if (!oldStr || !newStr || oldStr === newStr) return;
@@ -745,29 +805,33 @@
         if(type === 'switch' && switchRef) {
             let extraHtml = `<div style="display:flex; gap: 30px;">`;
             
-            // App Functions Checkboxes
+            // App Functions Checkboxes with Descriptions
             let appHtml = `<div style="flex:1; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:6px;"><h4 style="margin-top:0; color:#166534;">📱 App-Funktionen</h4>`;
-            projectData.appFunctions.forEach(af => {
+            projectData.appFunctions.forEach(afObj => {
+                const af = typeof afObj === 'object' ? afObj.name : afObj;
+                const afDesc = typeof afObj === 'object' ? afObj.description : '';
                 const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
                 const f = d.frames.find(x=>x.id===switchRef.fId);
                 const slot = f.slots[`slot-${switchRef.slotN}`];
                 const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
                 const isChecked = eingabeList.includes(af);
 
-                appHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${af.replace(/'/g, "\\'")}', this.checked)" style="width:16px;height:16px;cursor:pointer;"> ${af}</label>`;
+                appHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${af.replace(/'/g, "\\'")}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> <div><div style="font-weight:500;">${af}</div>${afDesc ? `<div style="font-size:0.75rem; color:#475569;">${afDesc}</div>` : ''}</div></label>`;
             });
             appHtml += `</div>`;
 
-            // Global Groups Checkboxes
+            // Global Groups Checkboxes with Descriptions
             let grpHtml = `<div style="flex:1; background:#eff6ff; border:1px solid #bfdbfe; padding:15px; border-radius:6px;"><h4 style="margin-top:0; color:#1e40af;">📂 Globale Gruppen</h4>`;
-            projectData.globalGroups.forEach(gg => {
+            projectData.globalGroups.forEach(ggObj => {
+                const gg = typeof ggObj === 'object' ? ggObj.name : ggObj;
+                const ggDesc = typeof ggObj === 'object' ? ggObj.description : '';
                 const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
                 const f = d.frames.find(x=>x.id===switchRef.fId);
                 const slot = f.slots[`slot-${switchRef.slotN}`];
                 const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
                 const isChecked = eingabeList.includes(gg);
 
-                grpHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${gg.replace(/'/g, "\\'")}', this.checked)" style="width:16px;height:16px;cursor:pointer;"> ${gg}</label>`;
+                grpHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${gg.replace(/'/g, "\\'")}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> <div><div style="font-weight:500;">${gg}</div>${ggDesc ? `<div style="font-size:0.75rem; color:#475569;">${ggDesc}</div>` : ''}</div></label>`;
             });
             grpHtml += `</div>`;
 
@@ -783,6 +847,12 @@
     };
 
     window.toggleHwAssignment = function(type, sourceName, hwId, ioId, subId, isChecked, switchRef) {
+        if (typeof switchRef === 'string' && switchRef !== 'null') {
+            try { switchRef = JSON.parse(switchRef); } catch(e) { switchRef = null; }
+        } else if (switchRef === 'null') {
+            switchRef = null;
+        }
+
         let targetObj = null;
         let targetProp = '';
 
@@ -820,7 +890,7 @@
         if(!isChecked) list = list.filter(x => x !== sourceName);
         targetObj[subId ? targetProp : ioId] = list.join(', ');
 
-        if (type === 'switch' && switchRef) {
+        if (type === 'switch' && switchRef && switchRef.fId) {
             let hwNameStr = '';
             projectData.details.forEach(pd => {
                 if(pd.hardware) pd.hardware.forEach(hw => {
@@ -841,14 +911,20 @@
 
             if(hwNameStr) {
                 const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
-                const f = d.frames.find(x=>x.id===switchRef.fId);
-                const slot = f.slots[`slot-${switchRef.slotN}`];
-                let eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim()).filter(x=>x);
-                
-                if(isChecked && !eingabeList.includes(hwNameStr)) eingabeList.push(hwNameStr);
-                if(!isChecked) eingabeList = eingabeList.filter(x => x !== hwNameStr);
-                
-                slot.ioData[switchRef.ioId].eingabegerat = eingabeList.join(', ');
+                if(d) {
+                    const f = d.frames.find(x=>x.id===switchRef.fId);
+                    if(f) {
+                        const slot = f.slots[`slot-${switchRef.slotN}`];
+                        if(slot && slot.ioData && slot.ioData[switchRef.ioId]) {
+                            let eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim()).filter(x=>x);
+                            
+                            if(isChecked && !eingabeList.includes(hwNameStr)) eingabeList.push(hwNameStr);
+                            if(!isChecked) eingabeList = eingabeList.filter(x => x !== hwNameStr);
+                            
+                            slot.ioData[switchRef.ioId].eingabegerat = eingabeList.join(', ');
+                        }
+                    }
+                }
             }
         }
 
@@ -858,8 +934,11 @@
 
     window.toggleSwitchExtraTarget = function(fId, slotN, ioId, targetName, isChecked) {
         const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===fId));
+        if(!d) return;
         const f = d.frames.find(x=>x.id===fId);
+        if(!f) return;
         const slot = f.slots[`slot-${slotN}`];
+        if(!slot.ioData[ioId]) slot.ioData[ioId] = {bezeichnung:'', eingabegerat:''};
         let eingabeList = (slot.ioData[ioId].eingabegerat || '').split(',').map(x=>x.trim()).filter(x=>x);
         
         if(isChecked && !eingabeList.includes(targetName)) eingabeList.push(targetName);
@@ -1386,10 +1465,10 @@
                         subs.forEach(s => { totalAddrs += parseInt(s.channels) || 1; });
                         
                         html += `<div class="topo-bus">
-                                <div class="topo-bus-title">
-                                    <span>${busCfg.icon} ${io.label}</span>
-                                    <span class="topo-badge">${subs.length} ${busCfg.subDeviceLabel} / ${totalAddrs} Adr. belegt</span>
-                                </div>`;
+                            <div class="topo-bus-title">
+                                <span>${busCfg.icon} ${io.label}</span>
+                                <span class="topo-badge">${subs.length} ${busCfg.subDeviceLabel} / ${totalAddrs} Adr. belegt</span>
+                            </div>`;
                         
                         if(subs.length === 0) {
                             html += `<div class="topo-device" style="color:#94a3b8; font-style:italic; justify-content:center;">Keine ${busCfg.subDeviceLabel} angelegt</div>`;
@@ -1402,7 +1481,7 @@
                                             <span>📍 ${sub.location || '-'}</span>
                                             <span style="color:#0f766e; font-weight:bold;">💡 ${ch} Adr.</span>
                                         </div>
-                                     </div>`;
+                                       </div>`;
                             });
                         }
                         html += `</div>`;
