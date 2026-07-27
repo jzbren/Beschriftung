@@ -179,12 +179,23 @@ const hardwareConfigList = [
             { id: "DI_2", label: "DI 2", type: "in" }, 
             { id: "DI_3", label: "DI 3", type: "in" }, 
             { id: "DI_4", label: "DI 4", type: "in" }, 
+            { id: "DI_5", label: "DI 5", type: "in" },
+            { id: "DI_6", label: "DI 6", type: "in" }, 
+            { id: "DI_7", label: "DI 7", type: "in" }, 
+            { id: "DI_8", label: "DI 8", type: "in" }, 
+            { id: "AI_1", label: "AI 1 (Analog)", type: "in" },
+            { id: "AI_2", label: "AI 2 (Analog)", type: "in" },
+            { id: "AI_3", label: "AI 3 (Analog)", type: "in" },
+            { id: "AI_4", label: "AI 4 (Analog)", type: "in" },
             { id: "O_1", label: "Relais 1", type: "out" },
             { id: "O_2", label: "Relais 2", type: "out" }, 
             { id: "O_3", label: "Relais 3", type: "out" }, 
             { id: "O_4", label: "Relais 4", type: "out" }, 
+            { id: "O_5", label: "Relais 5", type: "out" },
+            { id: "O_6", label: "Relais 6", type: "out" }, 
+            { id: "O_7", label: "Relais 7", type: "out" }, 
+            { id: "O_8", label: "Relais 8", type: "out" }, 
             { id: "TREE_1", label: "Tree Ast 1", type: "bus", busType: "tree" }, 
-            { id: "TREE_2", label: "Tree Ast 2", type: "bus", busType: "tree" }, 
             { id: "LINK_1", label: "Loxone Link", type: "bus", busType: "link" }
         ] 
     },
@@ -205,16 +216,39 @@ const hardwareConfigList = [
         image: "Miniserver-Compact.jpg", 
         power: 2.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], 
-        io: [
-            { id: "DI_1", label: "DI 1", type: "in" },
-            { id: "DI_2", label: "DI 2", type: "in" }, 
-            { id: "DI_3", label: "DI 3", type: "in" }, 
-            { id: "DI_4", label: "DI 4", type: "in" }, 
-            { id: "O_1", label: "Relais 1", type: "out" },
-            { id: "O_2", label: "Relais 2", type: "out" }, 
-            { id: "TREE_1", label: "Tree Ast", type: "bus", busType: "tree" }, 
-            { id: "AIR_BASE", label: "Air Geräte", type: "bus", busType: "air" }, 
-            { id: "LINK_1", label: "Loxone Link", type: "bus", busType: "link" }
+        profiles: [
+            {
+                id: "tree_standard",
+                label: "Tree Ast (Standard)",
+                io: [
+                    { id: "DI_1", label: "DI 1", type: "in" },
+                    { id: "DI_2", label: "DI 2", type: "in" }, 
+                    { id: "DI_3", label: "DI 3", type: "in" }, 
+                    { id: "DI_4", label: "DI 4", type: "in" }, 
+                    { id: "O_1", label: "Relais 1", type: "out" },
+                    { id: "O_2", label: "Relais 2", type: "out" }, 
+                    { id: "TREE_1", label: "Tree Ast Links", type: "bus", busType: "tree" }, 
+                    { id: "TREE_2", label: "Tree Ast Rechts", type: "bus", busType: "tree" }, 
+                    { id: "AIR_BASE", label: "Air Geräte", type: "bus", busType: "air" },
+                    { id: "LINK_1", label: "Loxone Link", type: "bus", busType: "link" }
+                ]
+            },
+            {
+                id: "tree_turbo",
+                label: "Tree Turbo",
+                io: [
+                    { id: "DI_1", label: "DI 1", type: "in" },
+                    { id: "DI_2", label: "DI 2", type: "in" }, 
+                    { id: "DI_3", label: "DI 3", type: "in" }, 
+                    { id: "DI_4", label: "DI 4", type: "in" }, 
+                    { id: "O_1", label: "Relais 1", type: "out" },
+                    { id: "O_2", label: "Relais 2", type: "out" }, 
+                    { id: "TREE_1", label: "Tree Ast Links", type: "bus", busType: "tree" }, 
+                    { id: "TREE_TURBO", label: "Tree Turbo", type: "bus", busType: "tree" }, 
+                    { id: "AIR_BASE", label: "Air Geräte", type: "bus", busType: "air" },
+                    { id: "LINK_1", label: "Loxone Link", type: "bus", busType: "link" }
+                ]
+            }
         ] 
     },
     { 
