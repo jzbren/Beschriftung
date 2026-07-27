@@ -757,8 +757,9 @@
     function deleteFrame(fId) {
         if(confirm("Schaltstelle wirklich löschen?")) { const d = projectData.details.find(x => x.id === activeDetailId); if(d) { d.frames = d.frames.filter(x => x.id !== fId); renderApp(); } }
     }
-
+    let _activeSwitchRef = null;
     window.openAssignModal = function(type, sourceName, switchRef = null) {
+        _activeSwitchRef = (type === 'switch') ? switchRef : null;
         document.getElementById('assign-title').innerText = sourceName;
         
         let hwHtml = '';
@@ -783,7 +784,6 @@
                             }
                             isChecked = currentList.includes(sourceName);
                             
-                            // LOGIK: Eigene Bezeichnung nutzen, ansonsten auf das verknüpfte Mapping (Schalter) zurückgreifen
                             let effectiveBez = hw.bezeichnung?.[io.id];
                             let isFallback = false;
                             if(!effectiveBez && hw.mappings?.[io.id]) {
@@ -793,9 +793,8 @@
                             
                             const customBez = effectiveBez ? ` — <span style="color:${isFallback ? '#64748b' : '#0f766e'}; font-weight:${isFallback ? 'normal' : '600'}; font-style:${isFallback ? 'italic' : 'normal'};">"${effectiveBez}"</span>` : '';
                             
-                            const switchRefStr = switchRef ? `'${JSON.stringify(switchRef).replace(/"/g, '&quot;')}'` : 'null';
                             hwIoHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; font-size:0.9rem; cursor:pointer;">
-                                <input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', null, this.checked, ${switchRefStr})" style="width:16px;height:16px;cursor:pointer;margin-top:2px;">
+                                <input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', null, this.checked)" style="width:16px;height:16px;cursor:pointer;margin-top:2px;">
                                 <div>
                                     <div><b>${io.label}</b> <span style="font-size:0.75rem; color:#64748b;">(${io.type ? io.type.toUpperCase() : ''})</span>${customBez}</div>
                                 </div>
@@ -818,9 +817,8 @@
     
                                     const subLoc = sub.location ? ` <span style="color:#64748b; font-size:0.8rem;">[Ort: ${sub.location}]</span>` : '';
                                     
-                                    const switchRefStr = switchRef ? `'${JSON.stringify(switchRef).replace(/"/g, '&quot;')}'` : 'null';
                                     hwIoHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; margin-left:20px; font-size:0.9rem; cursor:pointer;">
-                                        <input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', '${sub.id}', this.checked, ${switchRefStr})" style="width:16px;height:16px;cursor:pointer;margin-top:2px;">
+                                        <input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', '${sub.id}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-top:2px;">
                                         <div>
                                             <div>🔌 <b>${subName}</b>${subLoc} <span style="font-size:0.75rem; color:#64748b;">(${sub.channels || 1} Kanäle)</span></div>
                                         </div>
@@ -891,12 +889,9 @@
         document.getElementById('assign-modal').style.display = 'flex';
     };
 
-    window.toggleHwAssignment = function(type, sourceName, hwId, ioId, subId, isChecked, switchRef) {
-        if (typeof switchRef === 'string' && switchRef !== 'null') {
-            try { switchRef = JSON.parse(switchRef); } catch(e) { switchRef = null; }
-        } else if (switchRef === 'null') {
-            switchRef = null;
-        }
+    window.toggleHwAssignment = function(type, sourceName, hwId, ioId, subId, isChecked) {
+        let switchRef = _activeSwitchRef;
+        if (subId === 'null' || !subId) subId = null;
 
         let targetObj = null;
         let targetProp = '';
@@ -943,7 +938,7 @@
                         const hc = hardwareConfigList.find(x => x.id === hw.configId);
                         const baseName = `${pd.name} ${hw.fields['Geräte-Bez.'] || hc.name}`;
                         if(subId) {
-                            const sub = hw.subNodes[ioId].find(x=>x.id===subId);
+                            const sub = hw.subNodes[io.id].find(x=>x.id===subId);
                             hwNameStr = `${baseName} ${sub.name}`;
                         } else {
                             const activeIo = hc.profiles ? (hc.profiles.find(p=>p.id===hw.activeProfile)?.io || hc.profiles[0].io) : hc.io;
