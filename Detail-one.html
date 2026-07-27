@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V3.4</title>
+    <title>ServiceProDetail Konfigurator V3.5</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -370,7 +370,7 @@
             projectData[type][idx] = newName;
             
             projectData.details.forEach(d => {
-                if (d.frames) {
+                if (type === 'appFunctions' && d.frames) {
                     d.frames.forEach(f => {
                         for(let slotKey in f.slots) {
                             const slot = f.slots[slotKey];
@@ -406,7 +406,7 @@
             projectData[type] = projectData[type].filter(x => x !== name);
             
             projectData.details.forEach(d => {
-                if (d.frames) {
+                if (type === 'appFunctions' && d.frames) {
                     d.frames.forEach(f => {
                         for(let slotKey in f.slots) {
                             const slot = f.slots[slotKey];
@@ -606,13 +606,12 @@
         if(confirm("Schaltstelle wirklich löschen?")) { const d = projectData.details.find(x => x.id === activeDetailId); if(d) { d.frames = d.frames.filter(x => x.id !== fId); renderApp(); } }
     }
 
-    // 3-fach gruppierter Picker für Direktverknüpfungen, App-Funktionen UND Globale Gruppen
-    function renderTripleGroupedDropdown(dropdownId, currentValue, hardwareOptions, appFunctionOptions, globalGroupOptions, callbackName, placeholder) {
+    // Kombinierter Picker für Direktverknüpfungen und App-Funktionen
+    function renderGroupedDropdown(dropdownId, currentValue, hardwareOptions, appFunctionOptions, callbackName, placeholder) {
         let hwOptsHtml = hardwareOptions.map(opt => `<div class="dropdown-option" data-label="${(opt.label || opt.value).toLowerCase()}" onclick="${callbackName}('${opt.value.replace(/'/g, "\\'")}', event)">${opt.label || opt.value}</div>`).join('');
         let appOptsHtml = appFunctionOptions.map(opt => `<div class="dropdown-option" data-label="${(opt.label || opt.value).toLowerCase()}" onclick="${callbackName}('${opt.value.replace(/'/g, "\\'")}', event)">${opt.label || opt.value}</div>`).join('');
-        let grpOptsHtml = globalGroupOptions.map(opt => `<div class="dropdown-option" data-label="${(opt.label || opt.value).toLowerCase()}" onclick="${callbackName}('${opt.value.replace(/'/g, "\\'")}', event)">${opt.label || opt.value}</div>`).join('');
         
-        let allOpts = [...hardwareOptions, ...appFunctionOptions, ...globalGroupOptions];
+        let allOpts = [...hardwareOptions, ...appFunctionOptions];
         const dLabel = allOpts.find(o => o.value === currentValue)?.label || currentValue || placeholder;
         
         let contentHtml = `<div class="dropdown-option" data-label="keine" onclick="${callbackName}('', event)">-- Keine Zuordnung --</div>`;
@@ -621,9 +620,6 @@
         }
         if(appFunctionOptions.length > 0) {
             contentHtml += `<div class="dropdown-group-header">App-Funktionen</div>${appOptsHtml}`;
-        }
-        if(globalGroupOptions.length > 0) {
-            contentHtml += `<div class="dropdown-group-header">Globale Gruppen</div>${grpOptsHtml}`;
         }
 
         return `<div class="custom-select" onclick="toggleGenericDropdown('${dropdownId}', event)"><div class="select-selected">${dLabel} <span>▼</span></div><div class="select-items" id="dd-${dropdownId}" onclick="event.stopPropagation()"><input type="text" class="dropdown-search" placeholder="Suchen..." onkeyup="filterGenericDropdown('${dropdownId}', this.value)"><div id="dd-list-${dropdownId}">${contentHtml}</div></div></div>`;
@@ -879,13 +875,12 @@
     function generateSlotsHtml(d, f, total) {
         let h = ''; const allConns = getAllAvailableConnections().map(x => ({value: x.value, label: x.value}));
         const appFnOpts = projectData.appFunctions.map(x => ({value: x, label: x}));
-        const glbGrpOpts = projectData.globalGroups.map(x => ({value: x, label: x}));
 
         for(let i=1; i<=total; i++) {
             const slot = f.slots[`slot-${i}`]; const ic = iconConfigList.find(x => x.file === slot.iconFile); let ioHtml = '';
             if(ic && ic.io) {
                 ioHtml = `<div class="io-section">` + ic.io.map(io => {
-                    let data = slot.ioData?.[io.id] || {bezeichnung:'', art:'', funktion:'', eingabegerat:''};
+                    let data = slot.ioData?.[io.id] || {bezeichnung:'', art:'', funktion:'', gruppe:'', eingabegerat:''};
                     if(typeof data === 'string') data = {bezeichnung: data, eingabegerat:''};
                     
                     const fnDir = `setDir_${f.id}_${i}_${io.id}`;
@@ -905,7 +900,8 @@
                         <input type="text" placeholder="Taster Bezeichnung" value="${data.bezeichnung||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','bezeichnung',this.value)">
                         <input type="text" placeholder="Klickart (z.B. Doppelklick)" value="${data.art||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','art',this.value)">
                         <input type="text" placeholder="Funktion (z.B. Licht Schalten)" value="${data.funktion||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','funktion',this.value)">
-                        <div style="grid-column: span 2;">${renderTripleGroupedDropdown(`dir-${f.id}-${i}-${io.id}`, data.eingabegerat, allConns, appFnOpts, glbGrpOpts, fnDir, 'Hardware, App-Funktion oder Globale Gruppe...')}</div>
+                        <input type="text" placeholder="Gruppe (Texteingabe)" value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','gruppe',this.value)">
+                        <div style="grid-column: span 2;">${renderGroupedDropdown(`dir-${f.id}-${i}-${io.id}`, data.eingabegerat, allConns, appFnOpts, fnDir, 'Hardware (Direkt) oder App-Funktion...')}</div>
                     </div></div>`;
                 }).join('') + `</div>`;
             }
@@ -935,7 +931,7 @@
 
         const oldVal = cData[field]; cData[field] = val; slot.ioData[ioId] = cData;
 
-        if (field === 'eingabegerat' && val && !projectData.appFunctions.includes(val) && !projectData.globalGroups.includes(val)) {
+        if (field === 'eingabegerat' && val && !projectData.appFunctions.includes(val)) {
             const ic = iconConfigList.find(x => x.file === slot.iconFile);
             const swIdent = `${d.name} ${cData.bezeichnung || ic.label}`;
             
@@ -953,8 +949,8 @@
                             }
                         } else {
                             const busCfg = SYSTEM_CONFIG.busTypes[hio.busType];
-                            if (busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[hio.id]) {
-                                hw.subNodes[hio.id].forEach(sub => {
+                            if (busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
+                                hw.subNodes[io.id].forEach(sub => {
                                     const targetIdent = `${pd.name} ${hw.fields['Geräte-Bez.'] || hc.name} ${sub.name || 'Neues Gerät'}`;
                                     if(val.includes(targetIdent) && sub.mapping !== swIdent) {
                                         let currentMap = sub.mapping ? sub.mapping.split(',').map(x=>x.trim()) : [];
@@ -1284,8 +1280,8 @@
                             return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">
                                 <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
                                 Bez.: ${dat.bezeichnung||''}, Art: ${dat.art||''}<br>
-                                Funktion: ${dat.funktion||''}<br>
-                                Verknüpfung / App / Gruppe: ${dat.eingabegerat||''}
+                                Funktion: ${dat.funktion||''}, Gruppe: ${dat.gruppe||''}<br>
+                                Verknüpfung / App: ${dat.eingabegerat||''}
                             </div>`;
                         }).join('');
                         blocks.push(`<div class="print-slot-item-block"><b>Platz ${i} - ${ic.label}</b><div style="margin-top:5px;">${ioRows}</div></div>`);
