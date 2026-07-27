@@ -762,48 +762,39 @@
     window.openAssignModal = function(type, sourceName, switchRef = null) {
         document.getElementById('assign-title').innerText = sourceName;
         
-        let hwHtml = '';
-        projectData.details.forEach(d => {
-            let detailHtml = '';
-            if(d.hardware) d.hardware.forEach(hw => {
-                const cfg = hardwareConfigList.find(x => x.id === hw.configId);
-                if(!cfg) return;
-                const activeIo = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
-                
-                let hwIoHtml = '';
-                if(activeIo) activeIo.forEach(io => {
-                    // Wir erlauben hier sowohl 'out', 'in' oder universelle IOs, damit kein Gerät verloren geht
-                    if(io.type === 'out' || io.type === 'in' || !io.type) {
-                        let isChecked = false;
-                        let currentList = [];
-                        if(type === 'appFunction') currentList = (hw.appFunctions?.[io.id] || '').split(',').map(x=>x.trim());
-                        if(type === 'globalGroup') currentList = (hw.globalGroup?.[io.id] || '').split(',').map(x=>x.trim());
-                        if(type === 'switch') {
-                            // Prüfen in mappings oder direkt im ioData-Block
-                            let mapStr = hw.mappings?.[io.id] || (hw.bezeichnung?.[io.id] ? sourceName : ''); 
-                            currentList = mapStr.split(',').map(x=>x.trim());
-                        }
-                        isChecked = currentList.includes(sourceName);
-                        
-                        const switchRefStr = switchRef ? `'${JSON.stringify(switchRef).replace(/"/g, '&quot;')}'` : 'null';
-                        hwIoHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:0.9rem; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', null, this.checked, ${switchRefStr})" style="width:16px;height:16px;cursor:pointer;"> ${io.label} ${io.type ? '('+io.type+')' : ''}</label>`;
-                    } else if(io.type === 'bus') {
-                        const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
-                        if(busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
-                            hw.subNodes[io.id].forEach(sub => {
-                                let isChecked = false;
-                                let currentList = [];
-                                if(type === 'appFunction') currentList = (sub.appFunctions || '').split(',').map(x=>x.trim());
-                                if(type === 'globalGroup') currentList = (sub.globalGroup || '').split(',').map(x=>x.trim());
-                                if(type === 'switch') currentList = (sub.mapping || '').split(',').map(x=>x.trim());
-                                isChecked = currentList.includes(sourceName);
+        let hwIoHtml = '';
+if(activeIo) activeIo.forEach(io => {
+    // GEÄNDERT: Alles anzeigen, was kein Bus ist (deckt Relay, Dimmer, In, Out etc. ab)
+    if(io.type !== 'bus') {
+        let isChecked = false;
+        let currentList = [];
+        if(type === 'appFunction') currentList = (hw.appFunctions?.[io.id] || '').split(',').map(x=>x.trim());
+        if(type === 'globalGroup') currentList = (hw.globalGroup?.[io.id] || '').split(',').map(x=>x.trim());
+        if(type === 'switch') {
+            let mapStr = hw.mappings?.[io.id] || (hw.bezeichnung?.[io.id] ? sourceName : ''); 
+            currentList = mapStr.split(',').map(x=>x.trim());
+        }
+        isChecked = currentList.includes(sourceName);
+        
+        const switchRefStr = switchRef ? `'${JSON.stringify(switchRef).replace(/"/g, '&quot;')}'` : 'null';
+        hwIoHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:0.9rem; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', null, this.checked, ${switchRefStr})" style="width:16px;height:16px;cursor:pointer;"> ${io.label} ${io.type ? '('+io.type+')' : ''}</label>`;
+    } else if(io.type === 'bus') {
+        const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
+        if(busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
+            hw.subNodes[io.id].forEach(sub => {
+                let isChecked = false;
+                let currentList = [];
+                if(type === 'appFunction') currentList = (sub.appFunctions || '').split(',').map(x=>x.trim());
+                if(type === 'globalGroup') currentList = (sub.globalGroup || '').split(',').map(x=>x.trim());
+                if(type === 'switch') currentList = (sub.mapping || '').split(',').map(x=>x.trim());
+                isChecked = currentList.includes(sourceName);
 
-                                const switchRefStr = switchRef ? `'${JSON.stringify(switchRef).replace(/"/g, '&quot;')}'` : 'null';
-                                hwIoHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; margin-left:20px; font-size:0.9rem; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', '${sub.id}', this.checked, ${switchRefStr})" style="width:16px;height:16px;cursor:pointer;"> 🔌 ${busCfg.subDeviceLabel}: ${sub.name}</label>`;
-                            });
-                        }
-                    }
-                });
+                const switchRefStr = switchRef ? `'${JSON.stringify(switchRef).replace(/"/g, '&quot;')}'` : 'null';
+                hwIoHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; margin-left:20px; font-size:0.9rem; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', '${sub.id}', this.checked, ${switchRefStr})" style="width:16px;height:16px;cursor:pointer;"> 🔌 ${busCfg.subDeviceLabel}: ${sub.name}</label>`;
+            });
+        }
+    }
+});
                 if(hwIoHtml) {
                     detailHtml += `<div style="margin-bottom: 12px; border-left: 3px solid #0f766e; padding-left: 12px;"><b style="color:#1e293b; font-size:0.95rem;">${hw.fields['Geräte-Bez.'] || cfg.name}</b>${hwIoHtml}</div>`;
                 }
