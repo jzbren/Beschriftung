@@ -29,6 +29,7 @@ const iconConfigList = [
         file: "Touch-Tree.png", 
         label: "Touch Tree",
         fields: ["Bemerkung", "Tree Ast"], // <--- Hier "Tree Ast" (oder "Air Link") ergänzt!
+        channels: 2,
         group: "Schalter & Taster", 
         io: [
             { id: "TA_1", label: "Punkt 1 (Oben Links)", type: "in" },
