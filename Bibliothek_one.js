@@ -336,6 +336,7 @@ const hardwareConfigList = [
             { id: "DI_5", label: "DI 5", type: "in" }, { id: "DI_6", label: "DI 6", type: "in" }
         ] 
     },
+    /*
     { 
         id: "lox_nano_2_relay", 
         name: "Loxone Nano 2 Relay Tree", 
@@ -354,6 +355,8 @@ const hardwareConfigList = [
                     { id: "O_2", label: "Relais 2", type: "out" }
                 ]
             },
+
+            */
             {
                 id: "1x_shading",
                 label: "1x Storenaktor (Auf/Ab)",
