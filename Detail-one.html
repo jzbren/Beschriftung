@@ -106,7 +106,7 @@
         .io-type.bus { background: #fef3c7; color: #92400e; }
 
         .io-fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .io-fields-grid input { padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box; }
+        .io-fields-grid input, .io-fields-grid select { padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box; background: #fff; }
 
         /* Hardware Editor */
         .hardware-list { margin-top: 20px; }
@@ -134,7 +134,7 @@
 
         /* Modal Generell */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: white; width: 85%; max-width: 900px; max-height: 85vh; border-radius: 8px; padding: 30px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal-content { background: white; width: 90%; max-width: 1100px; max-height: 85vh; border-radius: 8px; padding: 30px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
         .modal-header h2 { margin: 0; color: #1e293b; }
         
@@ -149,16 +149,16 @@
         .topo-badge { background: #e2e8f0; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; color: #475569; font-weight: normal; }
 
         /* Globals Manager */
-        .globals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .globals-section { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; }
-        .globals-section h3 { margin-top: 0; color: #0f766e; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 15px; }
-        .globals-list { max-height: 400px; overflow-y: auto; margin-top: 15px; }
+        .globals-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .globals-section { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; display: flex; flex-direction: column; }
+        .globals-section h3 { margin-top: 0; color: #0f766e; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 15px; font-size: 1rem; }
+        .globals-list { max-height: 400px; overflow-y: auto; margin-top: 15px; flex: 1; }
         .global-item { display: flex; flex-direction: column; gap: 6px; background: #fff; padding: 10px; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 8px; }
         .global-item input { border: 1px solid #cbd5e1; padding: 6px 8px; font-size: 0.9rem; border-radius: 3px; width: 100%; box-sizing: border-box; }
         .global-item input:focus, .global-item input:hover { border: 1px solid #0f766e; background: #f8fafc; outline: none; }
         
         .add-global-row { display: flex; gap: 10px; }
-        .add-global-row input { flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; }
+        .add-global-row input { flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; }
 
         @media print {
             body { background: white; height: auto; overflow: visible; }
@@ -242,27 +242,36 @@
     <div id="globals-modal" class="modal-overlay" onclick="closeModal('globals-modal', event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h2>Zentrale Einstellungen (App-Funktionen & Gruppen)</h2>
+                <h2>Zentrale Einstellungen (App-Funktionen, Gruppen & Funktionen)</h2>
                 <button class="icon-btn" onclick="closeModal('globals-modal')" style="color:black; font-size:1.5rem;">×</button>
             </div>
             <div class="globals-grid">
                 <div class="globals-section">
                     <h3>📱 App-Funktionen</h3>
-                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Zentrale App-Funktionen und deren Beschreibung.</p>
+                    <p style="font-size:0.75rem; color:#64748b; margin-bottom:10px;">Zentrale App-Funktionen.</p>
                     <div class="add-global-row">
                         <input type="text" id="new-appfn-input" placeholder="Neue App-Funktion..." onkeydown="if(event.key==='Enter') addAppFunction()">
-                        <button class="btn primary" onclick="addAppFunction()">Hinzufügen</button>
+                        <button class="btn primary" style="padding:6px 10px;" onclick="addAppFunction()">+</button>
                     </div>
                     <div class="globals-list" id="appfn-list"></div>
                 </div>
                 <div class="globals-section">
                     <h3>📂 Globale Gruppen</h3>
-                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Globale Gruppen (z.B. Zentral Aus) und deren Beschreibung.</p>
+                    <p style="font-size:0.75rem; color:#64748b; margin-bottom:10px;">Globale Gruppen (z.B. Zentral Aus).</p>
                     <div class="add-global-row">
-                        <input type="text" id="new-glbgrp-input" placeholder="Neue globale Gruppe..." onkeydown="if(event.key==='Enter') addGlobalGroup()">
-                        <button class="btn primary" onclick="addGlobalGroup()">Hinzufügen</button>
+                        <input type="text" id="new-glbgrp-input" placeholder="Neue Gruppe..." onkeydown="if(event.key==='Enter') addGlobalGroup()">
+                        <button class="btn primary" style="padding:6px 10px;" onclick="addGlobalGroup()">+</button>
                     </div>
                     <div class="globals-list" id="glbgrp-list"></div>
+                </div>
+                <div class="globals-section">
+                    <h3>⚡ Globale Funktionen</h3>
+                    <p style="font-size:0.75rem; color:#64748b; margin-bottom:10px;">Auswahlbare Funktionen für Schaltplätze.</p>
+                    <div class="add-global-row">
+                        <input type="text" id="new-glbfn-input" placeholder="Neue Funktion..." onkeydown="if(event.key==='Enter') addGlobalFunction()">
+                        <button class="btn primary" style="padding:6px 10px;" onclick="addGlobalFunction()">+</button>
+                    </div>
+                    <div class="globals-list" id="glbfn-list"></div>
                 </div>
             </div>
         </div>
@@ -289,7 +298,7 @@
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
     let projectData = { 
-        version: "3.8", 
+        version: "3.9", 
         projectName: "Schalterdetail EFH Odermatt", 
         location: "", 
         details: [],
@@ -303,6 +312,11 @@
             { name: "Zentral Aus", description: "" },
             { name: "Alle Lichter", description: "" },
             { name: "Zentral Beschattung", description: "" }
+        ],
+        globalFunctions: [
+            { name: "Licht Schalten", description: "Schaltet das Licht ein oder aus" },
+            { name: "Licht Dimmbar", description: "Schalten und stufenloses Dimmen" },
+            { name: "Storen Auf/Ab", description: "Steuerung für Jalousien oder Storen" }
         ]
     };
     
@@ -319,23 +333,23 @@
         if (savedData && savedData.details) {
             projectData = savedData; 
             if(!projectData.appFunctions) {
-                projectData.appFunctions = [
-                    { name: "Beleuchtung", description: "" },
-                    { name: "Beschattung", description: "" },
-                    { name: "Heizung", description: "" },
-                    { name: "Zentral", description: "" }
-                ];
+                projectData.appFunctions = [{ name: "Beleuchtung", description: "" }, { name: "Beschattung", description: "" }];
             } else {
                 projectData.appFunctions = projectData.appFunctions.map(x => typeof x === 'string' ? { name: x, description: "" } : x);
             }
             if(!projectData.globalGroups) {
-                projectData.globalGroups = [
-                    { name: "Zentral Aus", description: "" },
-                    { name: "Alle Lichter", description: "" },
-                    { name: "Zentral Beschattung", description: "" }
-                ];
+                projectData.globalGroups = [{ name: "Zentral Aus", description: "" }];
             } else {
                 projectData.globalGroups = projectData.globalGroups.map(x => typeof x === 'string' ? { name: x, description: "" } : x);
+            }
+            if(!projectData.globalFunctions) {
+                projectData.globalFunctions = [
+                    { name: "Licht Schalten", description: "Schaltet das Licht ein oder aus" },
+                    { name: "Licht Dimmbar", description: "Schalten und stufenloses Dimmen" },
+                    { name: "Storen Auf/Ab", description: "Steuerung für Jalousien oder Storen" }
+                ];
+            } else {
+                projectData.globalFunctions = projectData.globalFunctions.map(x => typeof x === 'string' ? { name: x, description: "" } : x);
             }
             
             projectData.details.forEach(d => {
@@ -368,12 +382,13 @@
         if(confirm("Komplettes Projekt löschen und neu starten?")) {
             localStorage.removeItem(LOCAL_STORAGE_KEY); 
             projectData = { 
-                version: "3.8", 
+                version: "3.9", 
                 projectName: "Neues Projekt", 
                 location: "", 
                 details: [], 
-                appFunctions: [{ name: "Beleuchtung", description: "" }, { name: "Beschattung", description: "" }], 
-                globalGroups: [{ name: "Zentral Aus", description: "" }] 
+                appFunctions: [{ name: "Beleuchtung", description: "" }], 
+                globalGroups: [{ name: "Zentral Aus", description: "" }],
+                globalFunctions: [{ name: "Licht Schalten", description: "" }]
             }; 
             activeDetailId = null; addNewDetail();
         }
@@ -399,10 +414,10 @@
                 <div class="global-item">
                     <div style="display: flex; gap: 5px; align-items: center;">
                         <input type="text" value="${name.replace(/"/g, '&quot;')}" placeholder="Name..." onchange="updateGlobalItem('appFunctions', ${idx}, 'name', this.value)">
-                        <button class="btn info" style="padding: 4px 8px; font-size: 0.8rem; white-space: nowrap;" onclick="openAssignModal('appFunction', '${name.replace(/'/g, "\\'")}')">🔗 Zuweisen</button>
+                        <button class="btn info" style="padding: 4px 8px; font-size: 0.8rem; white-space: nowrap;" onclick="openAssignModal('appFunction', '${name.replace(/'/g, "\\'")}')">🔗</button>
                         <button class="delete-btn" onclick="deleteGlobalItem('appFunctions', ${idx})">✕</button>
                     </div>
-                    <input type="text" value="${desc.replace(/"/g, '&quot;')}" placeholder="Beschreibung (Funktionserklärung)..." style="font-size: 0.8rem; color: #475569;" onchange="updateGlobalItem('appFunctions', ${idx}, 'description', this.value)">
+                    <input type="text" value="${desc.replace(/"/g, '&quot;')}" placeholder="Beschreibung..." style="font-size: 0.75rem; color: #475569;" onchange="updateGlobalItem('appFunctions', ${idx}, 'description', this.value)">
                 </div>
             `;
         }).join('');
@@ -415,10 +430,25 @@
                 <div class="global-item">
                     <div style="display: flex; gap: 5px; align-items: center;">
                         <input type="text" value="${name.replace(/"/g, '&quot;')}" placeholder="Name..." onchange="updateGlobalItem('globalGroups', ${idx}, 'name', this.value)">
-                        <button class="btn info" style="padding: 4px 8px; font-size: 0.8rem; white-space: nowrap;" onclick="openAssignModal('globalGroup', '${name.replace(/'/g, "\\'")}')">🔗 Zuweisen</button>
+                        <button class="btn info" style="padding: 4px 8px; font-size: 0.8rem; white-space: nowrap;" onclick="openAssignModal('globalGroup', '${name.replace(/'/g, "\\'")}')">🔗</button>
                         <button class="delete-btn" onclick="deleteGlobalItem('globalGroups', ${idx})">✕</button>
                     </div>
-                    <input type="text" value="${desc.replace(/"/g, '&quot;')}" placeholder="Beschreibung (Funktionserklärung)..." style="font-size: 0.8rem; color: #475569;" onchange="updateGlobalItem('globalGroups', ${idx}, 'description', this.value)">
+                    <input type="text" value="${desc.replace(/"/g, '&quot;')}" placeholder="Beschreibung..." style="font-size: 0.75rem; color: #475569;" onchange="updateGlobalItem('globalGroups', ${idx}, 'description', this.value)">
+                </div>
+            `;
+        }).join('');
+
+        const glbFnList = document.getElementById('glbfn-list');
+        glbFnList.innerHTML = projectData.globalFunctions.map((item, idx) => {
+            const name = typeof item === 'object' ? item.name : item;
+            const desc = typeof item === 'object' ? (item.description || '') : '';
+            return `
+                <div class="global-item">
+                    <div style="display: flex; gap: 5px; align-items: center;">
+                        <input type="text" value="${name.replace(/"/g, '&quot;')}" placeholder="Funktionsname..." onchange="updateGlobalItem('globalFunctions', ${idx}, 'name', this.value)">
+                        <button class="delete-btn" onclick="deleteGlobalItem('globalFunctions', ${idx})">✕</button>
+                    </div>
+                    <input type="text" value="${desc.replace(/"/g, '&quot;')}" placeholder="Beschreibung..." style="font-size: 0.75rem; color: #475569;" onchange="updateGlobalItem('globalFunctions', ${idx}, 'description', this.value)">
                 </div>
             `;
         }).join('');
@@ -446,6 +476,17 @@
         }
     }
 
+    window.addGlobalFunction = function() {
+        const input = document.getElementById('new-glbfn-input');
+        const val = input.value.trim();
+        const names = projectData.globalFunctions.map(x => typeof x === 'object' ? x.name : x);
+        if(val && !names.includes(val)) {
+            projectData.globalFunctions.push({ name: val, description: "" });
+            input.value = '';
+            saveToLocal(); renderGlobalsLists();
+        }
+    }
+
     window.updateGlobalItem = function(type, idx, field, val) {
         val = val.trim();
         if(!projectData[type][idx]) return;
@@ -460,7 +501,9 @@
             if(names.includes(newName)) { alert("Name existiert bereits!"); renderGlobalsLists(); return; }
             
             projectData[type][idx].name = newName;
-            renameGlobalItemReferences(type, oldName, newName);
+            if(type !== 'globalFunctions') {
+                renameGlobalItemReferences(type, oldName, newName);
+            }
         } else {
             projectData[type][idx][field] = val;
         }
@@ -470,9 +513,11 @@
     window.deleteGlobalItem = function(type, idx) {
         const item = projectData[type][idx];
         const name = typeof item === 'object' ? item.name : item;
-        if(confirm(`"${name}" wirklich löschen? Zuweisungen werden entfernt.`)) {
+        if(confirm(`"${name}" wirklich löschen?`)) {
             projectData[type].splice(idx, 1);
-            removeGlobalItemReferences(type, name);
+            if(type !== 'globalFunctions') {
+                removeGlobalItemReferences(name);
+            }
             saveToLocal(); renderGlobalsLists();
         }
     }
@@ -508,17 +553,6 @@
                         for(let ioKey in hw.appFunctions) {
                             let list = (hw.appFunctions[ioKey] || '').split(',').map(x=>x.trim()).filter(x=>x);
                             let i = list.indexOf(oldName); if (i !== -1) { list[i] = newName; hw.appFunctions[ioKey] = list.join(', '); }
-                        }
-                    }
-                    if (hw.subNodes) {
-                        for(let ioKey in hw.subNodes) {
-                            hw.subNodes[ioKey].forEach(sub => {
-                                let listG = (sub.globalGroup || '').split(',').map(x=>x.trim()).filter(x=>x);
-                                let ig = listG.indexOf(oldName); if (ig !== -1) { listG[ig] = newName; sub.globalGroup = listG.join(', '); }
-                                
-                                let listA = (sub.appFunctions || '').split(',').map(x=>x.trim()).filter(x=>x);
-                                let ia = listA.indexOf(oldName); if (ia !== -1) { listA[ia] = newName; sub.appFunctions = listA.join(', '); }
-                            });
                         }
                     }
                 });
@@ -557,17 +591,6 @@
                             hw.appFunctions[ioKey] = list.filter(x => x !== name).join(', ');
                         }
                     }
-                    if (hw.subNodes) {
-                        for(let ioKey in hw.subNodes) {
-                            hw.subNodes[ioKey].forEach(sub => {
-                                let listG = (sub.globalGroup || '').split(',').map(x=>x.trim()).filter(x=>x);
-                                sub.globalGroup = listG.filter(x => x !== name).join(', ');
-                                
-                                let listA = (sub.appFunctions || '').split(',').map(x=>x.trim()).filter(x=>x);
-                                sub.appFunctions = listA.filter(x => x !== name).join(', ');
-                            });
-                        }
-                    }
                 });
             }
         });
@@ -583,16 +606,6 @@
                         if (hw.mappings[key]) {
                             let items = hw.mappings[key].split(',').map(x=>x.trim());
                             let i = items.indexOf(oldStr); if (i !== -1) { items[i] = newStr; hw.mappings[key] = items.join(', '); }
-                        }
-                    }
-                    if (hw.subNodes) {
-                        for(let ioKey in hw.subNodes) {
-                            hw.subNodes[ioKey].forEach(sub => {
-                                if (sub.mapping) {
-                                    let items = sub.mapping.split(',').map(x=>x.trim());
-                                    let i = items.indexOf(oldStr); if (i !== -1) { items[i] = newStr; sub.mapping = items.join(', '); }
-                                }
-                            });
                         }
                     }
                 });
@@ -805,7 +818,6 @@
         if(type === 'switch' && switchRef) {
             let extraHtml = `<div style="display:flex; gap: 30px;">`;
             
-            // App Functions Checkboxes with Descriptions
             let appHtml = `<div style="flex:1; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:6px;"><h4 style="margin-top:0; color:#166534;">📱 App-Funktionen</h4>`;
             projectData.appFunctions.forEach(afObj => {
                 const af = typeof afObj === 'object' ? afObj.name : afObj;
@@ -820,7 +832,6 @@
             });
             appHtml += `</div>`;
 
-            // Global Groups Checkboxes with Descriptions
             let grpHtml = `<div style="flex:1; background:#eff6ff; border:1px solid #bfdbfe; padding:15px; border-radius:6px;"><h4 style="margin-top:0; color:#1e40af;">📂 Globale Gruppen</h4>`;
             projectData.globalGroups.forEach(ggObj => {
                 const gg = typeof ggObj === 'object' ? ggObj.name : ggObj;
@@ -1212,18 +1223,37 @@
             const slot = f.slots[`slot-${i}`]; const ic = iconConfigList.find(x => x.file === slot.iconFile); let ioHtml = '';
             if(ic && ic.io) {
                 ioHtml = `<div class="io-section">` + ic.io.map(io => {
-                    let data = slot.ioData?.[io.id] || {bezeichnung:'', art:'', funktion:'', gruppe:'', eingabegerat:''};
-                    if(typeof data === 'string') data = {bezeichnung: data, eingabegerat:''};
+                    let data = slot.ioData?.[io.id] || {bezeichnung:'', art:'TA', funktion:'', gruppe:'', eingabegerat:''};
+                    if(typeof data === 'string') data = {bezeichnung: data, art:'TA', funktion:'', gruppe:'', eingabegerat:''};
+                    if(!data.art) data.art = 'TA';
                     
                     const switchIdent = `${d.name} ${data.bezeichnung || ic.label}`;
                     const hasWarn = checkCollision(switchIdent);
                     const warnHtml = hasWarn ? `<span class="collision-warn" title="Achtung: Dieser Taster ist mehrfach direkt zugewiesen!">⚠️</span>` : '';
 
+                    // Global Functions Options for Dropdown
+                    const fnOptions = [{value:'', label:'--- Funktion wählen ---'}, ...projectData.globalFunctions.map(fnObj => {
+                        const fnName = typeof fnObj === 'object' ? fnObj.name : fnObj;
+                        return {value: fnName, label: fnName};
+                    })];
+
+                    window[`setSlotFn_${f.id}_${i}_${io.id}`] = (v, ev) => {
+                        if(ev){ev.preventDefault();ev.stopPropagation();}
+                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show'));
+                        setTimeout(() => { updateSlotField(f.id, i, io.id, 'funktion', v); }, 10);
+                    };
+
+                    const fnDropdown = renderStandardDropdown(`fn-${f.id}-${i}-${io.id}`, data.funktion || '', fnOptions, `setSlotFn_${f.id}_${i}_${io.id}`, 'Funktion wählen...');
+
                     return `<div class="io-complex-row"><div class="io-header"><span class="io-type ${io.type}">${io.type==='in'?'Eingang':'Ausgang'}</span> ${io.label} ${warnHtml}</div>
                     <div class="io-fields-grid">
                         <input type="text" placeholder="Taster Bezeichnung" value="${data.bezeichnung||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','bezeichnung',this.value)">
-                        <input type="text" placeholder="Klickart (z.B. Doppelklick)" value="${data.art||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','art',this.value)">
-                        <input type="text" placeholder="Funktion (z.B. Licht Schalten)" value="${data.funktion||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','funktion',this.value)">
+                        <select onchange="updateSlotField('${f.id}', '${i}','${io.id}','art',this.value)">
+                            <option value="TA" ${data.art==='TA'?'selected':''}>TA (Taster)</option>
+                            <option value="SA" ${data.art==='SA'?'selected':''}>SA (Schalter)</option>
+                            <option value="Imp." ${data.art==='Imp.'?'selected':''}>Imp. (Impuls)</option>
+                        </select>
+                        <div>${fnDropdown}</div>
                         <input type="text" placeholder="Gruppe (Texteingabe)" value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','gruppe',this.value)">
                         
                         <div style="grid-column: span 2; margin-top:5px;">
@@ -1249,7 +1279,7 @@
     function updateSlotField(fId, slotN, ioId, field, val) {
         const d = projectData.details.find(x => x.id === activeDetailId); const f = d.frames.find(x => x.id === fId);
         if(!f.slots[`slot-${slotN}`].ioData) f.slots[`slot-${slotN}`].ioData = {};
-        const slot = f.slots[`slot-${slotN}`]; const cData = slot.ioData[ioId] || {bezeichnung:''};
+        const slot = f.slots[`slot-${slotN}`]; const cData = slot.ioData[ioId] || {bezeichnung:'', art:'TA'};
         
         if (field === 'bezeichnung') {
             const ic = iconConfigList.find(x => x.file === slot.iconFile);
@@ -1524,7 +1554,7 @@
                                 <div style="font-weight:bold; color:#0f766e; margin-bottom:4px;">${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</div>
                                 <div class="print-io-grid">
                                     <span style="color:#64748b;">Bezeichnung:</span> <span>${dat.bezeichnung||'-'}</span>
-                                    <span style="color:#64748b;">Klickart:</span> <span>${dat.art||'-'}</span>
+                                    <span style="color:#64748b;">Art:</span> <span>${dat.art||'TA'}</span>
                                     <span style="color:#64748b;">Funktion:</span> <span>${dat.funktion||'-'}</span>
                                     <span style="color:#64748b;">Gruppe:</span> <span>${dat.gruppe||'-'}</span>
                                     <span style="color:#64748b;">Verknüpfung:</span> <span>${dat.eingabegerat||'-'}</span>
