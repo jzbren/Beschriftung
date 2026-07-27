@@ -219,14 +219,71 @@ const hardwareConfigList = [
     },
     { 
         id: "lox_audioserver", 
-        name: "Loxone Audioserver", 
+        name: "Audioserver", 
         image: "Audioserver.jpg", 
         power: 5.0, 
         fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], 
-        io: [
-            { id: "TREE_TURBO", label: "Tree Turbo", type: "bus", busType: "tree" }, 
-            { id: "LINK_1", label: "Loxone Link", type: "bus", busType: "link" }, 
-            { id: "AUDIO_OUT", label: "Stereo Ausgänge", type: "out" }
+        profiles: [
+            {
+                id: "stereo_12_34",
+                label: "2x Stereo-Paare (Stereo 1/2 & 3/4)",
+                io: [
+                    { id: "TREE_TURBO", label: "Tree Turbo", type: "bus", busType: "tree" }, 
+                    { id: "SPK_1_2", label: "Lautsprecher 1 & 2 (Stereo 4...8Ω, 44.1kHz)", type: "out" },
+                    { id: "SPK_3_4", label: "Lautsprecher 3 & 4 (Stereo 4...8Ω, 44.1kHz)", type: "out" },
+                    { id: "SPDIF_OUT", label: "SPDIF out digital (48kHz)", type: "out" },
+                    { id: "LINE_OUT", label: "Line-out analog (44.1kHz)", type: "out" }
+                ]
+            },
+            {
+                id: "stereo_12_34",
+                label: "2x Stereo-Paare (Stereo 1/2 & 3/4)",
+                io: [
+                    { id: "TREE_TURBO", label: "Tree Turbo", type: "bus", busType: "tree" }, 
+                    { id: "LINK_1", label: "Loxone Link", type: "bus", busType: "link" }, 
+                    { id: "SPK_1_2", label: "Lautsprecher 1 & 2 (Stereo 4...8Ω, 44.1kHz)", type: "out" },
+                    { id: "SPK_3_4", label: "Lautsprecher 3 & 4 (Stereo 4...8Ω, 44.1kHz)", type: "out" },
+                    { id: "SPDIF_OUT", label: "SPDIF out digital (48kHz)", type: "out" },
+                    { id: "LINE_OUT", label: "Line-out analog (44.1kHz)", type: "out" }
+                ]
+            },
+            {
+                id: "stereo_12_single_34",
+                label: "Stereo (1/2) + Einzel (3 & 4)",
+                io: [
+                    { id: "TREE_TURBO", label: "Tree Turbo", type: "bus", busType: "tree" }, 
+                    { id: "SPK_1_2", label: "Lautsprecher 1 & 2 (Stereo 4...8Ω, 44.1kHz)", type: "out" },
+                    { id: "SPK_3", label: "Lautsprecher 3 (Einzel 4...8Ω, 44.1kHz)", type: "out" },
+                    { id: "SPK_4", label: "Lautsprecher 4 (Einzel 4...8Ω, 44.1kHz)", type: "out" },
+                    { id: "SPDIF_OUT", label: "SPDIF out digital (48kHz)", type: "out" },
+                    { id: "LINE_OUT", label: "Line-out analog (44.1kHz)", type: "out" }
+                ]
+            },
+            {
+                id: "single_12_stereo_34",
+                label: "Einzel (1 & 2) + Stereo (3/4)",
+                io: [
+                    { id: "TREE_TURBO", label: "Tree Turbo", type: "bus", busType: "tree" }, 
+                    { id: "SPK_1", label: "Lautsprecher 1 (Einzel 4...8Ω, 44.1kHz)", type: "out" },
+                    { id: "SPK_2", label: "Lautsprecher 2 (Einzel 4...8Ω, 44.1kHz)", type: "out" },
+                    { id: "SPK_3_4", label: "Lautsprecher 3 & 4 (Stereo 4...8Ω, 44.1kHz)", type: "out" },
+                    { id: "SPDIF_OUT", label: "SPDIF out digital (48kHz)", type: "out" },
+                    { id: "LINE_OUT", label: "Line-out analog (44.1kHz)", type: "out" }
+                ]
+            },
+            {
+                id: "all_single",
+                label: "4x Einzelkanäle (1, 2, 3, 4)",
+                io: [
+                    { id: "TREE_TURBO", label: "Tree Turbo", type: "bus", busType: "tree" }, 
+                    { id: "SPK_1", label: "Lautsprecher 1 (Einzel 4...8Ω, 44.1kHz)", type: "out" },
+                    { id: "SPK_2", label: "Lautsprecher 2 (Einzel 4...8Ω, 44.1kHz)", type: "out" },
+                    { id: "SPK_3", label: "Lautsprecher 3 (Einzel 4...8Ω, 44.1kHz)", type: "out" },
+                    { id: "SPK_4", label: "Lautsprecher 4 (Einzel 4...8Ω, 44.1kHz)", type: "out" },
+                    { id: "SPDIF_OUT", label: "SPDIF out digital (48kHz)", type: "out" },
+                    { id: "LINE_OUT", label: "Line-out analog (44.1kHz)", type: "out" }
+                ]
+            }
         ] 
     },
 
