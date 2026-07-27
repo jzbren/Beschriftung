@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.1</title>
+    <title>ServiceProDetail Konfigurator V5.2</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -741,8 +741,17 @@
                             isChecked = currentList.includes(sourceName);
                             
                             // Wenn keine eigene Bezeichnung da ist, den verknüpften Schalter als Anzeige nutzen
-                            let effectiveBez = hw.bezeichnung?.[io.id] || hw.mappings?.[io.id] || '';
-                            const customBez = effectiveBez ? ` — <span style="color:#0f766e; font-weight:600;">"${effectiveBez}"</span>` : '';
+                            const manualBez = hw.bezeichnung?.[io.id] || '';
+                            const fallbackBez = hw.mappings?.[io.id] || '';
+                            
+                            let customBez = '';
+                            if (manualBez) {
+                                // Manuelle Bezeichnung am Nano DI (Farbe wie bisher)
+                                customBez = ` — <span style="color:#0f766e; font-weight:600;">"${manualBez}"</span>`;
+                            } else if (fallbackBez) {
+                                // Vom Schalter übernommene Bezeichnung (dezentes Grau)
+                                customBez = ` — <span style="color:#64748b; font-style:italic;">"${fallbackBez}"</span>`;
+                            }
                             
                             hwIoHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; font-size:0.9rem; cursor:pointer;">
                                 <input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', null, this.checked)" style="width:16px;height:16px;cursor:pointer;margin-top:2px;">
