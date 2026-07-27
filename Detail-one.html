@@ -370,32 +370,18 @@
             projectData[type][idx] = newName;
             
             projectData.details.forEach(d => {
-                if (type === 'appFunctions' && d.frames) {
+                if (d.frames) {
                     d.frames.forEach(f => {
                         for(let slotKey in f.slots) {
                             const slot = f.slots[slotKey];
                             if(slot && slot.ioData) {
                                 for(let ioKey in slot.ioData) {
                                     if(slot.ioData[ioKey].eingabegerat === oldName) slot.ioData[ioKey].eingabegerat = newName;
-                                    if(slot.ioData[ioKey].funktion === oldName) slot.ioData[ioKey].funktion = newName;
                                 }
                             }
                         }
                     });
                 }
-                if (type === 'globalGroups' && d.frames) {
-                    d.frames.forEach(f => {
-                        for(let slotKey in f.slots) {
-                            const slot = f.slots[slotKey];
-                            if(slot && slot.ioData) {
-                                for(let ioKey in slot.ioData) {
-                                    if(slot.ioData[ioKey].gruppe === oldName) slot.ioData[ioKey].gruppe = newName;
-                                }
-                            }
-                        }
-                    });
-                }
-                
                 if(d.hardware) {
                     d.hardware.forEach(hw => {
                         if (type === 'globalGroups' && hw.globalGroup) {
@@ -420,26 +406,13 @@
             projectData[type] = projectData[type].filter(x => x !== name);
             
             projectData.details.forEach(d => {
-                if (type === 'appFunctions' && d.frames) {
+                if (d.frames) {
                     d.frames.forEach(f => {
                         for(let slotKey in f.slots) {
                             const slot = f.slots[slotKey];
                             if(slot && slot.ioData) {
                                 for(let ioKey in slot.ioData) {
                                     if(slot.ioData[ioKey].eingabegerat === name) slot.ioData[ioKey].eingabegerat = '';
-                                    if(slot.ioData[ioKey].funktion === name) slot.ioData[ioKey].funktion = '';
-                                }
-                            }
-                        }
-                    });
-                }
-                if (type === 'globalGroups' && d.frames) {
-                    d.frames.forEach(f => {
-                        for(let slotKey in f.slots) {
-                            const slot = f.slots[slotKey];
-                            if(slot && slot.ioData) {
-                                for(let ioKey in slot.ioData) {
-                                    if(slot.ioData[ioKey].gruppe === name) slot.ioData[ioKey].gruppe = '';
                                 }
                             }
                         }
@@ -633,12 +606,13 @@
         if(confirm("Schaltstelle wirklich löschen?")) { const d = projectData.details.find(x => x.id === activeDetailId); if(d) { d.frames = d.frames.filter(x => x.id !== fId); renderApp(); } }
     }
 
-    // Gruppierter Picker für Direktverknüpfungen UND App-Funktionen
-    function renderGroupedDropdown(dropdownId, currentValue, hardwareOptions, appFunctionOptions, callbackName, placeholder) {
+    // 3-fach gruppierter Picker für Direktverknüpfungen, App-Funktionen UND Globale Gruppen
+    function renderTripleGroupedDropdown(dropdownId, currentValue, hardwareOptions, appFunctionOptions, globalGroupOptions, callbackName, placeholder) {
         let hwOptsHtml = hardwareOptions.map(opt => `<div class="dropdown-option" data-label="${(opt.label || opt.value).toLowerCase()}" onclick="${callbackName}('${opt.value.replace(/'/g, "\\'")}', event)">${opt.label || opt.value}</div>`).join('');
         let appOptsHtml = appFunctionOptions.map(opt => `<div class="dropdown-option" data-label="${(opt.label || opt.value).toLowerCase()}" onclick="${callbackName}('${opt.value.replace(/'/g, "\\'")}', event)">${opt.label || opt.value}</div>`).join('');
+        let grpOptsHtml = globalGroupOptions.map(opt => `<div class="dropdown-option" data-label="${(opt.label || opt.value).toLowerCase()}" onclick="${callbackName}('${opt.value.replace(/'/g, "\\'")}', event)">${opt.label || opt.value}</div>`).join('');
         
-        let allOpts = [...hardwareOptions, ...appFunctionOptions];
+        let allOpts = [...hardwareOptions, ...appFunctionOptions, ...globalGroupOptions];
         const dLabel = allOpts.find(o => o.value === currentValue)?.label || currentValue || placeholder;
         
         let contentHtml = `<div class="dropdown-option" data-label="keine" onclick="${callbackName}('', event)">-- Keine Zuordnung --</div>`;
@@ -647,6 +621,9 @@
         }
         if(appFunctionOptions.length > 0) {
             contentHtml += `<div class="dropdown-group-header">App-Funktionen</div>${appOptsHtml}`;
+        }
+        if(globalGroupOptions.length > 0) {
+            contentHtml += `<div class="dropdown-group-header">Globale Gruppen</div>${grpOptsHtml}`;
         }
 
         return `<div class="custom-select" onclick="toggleGenericDropdown('${dropdownId}', event)"><div class="select-selected">${dLabel} <span>▼</span></div><div class="select-items" id="dd-${dropdownId}" onclick="event.stopPropagation()"><input type="text" class="dropdown-search" placeholder="Suchen..." onkeyup="filterGenericDropdown('${dropdownId}', this.value)"><div id="dd-list-${dropdownId}">${contentHtml}</div></div></div>`;
@@ -908,22 +885,15 @@
             const slot = f.slots[`slot-${i}`]; const ic = iconConfigList.find(x => x.file === slot.iconFile); let ioHtml = '';
             if(ic && ic.io) {
                 ioHtml = `<div class="io-section">` + ic.io.map(io => {
-                    let data = slot.ioData?.[io.id] || {bezeichnung:'', art:'', funktion:'', gruppe:'', eingabegerat:''};
+                    let data = slot.ioData?.[io.id] || {bezeichnung:'', art:'', funktion:'', eingabegerat:''};
                     if(typeof data === 'string') data = {bezeichnung: data, eingabegerat:''};
                     
                     const fnDir = `setDir_${f.id}_${i}_${io.id}`;
-                    const fnGrp = `setGrp_${f.id}_${i}_${io.id}`;
 
                     window[fnDir] = (v, ev) => { 
                         if(ev){ev.preventDefault();ev.stopPropagation();} 
                         document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
                         setTimeout(()=>updateSlotField(f.id, i, io.id, 'eingabegerat', v), 10); 
-                    };
-                    
-                    window[fnGrp] = (v, ev) => { 
-                        if(ev){ev.preventDefault();ev.stopPropagation();} 
-                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
-                        setTimeout(()=>updateSlotField(f.id, i, io.id, 'gruppe', v), 10); 
                     };
                     
                     const switchIdent = `${d.name} ${data.bezeichnung || ic.label}`;
@@ -935,8 +905,7 @@
                         <input type="text" placeholder="Taster Bezeichnung" value="${data.bezeichnung||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','bezeichnung',this.value)">
                         <input type="text" placeholder="Klickart (z.B. Doppelklick)" value="${data.art||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','art',this.value)">
                         <input type="text" placeholder="Funktion (z.B. Licht Schalten)" value="${data.funktion||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','funktion',this.value)">
-                        <div>${renderStandardDropdown(`grp-${f.id}-${i}-${io.id}`, data.gruppe||'', [{value:'', label:'-- Globale Gruppe --'}, ...glbGrpOpts], fnGrp, 'Gruppe...')}</div>
-                        <div style="grid-column: span 2;">${renderGroupedDropdown(`dir-${f.id}-${i}-${io.id}`, data.eingabegerat, allConns, appFnOpts, fnDir, 'Hardware (Direkt) oder App-Funktion...')}</div>
+                        <div style="grid-column: span 2;">${renderTripleGroupedDropdown(`dir-${f.id}-${i}-${io.id}`, data.eingabegerat, allConns, appFnOpts, glbGrpOpts, fnDir, 'Hardware, App-Funktion oder Globale Gruppe...')}</div>
                     </div></div>`;
                 }).join('') + `</div>`;
             }
@@ -966,7 +935,7 @@
 
         const oldVal = cData[field]; cData[field] = val; slot.ioData[ioId] = cData;
 
-        if (field === 'eingabegerat' && val && !projectData.appFunctions.includes(val)) {
+        if (field === 'eingabegerat' && val && !projectData.appFunctions.includes(val) && !projectData.globalGroups.includes(val)) {
             const ic = iconConfigList.find(x => x.file === slot.iconFile);
             const swIdent = `${d.name} ${cData.bezeichnung || ic.label}`;
             
@@ -1315,8 +1284,8 @@
                             return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">
                                 <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
                                 Bez.: ${dat.bezeichnung||''}, Art: ${dat.art||''}<br>
-                                Funktion: ${dat.funktion||''}, Gruppe: ${dat.gruppe||''}<br>
-                                Verknüpfung / App: ${dat.eingabegerat||''}
+                                Funktion: ${dat.funktion||''}<br>
+                                Verknüpfung / App / Gruppe: ${dat.eingabegerat||''}
                             </div>`;
                         }).join('');
                         blocks.push(`<div class="print-slot-item-block"><b>Platz ${i} - ${ic.label}</b><div style="margin-top:5px;">${ioRows}</div></div>`);
