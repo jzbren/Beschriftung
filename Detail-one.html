@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.3</title>
+    <title>ServiceProDetail Konfigurator V5.1</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1376,7 +1376,8 @@
             if(ic) {
                 const oldBezeichnung = cData.bezeichnung || `${ic.label} (Platz ${slotN})`;
                 const newBezeichnung = val || `${ic.label} (Platz ${slotN})`;
-                replaceStringInAllReferences(`${d.name} ${oldBezeichnung}`, `${d.name} ${newBezeichnung}`);
+                
+                replaceStringInAllReferences(`${d.name} ${f.name} ${oldBezeichnung} (${ioLabel})`, `${d.name} ${f.name} ${newBezeichnung} (${ioLabel})`);
             }
         }
         cData[field] = val; slot.ioData[ioId] = cData;
