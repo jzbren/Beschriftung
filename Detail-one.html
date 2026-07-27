@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V3.9</title>
+    <title>ServiceProDetail Konfigurator V3.8</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -711,7 +711,8 @@
                         if(type === 'switch') currentList = (hw.mappings?.[io.id] || '').split(',').map(x=>x.trim());
                         isChecked = currentList.includes(sourceName);
                         
-                        hwIoHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:0.9rem; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', ${JSON.stringify(sourceName)}, '${hw.instanceId}', '${io.id}', null, this.checked, ${switchRef ? JSON.stringify(switchRef) : 'null'})" style="width:16px;height:16px;cursor:pointer;"> ${io.label}</label>`;
+                        const switchRefStr = switchRef ? `'${JSON.stringify(switchRef).replace(/"/g, '&quot;')}'` : 'null';
+                        hwIoHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:0.9rem; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', null, this.checked, ${switchRefStr})" style="width:16px;height:16px;cursor:pointer;"> ${io.label}</label>`;
                     } else if(io.type === 'bus') {
                         const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
                         if(busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
@@ -723,7 +724,8 @@
                                 if(type === 'switch') currentList = (sub.mapping || '').split(',').map(x=>x.trim());
                                 isChecked = currentList.includes(sourceName);
 
-                                hwIoHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; margin-left:20px; font-size:0.9rem; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', ${JSON.stringify(sourceName)}, '${hw.instanceId}', '${io.id}', '${sub.id}', this.checked, ${switchRef ? JSON.stringify(switchRef) : 'null'})" style="width:16px;height:16px;cursor:pointer;"> 🔌 ${busCfg.subDeviceLabel}: ${sub.name}</label>`;
+                                const switchRefStr = switchRef ? `'${JSON.stringify(switchRef).replace(/"/g, '&quot;')}'` : 'null';
+                                hwIoHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; margin-left:20px; font-size:0.9rem; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', '${sub.id}', this.checked, ${switchRefStr})" style="width:16px;height:16px;cursor:pointer;"> 🔌 ${busCfg.subDeviceLabel}: ${sub.name}</label>`;
                             });
                         }
                     }
@@ -752,7 +754,7 @@
                 const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
                 const isChecked = eingabeList.includes(af);
 
-                appHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', ${JSON.stringify(af)}, this.checked)" style="width:16px;height:16px;cursor:pointer;"> ${af}</label>`;
+                appHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${af.replace(/'/g, "\\'")}', this.checked)" style="width:16px;height:16px;cursor:pointer;"> ${af}</label>`;
             });
             appHtml += `</div>`;
 
@@ -765,7 +767,7 @@
                 const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
                 const isChecked = eingabeList.includes(gg);
 
-                grpHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', ${JSON.stringify(gg)}, this.checked)" style="width:16px;height:16px;cursor:pointer;"> ${gg}</label>`;
+                grpHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${gg.replace(/'/g, "\\'")}', this.checked)" style="width:16px;height:16px;cursor:pointer;"> ${gg}</label>`;
             });
             grpHtml += `</div>`;
 
@@ -1139,7 +1141,7 @@
                     const warnHtml = hasWarn ? `<span class="collision-warn" title="Achtung: Dieser Taster ist mehrfach direkt zugewiesen!">⚠️</span>` : '';
 
                     const switchRefObj = {fId: f.id, slotN: i, ioId: io.id};
-                    const switchRefEscaped = JSON.stringify(switchRefObj).replace(/'/g, "&#39;");
+                    const switchRefEscaped = JSON.stringify(switchRefObj).replace(/"/g, '&quot;');
 
                     return `<div class="io-complex-row"><div class="io-header"><span class="io-type ${io.type}">${io.type==='in'?'Eingang':'Ausgang'}</span> ${io.label} ${warnHtml}</div>
                     <div class="io-fields-grid">
