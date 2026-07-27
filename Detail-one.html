@@ -1511,6 +1511,37 @@
         if (roots.length === 0 && allHw.length > 0) roots.push(...allHw);
         if(roots.length === 0) h += '<div style="color:#64748b; font-style:italic;">Keine Hardware im Projekt vorhanden.</div>';
 
+        // Hilfsfunktion zur universellen Ermittlung der belegten Kanäle/Adressen eines Hardware-Geräts
+        function getDeviceChannelCount(childItem) {
+            // 1. Prüfen, ob direkt in der Config channels definiert ist (z.B. channels: 4)
+            if (childItem.cfg.channels) return parseInt(childItem.cfg.channels);
+            
+            // 2. Prüfen, ob in den Hardware-Feldern Kanäle eingetragen wurden
+            let fieldChannels = parseInt(childItem.hw.fields['Kanäle'] || childItem.hw.fields['Channels'] || 0);
+            if (fieldChannels > 0) return fieldChannels;
+
+            // 3. Aktives Profil / IOs prüfen (z.B. Anzahl der Ausgänge zählen, falls relevant)
+            const activeIo = childItem.cfg.profiles ? 
+                (childItem.cfg.profiles.find(p => p.id === childItem.hw.activeProfile)?.io || childItem.cfg.profiles[0].io) : 
+                childItem.cfg.io;
+            
+            if (activeIo) {
+                // Wenn es ein Bus-Gerät ist, das selbst Untergeräte hat (z.B. DALI Extension), summieren wir deren Kanäle
+                if (childItem.hw.subNodes) {
+                    let subSum = 0;
+                    for (let ioKey in childItem.hw.subNodes) {
+                        childItem.hw.subNodes[ioKey].forEach(sub => {
+                            subSum += parseInt(sub.channels) || 1;
+                        });
+                    }
+                    if (subSum > 0) return subSum;
+                }
+            }
+            
+            // Standard-Fallback: Wenn nichts anderes definiert ist, belegt das Gerät 1 Platz
+            return 1;
+        }
+
         function renderTopoNode(item, level) {
             const isRoot = level === 0;
             const activeIo = item.cfg.profiles ? (item.cfg.profiles.find(p=>p.id===item.hw.activeProfile)?.io || item.cfg.profiles[0].io) : item.cfg.io;
@@ -1534,18 +1565,9 @@
                         let totalAddrs = 0;
                         subs.forEach(s => { totalAddrs += parseInt(s.channels) || 1; });
 
-                        // --- NEU: Auch angeschlossene Hardware-Komponenten (wie DALI-Aktoren mit Kanälen) einrechnen ---
                         children.forEach(child => {
-                            const childIoList = child.cfg.profiles ? (child.cfg.profiles.find(p=>p.id===child.hw.activeProfile)?.io || child.cfg.profiles[0].io) : child.cfg.io;
-                            // Prüfen, ob die Hardware Kanäle besitzt oder über Felder/Profile Kanäle definiert
-                            let childChannels = parseInt(child.hw.fields['Kanäle'] || child.hw.fields['Channels'] || 0);
-                            if (!childChannels && childIoList) {
-                                // Zähle Ausgänge als Standard-Adressen, falls keine expliziten Kanäle definiert sind
-                                childChannels = childIoList.filter(cio => cio.type === 'out').length || 1;
-                            }
-                            totalAddrs += childChannels;
+                            totalAddrs += getDeviceChannelCount(child);
                         });
-                        // -------------------------------------------------------------------------------------------------
 
                         const isFull = totalAddrs >= maxLimit;
                         
@@ -1558,7 +1580,6 @@
                         if(subs.length === 0 && children.length === 0) {
                             html += `<div class="topo-device" style="color:#94a3b8; font-style:italic; justify-content:center;">Keine Geräte angelegt</div>`;
                         } else {
-                            // Interne Untergeräte (z.B. EVGs) anzeigen
                             subs.forEach(sub => {
                                 let ch = parseInt(sub.channels) || 1;
                                 html += `<div class="topo-device">
@@ -1569,9 +1590,8 @@
                                         </div>
                                        </div>`;
                             });
-                            // Externe Hardware-Kinder (z.B. der 4-Kanal Aktor) direkt in der Bus-Liste anzeigen
                             children.forEach(child => {
-                                let childCh = parseInt(child.hw.fields['Kanäle'] || child.hw.fields['Channels'] || 4);
+                                let childCh = getDeviceChannelCount(child);
                                 html += `<div class="topo-device">
                                         <div style="font-weight:600; color:#1e293b;">🔌 ${child.hw.fields['Geräte-Bez.'] || child.cfg.name}</div>
                                         <div class="topo-device-info">
@@ -1583,7 +1603,11 @@
                         }
                         html += `</div>`;
                     } else {
-                        let usedCount = children.length;
+                        // Universelle Zählung für normale Busse (wie Loxone Link, Tree, Air)
+                        let usedCount = 0;
+                        children.forEach(child => {
+                            usedCount += getDeviceChannelCount(child);
+                        });
                         const isFull = usedCount >= maxLimit;
 
                         html += `<div class="topo-bus">
