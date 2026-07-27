@@ -233,7 +233,7 @@ const hardwareConfigList = [
     // --- Extensions ---
     { 
         id: "lox_tree_extension", 
-        name: "ree Extension", 
+        name: "Tree Extension", 
         image: "Tree-Extension.jpg", 
         power: 1.3, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
