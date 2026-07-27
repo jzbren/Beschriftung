@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V3.6</title>
+    <title>ServiceProDetail Konfigurator V3.7</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -96,7 +96,6 @@
         .dropdown-search { width: calc(100% - 16px) !important; margin: 8px; padding: 6px; box-sizing: border-box; border: 1px solid #cbd5e1 !important; border-radius: 3px; }
         .dropdown-option { padding: 8px 10px; font-size: 0.85rem; cursor: pointer; border-bottom: 1px solid #f8fafc; }
         .dropdown-option:hover { background-color: #f1f5f9; color: var(--primary); }
-        .dropdown-group-header { padding: 6px 10px; font-size: 0.75rem; font-weight: bold; background: #f1f5f9; color: #475569; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; }
 
         .io-section { margin-top: 10px; }
         .io-complex-row { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px; padding: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
@@ -243,7 +242,7 @@
             <div class="globals-grid">
                 <div class="globals-section">
                     <h3>📱 App-Funktionen</h3>
-                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Zentrale App-Funktionen (z.B. Beleuchtung Kochen, Szene TV), die am Schalter gewählt werden können.</p>
+                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Zentrale App-Funktionen (z.B. Beleuchtung Kochen, Szene TV).</p>
                     <div class="add-global-row">
                         <input type="text" id="new-appfn-input" placeholder="Neue App-Funktion..." onkeydown="if(event.key==='Enter') addAppFunction()">
                         <button class="btn primary" onclick="addAppFunction()">Hinzufügen</button>
@@ -252,13 +251,28 @@
                 </div>
                 <div class="globals-section">
                     <h3>📂 Globale Gruppen</h3>
-                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Globale Gruppen (z.B. Zentral Aus, Alle Jalousien), um mehrere Relais oder DALI-Geräte zusammenzufassen.</p>
+                    <p style="font-size:0.85rem; color:#64748b; margin-bottom:15px;">Globale Gruppen (z.B. Zentral Aus, Alle Jalousien) für Hardware.</p>
                     <div class="add-global-row">
                         <input type="text" id="new-glbgrp-input" placeholder="Neue globale Gruppe..." onkeydown="if(event.key==='Enter') addGlobalGroup()">
                         <button class="btn primary" onclick="addGlobalGroup()">Hinzufügen</button>
                     </div>
                     <div class="globals-list" id="glbgrp-list"></div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignment Modal (Checkboxes) -->
+    <div id="assign-modal" class="modal-overlay" onclick="closeModal('assign-modal', event)">
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Zuweisung: <span id="assign-title" style="color: var(--primary);"></span></h2>
+                <button class="icon-btn" onclick="closeModal('assign-modal')" style="color:black; font-size:1.5rem;">×</button>
+            </div>
+            <div id="assign-extras" style="display:none; margin-bottom: 20px;"></div>
+            <div id="assign-hw-list" style="overflow-y: auto; max-height: 50vh; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px;"></div>
+            <div style="margin-top: 20px; text-align: right;">
+                <button class="btn primary" onclick="closeModal('assign-modal')">Fertig</button>
             </div>
         </div>
     </div>
@@ -291,6 +305,23 @@
             projectData = savedData; 
             if(!projectData.appFunctions) projectData.appFunctions = ["Beleuchtung", "Beschattung", "Heizung", "Zentral"];
             if(!projectData.globalGroups) projectData.globalGroups = ["Zentral Aus", "Alle Lichter", "Zentral Beschattung"];
+            
+            // Backward compatibility checks for hardware assignments
+            projectData.details.forEach(d => {
+                if(d.hardware) d.hardware.forEach(hw => {
+                    if(!hw.appFunctions) hw.appFunctions = {};
+                    if(!hw.globalGroup) hw.globalGroup = {};
+                    if(hw.subNodes) {
+                        for(let ioKey in hw.subNodes) {
+                            hw.subNodes[ioKey].forEach(sub => {
+                                if(sub.appFunctions === undefined) sub.appFunctions = "";
+                                if(sub.globalGroup === undefined) sub.globalGroup = "";
+                            });
+                        }
+                    }
+                });
+            });
+            
             activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null;
             if(!activeDetailId) addNewDetail(); else renderApp();
         } else addNewDetail();
@@ -327,6 +358,7 @@
         appFnList.innerHTML = projectData.appFunctions.map(fn => `
             <div class="global-item">
                 <input type="text" value="${fn}" onchange="renameGlobalItem('appFunctions', '${fn.replace(/'/g, "\\'")}', this.value)">
+                <button class="btn info" style="padding: 4px 8px; font-size: 0.8rem;" onclick="openAssignModal('appFunction', '${fn.replace(/'/g, "\\'")}')">🔗 Zuweisen</button>
                 <button class="delete-btn" onclick="deleteGlobalItem('appFunctions', '${fn.replace(/'/g, "\\'")}')">✕</button>
             </div>
         `).join('');
@@ -335,6 +367,7 @@
         glbGrpList.innerHTML = projectData.globalGroups.map(grp => `
             <div class="global-item">
                 <input type="text" value="${grp}" onchange="renameGlobalItem('globalGroups', '${grp.replace(/'/g, "\\'")}', this.value)">
+                <button class="btn info" style="padding: 4px 8px; font-size: 0.8rem;" onclick="openAssignModal('globalGroup', '${grp.replace(/'/g, "\\'")}')">🔗 Zuweisen</button>
                 <button class="delete-btn" onclick="deleteGlobalItem('globalGroups', '${grp.replace(/'/g, "\\'")}')">✕</button>
             </div>
         `).join('');
@@ -370,13 +403,17 @@
             projectData[type][idx] = newName;
             
             projectData.details.forEach(d => {
-                if (type === 'appFunctions' && d.frames) {
+                if (d.frames) {
                     d.frames.forEach(f => {
                         for(let slotKey in f.slots) {
                             const slot = f.slots[slotKey];
                             if(slot && slot.ioData) {
                                 for(let ioKey in slot.ioData) {
-                                    if(slot.ioData[ioKey].eingabegerat === oldName) slot.ioData[ioKey].eingabegerat = newName;
+                                    if(slot.ioData[ioKey].eingabegerat && slot.ioData[ioKey].eingabegerat.includes(oldName)) {
+                                        let items = slot.ioData[ioKey].eingabegerat.split(',').map(x=>x.trim());
+                                        let i = items.indexOf(oldName);
+                                        if (i !== -1) { items[i] = newName; slot.ioData[ioKey].eingabegerat = items.join(', '); }
+                                    }
                                 }
                             }
                         }
@@ -385,12 +422,28 @@
                 if(d.hardware) {
                     d.hardware.forEach(hw => {
                         if (type === 'globalGroups' && hw.globalGroup) {
-                            for(let ioKey in hw.globalGroup) { if(hw.globalGroup[ioKey] === oldName) hw.globalGroup[ioKey] = newName; }
+                            for(let ioKey in hw.globalGroup) {
+                                let list = (hw.globalGroup[ioKey] || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                let i = list.indexOf(oldName); if (i !== -1) { list[i] = newName; hw.globalGroup[ioKey] = list.join(', '); }
+                            }
+                        }
+                        if (type === 'appFunctions' && hw.appFunctions) {
+                            for(let ioKey in hw.appFunctions) {
+                                let list = (hw.appFunctions[ioKey] || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                let i = list.indexOf(oldName); if (i !== -1) { list[i] = newName; hw.appFunctions[ioKey] = list.join(', '); }
+                            }
                         }
                         if (hw.subNodes) {
                             for(let ioKey in hw.subNodes) {
                                 hw.subNodes[ioKey].forEach(sub => {
-                                    if(type === 'globalGroups' && sub.globalGroup === oldName) sub.globalGroup = newName;
+                                    if(type === 'globalGroups') {
+                                        let list = (sub.globalGroup || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                        let i = list.indexOf(oldName); if (i !== -1) { list[i] = newName; sub.globalGroup = list.join(', '); }
+                                    }
+                                    if(type === 'appFunctions') {
+                                        let list = (sub.appFunctions || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                        let i = list.indexOf(oldName); if (i !== -1) { list[i] = newName; sub.appFunctions = list.join(', '); }
+                                    }
                                 });
                             }
                         }
@@ -406,13 +459,16 @@
             projectData[type] = projectData[type].filter(x => x !== name);
             
             projectData.details.forEach(d => {
-                if (type === 'appFunctions' && d.frames) {
+                if (d.frames) {
                     d.frames.forEach(f => {
                         for(let slotKey in f.slots) {
                             const slot = f.slots[slotKey];
                             if(slot && slot.ioData) {
                                 for(let ioKey in slot.ioData) {
-                                    if(slot.ioData[ioKey].eingabegerat === name) slot.ioData[ioKey].eingabegerat = '';
+                                    if(slot.ioData[ioKey].eingabegerat) {
+                                        let items = slot.ioData[ioKey].eingabegerat.split(',').map(x=>x.trim());
+                                        slot.ioData[ioKey].eingabegerat = items.filter(x => x !== name).join(', ');
+                                    }
                                 }
                             }
                         }
@@ -421,12 +477,28 @@
                 if(d.hardware) {
                     d.hardware.forEach(hw => {
                         if (type === 'globalGroups' && hw.globalGroup) {
-                            for(let ioKey in hw.globalGroup) { if(hw.globalGroup[ioKey] === name) hw.globalGroup[ioKey] = ''; }
+                            for(let ioKey in hw.globalGroup) {
+                                let list = (hw.globalGroup[ioKey] || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                hw.globalGroup[ioKey] = list.filter(x => x !== name).join(', ');
+                            }
+                        }
+                        if (type === 'appFunctions' && hw.appFunctions) {
+                            for(let ioKey in hw.appFunctions) {
+                                let list = (hw.appFunctions[ioKey] || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                hw.appFunctions[ioKey] = list.filter(x => x !== name).join(', ');
+                            }
                         }
                         if (hw.subNodes) {
                             for(let ioKey in hw.subNodes) {
                                 hw.subNodes[ioKey].forEach(sub => {
-                                    if(type === 'globalGroups' && sub.globalGroup === name) sub.globalGroup = '';
+                                    if(type === 'globalGroups') {
+                                        let list = (sub.globalGroup || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                        sub.globalGroup = list.filter(x => x !== name).join(', ');
+                                    }
+                                    if(type === 'appFunctions') {
+                                        let list = (sub.appFunctions || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                        sub.appFunctions = list.filter(x => x !== name).join(', ');
+                                    }
                                 });
                             }
                         }
@@ -443,12 +515,19 @@
             if (pd.hardware) {
                 pd.hardware.forEach(hw => {
                     for(let key in hw.fields) { if (hw.fields[key] === oldStr) hw.fields[key] = newStr; }
-                    for(let key in hw.mappings) { if (hw.mappings[key] === oldStr) hw.mappings[key] = newStr; }
-                    
+                    for(let key in hw.mappings) { 
+                        if (hw.mappings[key]) {
+                            let items = hw.mappings[key].split(',').map(x=>x.trim());
+                            let i = items.indexOf(oldStr); if (i !== -1) { items[i] = newStr; hw.mappings[key] = items.join(', '); }
+                        }
+                    }
                     if (hw.subNodes) {
                         for(let ioKey in hw.subNodes) {
                             hw.subNodes[ioKey].forEach(sub => {
-                                if (sub.mapping === oldStr) sub.mapping = newStr;
+                                if (sub.mapping) {
+                                    let items = sub.mapping.split(',').map(x=>x.trim());
+                                    let i = items.indexOf(oldStr); if (i !== -1) { items[i] = newStr; sub.mapping = items.join(', '); }
+                                }
                             });
                         }
                     }
@@ -606,24 +685,188 @@
         if(confirm("Schaltstelle wirklich löschen?")) { const d = projectData.details.find(x => x.id === activeDetailId); if(d) { d.frames = d.frames.filter(x => x.id !== fId); renderApp(); } }
     }
 
-    // Kombinierter Picker für Direktverknüpfungen und App-Funktionen
-    function renderGroupedDropdown(dropdownId, currentValue, hardwareOptions, appFunctionOptions, callbackName, placeholder) {
-        let hwOptsHtml = hardwareOptions.map(opt => `<div class="dropdown-option" data-label="${(opt.label || opt.value).toLowerCase()}" onclick="${callbackName}('${opt.value.replace(/'/g, "\\'")}', event)">${opt.label || opt.value}</div>`).join('');
-        let appOptsHtml = appFunctionOptions.map(opt => `<div class="dropdown-option" data-label="${(opt.label || opt.value).toLowerCase()}" onclick="${callbackName}('${opt.value.replace(/'/g, "\\'")}', event)">${opt.label || opt.value}</div>`).join('');
+    // Modal Funktionen für Checkbox-Zuweisung
+    window.openAssignModal = function(type, sourceName, switchRef = null) {
+        document.getElementById('assign-title').innerText = sourceName;
         
-        let allOpts = [...hardwareOptions, ...appFunctionOptions];
-        const dLabel = allOpts.find(o => o.value === currentValue)?.label || currentValue || placeholder;
+        let hwHtml = '';
+        projectData.details.forEach(d => {
+            let detailHtml = '';
+            if(d.hardware) d.hardware.forEach(hw => {
+                const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+                if(!cfg) return;
+                const activeIo = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
+                
+                let hwIoHtml = '';
+                if(activeIo) activeIo.forEach(io => {
+                    // Zeige nur Ausgänge oder Bus-Nodes (Sensoren/Eingänge machen für Gruppen wenig Sinn, aber der Vollständigkeit halber können wir out's zulassen)
+                    if(io.type === 'out') {
+                        let isChecked = false;
+                        let currentList = [];
+                        if(type === 'appFunction') currentList = (hw.appFunctions?.[io.id] || '').split(',').map(x=>x.trim());
+                        if(type === 'globalGroup') currentList = (hw.globalGroup?.[io.id] || '').split(',').map(x=>x.trim());
+                        if(type === 'switch') currentList = (hw.mappings?.[io.id] || '').split(',').map(x=>x.trim());
+                        isChecked = currentList.includes(sourceName);
+
+                        hwIoHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:0.9rem; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', null, this.checked, ${switchRef ? `'${JSON.stringify(switchRef)}'` : null})" style="width:16px;height:16px;cursor:pointer;"> ${io.label}</label>`;
+                    } else if(io.type === 'bus') {
+                        const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
+                        if(busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
+                            hw.subNodes[io.id].forEach(sub => {
+                                let isChecked = false;
+                                let currentList = [];
+                                if(type === 'appFunction') currentList = (sub.appFunctions || '').split(',').map(x=>x.trim());
+                                if(type === 'globalGroup') currentList = (sub.globalGroup || '').split(',').map(x=>x.trim());
+                                if(type === 'switch') currentList = (sub.mapping || '').split(',').map(x=>x.trim());
+                                isChecked = currentList.includes(sourceName);
+
+                                hwIoHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; margin-left:20px; font-size:0.9rem; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleHwAssignment('${type}', '${sourceName.replace(/'/g, "\\'")}', '${hw.instanceId}', '${io.id}', '${sub.id}', this.checked, ${switchRef ? `'${JSON.stringify(switchRef)}'` : null})" style="width:16px;height:16px;cursor:pointer;"> 🔌 ${busCfg.subDeviceLabel}: ${sub.name}</label>`;
+                            });
+                        }
+                    }
+                });
+                if(hwIoHtml) {
+                    detailHtml += `<div style="margin-bottom: 12px; border-left: 3px solid #0f766e; padding-left: 12px;"><b style="color:#1e293b; font-size:0.95rem;">${hw.fields['Geräte-Bez.'] || cfg.name}</b>${hwIoHtml}</div>`;
+                }
+            });
+            if(detailHtml) {
+                hwHtml += `<div style="margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;"><h3 style="margin-top:0; color:#0f766e; font-size:1.05rem; border-bottom:1px solid #cbd5e1; padding-bottom:5px;">${d.name} <span style="color:#64748b;font-size:0.85rem;font-weight:normal;">(${d.room || 'Kein Raum'})</span></h3>${detailHtml}</div>`;
+            }
+        });
         
-        let contentHtml = `<div class="dropdown-option" data-label="keine" onclick="${callbackName}('', event)">-- Keine Zuordnung --</div>`;
-        if(hardwareOptions.length > 0) {
-            contentHtml += `<div class="dropdown-group-header">Hardware (Direktverknüpfung)</div>${hwOptsHtml}`;
-        }
-        if(appFunctionOptions.length > 0) {
-            contentHtml += `<div class="dropdown-group-header">App-Funktionen</div>${appOptsHtml}`;
+        document.getElementById('assign-hw-list').innerHTML = hwHtml || '<p style="color:#64748b;">Keine Hardware-Ausgänge verfügbar.</p>';
+
+        const extrasDiv = document.getElementById('assign-extras');
+        if(type === 'switch' && switchRef) {
+            let extraHtml = `<div style="display:flex; gap: 30px;">`;
+            
+            // App Functions Checkboxes
+            let appHtml = `<div style="flex:1; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:6px;"><h4 style="margin-top:0; color:#166534;">📱 App-Funktionen</h4>`;
+            projectData.appFunctions.forEach(af => {
+                const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
+                const f = d.frames.find(x=>x.id===switchRef.fId);
+                const slot = f.slots[`slot-${switchRef.slotN}`];
+                const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
+                const isChecked = eingabeList.includes(af);
+
+                appHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${af.replace(/'/g, "\\'")}', this.checked)" style="width:16px;height:16px;cursor:pointer;"> ${af}</label>`;
+            });
+            appHtml += `</div>`;
+
+            // Global Groups Checkboxes
+            let grpHtml = `<div style="flex:1; background:#eff6ff; border:1px solid #bfdbfe; padding:15px; border-radius:6px;"><h4 style="margin-top:0; color:#1e40af;">📂 Globale Gruppen</h4>`;
+            projectData.globalGroups.forEach(gg => {
+                const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
+                const f = d.frames.find(x=>x.id===switchRef.fId);
+                const slot = f.slots[`slot-${switchRef.slotN}`];
+                const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
+                const isChecked = eingabeList.includes(gg);
+
+                grpHtml += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${gg.replace(/'/g, "\\'")}', this.checked)" style="width:16px;height:16px;cursor:pointer;"> ${gg}</label>`;
+            });
+            grpHtml += `</div>`;
+
+            extraHtml += appHtml + grpHtml + `</div><hr style="border:0; border-top:1px solid #cbd5e1; margin: 20px 0;">`;
+            extrasDiv.innerHTML = extraHtml;
+            extrasDiv.style.display = 'block';
+        } else {
+            extrasDiv.style.display = 'none';
+            extrasDiv.innerHTML = '';
         }
 
-        return `<div class="custom-select" onclick="toggleGenericDropdown('${dropdownId}', event)"><div class="select-selected">${dLabel} <span>▼</span></div><div class="select-items" id="dd-${dropdownId}" onclick="event.stopPropagation()"><input type="text" class="dropdown-search" placeholder="Suchen..." onkeyup="filterGenericDropdown('${dropdownId}', this.value)"><div id="dd-list-${dropdownId}">${contentHtml}</div></div></div>`;
-    }
+        document.getElementById('assign-modal').style.display = 'flex';
+    };
+
+    window.toggleHwAssignment = function(type, sourceName, hwId, ioId, subId, isChecked, switchRefStr) {
+        let targetObj = null;
+        let targetProp = '';
+
+        projectData.details.forEach(d => {
+            if(d.hardware) d.hardware.forEach(hw => {
+                if(hw.instanceId === hwId) {
+                    if(subId && hw.subNodes && hw.subNodes[ioId]) {
+                        targetObj = hw.subNodes[ioId].find(x => x.id === subId);
+                        if(type === 'appFunction') targetProp = 'appFunctions';
+                        if(type === 'globalGroup') targetProp = 'globalGroup';
+                        if(type === 'switch') targetProp = 'mapping';
+                    } else {
+                        targetObj = hw;
+                        if(type === 'appFunction') {
+                            if(!targetObj.appFunctions) targetObj.appFunctions = {};
+                            targetObj = targetObj.appFunctions;
+                        }
+                        if(type === 'globalGroup') {
+                            if(!targetObj.globalGroup) targetObj.globalGroup = {};
+                            targetObj = targetObj.globalGroup;
+                        }
+                        if(type === 'switch') {
+                            if(!targetObj.mappings) targetObj.mappings = {};
+                            targetObj = targetObj.mappings;
+                        }
+                    }
+                }
+            });
+        });
+
+        if(!targetObj) return;
+
+        let list = (targetObj[subId ? targetProp : ioId] || '').split(',').map(x=>x.trim()).filter(x=>x);
+        if(isChecked && !list.includes(sourceName)) list.push(sourceName);
+        if(!isChecked) list = list.filter(x => x !== sourceName);
+        targetObj[subId ? targetProp : ioId] = list.join(', ');
+
+        // If it's a switch, we also update the switch's eingabegerat field with the HW target string
+        if (type === 'switch' && switchRefStr) {
+            const switchRef = JSON.parse(switchRefStr);
+            let hwNameStr = '';
+            projectData.details.forEach(pd => {
+                if(pd.hardware) pd.hardware.forEach(hw => {
+                    if(hw.instanceId === hwId) {
+                        const hc = hardwareConfigList.find(x => x.id === hw.configId);
+                        const baseName = `${pd.name} ${hw.fields['Geräte-Bez.'] || hc.name}`;
+                        if(subId) {
+                            const sub = hw.subNodes[ioId].find(x=>x.id===subId);
+                            hwNameStr = `${baseName} ${sub.name}`;
+                        } else {
+                            const activeIo = hc.profiles ? (hc.profiles.find(p=>p.id===hw.activeProfile)?.io || hc.profiles[0].io) : hc.io;
+                            const ioDef = activeIo.find(x=>x.id===ioId);
+                            hwNameStr = `${baseName} ${ioDef.label}`;
+                        }
+                    }
+                });
+            });
+
+            if(hwNameStr) {
+                const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
+                const f = d.frames.find(x=>x.id===switchRef.fId);
+                const slot = f.slots[`slot-${switchRef.slotN}`];
+                let eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim()).filter(x=>x);
+                
+                if(isChecked && !eingabeList.includes(hwNameStr)) eingabeList.push(hwNameStr);
+                if(!isChecked) eingabeList = eingabeList.filter(x => x !== hwNameStr);
+                
+                slot.ioData[switchRef.ioId].eingabegerat = eingabeList.join(', ');
+            }
+        }
+
+        saveToLocal();
+        renderApp(); // Update UI im Hintergrund
+    };
+
+    window.toggleSwitchExtraTarget = function(fId, slotN, ioId, targetName, isChecked) {
+        const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===fId));
+        const f = d.frames.find(x=>x.id===fId);
+        const slot = f.slots[`slot-${slotN}`];
+        let eingabeList = (slot.ioData[ioId].eingabegerat || '').split(',').map(x=>x.trim()).filter(x=>x);
+        
+        if(isChecked && !eingabeList.includes(targetName)) eingabeList.push(targetName);
+        if(!isChecked) eingabeList = eingabeList.filter(x => x !== targetName);
+        
+        slot.ioData[ioId].eingabegerat = eingabeList.join(', ');
+        saveToLocal();
+        renderApp(); // Update UI im Hintergrund
+    };
+
 
     function renderStandardDropdown(dropdownId, currentValue, optionsList, callbackName, placeholder) {
         let optsHtml = optionsList.map(opt => `<div class="dropdown-option" data-label="${(opt.label || opt.value).toLowerCase()}" onclick="${callbackName}('${opt.value.replace(/'/g, "\\'")}', event)">${opt.label || opt.value}</div>`).join('');
@@ -657,11 +900,19 @@
         if (!switchIdentifier) return false;
         let count = 0; projectData.details.forEach(d => { 
             if(d.hardware) d.hardware.forEach(h => { 
-                for (const key in h.mappings) { if (h.mappings[key] === switchIdentifier) count++; } 
+                for (const key in h.mappings) { 
+                    if (h.mappings[key]) {
+                        const items = h.mappings[key].split(',').map(x=>x.trim());
+                        if (items.includes(switchIdentifier)) count++;
+                    }
+                } 
                 if (h.subNodes) {
                     for(const ioKey in h.subNodes) {
                         h.subNodes[ioKey].forEach(sub => {
-                            if (sub.mapping === switchIdentifier) count++;
+                            if (sub.mapping) {
+                                const items = sub.mapping.split(',').map(x=>x.trim());
+                                if (items.includes(switchIdentifier)) count++;
+                            }
                         });
                     }
                 }
@@ -760,7 +1011,7 @@
             activeProfile: initialProfileId,
             fields: fields, 
             mappings: {}, 
-            bezeichnung: {},
+            appFunctions: {},
             globalGroup: {},
             subNodes: {} 
         }); 
@@ -782,7 +1033,7 @@
         const hw = d.hardware.find(x => x.instanceId === hwInstanceId);
         if(hw && confirm("Profil ändern? Bestehende IO-Verknüpfungen dieser Komponente werden zurückgesetzt.")) {
             hw.activeProfile = profileId;
-            hw.mappings = {}; hw.bezeichnung = {}; hw.globalGroup = {}; hw.subNodes = {};
+            hw.mappings = {}; hw.appFunctions = {}; hw.globalGroup = {}; hw.subNodes = {};
             renderApp();
         }
     }
@@ -822,7 +1073,7 @@
                     if(hw.instanceId === hwInstanceId) {
                         if(!hw.subNodes) hw.subNodes = {};
                         if(!hw.subNodes[ioId]) hw.subNodes[ioId] = [];
-                        hw.subNodes[ioId].push({ id: generateId(), name: "Neues Gerät", location: d.room || "", channels: 1, globalGroup: "", mapping: "" });
+                        hw.subNodes[ioId].push({ id: generateId(), name: "Neues Gerät", location: d.room || "", channels: 1, globalGroup: "", appFunctions: "", mapping: "" });
                     }
                 });
             }
@@ -873,8 +1124,7 @@
     }
 
     function generateSlotsHtml(d, f, total) {
-        let h = ''; const allConns = getAllAvailableConnections().map(x => ({value: x.value, label: x.value}));
-        const appFnOpts = projectData.appFunctions.map(x => ({value: x, label: x}));
+        let h = '';
 
         for(let i=1; i<=total; i++) {
             const slot = f.slots[`slot-${i}`]; const ic = iconConfigList.find(x => x.file === slot.iconFile); let ioHtml = '';
@@ -882,14 +1132,6 @@
                 ioHtml = `<div class="io-section">` + ic.io.map(io => {
                     let data = slot.ioData?.[io.id] || {bezeichnung:'', art:'', funktion:'', gruppe:'', eingabegerat:''};
                     if(typeof data === 'string') data = {bezeichnung: data, eingabegerat:''};
-                    
-                    const fnDir = `setDir_${f.id}_${i}_${io.id}`;
-
-                    window[fnDir] = (v, ev) => { 
-                        if(ev){ev.preventDefault();ev.stopPropagation();} 
-                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
-                        setTimeout(()=>updateSlotField(f.id, i, io.id, 'eingabegerat', v), 10); 
-                    };
                     
                     const switchIdent = `${d.name} ${data.bezeichnung || ic.label}`;
                     const hasWarn = checkCollision(switchIdent);
@@ -901,7 +1143,14 @@
                         <input type="text" placeholder="Klickart (z.B. Doppelklick)" value="${data.art||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','art',this.value)">
                         <input type="text" placeholder="Funktion (z.B. Licht Schalten)" value="${data.funktion||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','funktion',this.value)">
                         <input type="text" placeholder="Gruppe (Texteingabe)" value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','gruppe',this.value)">
-                        <div style="grid-column: span 2;">${renderGroupedDropdown(`dir-${f.id}-${i}-${io.id}`, data.eingabegerat, allConns, appFnOpts, fnDir, 'Hardware (Direkt) oder App-Funktion...')}</div>
+                        
+                        <div style="grid-column: span 2; margin-top:5px;">
+                            <button class="btn info" style="width: 100%; justify-content: center; margin-bottom: 5px; font-weight: bold;" onclick="openAssignModal('switch', '${switchIdent.replace(/'/g, "\\'")}', {fId:'${f.id}', slotN:${i}, ioId:'${io.id}'})">🔗 Verknüpfungen / Zuweisen</button>
+                            <div style="font-size: 0.8rem; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid #cbd5e1;">
+                                <b>Aktuell verknüpft:</b><br>
+                                <span style="color:#0f766e;">${data.eingabegerat || '-'}</span>
+                            </div>
+                        </div>
                     </div></div>`;
                 }).join('') + `</div>`;
             }
@@ -928,42 +1177,7 @@
                 replaceStringInAllReferences(`${d.name} ${oldBezeichnung}`, `${d.name} ${newBezeichnung}`);
             }
         }
-
-        const oldVal = cData[field]; cData[field] = val; slot.ioData[ioId] = cData;
-
-        if (field === 'eingabegerat' && val && !projectData.appFunctions.includes(val)) {
-            const ic = iconConfigList.find(x => x.file === slot.iconFile);
-            const swIdent = `${d.name} ${cData.bezeichnung || ic.label}`;
-            
-            projectData.details.forEach(pd => pd.hardware && pd.hardware.forEach(hw => {
-                const hc = hardwareConfigList.find(x => x.id === hw.configId);
-                if(hc) {
-                    const activeIo = hc.profiles ? (hc.profiles.find(p=>p.id===hw.activeProfile)?.io || hc.profiles[0].io) : hc.io;
-                    if(activeIo) activeIo.forEach(hio => {
-                        if(hio.type !== 'bus') {
-                            const targetIdent = `${pd.name} ${hw.fields['Geräte-Bez.'] || hc.name} ${hio.label}`;
-                            if(val.includes(targetIdent) && hw.mappings[hio.id] !== swIdent) {
-                                let currentMap = hw.mappings[hio.id] ? hw.mappings[hio.id].split(',').map(x=>x.trim()) : [];
-                                if(!currentMap.includes(swIdent)) currentMap.push(swIdent);
-                                hw.mappings[hio.id] = currentMap.join(', ');
-                            }
-                        } else {
-                            const busCfg = SYSTEM_CONFIG.busTypes[hio.busType];
-                            if (busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
-                                hw.subNodes[io.id].forEach(sub => {
-                                    const targetIdent = `${pd.name} ${hw.fields['Geräte-Bez.'] || hc.name} ${sub.name || 'Neues Gerät'}`;
-                                    if(val.includes(targetIdent) && sub.mapping !== swIdent) {
-                                        let currentMap = sub.mapping ? sub.mapping.split(',').map(x=>x.trim()) : [];
-                                        if(!currentMap.includes(swIdent)) currentMap.push(swIdent);
-                                        sub.mapping = currentMap.join(', ');
-                                    }
-                                });
-                            }
-                        }
-                    });
-                }
-            }));
-        }
+        cData[field] = val; slot.ioData[ioId] = cData;
         renderApp();
     }
 
@@ -981,15 +1195,9 @@
     function generateHardwareHtml(d) {
         if(!d.hardware.length) return '<p class="no-print" style="color:#64748b;">Noch keine Komponenten zugewiesen.</p>';
         
-        const allSwitches = getAllAvailableSwitches().map(x => ({value: x.value, label: x.value}));
-        const glbGrpOpts = projectData.globalGroups.map(x => ({value: x, label: x}));
-        
         return d.hardware.map(hw => {
             const cfg = hardwareConfigList.find(x => x.id === hw.configId); if(!cfg) return '';
             
-            if(!hw.bezeichnung) hw.bezeichnung = {};
-            if(!hw.globalGroup) hw.globalGroup = {};
-
             let profileHtml = '';
             let activeIoList = cfg.io || [];
             if(cfg.profiles) {
@@ -1040,25 +1248,21 @@
                                 <thead><tr>
                                     <th>Bezeichnung (${busCfg.subDeviceLabel})</th>
                                     <th>Montageort</th>
-                                    <th>Globale Gruppe</th>
                                     <th>Kanäle</th>
-                                    <th>Direktverknüpfung (Taster)</th>
+                                    <th>Verknüpfungen (Taster / App / Gruppe)</th>
                                     <th style="width: 30px;"></th>
                                 </tr></thead><tbody>` + subs.map(sub => {
-                                
-                                const fnSubMap = `setSubM_${hw.instanceId}_${io.id}_${sub.id}`;
-                                const fnSubGrp = `setSubG_${hw.instanceId}_${io.id}_${sub.id}`;
-
-                                window[fnSubMap] = (v, ev) => { if(ev){ev.preventDefault();ev.stopPropagation();} document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); setTimeout(() => { sub.mapping = v; saveToLocal(); renderApp(); }, 10); };
-                                window[fnSubGrp] = (v, ev) => { if(ev){ev.preventDefault();ev.stopPropagation();} document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); setTimeout(() => { updateSubNode(hw.instanceId, io.id, sub.id, 'globalGroup', v); }, 10); };
 
                                 return `
                                 <tr>
                                     <td><input type="text" value="${sub.name}" oninput="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)"></td>
                                     <td><input type="text" value="${sub.location}" oninput="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'location', this.value)"></td>
-                                    <td style="min-width:140px;">${renderStandardDropdown(`subG-${hw.instanceId}-${io.id}-${sub.id}`, sub.globalGroup||'', [{value:'', label:'-- Gruppe --'}, ...glbGrpOpts], fnSubGrp, 'Gruppe...')}</td>
                                     <td><input type="number" min="1" max="16" value="${sub.channels}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'channels', this.value)" style="width:50px; border:1px solid transparent; background:transparent;"></td>
-                                    <td style="min-width:140px;">${renderStandardDropdown(`subM-${hw.instanceId}-${io.id}-${sub.id}`, sub.mapping||'', [{value:'', label:'-- Taster --'}, ...allSwitches], fnSubMap, 'Taster...')}</td>
+                                    <td style="font-size: 0.75rem; color: #475569; line-height: 1.3;">
+                                        <b>Taster:</b> ${sub.mapping || '-'}<br>
+                                        <b>App:</b> ${sub.appFunctions || '-'}<br>
+                                        <b>Gruppe:</b> ${sub.globalGroup || '-'}
+                                    </td>
                                     <td style="text-align: right;"><button class="delete-btn" style="padding: 2px 4px;" title="Löschen" onclick="deleteSubNode('${hw.instanceId}', '${io.id}', '${sub.id}')">✕</button></td>
                                 </tr>`;
                             }).join('') + `</tbody></table>`;
@@ -1068,22 +1272,20 @@
                         busHtml += `<div class="bus-container"><div class="bus-header"><h5>${busCfg.icon} ${io.label}</h5><span class="bus-limit-badge ${isFull?'full':'ok'}">${totalAddresses}/${maxLimit} Adr. belegt</span></div>${subsHtml}<button class="btn" style="margin-top:10px; padding:6px 12px; font-size:0.85rem;" onclick="addSubNode('${hw.instanceId}', '${io.id}')">+ ${busCfg.subDeviceLabel} hinzufügen</button></div>`;
                     }
                 } else {
-                    const fnMap = `setHwM_${hw.instanceId}_${io.id}`;
-                    const fnGrp = `setHwG_${hw.instanceId}_${io.id}`;
-                    
-                    window[fnMap] = (v, ev) => { if(ev){ev.preventDefault();ev.stopPropagation();} document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); setTimeout(() => { updateHwFieldEx(hw, 'mappings', io.id, v, cfg); renderApp(); }, 10); };
-                    window[fnGrp] = (v, ev) => { if(ev){ev.preventDefault();ev.stopPropagation();} document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); setTimeout(() => { updateHwFieldEx(hw, 'globalGroup', io.id, v, cfg); renderApp(); }, 10); };
-                    
-                    const currentMap = hw.mappings?.[io.id] || '';
+                    const currentMap = hw.mappings?.[io.id] || '-';
+                    const currentApp = hw.appFunctions?.[io.id] || '-';
+                    const currentGrp = hw.globalGroup?.[io.id] || '-';
                     const currentBez = hw.bezeichnung?.[io.id] || '';
-                    const currentGrp = hw.globalGroup?.[io.id] || '';
 
                     const row = `<div class="io-complex-row" style="margin-bottom:10px; padding:10px; border-left:3px solid ${io.type==='in'?'#3b82f6':'#ef4444'}">
                         <div style="font-weight:bold; font-size:0.85rem; margin-bottom:8px; color:#334155;">${io.label}</div>
-                        <div class="io-fields-grid">
+                        <div class="io-fields-grid" style="grid-template-columns: 1fr;">
                             <input type="text" placeholder="Bezeichnung (z.B. Deckenlicht)" value="${currentBez}" onchange="updateHwFieldEx('${hw.instanceId}', 'bezeichnung', '${io.id}', this.value)">
-                            <div>${renderStandardDropdown(`hm-${hw.instanceId}-${io.id}`, currentMap, [{value:'', label:'-- Taster (Direkt) --'}, ...allSwitches], fnMap, 'Taster (Direkt)...')}</div>
-                            <div style="grid-column: span 2;">${renderStandardDropdown(`hg-${hw.instanceId}-${io.id}`, currentGrp, [{value:'', label:'-- Globale Gruppe (Optional) --'}, ...glbGrpOpts], fnGrp, 'Globale Gruppe (Optional)...')}</div>
+                            <div style="font-size: 0.8rem; background: #f8fafc; padding: 8px; border-radius: 4px; border: 1px solid #e2e8f0; line-height: 1.4;">
+                                <div style="margin-bottom:2px;"><span style="color:#64748b;">Taster:</span> <b>${currentMap}</b></div>
+                                <div style="margin-bottom:2px;"><span style="color:#64748b;">App-Funktion:</span> <b>${currentApp}</b></div>
+                                <div><span style="color:#64748b;">Globale Gruppe:</span> <b>${currentGrp}</b></div>
+                            </div>
                         </div>
                     </div>`;
 
@@ -1095,52 +1297,11 @@
         }).join('');
     }
 
-    window.updateHwFieldEx = function(hwOrId, dataBlock, ioId, val, cfg) {
+    window.updateHwFieldEx = function(hwOrId, dataBlock, ioId, val) {
         let hw = typeof hwOrId === 'string' ? projectData.details.find(x => x.id === activeDetailId).hardware.find(h => h.instanceId === hwOrId) : hwOrId;
         if(!hw[dataBlock]) hw[dataBlock] = {};
         hw[dataBlock][ioId] = val;
         saveToLocal();
-    }
-
-    function getAllAvailableConnections() {
-        let list = [];
-        projectData.details.forEach(d => d.hardware && d.hardware.forEach(hw => {
-            const c = hardwareConfigList.find(x => x.id === hw.configId);
-            if(c) {
-                const activeIo = c.profiles ? (c.profiles.find(p=>p.id===hw.activeProfile)?.io || c.profiles[0].io) : c.io;
-                if(activeIo) activeIo.forEach(io => { 
-                    if(io.type === 'bus') {
-                        const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
-                        if (busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
-                            hw.subNodes[io.id].forEach(sub => {
-                                list.push({value: `${d.name} ${hw.fields['Geräte-Bez.'] || c.name} ${sub.name || 'Neues Gerät'}`});
-                            });
-                        }
-                    } else {
-                        list.push({value: `${d.name} ${hw.fields['Geräte-Bez.'] || c.name} ${io.label}`}); 
-                    }
-                });
-            }
-        }));
-        return list;
-    }
-
-    function getAllAvailableSwitches() {
-        let list = [];
-        projectData.details.forEach(d => {
-            if(!d.frames) return;
-            d.frames.forEach(f => {
-                const tot = f.layout.split('x').reduce((a,b)=>a*b,1);
-                for(let i=1; i<=tot; i++) {
-                    const s = f.slots[`slot-${i}`]; if(!s || !s.iconFile) continue;
-                    const ic = iconConfigList.find(x => x.file === s.iconFile);
-                    if(ic && ic.io) ic.io.forEach(io => {
-                        list.push({value: `${d.name} ${(s.ioData && s.ioData[io.id] && s.ioData[io.id].bezeichnung) || ic.label}`});
-                    });
-                }
-            });
-        });
-        return list;
     }
 
     function getAllBusNodes(slaveType=null) {
@@ -1312,13 +1473,16 @@
                     if(busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
                         hw.subNodes[io.id].forEach(sub => {
                             const mappingStr = sub.mapping ? ` | Taster: ${sub.mapping}` : '';
-                            ioh += `<div style="font-size:0.8rem; margin-top:2px; border-left:2px solid var(--primary); padding-left:6px;"><b>${busCfg.subDeviceLabel}:</b> ${sub.name} (Ort: ${sub.location || 'k.A.'}, Gruppe: ${sub.globalGroup || '-'}, ${sub.channels} Adr.)${mappingStr}</div>`;
+                            const appStr = sub.appFunctions ? ` | App: ${sub.appFunctions}` : '';
+                            const grpStr = sub.globalGroup ? ` | Gruppe: ${sub.globalGroup}` : '';
+                            ioh += `<div style="font-size:0.8rem; margin-top:2px; border-left:2px solid var(--primary); padding-left:6px;"><b>${busCfg.subDeviceLabel}:</b> ${sub.name} (Ort: ${sub.location || 'k.A.'}, ${sub.channels} Adr.)${mappingStr}${appStr}${grpStr}</div>`;
                         });
                     } else if(io.type!=='bus') {
                         const bez = hw.bezeichnung?.[io.id] || '-';
                         const grp = hw.globalGroup?.[io.id] || '-';
                         const map = hw.mappings?.[io.id] || '-';
-                        ioh += `<div style="font-size:0.8rem; margin-top:2px;"><b>${io.label}:</b> Bez: ${bez} | Taster: ${map} | Gruppe: ${grp}</div>`; 
+                        const app = hw.appFunctions?.[io.id] || '-';
+                        ioh += `<div style="font-size:0.8rem; margin-top:2px;"><b>${io.label}:</b> Bez: ${bez} | Taster: ${map} | App: ${app} | Gruppe: ${grp}</div>`; 
                     }
                 });
                 return `<div class="print-hw-container"><div class="print-hw-image"><img src="icons-schalter/${cfg.image}"></div><div><b>${cfg.name}</b>${fh}<div style="margin-top:5px;">${ioh}</div></div></div>`;
