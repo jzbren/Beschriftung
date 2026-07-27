@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.0</title>
+    <title>ServiceProDetail Konfigurator V5.1</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -99,7 +99,12 @@
 
         .io-section { margin-top: 10px; }
         .io-complex-row { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px; padding: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-        .io-header { display: flex; align-items: center; font-size: 0.8rem; font-weight: bold; color: #334155; margin-bottom: 6px; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; }
+        .io-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-weight: bold; color: #334155; margin-bottom: 6px; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; cursor: pointer; user-select: none; }
+        .io-header:hover { background-color: #f8fafc; }
+        .io-header::after { content: '▲'; font-size: 0.7rem; color: #64748b; transition: transform 0.2s; margin-left: 8px; }
+        .io-complex-row.collapsed .io-header::after { transform: rotate(180deg); }
+        .io-complex-row.collapsed .io-fields-grid { display: none !important; }
+
         .io-type { font-size: 0.65rem; padding: 2px 4px; border-radius: 3px; margin-right: 6px; text-transform: uppercase; font-weight: bold; }
         .io-type.in { background: #dbeafe; color: #1e40af; }
         .io-type.out { background: #fce7f3; color: #9f1239; }
@@ -367,6 +372,11 @@
     function generateId() { return Math.random().toString(36).substr(2, 9); }
     function sanitizeFnName(str) { return str.replace(/[^a-zA-Z0-9_]/g, '_'); }
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+
+    // Hilfsfunktion zum Ein-/Ausklappen der I/O-Zeilen
+    window.toggleIoRow = function(headerElement) {
+        headerElement.closest('.io-complex-row').classList.toggle('collapsed');
+    };
 
     function resetProject() {
         if(confirm("Komplettes Projekt löschen und neu starten?")) {
@@ -771,7 +781,6 @@
                 
                 let hwIoHtml = '';
                 if(activeIo) activeIo.forEach(io => {
-                    // BEHOBEN: Alles anzeigen, was kein Bus ist (deckt Relay, Dimmer, In, Out etc. ab)
                     if(io.type !== 'bus') {
                         let isChecked = false;
                         let currentList = [];
@@ -1291,25 +1300,29 @@
 
                     const fnDropdown = renderStandardDropdown(`fn-${f.id}-${i}-${io.id}`, data.funktion || '', fnOptions, `setSlotFn_${f.id}_${i}_${io.id}`, 'Funktion wählen...');
 
-                    return `<div class="io-complex-row"><div class="io-header"><span class="io-type ${io.type}">${io.type==='in'?'Eingang':'Ausgang'}</span> ${io.label} ${warnHtml}</div>
-                    <div class="io-fields-grid">
-                        <input type="text" placeholder="Taster Bezeichnung" value="${data.bezeichnung||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','bezeichnung',this.value)">
-                        <select onchange="updateSlotField('${f.id}', '${i}','${io.id}','art',this.value)">
-                            <option value="TA" ${data.art==='TA'?'selected':''}>TA (Taster)</option>
-                            <option value="SA" ${data.art==='SA'?'selected':''}>SA (Schalter)</option>
-                            <option value="Imp." ${data.art==='Imp.'?'selected':''}>Imp. (Impuls)</option>
-                        </select>
-                        <div>${fnDropdown}</div>
-                        <input type="text" placeholder="Gruppe (Texteingabe)" value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','gruppe',this.value)">
-                        
-                        <div style="grid-column: span 2; margin-top:5px;">
-                            <button class="btn info" style="width: 100%; justify-content: center; margin-bottom: 5px; font-weight: bold;" onclick="openAssignModal('switch', '${switchIdent.replace(/'/g, "\\'")}', {fId:'${f.id}', slotN:${i}, ioId:'${io.id}'})">🔗 Verknüpfungen / Zuweisen</button>
-                            <div style="font-size: 0.8rem; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid #cbd5e1;">
-                                <b>Aktuell verknüpft:</b><br>
-                                <span style="color:#0f766e;">${data.eingabegerat || '-'}</span>
+                    return `<div class="io-complex-row">
+                        <div class="io-header" onclick="toggleIoRow(this)">
+                            <div><span class="io-type ${io.type}">${io.type==='in'?'Eingang':'Ausgang'}</span> ${io.label} ${warnHtml}</div>
+                        </div>
+                        <div class="io-fields-grid">
+                            <input type="text" placeholder="Taster Bezeichnung" value="${data.bezeichnung||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','bezeichnung',this.value)">
+                            <select onchange="updateSlotField('${f.id}', '${i}','${io.id}','art',this.value)">
+                                <option value="TA" ${data.art==='TA'?'selected':''}>TA (Taster)</option>
+                                <option value="SA" ${data.art==='SA'?'selected':''}>SA (Schalter)</option>
+                                <option value="Imp." ${data.art==='Imp.'?'selected':''}>Imp. (Impuls)</option>
+                            </select>
+                            <div>${fnDropdown}</div>
+                            <input type="text" placeholder="Gruppe (Texteingabe)" value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','gruppe',this.value)">
+                            
+                            <div style="grid-column: span 2; margin-top:5px;">
+                                <button class="btn info" style="width: 100%; justify-content: center; margin-bottom: 5px; font-weight: bold;" onclick="openAssignModal('switch', '${switchIdent.replace(/'/g, "\\'")}', {fId:'${f.id}', slotN:${i}, ioId:'${io.id}'})">🔗 Verknüpfungen / Zuweisen</button>
+                                <div style="font-size: 0.8rem; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid #cbd5e1;">
+                                    <b>Aktuell verknüpft:</b><br>
+                                    <span style="color:#0f766e;">${data.eingabegerat || '-'}</span>
+                                </div>
                             </div>
                         </div>
-                    </div></div>`;
+                    </div>`;
                 }).join('') + `</div>`;
             }
             window[`setIcon_${f.id}_${i}`] = (v, ev) => { 
@@ -1457,7 +1470,9 @@
                     const currentBez = hw.bezeichnung?.[io.id] || '';
 
                     const row = `<div class="io-complex-row" style="margin-bottom:10px; padding:10px; border-left:3px solid ${io.type==='in'?'#3b82f6':'#ef4444'}">
-                        <div style="font-weight:bold; font-size:0.85rem; margin-bottom:8px; color:#334155;">${io.label}</div>
+                        <div class="io-header" onclick="toggleIoRow(this)">
+                            <div>${io.label} (${io.type.toUpperCase()})</div>
+                        </div>
                         <div class="io-fields-grid" style="grid-template-columns: 1fr;">
                             <input type="text" placeholder="Bezeichnung (z.B. Deckenlicht)" value="${currentBez}" onchange="updateHwFieldEx('${hw.instanceId}', 'bezeichnung', '${io.id}', this.value)">
                             <div style="font-size: 0.8rem; background: #f8fafc; padding: 8px; border-radius: 4px; border: 1px solid #e2e8f0; line-height: 1.4;">
