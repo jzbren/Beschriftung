@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V4.7</title>
+    <title>ServiceProDetail Konfigurator V4.8</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1509,7 +1509,8 @@
                         allHw.push({
                             d: d,
                             hw: { fields: dev.fields, configId: cfg.file },
-                            cfg: { name: cfg.label, channels: 1, io: [] } // Zählt standardmäßig als 1 Gerät/Kanal am Bus
+                            // Hier wird 'cfg.channels' dynamisch übernommen (Standard ist 1)
+                            cfg: { name: cfg.label, channels: cfg.channels || 1, io: [] } 
                         });
                     }
                 }
