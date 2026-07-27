@@ -386,7 +386,6 @@ const hardwareConfigList = [
         name: "DALI Extension (10 Geräte)", 
         image: "Dali-Extension-10.jpg", 
         power: 1.5, 
-        channels: 4,
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
         io: [
             { id: "DALI_1", label: "DALI Bus 1", type: "bus", busType: "dali", limit:10 }
