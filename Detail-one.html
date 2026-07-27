@@ -1221,20 +1221,36 @@
         for(let i=1; i<=total; i++) {
             const slot = f.slots[`slot-${i}`]; const ic = iconConfigList.find(x => x.file === slot.iconFile); let ioHtml = '';
             
-            // --- NEU: Dynamische Custom-Fields für das Icon (falls in Bibliothek definiert) ---
+            // --- Dynamische Custom-Fields für das Icon mit automatischer Bus-Erkennung ---
             let customFieldsHtml = '';
             if (ic && ic.fields && Array.isArray(ic.fields)) {
                 if (!slot.customFields) slot.customFields = {};
                 customFieldsHtml = `<div style="margin-bottom: 10px; display: grid; grid-template-columns: 1fr; gap: 6px;">` + 
                 ic.fields.map(fieldName => {
                     const fieldValue = slot.customFields[fieldName] || '';
-                    return `<div class="form-group" style="margin-bottom:4px;">
-                        <label style="width: 100px; font-size:0.8rem;">${fieldName}:</label>
-                        <input type="text" value="${fieldValue}" placeholder="${fieldName} eingeben..." onchange="updateSlotCustomField('${f.id}', ${i}, '${fieldName.replace(/'/g, "\\'")}', this.value)" style="flex:1; padding:4px 6px; font-size:0.85rem;">
-                    </div>`;
+                    
+                    // Prüfen, ob das benutzerdefinierte Feld ein Bus-/Ast-Feld ist -> Dropdown statt Textfeld
+                    if (/ast|bus|bridge|dali|link/i.test(fieldName)) {
+                        const fn = `setSlotCustomF_${f.id}_${i}_${sanitizeFnName(fieldName)}`;
+                        window[fn] = (v, ev) => { 
+                            if(ev){ev.preventDefault();ev.stopPropagation();} 
+                            document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+                            setTimeout(() => { updateSlotCustomField(f.id, i, fieldName, v); }, 10); 
+                        };
+                        const expectedType = getFieldBusType(fieldName);
+                        const busNodes = getAllBusNodes(expectedType);
+                        return `<div class="form-group" style="margin-bottom:4px;">
+                            <label style="width: 100px; font-size:0.8rem;">${fieldName}:</label>
+                            <div style="flex:1;">${renderStandardDropdown(`slotcf-${f.id}-${i}-${sanitizeFnName(fieldName)}`, fieldValue, [{value:'', label:'--- Keine Zuordnung ---'}, ...busNodes], fn, 'Bus...')}</div>
+                        </div>`;
+                    } else {
+                        return `<div class="form-group" style="margin-bottom:4px;">
+                            <label style="width: 100px; font-size:0.8rem;">${fieldName}:</label>
+                            <input type="text" value="${fieldValue}" placeholder="${fieldName} eingeben..." onchange="updateSlotCustomField('${f.id}', ${i}, '${fieldName.replace(/'/g, "\\'")}', this.value)" style="flex:1; padding:4px 6px; font-size:0.85rem;">
+                        </div>`;
+                    }
                 }).join('') + `</div>`;
             }
-            // ---------------------------------------------------------------------------------
 
             if(ic && ic.io) {
                 ioHtml = `<div class="io-section">` + ic.io.map(io => {
@@ -1489,65 +1505,57 @@
         
         const allHw = [];
         
-        // 1. Echte Hardware-Liste durchsuchen (wie bisher)
+        // 1. Echte Hardware-Liste durchsuchen
         projectData.details.forEach(d => d.hardware && d.hardware.forEach(hw => {
             const cfg = hardwareConfigList.find(x => x.id === hw.configId);
             if(cfg) allHw.push({d, hw, cfg});
         }));
 
-        // 2. NEU: Auch Raum-Geräte (Icons) durchsuchen, die ein Bus-Feld (z.B. Tree Ast) haben!
+        // 2. Schalter/Icons in den Schaltstellen durchsuchen, die ein Bus-Feld haben
         projectData.details.forEach(d => {
-            // Passe 'd.devices' an, falls deine Raum-Geräte in der Projektstruktur anders heißen (z.B. d.schalter oder d.items)
-            const roomDevices = d.devices || d.schalter || []; 
-            roomDevices.forEach(dev => {
-                const cfg = iconConfigList.find(x => x.label === dev.label || x.file === dev.file);
-                // Prüfen, ob das Raum-Gerät ein Feld mit Bus/Ast/Link besitzt und ob es ausgefüllt wurde
-                if (cfg && dev.fields) {
-                    const hasBusField = Object.keys(dev.fields).some(k => /ast|bus|link|bridge|dali/i.test(k) && dev.fields[k]);
-                    if (hasBusField) {
-                        // Wir mappen das Raum-Gerät so, dass die Topologie-Logik es exakt wie Hardware behandeln kann
-                        allHw.push({
-                            d: d,
-                            hw: { fields: dev.fields, configId: cfg.file },
-                            // Hier wird 'cfg.channels' dynamisch übernommen (Standard ist 1)
-                            cfg: { name: cfg.label, channels: cfg.channels || 1, io: [] } 
-                        });
+            if (d.frames) {
+                d.frames.forEach(f => {
+                    for (let slotKey in f.slots) {
+                        const slot = f.slots[slotKey];
+                        if (slot && slot.iconFile) {
+                            const cfg = iconConfigList.find(x => x.file === slot.iconFile);
+                            if (cfg && slot.customFields) {
+                                const hasBusField = Object.keys(slot.customFields).some(k => /ast|bus|link|bridge|dali/i.test(k) && slot.customFields[k]);
+                                if (hasBusField) {
+                                    allHw.push({
+                                        d: d,
+                                        hw: { fields: slot.customFields, configId: slot.iconFile },
+                                        cfg: { name: cfg.label, channels: cfg.channels || 1, io: [] }
+                                    });
+                                }
+                            }
+                        }
                     }
-                }
-            });
+                });
+            }
         });
 
         const totalPower = getProjectTotalPower();
         h += `<div style="margin-bottom:25px; font-weight:bold; color:#0f766e; font-size:1.1rem; padding-bottom:10px; border-bottom:1px solid #cbd5e1;">⚡ Gesamtstromaufnahme Projekt: ${totalPower.toFixed(1)} W</div>`;
 
-        // Hilfsfunktion zur universellen Ermittlung der belegten Kanäle/Adressen eines Hardware-Geräts
         function getDeviceChannelCount(childItem) {
-            // 1. Prüfen, ob direkt in der Config channels definiert ist (z.B. channels: 4)
             if (childItem.cfg.channels) return parseInt(childItem.cfg.channels);
-            
-            // 2. Prüfen, ob in den Hardware-Feldern Kanäle eingetragen wurden
             let fieldChannels = parseInt(childItem.hw.fields['Kanäle'] || childItem.hw.fields['Channels'] || 0);
             if (fieldChannels > 0) return fieldChannels;
-
-            // 3. Aktives Profil / IOs prüfen (z.B. Anzahl der Ausgänge zählen, falls relevant)
+            
             const activeIo = childItem.cfg.profiles ? 
                 (childItem.cfg.profiles.find(p => p.id === childItem.hw.activeProfile)?.io || childItem.cfg.profiles[0].io) : 
                 childItem.cfg.io;
             
-            if (activeIo) {
-                // Wenn es ein Bus-Gerät ist, das selbst Untergeräte hat (z.B. DALI Extension), summieren wir deren Kanäle
-                if (childItem.hw.subNodes) {
-                    let subSum = 0;
-                    for (let ioKey in childItem.hw.subNodes) {
-                        childItem.hw.subNodes[ioKey].forEach(sub => {
-                            subSum += parseInt(sub.channels) || 1;
-                        });
-                    }
-                    if (subSum > 0) return subSum;
+            if (activeIo && childItem.hw.subNodes) {
+                let subSum = 0;
+                for (let ioKey in childItem.hw.subNodes) {
+                    childItem.hw.subNodes[ioKey].forEach(sub => {
+                        subSum += parseInt(sub.channels) || 1;
+                    });
                 }
+                if (subSum > 0) return subSum;
             }
-            
-            // Standard-Fallback: Wenn nichts anderes definiert ist, belegt das Gerät 1 Platz
             return 1;
         }
 
@@ -1556,10 +1564,10 @@
             const activeIo = item.cfg.profiles ? (item.cfg.profiles.find(p=>p.id===item.hw.activeProfile)?.io || item.cfg.profiles[0].io) : item.cfg.io;
 
             let html = `<div class="topo-master" style="${isRoot ? '' : 'margin-top: 10px; margin-bottom: 5px; border-color:#e2e8f0; box-shadow:none;'}">
-                    <div class="topo-master-title" style="${isRoot ? '' : 'font-size:1rem; color:#1e293b;'}">
-                        ${isRoot ? '🖥️' : '🔌'} ${item.hw.fields['Geräte-Bez.'] || item.cfg.name} 
-                        <span style="color:#64748b; font-size:0.85rem; font-weight:normal;">(${item.d.room ? item.d.room + ' - ' : ''}${item.d.name})</span>
-                    </div>`;
+                <div class="topo-master-title" style="${isRoot ? '' : 'font-size:1rem; color:#1e293b;'}">
+                    ${isRoot ? '🖥️' : '🔌'} ${item.hw.fields['Geräte-Bez.'] || item.cfg.name} 
+                    <span style="color:#64748b; font-size:0.85rem; font-weight:normal;">(${item.d.room ? item.d.room + ' - ' : ''}${item.d.name})</span>
+                </div>`;
             
             if (activeIo) {
                 activeIo.filter(i => i.type === 'bus').forEach(io => {
@@ -1573,10 +1581,7 @@
                         const subs = (item.hw.subNodes && item.hw.subNodes[io.id]) || [];
                         let totalAddrs = 0;
                         subs.forEach(s => { totalAddrs += parseInt(s.channels) || 1; });
-
-                        children.forEach(child => {
-                            totalAddrs += getDeviceChannelCount(child);
-                        });
+                        children.forEach(child => { totalAddrs += getDeviceChannelCount(child); });
 
                         const isFull = totalAddrs >= maxLimit;
                         
@@ -1585,7 +1590,7 @@
                                 <span>${busCfg.icon} ${io.label}</span>
                                 <span class="topo-badge ${isFull ? 'full' : 'ok'}">${totalAddrs}/${maxLimit} Belegt</span>
                             </div>`;
-                    
+                
                         if(subs.length === 0 && children.length === 0) {
                             html += `<div class="topo-device" style="color:#94a3b8; font-style:italic; justify-content:center;">Keine Geräte angelegt</div>`;
                         } else {
@@ -1612,11 +1617,8 @@
                         }
                         html += `</div>`;
                     } else {
-                        // Universelle Zählung für normale Busse (wie Loxone Link, Tree, Air)
                         let usedCount = 0;
-                        children.forEach(child => {
-                            usedCount += getDeviceChannelCount(child);
-                        });
+                        children.forEach(child => { usedCount += getDeviceChannelCount(child); });
                         const isFull = usedCount >= maxLimit;
 
                         html += `<div class="topo-bus">
@@ -1624,7 +1626,7 @@
                                 <span>📶 ${io.label}</span>
                                 <span class="topo-badge ${isFull ? 'full' : 'ok'}">${usedCount}/${maxLimit} Belegt</span>
                             </div>`;
-                    
+                
                         if (children.length > 0) {
                             children.forEach(child => { html += renderTopoNode(child, level + 1); });
                         } else {
@@ -1638,8 +1640,12 @@
             return html;
         }
 
+        // Korrigierte Definition der Root-Elemente (Geräte ohne übergeordneten Bus)
+        const roots = allHw.filter(item => !getParentBusId(item.hw));
         roots.forEach(root => { h += renderTopoNode(root, 0); });
-        c.innerHTML = h; document.getElementById('bus-modal').style.display = 'flex';
+        
+        c.innerHTML = h; 
+        document.getElementById('bus-modal').style.display = 'flex';
     }
 
     function buildDetailPrintHtml(d) {
