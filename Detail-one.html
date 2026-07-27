@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.2</title>
+    <title>ServiceProDetail Konfigurator V5.1</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -399,6 +399,9 @@
     window.closeModal = function(id, ev) { 
         if(ev && ev.target.id !== id) return; 
         document.getElementById(id).style.display = 'none'; 
+        if(id === 'assign-modal') {
+            _activeSwitchRef = null; // Globale Referenz sauber zurücksetzen
+        }
         renderApp();
     }
 
@@ -862,8 +865,7 @@
         let switchRef = _activeSwitchRef;
         if (subId === 'null' || !subId) subId = null;
 
-        // 1. Wenn es ein Schalter ist und aktiviert wird: Diesen spezifischen Schalter
-        // von allen *anderen* Eingängen im Projekt entfernen (Exklusivität für den Taster).
+        // 1. Exklusiv-Prüfung für Schalter: Diesen spezifischen Schalter von allen anderen Eingängen im Projekt entfernen
         if (type === 'switch' && isChecked) {
             projectData.details.forEach(pd => {
                 if (pd.hardware) {
@@ -925,7 +927,6 @@
 
         const propKey = subId ? targetProp : ioId;
 
-        // 2. Zuweisung als Liste verarbeiten (ermöglicht mehrere Schalter auf denselben Eingang)
         let list = (targetObj[propKey] || '').split(',').map(x => x.trim()).filter(x => x);
         if (isChecked && !list.includes(sourceName)) {
             list.push(sourceName);
@@ -935,7 +936,7 @@
         }
         targetObj[propKey] = list.join(', ');
 
-        // UI-Rückwärts-Synchronisation für den Schalter selbst
+        // UI-Rückwärts-Synchronisation exakt für den aktuell aktiven switchRef
         if (type === 'switch' && switchRef && switchRef.fId) {
             let hwNameStr = '';
             projectData.details.forEach(pd => {
