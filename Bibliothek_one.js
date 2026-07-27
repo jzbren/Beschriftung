@@ -233,7 +233,7 @@ const hardwareConfigList = [
     // --- Extensions ---
     { 
         id: "lox_tree_extension", 
-        name: "Loxone Tree Extension", 
+        name: "ree Extension", 
         image: "Tree-Extension.jpg", 
         power: 1.3, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
@@ -244,7 +244,7 @@ const hardwareConfigList = [
     },
     { 
         id: "lox_air_base", 
-        name: "Loxone Air Base Extension", 
+        name: "Air Base Extension", 
         image: "Air-Extension.jpg", 
         power: 1.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
@@ -254,7 +254,7 @@ const hardwareConfigList = [
     },
     { 
         id: "lox_dali_extension", 
-        name: "Loxone DALI Extension", 
+        name: "DALI Extension", 
         image: "Dali-Extension.jpg", 
         power: 1.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
@@ -274,7 +274,7 @@ const hardwareConfigList = [
     },
     { 
         id: "lox_relay_extension", 
-        name: "Loxone Relay Extension", 
+        name: "Relay Extension", 
         image: "Relay-Extension.jpg", 
         power: 1.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
@@ -291,51 +291,79 @@ const hardwareConfigList = [
     },
     { 
         id: "lox_di_extension", 
-        name: "Loxone DI Extension", 
+        name: "DI Extension", 
         image: "DI-Extension.jpg", 
         power: 1.0, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
         io: [
-            { id: "DI_1", label: "DI 1-10", type: "in" }, 
-            { id: "DI_2", label: "DI 11-20", type: "in" }
+            { id: "DI_1", label: "DI 1", type: "in" },
+            { id: "DI_2", label: "DI 2", type: "in" },
+            { id: "DI_3", label: "DI 3", type: "in" },
+            { id: "DI_4", label: "DI 4", type: "in" },
+            { id: "DI_5", label: "DI 5", type: "in" },
+            { id: "DI_6", label: "DI 6", type: "in" },
+            { id: "DI_7", label: "DI 7", type: "in" },
+            { id: "DI_8", label: "DI 8", type: "in" },
+            { id: "DI_9", label: "DI 9", type: "in" },
+            { id: "DI_10", label: "DI 10", type: "in" },
+            { id: "DI_11", label: "DI 11", type: "in" },
+            { id: "DI_12", label: "DI 12", type: "in" },
+            { id: "DI_13", label: "DI 13", type: "in" },
+            { id: "DI_14", label: "DI 14", type: "in" },
+            { id: "DI_15", label: "DI 15", type: "in" },
+            { id: "DI_16", label: "DI 16", type: "in" },
+            { id: "DI_17", label: "DI 17", type: "in" },
+            { id: "DI_18", label: "DI 18", type: "in" },
+            { id: "DI_19", label: "DI 19", type: "in" },
+            { id: "DI_20", label: "DI 20", type: "in" }
         ] 
     },
     { 
         id: "lox_dimmer_extension", 
-        name: "Loxone Dimmer Extension", 
+        name: "Dimmer Extension", 
         image: "Dimmer-Extension.jpg", 
         power: 1.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
         io: [
-            { id: "DIM_1", label: "Dimmer 1-2", type: "out" }, 
-            { id: "DIM_2", label: "Dimmer 3-4", type: "out" }
+            { id: "DI_1", label: "DI 1", type: "in" },
+            { id: "DI_2", label: "DI 2", type: "in" },
+            { id: "DI_3", label: "DI 3", type: "in" },
+            { id: "DI_4", label: "DI 4", type: "in" },
+            { id: "DI_5", label: "DI 5", type: "in" },
+            { id: "DI_6", label: "DI 6", type: "in" },
+            { id: "DI_7", label: "DI 7", type: "in" },
+            { id: "DI_8", label: "DI 8", type: "in" },
+            { id: "DIM_1", label: "Dimmer 1", type: "out" }, 
+            { id: "DIM_2", label: "Dimmer 2", type: "out" },
+            { id: "DIM_3", label: "Dimmer 3", type: "out" }, 
+            { id: "DIM_4", label: "Dimmer 4", type: "out" }
         ] 
     },
     { 
         id: "lox_modbus_extension", 
-        name: "Loxone Modbus Extension", 
+        name: "Modbus Extension", 
         image: "Modbus-Extension.jpg", 
         power: 1.0, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
         io: [
-            { id: "MODBUS", label: "Modbus RTU", type: "bus", busType: "modbus" }
+            { id: "MODBUS", label: "Modbus RTU", type: "bus", busType: "modbus", limit: 32 }
         ] 
     },
     { 
         id: "lox_1wire_extension", 
-        name: "Loxone 1-Wire Extension", 
+        name: "1-Wire Extension", 
         image: "1-Wire-Extension.jpg", 
         power: 1.0, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
         io: [
-            { id: "ONEWIRE", label: "1-Wire Bus", type: "bus", busType: "1wire" }
+            { id: "ONEWIRE", label: "1-Wire Bus", type: "bus", busType: "1wire", limit: 20 }
         ] 
     },
 
     // --- Tree / Air / Nano Devices ---
     { 
         id: "lox_nano_di_tree", 
-        name: "Loxone Nano DI Tree", 
+        name: "Nano DI Tree", 
         image: "DI-Tree.jpg", 
         power: 0.2, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], 
@@ -348,7 +376,7 @@ const hardwareConfigList = [
     
     { 
         id: "lox_nano_2_relay", 
-        name: "Loxone Nano 2 Relay Tree", 
+        name: "Nano 2 Relay Tree", 
         image: "Nano-2-Relay.jpg", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"],
@@ -357,9 +385,7 @@ const hardwareConfigList = [
             {
                 id: "2x_relay",
                 label: "2x Einzelrelais / Taster",
-                io: [
-                    { id: "I_1", label: "I1", type: "in" }, 
-                    { id: "I_2", label: "I2", type: "in" }, 
+                io: [ 
                     { id: "O_1", label: "Relais 1", type: "out" }, 
                     { id: "O_2", label: "Relais 2", type: "out" }
                 ]
@@ -369,43 +395,16 @@ const hardwareConfigList = [
             {
                 id: "1x_shading",
                 label: "1x Storenaktor (Auf/Ab)",
-                io: [
-                    { id: "I_1", label: "Taster Auf", type: "in" }, 
-                    { id: "I_2", label: "Taster Ab", type: "in" }, 
-                    { id: "O_UP", label: "Motor Auf", type: "out" }, 
-                    { id: "O_DOWN", label: "Motor Ab", type: "out" }
+                io: [ 
+                    { id: "O_UP_DOWN", label: "Motor Auf/ AB", type: "out" }
                 ]
             }
         ]
     },
-    { 
-        id: "lox_touch_tree", 
-        name: "Loxone Touch Tree", 
-        image: "Touch-Tree.jpg", 
-        power: 0.2, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"], 
-        io: [
-            { id: "T_1", label: "Tasterpunkte 1-5", type: "in" }, 
-            { id: "TEMP", label: "Temperatur", type: "in" }, 
-            { id: "HUM", label: "Feuchtigkeit", type: "in" }
-        ] 
-    },
-    { 
-        id: "lox_touch_pure_tree", 
-        name: "Loxone Touch Pure Tree", 
-        image: "Touch-Pure-Tree.jpg", 
-        power: 0.2, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Montagehöhe"], 
-        io: [
-            { id: "T_1", label: "Tasterpunkte 1-5", type: "in" }, 
-            { id: "TEMP", label: "Temperatur", type: "in" }, 
-            { id: "HUM", label: "Feuchtigkeit", type: "in" }, 
-            { id: "LIGHT", label: "Orientierungslicht", type: "out" }
-        ] 
-    },
+
     { 
         id: "lox_rgbw_tree", 
-        name: "Loxone RGBW 24V Dimmer Tree", 
+        name: "RGBW 24V Dimmer Tree", 
         image: "RGBW-Dimmer-Tree.png", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Tree Ast"], 
@@ -414,8 +413,10 @@ const hardwareConfigList = [
                 id: "4x_single",
                 label: "4x Einzelkanäle (z.B. Spots)",
                 io: [
-                    { id: "PWM_1", label: "Kanal 1", type: "out" }, { id: "PWM_2", label: "Kanal 2", type: "out" },
-                    { id: "PWM_3", label: "Kanal 3", type: "out" }, { id: "PWM_4", label: "Kanal 4", type: "out" }
+                    { id: "PWM_1", label: "Kanal 1", type: "out" }, 
+                    { id: "PWM_2", label: "Kanal 2", type: "out" },
+                    { id: "PWM_3", label: "Kanal 3", type: "out" }, 
+                    { id: "PWM_4", label: "Kanal 4", type: "out" }
                 ]
             },
             {
@@ -426,19 +427,26 @@ const hardwareConfigList = [
                 ]
             },
             {
+                id: "1x_rgb_1x_single",
+                label: "1x RGB + 1x Einzelkanal",
+                io: [
+                    { id: "PWM_RGB", label: "RGB Kanal", type: "out" },
+                    { id: "PWM_4", label: "Einzelkanal 4", type: "out" }
+                ]
+            },
+            {
                 id: "1x_tw_2x_single",
-                label: "1x Tunable White + 2x Einzel",
+                label: "1x Tunable White + 2x Einzelkanäle",
                 io: [
                     { id: "PWM_TW", label: "Tunable White", type: "out" },
-                    { id: "PWM_3", label: "Kanal 3", type: "out" },
-                    { id: "PWM_4", label: "Kanal 4", type: "out" }
+                    { id: "PWM_TW_2", label: "Tunible Withe 2", type: "out" }
                 ]
             }
         ] 
     },
     { 
         id: "lox_rgbw_air", 
-        name: "Loxone RGBW 24V Dimmer Air", 
+        name: "RGBW 24V Dimmer Air", 
         image: "RGBW-Dimmer-Air.jpg", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Air Link"], 
@@ -447,8 +455,10 @@ const hardwareConfigList = [
                 id: "4x_single",
                 label: "4x Einzelkanäle (z.B. Spots)",
                 io: [
-                    { id: "PWM_1", label: "Kanal 1", type: "out" }, { id: "PWM_2", label: "Kanal 2", type: "out" },
-                    { id: "PWM_3", label: "Kanal 3", type: "out" }, { id: "PWM_4", label: "Kanal 4", type: "out" }
+                    { id: "PWM_1", label: "Kanal 1", type: "out" }, 
+                    { id: "PWM_2", label: "Kanal 2", type: "out" },
+                    { id: "PWM_3", label: "Kanal 3", type: "out" }, 
+                    { id: "PWM_4", label: "Kanal 4", type: "out" }
                 ]
             },
             {
@@ -457,25 +467,39 @@ const hardwareConfigList = [
                 io: [
                     { id: "PWM_RGBW", label: "RGBW Kanal", type: "out" }
                 ]
+            },
+            {
+                id: "1x_rgb_1x_single",
+                label: "1x RGB + 1x Einzelkanal",
+                io: [
+                    { id: "PWM_RGB", label: "RGB Kanal", type: "out" },
+                    { id: "PWM_4", label: "Einzelkanal 4", type: "out" }
+                ]
+            },
+            {
+                id: "1x_tw_2x_single",
+                label: "1x Tunable White + 2x Einzelkanäle",
+                io: [
+                    { id: "PWM_TW", label: "Tunable White", type: "out" },
+                    { id: "PWM_TW_2", label: "Tunible Withe 2", type: "out" }
+                ]
             }
         ] 
     },
     { 
         id: "lox_nano_dimmer_air", 
-        name: "Loxone Nano Dimmer Air", 
+        name: "Nano Dimmer Air", 
         image: "Nano-Dimmer-Air.jpg", 
         power: null, 
         defaultPower: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Montagehöhe", "Air Link"], 
-        io: [
-            { id: "I_1", label: "I1", type: "in" }, 
-            { id: "I_2", label: "I2", type: "in" }, 
+        io: [ 
             { id: "O_1", label: "Dimmer", type: "out" }
         ] 
     },
     { 
         id: "lox_nano_io_air", 
-        name: "Loxone Nano IO Air", 
+        name: "Nano IO Air", 
         image: "Nano-IO-Air.jpg", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], 
@@ -566,8 +590,7 @@ const hardwareConfigList = [
                     { id: "O_7", label: "Relais 7", type: "out" },
                     { id: "O_8", label: "Relais 8", type: "out" },
                     { id: "PWM_TW", label: "Tunable White", type: "out" },
-                    { id: "PWM_3", label: "PWM 3", type: "out" },
-                    { id: "PWM_4", label: "PWM 4", type: "out" }
+                    { id: "PWM_TW_2", label: "Tunible Withe 2", type: "out" }
                 ]
             },
             {
