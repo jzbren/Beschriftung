@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.2</title>
+    <title>ServiceProDetail Konfigurator V5.1</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -855,10 +855,11 @@
             const hwBlocks = detailSec.querySelectorAll('.assign-hw-block');
             
             hwBlocks.forEach(hwBlock => {
-                // Hier wird jetzt das gesamte Element inkl. der vergebenen Custom-Bezeichnungen und I/Os durchsucht
+                // Den gesamten Textinhalt des Hardware-Blocks durchsuchen
                 const text = hwBlock.innerText.toLowerCase();
                 const detailTitle = detailSec.querySelector('h3').innerText.toLowerCase();
                 
+                // Zusätzlich prüfen, ob der Suchbegriff in den verknüpften Bezeichnungen oder Eingängen steckt
                 if(text.includes(query) || detailTitle.includes(query)) {
                     hwBlock.style.display = '';
                     detailHasVisibleHw = true;
