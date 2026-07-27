@@ -605,6 +605,12 @@
                 pd.frames.forEach(f => {
                     for(let slotKey in f.slots) {
                         const slot = f.slots[slotKey];
+                        // NEU: Auch customFields (z.B. Tree/Bus-Zuweisungen) aktualisieren
+                        if(slot && slot.customFields) {
+                            for(let cfKey in slot.customFields) {
+                                if(slot.customFields[cfKey] === oldStr) slot.customFields[cfKey] = newStr;
+                            }
+                        }
                         if(slot && slot.ioData) {
                             for(let ioKey in slot.ioData) {
                                 let cData = slot.ioData[ioKey];
@@ -1337,6 +1343,7 @@
         if(!slot.customFields) slot.customFields = {};
         slot.customFields[fieldName] = val;
         saveToLocal();
+        renderApp();
     }
 
     function getFieldBusType(fieldName) {
