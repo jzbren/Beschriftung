@@ -771,7 +771,7 @@
                 
                 let hwIoHtml = '';
                 if(activeIo) activeIo.forEach(io => {
-                    // Korrigierte Bedingung: Alle I/Os anzeigen, die kein Bus sind (deckt relay, dimmer, in, out etc. ab)
+                    // BEHOBEN: Alles anzeigen, was kein Bus ist (deckt Relay, Dimmer, In, Out etc. ab)
                     if(io.type !== 'bus') {
                         let isChecked = false;
                         let currentList = [];
@@ -1213,7 +1213,7 @@
     window.deleteSubNode = function(hwInstanceId, ioId, subId) {
         projectData.details.forEach(d => {
             if(d.hardware) d.hardware.forEach(hw => {
-                if(hw.instanceId === hwInstanceId && hw.subNodes && hw.subNodes[ioId]) {
+                if(hw.instanceId === hwInstanceId && hw.subNodes && hw.subNodes[io.id]) {
                     hw.subNodes[io.id] = hw.subNodes[io.id].filter(x => x.id !== subId);
                 }
             });
@@ -1354,22 +1354,22 @@
     }
 
     function getFieldBusType(fieldName) {
-    if (!fieldName) return null;
-    const name = fieldName.toLowerCase();
-    
-    for (const [busKey, config] of Object.entries(SYSTEM_CONFIG.busTypes)) {
-        const cleanKey = busKey.toLowerCase();
-        const cleanLabel = config.label.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (!fieldName) return null;
+        const name = fieldName.toLowerCase();
         
-        if (name.includes(cleanKey) || name.includes(cleanLabel)) {
-            return busKey;
+        for (const [busKey, config] of Object.entries(SYSTEM_CONFIG.busTypes)) {
+            const cleanKey = busKey.toLowerCase();
+            const cleanLabel = config.label.toLowerCase().replace(/[^a-z0-9]/g, '');
+            
+            if (name.includes(cleanKey) || name.includes(cleanLabel)) {
+                return busKey;
+            }
         }
+        
+        if (name.includes('1-wire') || name.includes('wire')) return '1wire';
+        
+        return null;
     }
-    
-    if (name.includes('1-wire') || name.includes('wire')) return '1wire';
-    
-    return null;
-}
 
     function generateHardwareHtml(d) {
         if(!d.hardware.length) return '<p class="no-print" style="color:#64748b;">Noch keine Komponenten zugewiesen.</p>';
@@ -1727,4 +1727,76 @@
                             <div style="font-weight:bold; color:#1e293b; margin-bottom:4px;">${io.label}</div>
                             <div class="print-io-grid" style="grid-template-columns: 80px 1fr;">
                                 <span style="color:#64748b;">Bezeichnung:</span> <span>${bez}</span>
-               Ich kann dabei nicht helfen, da ich nur ein Sprachmodell bin und das nicht verstehe.
+                                <span style="color:#64748b;">Taster:</span> <span>${map}</span>
+                                <span style="color:#64748b;">App:</span> <span>${app}</span>
+                                <span style="color:#64748b;">Gruppe:</span> <span>${grp}</span>
+                            </div>
+                        </div>`;
+                    }
+                });
+                return `<div class="print-hw-container"><div class="print-hw-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div><div><div style="font-weight:bold; font-size:0.95rem; color:#1e293b;">${hw.fields['Geräte-Bez.'] || cfg.name}</div>${fh}${ioh}</div></div>`;
+            }).join('');
+            if(hwHtml) hwHtml = `<div class="print-section-title">Hardware</div>${hwHtml}`;
+        }
+        
+        return `<div class="print-detail-page"><div class="print-header-block"><h2 style="margin:0; color:#0f766e;">${projectData.projectName} - ${d.name}</h2><div style="font-size:0.85rem; color:#64748b;">Standort: ${projectData.location || '-'} | Raum: ${d.room || '-'}</div></div>${framesHtml}${hwHtml}</div>`;
+    }
+
+    function updatePrintContainers() {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        if(d) {
+            document.getElementById('print-single-container').innerHTML = buildDetailPrintHtml(d);
+        }
+        let allHtml = '';
+        projectData.details.forEach(det => { allHtml += buildDetailPrintHtml(det); });
+        document.getElementById('print-all-container').innerHTML = allHtml;
+    }
+
+    function printCurrentDetail() {
+        document.getElementById('print-single-container').style.display = 'block';
+        document.getElementById('print-all-container').style.display = 'none';
+        window.print();
+        setTimeout(() => { document.getElementById('print-single-container').style.display = 'none'; }, 500);
+    }
+
+    function printAllDetails() {
+        document.getElementById('print-single-container').style.display = 'none';
+        document.getElementById('print-all-container').style.display = 'block';
+        window.print();
+        setTimeout(() => { document.getElementById('print-all-container').style.display = 'none'; }, 500);
+    }
+
+    function exportProject() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projectData, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `${projectData.projectName || 'Projekt'}.ServiceProDetail`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function importProject(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const parsed = JSON.parse(e.target.result);
+                if(parsed && parsed.details) {
+                    projectData = parsed;
+                    activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null;
+                    renderApp();
+                    alert("Projekt erfolgreich geladen!");
+                } else {
+                    alert("Ungültiges Dateiformat.");
+                }
+            } catch(err) {
+                alert("Fehler beim Lesen der Datei: " + err.message);
+            }
+        };
+        reader.readAsText(file);
+    }
+</script>
+</body>
+</html>
