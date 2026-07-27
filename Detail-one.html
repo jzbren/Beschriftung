@@ -381,9 +381,18 @@ let projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
         localStorage.removeItem(LOCAL_STORAGE_KEY); 
         projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA)); 
         activeDetailId = null; 
-        renderApp();
-        }
+        
+        // Suchfeld in der Sidebar und offene Modals sauber zurücksetzen
+        const searchInput = document.getElementById('detail-search-input');
+        if(searchInput) searchInput.value = '';
+        
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.style.display = 'none';
+        });
+        
+        renderApp(); 
     }
+}
 
     function openGlobalsModal() {
         renderGlobalsLists();
