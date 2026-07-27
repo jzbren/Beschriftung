@@ -759,33 +759,5 @@ const hardwareConfigList = [
             { id: "M_1_UP", label: "Motor(Auf )", type: "out" },
             { id: "M_1_DOWN", label: "Motor(Ab)", type: "out" }
         ] 
-    },
-
-    { 
-        id: "mein_4kanal_dali_aktor", 
-        name: "4-Kanal DALI Aktor", 
-        image: "dali-aktor.jpg", 
-        power: 2.0, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Dali Bus"], 
-        profiles: [
-            {
-                id: "4x_single_channels",
-                label: "4x Einzelkanäle",
-                io: [
-                    { id: "OUT_1", label: "Ausgang / Kanal 1", type: "out" },
-                    { id: "OUT_2", label: "Ausgang / Kanal 2", type: "out" },
-                    { id: "OUT_3", label: "Ausgang / Kanal 3", type: "out" },
-                    { id: "OUT_4", label: "Ausgang / Kanal 4", type: "out" }
-                ]
-            },
-            {
-                id: "2x_dual_channels",
-                label: "Alternativ: 2x Doppelt / Storen",
-                io: [
-                    { id: "OUT_1_2", label: "Kanal 1+2", type: "out" },
-                    { id: "OUT_3_4", label: "Kanal 3+4", type: "out" }
-                ]
-            }
-        ] 
     }
 ];
