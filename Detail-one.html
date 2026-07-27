@@ -297,18 +297,22 @@
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
     const DEFAULT_PROJECT_DATA = { 
-    version: "3.12", 
+    version: "4.5", 
     projectName: "Projekt", 
     location: "", 
     details: [],
     appFunctions: [
-        { name: "Licht App", description: "App" }
+        
     ],
     globalGroups: [
-        { name: "Zentralle Funktion", description: "Funktionsbeschreibung" }
+        { name: "Zentral Auf /Ab", description: "Beschattung Fährt Komplett Auf oder Ab" },
+        { name: "Zentral Ein/ Aus", description: "Licht Schaltet überall Ein oder Aus" },
+        { name: "Storen Auf /Ab", description: "Kurzer Tastendruck (Beschatung Richten), Langer Tastendruck >3s (Komplett Auf oder Ab bei erneutem kurzen Tippen Stop)" },
+        { name: "Licht Auf /Ab", description: "Ein und Ausschalten des Lichts" }
     ],
     globalFunctions: [
-        { name: "Globalegruppe", description: "Gruppentest" }
+        { name: "Zentral Ein/ Aus", description: "Licht Zentral Ein/ Aus" },
+        { name: "Zentral Auf/ Ab", description: "Beschattung Fährt Komplett Auf oder Ab" }
     ]
 };
 
