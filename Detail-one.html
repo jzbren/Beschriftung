@@ -1023,7 +1023,10 @@ let projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
 
     function renderWorkspace() {
         const c = document.getElementById('workspace-container'); const d = projectData.details.find(x => x.id === activeDetailId);
-        if (!d) return;
+        if (!d) {
+            c.innerHTML = `<div class="pane" style="text-align:center; color:#64748b; padding:40px;">Kein Detail vorhanden. Klicke links in der Seitenleiste auf <b>"+ Neues Detail / Raum"</b>, um zu beginnen.</div>`;
+            return;
+        }
 
         window.selectNewHw = (val, ev) => { 
             if(ev){ev.preventDefault();ev.stopPropagation();} 
