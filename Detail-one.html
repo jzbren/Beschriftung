@@ -1488,28 +1488,36 @@
         const c = document.getElementById('bus-tree-content'); c.innerHTML = ''; let h = '';
         
         const allHw = [];
+        
+        // 1. Echte Hardware-Liste durchsuchen (wie bisher)
         projectData.details.forEach(d => d.hardware && d.hardware.forEach(hw => {
             const cfg = hardwareConfigList.find(x => x.id === hw.configId);
             if(cfg) allHw.push({d, hw, cfg});
         }));
 
-        const totalPower = getProjectTotalPower();
-        h += `<div style="margin-bottom:25px; font-weight:bold; color:#0f766e; font-size:1.1rem; padding-bottom:10px; border-bottom:1px solid #cbd5e1;">⚡ Gesamtstromaufnahme Projekt: ${totalPower.toFixed(1)} W</div>`;
-
-        const roots = allHw.filter(item => {
-            const parentId = getParentBusId(item.hw);
-            if (!parentId) return true;
-            
-            const parentExists = allHw.some(possibleParent => {
-                const pIo = possibleParent.cfg.profiles ? (possibleParent.cfg.profiles.find(p=>p.id===possibleParent.hw.activeProfile)?.io || possibleParent.cfg.profiles[0].io) : possibleParent.cfg.io;
-                if (!pIo) return false;
-                return pIo.some(io => io.type === 'bus' && getBusIdString(possibleParent.d, possibleParent.hw, io) === parentId);
+        // 2. NEU: Auch Raum-Geräte (Icons) durchsuchen, die ein Bus-Feld (z.B. Tree Ast) haben!
+        projectData.details.forEach(d => {
+            // Passe 'd.devices' an, falls deine Raum-Geräte in der Projektstruktur anders heißen (z.B. d.schalter oder d.items)
+            const roomDevices = d.devices || d.schalter || []; 
+            roomDevices.forEach(dev => {
+                const cfg = iconConfigList.find(x => x.label === dev.label || x.file === dev.file);
+                // Prüfen, ob das Raum-Gerät ein Feld mit Bus/Ast/Link besitzt und ob es ausgefüllt wurde
+                if (cfg && dev.fields) {
+                    const hasBusField = Object.keys(dev.fields).some(k => /ast|bus|link|bridge|dali/i.test(k) && dev.fields[k]);
+                    if (hasBusField) {
+                        // Wir mappen das Raum-Gerät so, dass die Topologie-Logik es exakt wie Hardware behandeln kann
+                        allHw.push({
+                            d: d,
+                            hw: { fields: dev.fields, configId: cfg.file },
+                            cfg: { name: cfg.label, channels: 1, io: [] } // Zählt standardmäßig als 1 Gerät/Kanal am Bus
+                        });
+                    }
+                }
             });
-            return !parentExists;
         });
 
-        if (roots.length === 0 && allHw.length > 0) roots.push(...allHw);
-        if(roots.length === 0) h += '<div style="color:#64748b; font-style:italic;">Keine Hardware im Projekt vorhanden.</div>';
+        const totalPower = getProjectTotalPower();
+        h += `<div style="margin-bottom:25px; font-weight:bold; color:#0f766e; font-size:1.1rem; padding-bottom:10px; border-bottom:1px solid #cbd5e1;">⚡ Gesamtstromaufnahme Projekt: ${totalPower.toFixed(1)} W</div>`;
 
         // Hilfsfunktion zur universellen Ermittlung der belegten Kanäle/Adressen eines Hardware-Geräts
         function getDeviceChannelCount(childItem) {
