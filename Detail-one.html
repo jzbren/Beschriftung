@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.1</title>
+    <title>ServiceProDetail Konfigurator V5.2</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -862,7 +862,8 @@
         let switchRef = _activeSwitchRef;
         if (subId === 'null' || !subId) subId = null;
 
-        // Wenn es sich um einen Schalter handelt, vorher alle alten Zuordnungen dieses Schalters im Projekt entfernen (1-zu-1-Zuordnung sicherstellen)
+        // 1. Wenn es ein Schalter ist und aktiviert wird: Diesen spezifischen Schalter
+        // von allen *anderen* Eingängen im Projekt entfernen (Exklusivität für den Taster).
         if (type === 'switch' && isChecked) {
             projectData.details.forEach(pd => {
                 if (pd.hardware) {
@@ -924,15 +925,17 @@
 
         const propKey = subId ? targetProp : ioId;
 
-        if (type === 'switch') {
-            targetObj[propKey] = isChecked ? sourceName : '';
-        } else {
-            let list = (targetObj[propKey] || '').split(',').map(x=>x.trim()).filter(x=>x);
-            if(isChecked && !list.includes(sourceName)) list.push(sourceName);
-            if(!isChecked) list = list.filter(x => x !== sourceName);
-            targetObj[propKey] = list.join(', ');
+        // 2. Zuweisung als Liste verarbeiten (ermöglicht mehrere Schalter auf denselben Eingang)
+        let list = (targetObj[propKey] || '').split(',').map(x => x.trim()).filter(x => x);
+        if (isChecked && !list.includes(sourceName)) {
+            list.push(sourceName);
         }
+        if (!isChecked) {
+            list = list.filter(x => x !== sourceName);
+        }
+        targetObj[propKey] = list.join(', ');
 
+        // UI-Rückwärts-Synchronisation für den Schalter selbst
         if (type === 'switch' && switchRef && switchRef.fId) {
             let hwNameStr = '';
             projectData.details.forEach(pd => {
