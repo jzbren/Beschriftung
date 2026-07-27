@@ -1226,7 +1226,10 @@
                     if(typeof data === 'string') data = {bezeichnung: data, art:'TA', funktion:'', gruppe:'', eingabegerat:''};
                     if(!data.art) data.art = 'TA';
                     
-                    const switchIdent = `${d.name} ${data.bezeichnung || ic.label}`;
+                    const slotLabel = ic ? ic.label : 'Platz';
+                    const designation = data.bezeichnung ? data.bezeichnung : `${slotLabel} (Platz ${i})`;
+                    const switchIdent = `${d.name} ${designation}`;
+                    
                     const hasWarn = checkCollision(switchIdent);
                     const warnHtml = hasWarn ? `<span class="collision-warn" title="Achtung: Dieser Taster ist mehrfach direkt zugewiesen!">⚠️</span>` : '';
 
@@ -1282,8 +1285,8 @@
         if (field === 'bezeichnung') {
             const ic = iconConfigList.find(x => x.file === slot.iconFile);
             if(ic) {
-                const oldBezeichnung = cData.bezeichnung || ic.label;
-                const newBezeichnung = val || ic.label;
+                const oldBezeichnung = cData.bezeichnung || `${ic.label} (Platz ${slotN})`;
+                const newBezeichnung = val || `${ic.label} (Platz ${slotN})`;
                 replaceStringInAllReferences(`${d.name} ${oldBezeichnung}`, `${d.name} ${newBezeichnung}`);
             }
         }
