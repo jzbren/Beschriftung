@@ -1463,12 +1463,10 @@
             if(c) {
                 const activeIo = c.profiles ? (c.profiles.find(p=>p.id===hw.activeProfile)?.io || c.profiles[0].io) : c.io;
                 if(activeIo) activeIo.forEach(io => {
-                    if(io.type === 'bus') {
-                        const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
-                        if(busCfg && !busCfg.hasSubDevices) {
-                            if(!slaveType || slaveType === io.busType || slaveType === 'unknown' || io.busType === 'unknown') {
-                                list.push({value: getBusIdString(d,hw,io)});
-                            }
+                    if(io.type === 'bus' || io.busType) {
+                        const bType = io.busType || (io.label && io.label.toLowerCase().includes('dali') ? 'dali' : null);
+                        if(!slaveType || slaveType === bType || slaveType === 'unknown' || bType === 'unknown') {
+                            list.push({value: getBusIdString(d, hw, io)});
                         }
                     }
                 });
