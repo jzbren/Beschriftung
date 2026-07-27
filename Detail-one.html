@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V4.3</title>
+    <title>ServiceProDetail Konfigurator V4.4</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -296,28 +296,30 @@
     const BASE_ICON_PATH = "icons-schalter/";
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
-    let projectData = { 
-        version: "3.12", 
-        projectName: "Projekt", 
-        location: "", 
-        details: [],
-        appFunctions: [
-            { name: "Beleuchtung", description: "Steuerung der Raumbeleuchtung" },
-            { name: "Beschattung", description: "Bedienung von Storen und Rollläden" },
-            { name: "Heizung", description: "Temperaturregelung und Heizkreissteuerung" },
-            { name: "Zentral", description: "Zentrale Funktionen und Sammelbefehle" }
-        ],
-        globalGroups: [
-            { name: "Zentral Aus", description: "Schaltet alle Lichter und Verbraucher zentral aus" },
-            { name: "Alle Lichter", description: "Sammelgruppe für sämtliche Beleuchtungskreise" },
-            { name: "Zentral Beschattung", description: "Steuert alle Storen des Hauses gleichzeitig" }
-        ],
-        globalFunctions: [
-            { name: "Licht Schalten", description: "Schaltet das Licht ein oder aus" },
-            { name: "Licht Dimmbar", description: "Schalten und stufenloses Dimmen" },
-            { name: "Storen Auf/Ab", description: "Steuerung für Jalousien oder Storen" }
-        ]
-    };
+    const DEFAULT_PROJECT_DATA = { 
+    version: "3.12", 
+    projectName: "Projekt", 
+    location: "", 
+    details: [],
+    appFunctions: [
+        { name: "Beleuchtung", description: "Steuerung der Raumbeleuchtung" },
+        { name: "Beschattung", description: "Bedienung von Storen und Rollläden" },
+        { name: "Heizung", description: "Temperaturregelung und Heizkreissteuerung" },
+        { name: "Zentral", description: "Zentrale Funktionen und Sammelbefehle" }
+    ],
+    globalGroups: [
+        { name: "Zentral Aus", description: "Schaltet alle Lichter und Verbraucher zentral aus" },
+        { name: "Alle Lichter", description: "Sammelgruppe für sämtliche Beleuchtungskreise" },
+        { name: "Zentral Beschattung", description: "Steuert alle Storen des Hauses gleichzeitig" }
+    ],
+    globalFunctions: [
+        { name: "Licht Schalten", description: "Schaltet das Licht ein oder aus" },
+        { name: "Licht Dimmbar", description: "Schalten und stufenloses Dimmen" },
+        { name: "Storen Auf/Ab", description: "Steuerung für Jalousien oder Storen" }
+    ]
+};
+
+let projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
     
     let activeDetailId = null; let draggedSlot = null;
 
@@ -328,48 +330,45 @@
     });
 
     window.onload = () => {
-        let savedData = loadFromLocal();
-        if (savedData && savedData.details) {
-            projectData = savedData; 
-            if(!projectData.appFunctions) {
-                projectData.appFunctions = [{ name: "Beleuchtung", description: "" }, { name: "Beschattung", description: "" }];
-            } else {
-                projectData.appFunctions = projectData.appFunctions.map(x => typeof x === 'string' ? { name: x, description: "" } : x);
-            }
-            if(!projectData.globalGroups) {
-                projectData.globalGroups = [{ name: "Zentral Aus", description: "" }];
-            } else {
-                projectData.globalGroups = projectData.globalGroups.map(x => typeof x === 'string' ? { name: x, description: "" } : x);
-            }
-            if(!projectData.globalFunctions) {
-                projectData.globalFunctions = [
-                    { name: "Licht Schalten", description: "Schaltet das Licht ein oder aus" },
-                    { name: "Licht Dimmbar", description: "Schalten und stufenloses Dimmen" },
-                    { name: "Storen Auf/Ab", description: "Steuerung für Jalousien oder Storen" }
-                ];
-            } else {
-                projectData.globalFunctions = projectData.globalFunctions.map(x => typeof x === 'string' ? { name: x, description: "" } : x);
-            }
-            
-            projectData.details.forEach(d => {
-                if(d.hardware) d.hardware.forEach(hw => {
-                    if(!hw.appFunctions) hw.appFunctions = {};
-                    if(!hw.globalGroup) hw.globalGroup = {};
-                    if(hw.subNodes) {
-                        for(let ioKey in hw.subNodes) {
-                            hw.subNodes[ioKey].forEach(sub => {
-                                if(sub.appFunctions === undefined) sub.appFunctions = "";
-                                if(sub.globalGroup === undefined) sub.globalGroup = "";
-                            });
-                        }
+    let savedData = loadFromLocal();
+    if (savedData && savedData.details) {
+        projectData = savedData; 
+        
+        // Normalisierungen für ältere Speicherstände (falls nötig)
+        if(!projectData.appFunctions) {
+            projectData.appFunctions = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA.appFunctions));
+        }
+        if(!projectData.globalGroups) {
+            projectData.globalGroups = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA.globalGroups));
+        }
+        if(!projectData.globalFunctions) {
+            projectData.globalFunctions = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA.globalFunctions));
+        }
+        
+        projectData.details.forEach(d => {
+            if(d.hardware) d.hardware.forEach(hw => {
+                if(!hw.appFunctions) hw.appFunctions = {};
+                if(!hw.globalGroup) hw.globalGroup = {};
+                if(hw.subNodes) {
+                    for(let ioKey in hw.subNodes) {
+                        hw.subNodes[ioKey].forEach(sub => {
+                            if(sub.appFunctions === undefined) sub.appFunctions = "";
+                            if(sub.globalGroup === undefined) sub.globalGroup = "";
+                        });
                     }
-                });
+                }
             });
-            
-            activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null;
-            if(!activeDetailId) addNewDetail(); else renderApp();
-        } else addNewDetail();
-    };
+        });
+        
+        activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null;
+        renderApp();
+    } else {
+        // Erster Start / Kein Speicherstand: Lade die zentrale Vorlage komplett leer (ohne Detail)
+        projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
+        activeDetailId = null;
+        renderApp();
+    }
+};
 
     function saveToLocal() { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(projectData)); }
     function loadFromLocal() { const data = localStorage.getItem(LOCAL_STORAGE_KEY); return data ? JSON.parse(data) : null; }
@@ -378,18 +377,11 @@
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
 
     function resetProject() {
-        if(confirm("Komplettes Projekt löschen und neu starten?")) {
-            localStorage.removeItem(LOCAL_STORAGE_KEY); 
-            projectData = { 
-                version: "3.12", 
-                projectName: "Neues Projekt", 
-                location: "", 
-                details: [], 
-                appFunctions: [{ name: "Beleuchtung", description: "" }], 
-                globalGroups: [{ name: "Zentral Aus", description: "" }],
-                globalFunctions: [{ name: "Licht Schalten", description: "" }]
-            }; 
-            activeDetailId = null; addNewDetail();
+    if(confirm("Komplettes Projekt löschen und neu starten?")) {
+        localStorage.removeItem(LOCAL_STORAGE_KEY); 
+        projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA)); 
+        activeDetailId = null; 
+        addNewDetail();
         }
     }
 
