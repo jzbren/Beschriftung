@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.1</title>
+    <title>ServiceProDetail Konfigurator V5.2</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -746,10 +746,8 @@
                             
                             let customBez = '';
                             if (manualBez) {
-                                // Manuelle Bezeichnung am Nano DI (Farbe wie bisher)
                                 customBez = ` — <span style="color:#0f766e; font-weight:600;">"${manualBez}"</span>`;
                             } else if (fallbackBez) {
-                                // Vom Schalter übernommene Bezeichnung (dezentes Grau)
                                 customBez = ` — <span style="color:#64748b; font-style:italic;">"${fallbackBez}"</span>`;
                             }
                             
