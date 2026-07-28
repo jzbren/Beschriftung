@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.2</title>
+    <title>ServiceProDetail Konfigurator V5.1</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1316,8 +1316,10 @@
                     if(!data.art) data.art = 'TA';
                     
                     const slotLabel = ic ? ic.label : 'Platz';
-                    const designation = data.bezeichnung ? data.bezeichnung : `${slotLabel} (Platz ${i})`;
-                    const switchIdent = `${d.name} | ${f.name} | Platz ${i} (${io.id}) - ${currentCustomBez} (${io.label})`;
+                    const customBez = data.bezeichnung ? data.bezeichnung : `${slotLabel} (Platz ${i})`;
+
+                    // Absolut eindeutiger Identifizierer mit Detail, Frame, exaktem Platz (i) und IO-ID
+                    const switchIdent = `${d.name} | ${f.name} | Platz ${i} (${io.id}) - ${customBez} (${io.label})`;
                     
                     const hasWarn = checkCollision(switchIdent);
                     const warnHtml = hasWarn ? `<span class="collision-warn" title="Achtung: Dieser Taster ist mehrfach direkt zugewiesen!">⚠️</span>` : '';
