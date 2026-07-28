@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.1</title>
+    <title>ServiceProDetail Konfigurator V5.2</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -160,32 +160,21 @@
         .add-global-row input { flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; }
 
         @media print {
-            body { background: white; height: auto; overflow: visible; font-size: 12pt; }
+            body { background: white; height: auto; overflow: visible; }
             .sidebar, .top-bar, .action-buttons, .no-print, .delete-btn { display: none !important; }
-            .main-content { padding: 0; margin: 0 !important; width: 100% !important; max-width: none !important; }
+            .main-content { padding: 0; margin: 0 !important; }
             .pane { box-shadow: none; border: none; padding: 0; margin-bottom: 15px; }
-            
-            .print-detail-page { page-break-after: always; page-break-inside: avoid; }
-            .print-header-block { border-bottom: 2px solid #0f766e; padding-bottom: 8px; margin-bottom: 20px; }
-            .print-header-block h2 { margin: 0 0 4px 0; font-size: 1.5rem; color: #0f172a; }
-            .print-header-block p { margin: 0; color: #64748b; font-size: 0.95rem; }
-        
-            .print-section-title { font-size: 1.1rem; font-weight: bold; color: #0f766e; border-bottom: 1px solid #cbd5e1; margin: 20px 0 10px 0; padding-bottom: 4px; }
-            .print-frame-title { font-size: 0.95rem; font-weight: bold; margin: 15px 0 8px 0; color: #1e293b; background: #f8fafc; padding: 6px 10px; border-left: 3px solid #0f766e; }
-            
-            .print-switch-frame { display: grid; gap: 4px; background: #f8fafc; border: 2px solid #cbd5e1; padding: 8px; border-radius: 6px; justify-content: center; }
-            .print-switch-slot { background: #fff; border: 1px solid #94a3b8; display: flex; justify-content: center; align-items: center; position: relative; width: 50px; height: 50px; }
+            .print-detail-page { page-break-after: always; }
+            .print-header-block { border-bottom: 2px solid #0f766e; padding-bottom: 5px; margin-bottom: 15px; }
+            .print-section-title { font-size: 1.1rem; font-weight: bold; color: #0f766e; border-bottom: 1px solid #cbd5e1; margin: 20px 0 10px 0; }
+            .print-frame-title { font-size: 0.95rem; font-weight: bold; margin-bottom: 8px; color: #1e293b; }
+            .print-switch-frame { display: grid; gap: 4px; background: #f8fafc; border: 2px solid #cbd5e1; padding: 10px; border-radius: 6px; }
+            .print-switch-slot { background: #fff; border: 1px solid #94a3b8; display: flex; justify-content: center; align-items: center; position: relative; width: 60px; height: 60px; }
             .print-switch-slot img { width: 100%; height: 100%; object-fit: contain; }
-            
-            .print-slot-item-block { background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; margin-bottom: 10px; border-radius: 6px; page-break-inside: avoid; }
-            .print-io-grid { display: grid; grid-template-columns: 110px 1fr; gap: 4px; font-size: 0.85rem; }
-            .print-io-block { margin-bottom: 6px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
-            .print-io-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        
-            .print-hw-container { display: grid; grid-template-columns: 70px 1fr; gap: 12px; border: 1px solid #cbd5e1; border-left: 4px solid #0f766e; border-radius: 6px; padding: 10px; margin-bottom: 12px; page-break-inside: avoid; background: #fff; }
+            .print-slots-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+            .print-slot-item-block { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; page-break-inside: avoid; }
+            .print-hw-container { display: grid; grid-template-columns: 80px 1fr; gap: 12px; border: 1px solid #cbd5e1; border-left: 4px solid var(--primary); padding: 10px; margin-bottom: 10px; page-break-inside: avoid; }
             .print-hw-image img { width: 100%; object-fit: contain; }
-            .print-hw-io-block { font-size: 0.85rem; margin-top: 6px; padding: 6px 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; page-break-inside: avoid; }
-            .print-hw-sub-block { font-size: 0.85rem; margin-top: 6px; padding: 6px 8px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; border-left: 3px solid #166534; page-break-inside: avoid; }
         }
     </style>
 </head>
@@ -1718,118 +1707,69 @@
                 const s = f.slots[`slot-${i}`]; 
                 const ic = iconConfigList.find(x => x.file === s?.iconFile);
                 if(ic && ic.io) {
-                    vSlots += `<div class="print-switch-slot"><img src="icons-schalter/${ic.file}"></div>`;
+                    vSlots += `<div class="print-switch-slot"><img src="${BASE_ICON_PATH}${ic.file}"></div>`;
                     let ioRows = ic.io.map(io => {
                         const dat = s.ioData?.[io.id] || {};
-                        return `<div class="print-io-block">
-                            <div style="font-weight:bold; color:#0f766e; margin-bottom:2px;">${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</div>
-                            <div class="print-io-grid">
-                                <span style="color:#64748b;">Bezeichnung:</span> <span><b>${dat.bezeichnung || '-'}</b></span>
-                                <span style="color:#64748b;">Art:</span> <span>${dat.art || 'TA'}</span>
-                                <span style="color:#64748b;">Funktion:</span> <span>${dat.funktion || '-'}</span>
-                                <span style="color:#64748b;">Gruppe:</span> <span>${dat.gruppe || '-'}</span>
-                                <span style="color:#64748b;">Zuweisung:</span> <span style="color:#0f766e; font-weight:500;">${dat.eingabegerat || '-'}</span>
-                            </div>
+                        return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">
+                            <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
+                            Bezeichnung: ${dat.bezeichnung || '-'}<br>
+                            Art: ${dat.art || 'TA'}<br>
+                            Funktion: ${dat.funktion || '-'}<br>
+                            Gruppe: ${dat.gruppe || '-'}<br>
+                            Verknüpfung: <span style="color:#0f766e;">${dat.eingabegerat || '-'}</span>
                         </div>`;
                     }).join('');
-                    blocks.push(`<div class="print-slot-item-block"><b>Platz ${i}: ${ic.label}</b><div style="margin-top:6px;">${ioRows}</div></div>`);
+                    blocks.push(`<div class="print-slot-item-block"><b>Platz ${i} - ${ic.label}</b><div style="margin-top:5px;">${ioRows}</div></div>`);
                 }
             }
             if(blocks.length === 0) return '';
-            let visHtml = `<div style="display:flex; justify-content:center; margin: 8px 0;"><div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 50px);">${vSlots}</div></div>`;
-            let bStr = blocks.join('');
+            let visHtml = `<div style="display:flex; justify-content:center; margin: 10px 0;"><div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px);">${vSlots}</div></div>`;
+            
+            let bStr = ''; 
+            for(let i=0; i<blocks.length; i+=2) {
+                bStr += `<div class="print-slots-grid-2col">${blocks[i]}${blocks[i+1] || '<div></div>'}</div>`;
+            }
+            
             return `<div><div class="print-frame-title">Schaltstelle: ${f.name}</div>${visHtml}${bStr}</div>`;
         }).join('');
-        if(framesHtml) framesHtml = `<div class="print-section-title">Schalter-Belegungen</div>${framesHtml}`;
+        if(framesHtml) framesHtml = `<div class="print-section-title">Schalter Belegungen</div>${framesHtml}`;
     }
     
     let hwHtml = '';
     if(d.hardware && d.hardware.length > 0) {
-        hwHtml = `<div class="print-section-title">Hardware-Komponenten & Aktorik</div>` + d.hardware.map(hw => {
+        hwHtml = `<div class="print-section-title">Hardware</div>` + d.hardware.map(hw => {
             const cfg = hardwareConfigList.find(x => x.id === hw.configId); 
             if(!cfg) return '';
             const activeIo = cfg.profiles ? (cfg.profiles.find(p => p.id === hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
             
-            let fh = `<div style="display:grid; grid-template-columns: 100px 1fr; gap:2px; font-size:0.85rem; margin-top:4px; margin-bottom:8px;">`;
-            if(cfg.fields) cfg.fields.forEach(f => fh += `<div><span style="color:#64748b;">${f}:</span></div> <div><b>${hw.fields[f] || '-'}</b></div>`);
-            if(cfg.profiles) {
-                const pName = cfg.profiles.find(p => p.id === hw.activeProfile)?.label || '';
-                fh += `<div><span style="color:#64748b;">Profil:</span></div> <div><b style="color:#0f766e;">${pName}</b></div>`;
-            }
-            fh += `</div>`;
-
+            let fh = ''; 
+            if(cfg.fields) cfg.fields.forEach(f => fh += `<div style="font-size:0.8rem;"><b>${f}:</b> ${hw.fields[f] || ''}</div>`);
+            
             let ioh = ''; 
             if(activeIo) activeIo.forEach(io => { 
-                const busCfg = io.type === 'bus' ? SYSTEM_CONFIG.busTypes[io.busType] : null;
+                const busCfg = io.type === 'bus' ? SYSTEM_CONFIG?.busTypes?.[io.busType] : null;
                 if(busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
                     hw.subNodes[io.id].forEach(sub => {
-                        ioh += `<div class="print-hw-sub-block">
-                            <div style="font-weight:bold; color:#166534; margin-bottom:2px;">🔌 ${busCfg.subDeviceLabel}: ${sub.name}</div>
-                            <div class="print-io-grid" style="grid-template-columns: 80px 1fr;">
-                                <span style="color:#64748b;">Ort:</span> <span>${sub.location || 'k.A.'}</span>
-                                <span style="color:#64748b;">Kanäle:</span> <span>${sub.channels} Adr.</span>
-                                <span style="color:#64748b;">Taster:</span> <span>${sub.mapping || '-'}</span>
-                                <span style="color:#64748b;">App:</span> <span>${sub.appFunctions || '-'}</span>
-                                <span style="color:#64748b;">Gruppe:</span> <span>${sub.globalGroup || '-'}</span>
-                            </div>
-                        </div>`;
+                        ioh += `<div style="font-size:0.8rem; margin-top:2px; border-left:2px solid var(--primary); padding-left:6px;"><b>${busCfg.subDeviceLabel}:</b> ${sub.name} (Ort: ${sub.location || 'k.A.'}, Kanäle: ${sub.channels}, Taster: ${sub.mapping || '-'})</div>`;
                     });
                 } else if(io.type !== 'bus') {
                     const bez = hw.bezeichnung?.[io.id] || '-';
-                    const grp = hw.globalGroup?.[io.id] || '-';
                     const map = hw.mappings?.[io.id] || '-';
-                    const app = hw.appFunctions?.[io.id] || '-';
-                    ioh += `<div class="print-hw-io-block">
-                        <div style="font-weight:bold; color:#1e293b; margin-bottom:2px;">${io.label}</div>
-                        <div class="print-io-grid" style="grid-template-columns: 80px 1fr;">
-                            <span style="color:#64748b;">Bez:</span> <span><b>${bez}</b></span>
-                            <span style="color:#64748b;">Taster:</span> <span>${map}</span>
-                            <span style="color:#64748b;">App:</span> <span>${app}</span>
-                            <span style="color:#64748b;">Gruppe:</span> <span>${grp}</span>
-                        </div>
-                    </div>`; 
+                    ioh += `<div style="font-size:0.8rem; margin-top:2px;"><b>${io.label} (${bez}):</b> Taster: ${map}</div>`; 
                 }
             });
-            return `<div class="print-hw-container"><div class="print-hw-image"><img src="icons-schalter/${cfg.image}"></div><div><b>${cfg.name}</b>${fh}<div style="margin-top:4px;">${ioh}</div></div></div>`;
+            return `<div class="print-hw-container"><div class="print-hw-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div><div><b>${cfg.name}</b>${fh}<div style="margin-top:5px;">${ioh}</div></div></div>`;
         }).join('');
     }
-
-    let appItems = (projectData.appFunctions || []).map(x => {
-        const n = typeof x === 'object' ? x.name : x;
-        const desc = typeof x === 'object' ? (x.description || '') : '';
-        return `<div style="margin-bottom:4px;"><b>${n}</b>${desc ? `:<br><span style="color:#475569; font-size:0.75rem;">${desc}</span>` : ''}</div>`;
-    }).join('');
-
-    let grpItems = (projectData.globalGroups || []).map(x => {
-        const n = typeof x === 'object' ? x.name : x;
-        const desc = typeof x === 'object' ? (x.description || '') : '';
-        return `<div style="margin-bottom:4px;"><b>${n}</b>${desc ? `:<br><span style="color:#475569; font-size:0.75rem;">${desc}</span>` : ''}</div>`;
-    }).join('');
-
-    let fnItems = (projectData.globalFunctions || []).map(x => {
-        const n = typeof x === 'object' ? x.name : x;
-        const desc = typeof x === 'object' ? (x.description || '') : '';
-        return `<div style="margin-bottom:4px;"><b>${n}</b>${desc ? `:<br><span style="color:#475569; font-size:0.75rem;">${desc}</span>` : ''}</div>`;
-    }).join('');
-
-    let legendHtml = `
-        <div class="print-section-title">Legende & Funktionserklärungen</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; font-size: 0.8rem; background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; page-break-inside: avoid; margin-top: 15px;">
-            <div><div style="font-weight: bold; color: #0f766e; margin-bottom: 4px; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px;">App-Funktionen</div>${appItems || '<span style="color:#94a3b8;">Keine</span>'}</div>
-            <div><div style="font-weight: bold; color: #0f766e; margin-bottom: 4px; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px;">Globale Gruppen</div>${grpItems || '<span style="color:#94a3b8;">Keine</span>'}</div>
-            <div><div style="font-weight: bold; color: #0f766e; margin-bottom: 4px; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px;">Funktionen</div>${fnItems || '<span style="color:#94a3b8;">Keine</span>'}</div>
-        </div>
-    `;
 
     return `<div class="print-detail-page">
         <div class="print-header-block">
             <h2>${projectData.projectName}</h2>
             <p>${projectData.location || ''}</p>
         </div>
-        <h3 style="color:#0f766e; margin:0 0 10px 0; font-size:1.2rem;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}</h3>
+        <h3 style="color:#0f766e; margin:0;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}</h3>
         ${framesHtml}
         ${hwHtml}
-        ${legendHtml}
     </div>`;
 }
 
