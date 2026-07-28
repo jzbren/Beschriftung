@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.6</title>
+    <title>ServiceProDetail Konfigurator V5.7</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -206,7 +206,7 @@
             <button class="icon-btn toggle-sidebar-btn-inner no-print" onclick="toggleSidebar()">×</button>
         </div>
         <div class="sidebar-search">
-            <input type="text" id="detail-search-input" placeholder="Nach Detail oder Raum suchen..." onkeyup="filterDetails()">
+            <input type="text" id="detail-search-input" placeholder="Suche (Detail, Raum, Schaltstelle, Gruppe)..." onkeyup="filterDetails()">
         </div>
         <div class="detail-list" id="detail-list"></div>
         <button class="sidebar-btn" onclick="addNewDetail()">+ Neues Detail / Raum</button>
@@ -316,7 +316,7 @@
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
     const DEFAULT_PROJECT_DATA = { 
-        version: "5.5", 
+        version: "5.6", 
         projectName: "Projekt", 
         location: "", 
         details: [],
@@ -885,7 +885,38 @@
         const search = (document.getElementById('detail-search-input')?.value || '').toLowerCase();
 
         projectData.details.forEach(detail => {
-            const searchStr = `${detail.name} ${detail.room || ''}`.toLowerCase();
+            let searchStr = `${detail.name} ${detail.room || ''}`;
+            
+            if (detail.frames) {
+                detail.frames.forEach(f => {
+                    searchStr += ` ${f.name}`;
+                    if (f.slots) {
+                        for (let sKey in f.slots) {
+                            const slot = f.slots[sKey];
+                            if (slot && slot.ioData) {
+                                for (let ioKey in slot.ioData) {
+                                    const io = slot.ioData[ioKey];
+                                    if (io) {
+                                        if (io.bezeichnung) searchStr += ` ${io.bezeichnung}`;
+                                        if (io.gruppe) searchStr += ` ${io.gruppe}`;
+                                        if (io.funktion) searchStr += ` ${io.funktion}`;
+                                        if (io.eingabegerat) searchStr += ` ${io.eingabegerat}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            if (detail.hardware) {
+                detail.hardware.forEach(hw => {
+                    for (let k in hw.fields) {
+                        if (hw.fields[k]) searchStr += ` ${hw.fields[k]}`;
+                    }
+                });
+            }
+            searchStr = searchStr.toLowerCase();
+
             if(search && !searchStr.includes(search)) return;
 
             const div = document.createElement('div');
