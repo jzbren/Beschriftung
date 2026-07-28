@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.4</title>
+    <title>ServiceProDetail Konfigurator V5.5</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -74,15 +74,23 @@
         .frame-header-row input { font-weight: 600; flex: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: white; font-size: 0.95rem; }
         .frame-header-row select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: white; font-size: 0.9rem; }
 
-        /* Switch Visualizer & Tabs */
-        .visualizer-container { display: flex; justify-content: center; align-items: center; padding: 20px; background: #f8fafc; border: 2px dashed #e2e8f0; border-radius: 8px; margin-bottom: 16px; }
-        .switch-frame { background-color: var(--feller-white); border: 2px solid #cbd5e1; padding: 16px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: grid; gap: 4px; }
+        /* Switch Visualizer & Legend Flex Layout */
+        .visualizer-container { display: flex; justify-content: center; align-items: stretch; gap: 20px; padding: 20px; background: #f8fafc; border: 2px dashed #e2e8f0; border-radius: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .switch-frame { background-color: var(--feller-white); border: 2px solid #cbd5e1; padding: 16px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: grid; gap: 4px; align-self: center; }
         .switch-slot { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 4px; display: flex; justify-content: center; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); position: relative; overflow: hidden; width: 75px; height: 75px; cursor: pointer; transition: all 0.2s; }
         .switch-slot:hover { border-color: var(--primary); }
         .switch-slot.active-slot { border: 2px solid var(--primary); box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15); background-color: #f0fdf4; }
         .switch-slot.drag-over { border: 2px solid var(--primary); opacity: 0.7; }
         .switch-slot img { width: 100%; height: 100%; object-fit: fill; padding: 0; box-sizing: border-box; opacity: 0.9; pointer-events: none; }
         .slot-badge { position: absolute; top: 3px; left: 6px; font-size: 10px; font-weight: 700; color: #64748b; z-index: 2; pointer-events: none; background: rgba(255,255,255,0.9); padding: 1px 4px; border-radius: 3px; }
+
+        /* Slot Legend List */
+        .slot-legend { flex: 1; min-width: 260px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: center; }
+        .slot-legend-title { font-weight: 700; font-size: 0.9rem; color: #0f766e; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .slot-legend-items { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+        .slot-legend-row { padding: 6px 10px; border-radius: 6px; cursor: pointer; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; transition: all 0.15s; }
+        .slot-legend-row:hover { background: #f1f5f9; border-color: #94a3b8; }
+        .slot-legend-row.active { background: #f0fdf4; border-color: #14b8a6; box-shadow: 0 1px 3px rgba(15, 118, 110, 0.15); }
 
         /* Slot Tabs Navigation */
         .slot-tabs { display: flex; gap: 6px; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; overflow-x: auto; }
@@ -308,7 +316,7 @@
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
     const DEFAULT_PROJECT_DATA = { 
-        version: "5.4", 
+        version: "5.5", 
         projectName: "Projekt", 
         location: "", 
         details: [],
@@ -341,7 +349,6 @@
         document.querySelectorAll('.select-items').forEach(item => item.classList.remove('show'));
     });
 
-    // Migrationsfunktion zur automatischen Bereinigung alter String-Formate
     function migrateProjectData(data) {
         if (!data || !data.details) return data;
         
@@ -1370,7 +1377,13 @@
                     </select>
                     <button class="delete-btn" onclick="deleteFrame('${f.id}')" title="Schaltstelle löschen">×</button>
                 </div>
-                <div class="visualizer-container"><div class="switch-frame" style="grid-template-columns: repeat(${col}, 75px); grid-template-rows: repeat(${r}, 75px);">${generateVisualizerHtml(d, f, r, col)}</div></div>
+                <div class="visualizer-container">
+                    <div class="switch-frame" style="grid-template-columns: repeat(${col}, 75px); grid-template-rows: repeat(${r}, 75px);">${generateVisualizerHtml(d, f, r, col)}</div>
+                    <div class="slot-legend">
+                        <div class="slot-legend-title">📋 Belegungsübersicht</div>
+                        <div class="slot-legend-items">${generateSlotLegendHtml(d, f, r, col)}</div>
+                    </div>
+                </div>
                 <div>${generateSlotEditorHtml(d, f, tot)}</div>
             </div>`;
         }).join('');
@@ -1544,6 +1557,43 @@
             cnt++;
         }
         return h;
+    }
+
+    function generateSlotLegendHtml(d, f, r, c) {
+        let h = '';
+        const total = r * c;
+        for(let i = 1; i <= total; i++) {
+            const slot = f.slots[`slot-${i}`] || { iconFile: '', ioData: {} };
+            const ic = iconConfigList.find(x => x.file === slot.iconFile);
+            const slotLabel = ic ? ic.label : 'Kein Icon';
+            
+            let descParts = [];
+            if (slot.ioData) {
+                for (let ioKey in slot.ioData) {
+                    const dat = slot.ioData[ioKey];
+                    if (dat && dat.bezeichnung) {
+                        descParts.push(dat.bezeichnung);
+                    }
+                }
+            }
+            if (slot.customFields) {
+                for (let cfKey in slot.customFields) {
+                    if (slot.customFields[cfKey] && /bemerkung|text|label/i.test(cfKey)) {
+                        descParts.push(slot.customFields[cfKey]);
+                    }
+                }
+            }
+            
+            const descText = descParts.length > 0 ? descParts.join(' / ') : '<span style="color:#94a3b8; font-style:italic;">Keine Bezeichnung</span>';
+            const isActive = (f.activeSlot === i);
+            
+            h += `<div class="slot-legend-row ${isActive ? 'active' : ''}" onclick="selectSlot('${f.id}', ${i})" title="Platz ${i} bearbeiten">
+                <div style="font-size: 0.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%;">
+                    <b style="color:#0f766e;">[Platz ${i}]</b> <span style="color:#334155;">${slotLabel}</span>: <span style="color:#475569;">${descText}</span>
+                </div>
+            </div>`;
+        }
+        return h || '<div style="color:#94a3b8; font-size:0.8rem; font-style:italic;">Keine Plätze vorhanden</div>';
     }
 
     window.selectSlotIo = function(fId, slotN, ioKey) {
