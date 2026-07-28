@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V6.1</title>
+    <title>ServiceProDetail Konfigurator V6.0</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -2079,20 +2079,33 @@
                 }
             });
 
-            activeIoList.forEach(io => {
+           activeIoList.forEach(io => {
                 if(io.type === 'bus') {
                     const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
                     
                     if(busCfg && busCfg.hasSubDevices) {
                         if(!hw.subNodes) hw.subNodes = {};
-                        if(!hw.subNodes[io.id]) hw.subNodes[io.id] = [];
-                        const subs = hw.subNodes[io.id];
-
+                        
+                        // 1. Interne Sub-Nodes laden
+                        const internalSubs = hw.subNodes[io.id] || [];
+                        
+                        // 2. Projektweite externe Geräte abrufen, die diesem Bus-IO zugeordnet sind
+                        const externalSubs = (typeof allDevices !== 'undefined' ? allDevices : (typeof projectDevices !== 'undefined' ? projectDevices : []))
+                            .filter(dev => dev.assignedBusIo === io.id || dev.busIoId === io.id);
+                        
+                        // 3. Zusammenführen ohne Duplikate
+                        const subs = [...internalSubs];
+                        externalSubs.forEach(ext => {
+                            if (!subs.some(s => s.id === ext.id)) {
+                                subs.push(ext);
+                            }
+                        });
+            
                         let totalAddresses = 0;
                         subs.forEach(s => { totalAddresses += parseInt(s.channels) || 1; });
                         const maxLimit = io.limit || busCfg.defaultLimit || 64;
                         const isFull = totalAddresses >= maxLimit;
-
+            
                         let subsHtml = '';
                         if (subs.length > 0) {
                             subsHtml = `<table class="dali-table">
@@ -2103,20 +2116,19 @@
                                     <th>Verknüpfungen (Taster / App / Gruppe)</th>
                                     <th style="width: 30px;"></th>
                                 </tr></thead><tbody>` + subs.map(sub => {
-
-                                return `
-                                <tr>
-                                    <td><input type="text" value="${sub.name}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)"></td>
-                                    <td><input type="text" value="${sub.location}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'location', this.value)"></td>
-                                    <td><input type="number" min="1" max="16" value="${sub.channels}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'channels', this.value)" style="width:50px; border:1px solid transparent; background:transparent;"></td>
-                                    <td style="font-size: 0.75rem; color: #475569; line-height: 1.3;">
-                                        <b>Taster:</b> ${sub.mapping || '-'}<br>
-                                        <b>App:</b> ${sub.appFunctions || '-'}<br>
-                                        <b>Gruppe:</b> ${sub.globalGroup || '-'}
-                                    </td>
-                                    <td style="text-align: right;"><button class="delete-btn" style="padding: 2px 4px;" title="Löschen" onclick="deleteSubNode('${hw.instanceId}', '${io.id}', '${sub.id}')">✕</button></td>
-                                </tr>`;
-                            }).join('') + `</tbody></table>`;
+                                    return `
+                                    <tr>
+                                        <td><input type="text" value="${sub.name || ''}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)"></td>
+                                        <td><input type="text" value="${sub.location || ''}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'location', this.value)"></td>
+                                        <td><input type="number" min="1" max="16" value="${sub.channels || 1}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'channels', this.value)" style="width:50px; border:1px solid transparent; background:transparent;"></td>
+                                        <td style="font-size: 0.75rem; color: #475569; line-height: 1.3;">
+                                            <b>Taster:</b> ${sub.mapping || '-'}<br>
+                                            <b>App:</b> ${sub.appFunctions || '-'}<br>
+                                            <b>Gruppe:</b> ${sub.globalGroup || '-'}
+                                        </td>
+                                        <td style="text-align: right;"><button class="delete-btn" style="padding: 2px 4px;" title="Löschen" onclick="deleteSubNode('${hw.instanceId}', '${io.id}', '${sub.id}')">✕</button></td>
+                                    </tr>`;
+                                }).join('') + `</tbody></table>`;
                         } else {
                             subsHtml = `<div style="font-size:0.85rem; color:#94a3b8; margin:10px 0;">Keine ${busCfg.subDeviceLabel} angelegt.</div>`;
                         }
@@ -2127,7 +2139,7 @@
                     const currentApp = hw.appFunctions?.[io.id] || '-';
                     const currentGrp = hw.globalGroup?.[io.id] || '-';
                     const currentBez = hw.bezeichnung?.[io.id] || '';
-
+            
                     const row = `<tr>
                         <td style="font-weight:600; color:#334155; width:90px;">${io.label}</td>
                         <td style="width:180px;"><input type="text" placeholder="Bezeichnung..." value="${currentBez}" onchange="updateHwFieldEx('${hw.instanceId}', 'bezeichnung', '${io.id}', this.value)"></td>
@@ -2137,7 +2149,7 @@
                             <div><b>Gruppe:</b> ${currentGrp}</div>
                         </td>
                     </tr>`;
-
+            
                     if(io.type === 'in') inRows += row; else outRows += row;
                 }
             });
