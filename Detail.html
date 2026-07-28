@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.2</title>
+    <title>ServiceProDetail Konfigurator V5.3</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -74,22 +74,29 @@
         .frame-header-row input { font-weight: 600; flex: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: white; font-size: 0.95rem; }
         .frame-header-row select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: white; font-size: 0.9rem; }
 
-        /* Switch Visualizer */
-        .visualizer-container { display: flex; justify-content: center; align-items: center; padding: 24px; background: #f8fafc; border: 2px dashed #e2e8f0; border-radius: 8px; margin-bottom: 20px; }
+        /* Switch Visualizer & Tabs */
+        .visualizer-container { display: flex; justify-content: center; align-items: center; padding: 20px; background: #f8fafc; border: 2px dashed #e2e8f0; border-radius: 8px; margin-bottom: 16px; }
         .switch-frame { background-color: var(--feller-white); border: 2px solid #cbd5e1; padding: 16px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: grid; gap: 4px; }
-        .switch-slot { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 4px; display: flex; justify-content: center; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); position: relative; overflow: hidden; width: 75px; height: 75px; cursor: grab; transition: border-color 0.2s; }
+        .switch-slot { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 4px; display: flex; justify-content: center; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); position: relative; overflow: hidden; width: 75px; height: 75px; cursor: pointer; transition: all 0.2s; }
         .switch-slot:hover { border-color: var(--primary); }
+        .switch-slot.active-slot { border: 2px solid var(--primary); box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15); background-color: #f0fdf4; }
         .switch-slot.drag-over { border: 2px solid var(--primary); opacity: 0.7; }
         .switch-slot img { width: 100%; height: 100%; object-fit: fill; padding: 0; box-sizing: border-box; opacity: 0.9; pointer-events: none; }
-        .slot-badge { position: absolute; top: 3px; left: 6px; font-size: 10px; font-weight: 700; color: #64748b; z-index: 2; pointer-events: none; background: rgba(255,255,255,0.8); padding: 1px 4px; border-radius: 3px; }
+        .slot-badge { position: absolute; top: 3px; left: 6px; font-size: 10px; font-weight: 700; color: #64748b; z-index: 2; pointer-events: none; background: rgba(255,255,255,0.9); padding: 1px 4px; border-radius: 3px; }
 
-        /* Forms & Fields - Modern Card Style */
+        /* Slot Tabs Navigation */
+        .slot-tabs { display: flex; gap: 6px; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; overflow-x: auto; }
+        .slot-tab-btn { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-size: 0.875rem; font-weight: 600; cursor: pointer; color: #475569; transition: all 0.2s; white-space: nowrap; }
+        .slot-tab-btn:hover { background: #e2e8f0; }
+        .slot-tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 1px 3px rgba(15, 118, 110, 0.3); }
+
+        /* Forms & Fields */
         .form-group { display: flex; margin-bottom: 14px; align-items: center; }
         .form-group label { width: 130px; font-size: 0.875rem; font-weight: 600; color: #475569; }
         .form-group input, .form-group select { flex: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; background: #fff; color: #1e293b; transition: border-color 0.2s; }
         .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1); }
         
-        .slot-form { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+        .slot-form { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
         .slot-form h4 { margin: 0 0 16px 0; color: var(--primary); font-size: 1rem; font-weight: 700; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; display: flex; align-items: center; gap: 8px; }
 
         /* Custom Searchable Dropdown */
@@ -110,7 +117,7 @@
         .io-type.out { background: #fce7f3; color: #9f1239; }
         .io-type.bus { background: #fef3c7; color: #92400e; }
 
-        .io-fields-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 10px; align-items: center; }
+        .io-fields-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; align-items: center; }
         .io-fields-grid input, .io-fields-grid select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.875rem; width: 100%; box-sizing: border-box; background: #fff; }
         .io-fields-grid input:focus, .io-fields-grid select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1); }
 
@@ -302,7 +309,7 @@
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
     const DEFAULT_PROJECT_DATA = { 
-        version: "5.2", 
+        version: "5.3", 
         projectName: "Projekt", 
         location: "", 
         details: [],
@@ -353,6 +360,7 @@
         data.details.forEach(d => {
             if (d.frames) {
                 d.frames.forEach(f => {
+                    if(!f.activeSlot) f.activeSlot = 1;
                     for (let slotKey in f.slots) {
                         const slot = f.slots[slotKey];
                         if (slot && slot.ioData) {
@@ -900,6 +908,15 @@
 
     function updateProjectField(field, value) { projectData[field] = value; saveToLocal(); }
     
+    window.selectSlot = function(fId, slotNum) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        if(!d || !d.frames) return;
+        const f = d.frames.find(x => x.id === fId);
+        if(!f) return;
+        f.activeSlot = slotNum;
+        renderApp();
+    };
+
     window.openAssignModal = function(type, sourceName, switchRef = null) {
         _activeSwitchRef = (type === 'switch') ? switchRef : null;
         document.getElementById('assign-title').innerText = sourceName;
@@ -1239,6 +1256,7 @@
                 id: generateId(),
                 name: `Schaltstelle ${d.frames.length + 1}`,
                 layout: '1x1',
+                activeSlot: 1,
                 slots: {}
             });
             saveToLocal();
@@ -1331,7 +1349,9 @@
 
         let framesHtml = d.frames.map(f => {
             const [r, col] = f.layout.split('x').map(Number); const tot = r * col;
+            if(!f.activeSlot || f.activeSlot > tot) f.activeSlot = 1;
             for(let i=1; i<=tot; i++) { if(!f.slots[`slot-${i}`]) f.slots[`slot-${i}`] = { iconFile: '', ioData: {} }; }
+            
             return `
             <div class="pane">
                 <div class="frame-header-row">
@@ -1352,7 +1372,7 @@
                     <button class="delete-btn" onclick="deleteFrame('${f.id}')" title="Schaltstelle löschen">×</button>
                 </div>
                 <div class="visualizer-container"><div class="switch-frame" style="grid-template-columns: repeat(${col}, 75px); grid-template-rows: repeat(${r}, 75px);">${generateVisualizerHtml(d, f, r, col)}</div></div>
-                <div>${generateSlotsHtml(d, f, tot)}</div>
+                <div>${generateSlotEditorHtml(d, f, tot)}</div>
             </div>`;
         }).join('');
 
@@ -1517,114 +1537,125 @@
 
     function generateVisualizerHtml(d, f, r, c) {
         let h = ''; let cnt = 1;
+        const active = f.activeSlot || 1;
         for(let i=0; i<r*c; i++) {
+            const isActive = (cnt === active);
             const path = f.slots[`slot-${cnt}`].iconFile ? `${BASE_ICON_PATH}${f.slots[`slot-${cnt}`].iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
-            h += `<div class="switch-slot" draggable="true" ondragstart="handleDragStart(event, '${f.id}', ${cnt})" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${f.id}', ${cnt})"><span class="slot-badge">${cnt}</span><img src="${path}"></div>`; cnt++;
+            h += `<div class="switch-slot ${isActive ? 'active-slot' : ''}" onclick="selectSlot('${f.id}', ${cnt})" draggable="true" ondragstart="handleDragStart(event, '${f.id}', ${cnt})" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${f.id}', ${cnt})" title="Platz ${cnt} bearbeiten"><span class="slot-badge">${cnt}</span><img src="${path}"></div>`; 
+            cnt++;
         }
         return h;
     }
 
-    function generateSlotsHtml(d, f, total) {
-        let h = '';
+    function generateSlotEditorHtml(d, f, total) {
+        const active = f.activeSlot || 1;
+        
+        // Render Tab bar for slots
+        let tabsHtml = `<div class="slot-tabs">` + Array.from({length: total}, (_, i) => i + 1).map(i => `
+            <button class="slot-tab-btn ${active === i ? 'active' : ''}" onclick="selectSlot('${f.id}', ${i})">Platz ${i}</button>
+        `).join('') + `</div>`;
 
-        for(let i=1; i<=total; i++) {
-            const slot = f.slots[`slot-${i}`]; const ic = iconConfigList.find(x => x.file === slot.iconFile); let ioHtml = '';
-            
-            let customFieldsHtml = '';
-            if (ic && ic.fields && Array.isArray(ic.fields)) {
-                if (!slot.customFields) slot.customFields = {};
-                customFieldsHtml = `<div style="margin-bottom: 14px; display: grid; grid-template-columns: 1fr; gap: 8px;">` + 
-                ic.fields.map(fieldName => {
-                    const fieldValue = slot.customFields[fieldName] || '';
-                    
-                    if (/ast|bus|bridge|dali|link/i.test(fieldName)) {
-                        const fn = `setSlotCustomF_${f.id}_${i}_${sanitizeFnName(fieldName)}`;
-                        window[fn] = (v, ev) => { 
-                            if(ev){ev.preventDefault();ev.stopPropagation();} 
-                            document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
-                            setTimeout(() => { updateSlotCustomField(f.id, i, fieldName, v); }, 10); 
-                        };
-                        const expectedType = getFieldBusType(fieldName);
-                        const busNodes = getAllBusNodes(expectedType);
-                        return `<div class="form-group" style="margin-bottom:4px;">
-                            <label style="width: 110px; font-size:0.85rem;">${fieldName}:</label>
-                            <div style="flex:1;">${renderStandardDropdown(`slotcf-${f.id}-${i}-${sanitizeFnName(fieldName)}`, fieldValue, [{value:'', label:'--- Keine Zuordnung ---'}, ...busNodes], fn, 'Bus...')}</div>
-                        </div>`;
-                    } else {
-                        return `<div class="form-group" style="margin-bottom:4px;">
-                            <label style="width: 110px; font-size:0.85rem;">${fieldName}:</label>
-                            <input type="text" value="${fieldValue}" placeholder="${fieldName} eingeben..." onchange="updateSlotCustomField('${f.id}', ${i}, '${fieldName.replace(/'/g, "\\'")}', this.value)" style="flex:1; padding:6px 10px; font-size:0.875rem;">
-                        </div>`;
-                    }
-                }).join('') + `</div>`;
-            }
-
-            if(ic && ic.io) {
-                ioHtml = `<div class="io-section">` + ic.io.map(io => {
-                    let data = slot.ioData?.[io.id] || {bezeichnung:'', art:'TA', funktion:'', gruppe:'', eingabegerat:''};
-                    if(typeof data === 'string') data = {bezeichnung: data, art:'TA', funktion:'', gruppe:'', eingabegerat:''};
-                    if(!data.art) data.art = 'TA';
-                    
-                    const slotLabel = ic ? ic.label : 'Platz';
-                    const customBez = data.bezeichnung ? data.bezeichnung : `${slotLabel} (Platz ${i})`;
-
-                    const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
-                    
-                    const hasWarn = checkCollision(switchIdent);
-                    const warnHtml = hasWarn ? `<span class="collision-warn" title="Achtung: Dieser Taster ist mehrfach direkt zugewiesen!" style="margin-left:5px;">⚠️</span>` : '';
-
-                    const fnOptions = [{value:'', label:'--- Funktion wählen ---'}, ...projectData.globalFunctions.map(fnObj => {
-                        const fnName = typeof fnObj === 'object' ? fnObj.name : fnObj;
-                        return {value: fnName, label: fnName};
-                    })];
-
-                    window[`setSlotFn_${f.id}_${i}_${io.id}`] = (v, ev) => {
-                        if(ev){ev.preventDefault();ev.stopPropagation();}
-                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show'));
-                        setTimeout(() => { updateSlotField(f.id, i, io.id, 'funktion', v); }, 10);
+        // Render only the active slot form
+        let i = active;
+        const slot = f.slots[`slot-${i}`] || { iconFile: '', ioData: {} }; 
+        const ic = iconConfigList.find(x => x.file === slot.iconFile); 
+        let ioHtml = '';
+        
+        let customFieldsHtml = '';
+        if (ic && ic.fields && Array.isArray(ic.fields)) {
+            if (!slot.customFields) slot.customFields = {};
+            customFieldsHtml = `<div style="margin-bottom: 14px; display: grid; grid-template-columns: 1fr; gap: 8px;">` + 
+            ic.fields.map(fieldName => {
+                const fieldValue = slot.customFields[fieldName] || '';
+                
+                if (/ast|bus|bridge|dali|link/i.test(fieldName)) {
+                    const fn = `setSlotCustomF_${f.id}_${i}_${sanitizeFnName(fieldName)}`;
+                    window[fn] = (v, ev) => { 
+                        if(ev){ev.preventDefault();ev.stopPropagation();} 
+                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+                        setTimeout(() => { updateSlotCustomField(f.id, i, fieldName, v); }, 10); 
                     };
-
-                    const fnDropdown = renderStandardDropdown(`fn-${f.id}-${i}-${io.id}`, data.funktion || '', fnOptions, `setSlotFn_${f.id}_${i}_${io.id}`, 'Funktion wählen...');
-
-                    return `<div class="io-complex-row">
-                        <div class="io-header"><span class="io-type ${io.type}">${io.type==='in'?'Eingang':'Ausgang'}</span> ${io.label} ${warnHtml}</div>
-                        <div class="io-fields-grid" style="grid-template-columns: 2fr 1fr; margin-bottom: 8px;">
-                            <input type="text" placeholder="Taster Bezeichnung" value="${data.bezeichnung||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','bezeichnung',this.value)">
-                            <select onchange="updateSlotField('${f.id}', '${i}','${io.id}','art',this.value)">
-                                <option value="TA" ${data.art==='TA'?'selected':''}>TA (Taster)</option>
-                                <option value="SA" ${data.art==='SA'?'selected':''}>SA (Schalter)</option>
-                                <option value="Imp." ${data.art==='Imp.'?'selected':''}>Imp. (Impuls)</option>
-                            </select>
-                        </div>
-                        <div class="io-fields-grid" style="grid-template-columns: 2fr 1fr; margin-bottom: 10px;">
-                            <div>${fnDropdown}</div>
-                            <input type="text" placeholder="Gruppe..." value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','gruppe',this.value)">
-                        </div>
-                        <div>
-                            <button class="btn info" style="width: 100%; justify-content: center; margin-bottom: 6px; padding: 7px 12px;" onclick="openAssignModal('switch', '${switchIdent.replace(/'/g, "\\'")}', {fId:'${f.id}', slotN:${i}, ioId:'${io.id}'})">🔗 Verknüpfungen / Zuweisen</button>
-                            <div style="font-size: 0.8rem; background: #ffffff; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; color: #475569;">
-                                <span style="font-weight:600; color:#334155;">Verknüpft:</span> <span style="color:#0f766e; font-weight:500;">${data.eingabegerat || 'Keine Verknüpfung'}</span>
-                            </div>
-                        </div>
+                    const expectedType = getFieldBusType(fieldName);
+                    const busNodes = getAllBusNodes(expectedType);
+                    return `<div class="form-group" style="margin-bottom:4px;">
+                        <label style="width: 110px; font-size:0.85rem;">${fieldName}:</label>
+                        <div style="flex:1;">${renderStandardDropdown(`slotcf-${f.id}-${i}-${sanitizeFnName(fieldName)}`, fieldValue, [{value:'', label:'--- Keine Zuordnung ---'}, ...busNodes], fn, 'Bus...')}</div>
                     </div>`;
-                }).join('') + `</div>`;
-            }
-            window[`setIcon_${f.id}_${i}`] = (v, ev) => { 
-                if(ev){ev.preventDefault();ev.stopPropagation();} 
-                document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
-                setTimeout(() => { f.slots[`slot-${i}`].iconFile = v; renderApp(); }, 10); 
-            };
-            
-            let iconDropdown = renderStandardDropdown(`icon-${f.id}-${i}`, slot.iconFile, [{value:'', label:'--- Kein Icon ---'}, ...iconConfigList.map(x=>({value:x.file, label:x.label}))], `setIcon_${f.id}_${i}`, 'Icon wählen...');
-            
-            h += `<div class="slot-form">
-                <h4><span>Platz ${i}</span></h4>
-                <div class="form-group no-print" style="margin-bottom: 12px;"><label>Icon:</label>${iconDropdown}</div>
-                ${customFieldsHtml}
-                ${ioHtml}
-            </div>`;
+                } else {
+                    return `<div class="form-group" style="margin-bottom:4px;">
+                        <label style="width: 110px; font-size:0.85rem;">${fieldName}:</label>
+                        <input type="text" value="${fieldValue}" placeholder="${fieldName} eingeben..." onchange="updateSlotCustomField('${f.id}', ${i}, '${fieldName.replace(/'/g, "\\'")}', this.value)" style="flex:1; padding:6px 10px; font-size:0.875rem;">
+                    </div>`;
+                }
+            }).join('') + `</div>`;
         }
-        return h;
+
+        if(ic && ic.io) {
+            ioHtml = `<div class="io-section">` + ic.io.map(io => {
+                let data = slot.ioData?.[io.id] || {bezeichnung:'', art:'TA', funktion:'', gruppe:'', eingabegerat:''};
+                if(typeof data === 'string') data = {bezeichnung: data, art:'TA', funktion:'', gruppe:'', eingabegerat:''};
+                if(!data.art) data.art = 'TA';
+                
+                const slotLabel = ic ? ic.label : 'Platz';
+                const customBez = data.bezeichnung ? data.bezeichnung : `${slotLabel} (Platz ${i})`;
+
+                const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
+                
+                const hasWarn = checkCollision(switchIdent);
+                const warnHtml = hasWarn ? `<span class="collision-warn" title="Achtung: Dieser Taster ist mehrfach direkt zugewiesen!" style="margin-left:5px;">⚠️</span>` : '';
+
+                const fnOptions = [{value:'', label:'--- Funktion wählen ---'}, ...projectData.globalFunctions.map(fnObj => {
+                    const fnName = typeof fnObj === 'object' ? fnObj.name : fnObj;
+                    return {value: fnName, label: fnName};
+                })];
+
+                window[`setSlotFn_${f.id}_${i}_${io.id}`] = (v, ev) => {
+                    if(ev){ev.preventDefault();ev.stopPropagation();}
+                    document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show'));
+                    setTimeout(() => { updateSlotField(f.id, i, io.id, 'funktion', v); }, 10);
+                };
+
+                const fnDropdown = renderStandardDropdown(`fn-${f.id}-${i}-${io.id}`, data.funktion || '', fnOptions, `setSlotFn_${f.id}_${i}_${io.id}`, 'Funktion wählen...');
+
+                return `<div class="io-complex-row">
+                    <div class="io-header"><span class="io-type ${io.type}">${io.type==='in'?'Eingang':'Ausgang'}</span> ${io.label} ${warnHtml}</div>
+                    <div class="io-fields-grid" style="grid-template-columns: 2fr 1fr; margin-bottom: 8px;">
+                        <input type="text" placeholder="Taster Bezeichnung" value="${data.bezeichnung||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','bezeichnung',this.value)">
+                        <select onchange="updateSlotField('${f.id}', '${i}','${io.id}','art',this.value)">
+                            <option value="TA" ${data.art==='TA'?'selected':''}>TA (Taster)</option>
+                            <option value="SA" ${data.art==='SA'?'selected':''}>SA (Schalter)</option>
+                            <option value="Imp." ${data.art==='Imp.'?'selected':''}>Imp. (Impuls)</option>
+                        </select>
+                    </div>
+                    <div class="io-fields-grid" style="grid-template-columns: 2fr 1fr; margin-bottom: 10px;">
+                        <div>${fnDropdown}</div>
+                        <input type="text" placeholder="Gruppe..." value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','gruppe',this.value)">
+                    </div>
+                    <div>
+                        <button class="btn info" style="width: 100%; justify-content: center; margin-bottom: 6px; padding: 7px 12px;" onclick="openAssignModal('switch', '${switchIdent.replace(/'/g, "\\'")}', {fId:'${f.id}', slotN:${i}, ioId:'${io.id}'})">🔗 Verknüpfungen / Zuweisen</button>
+                        <div style="font-size: 0.8rem; background: #ffffff; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; color: #475569;">
+                            <span style="font-weight:600; color:#334155;">Verknüpft:</span> <span style="color:#0f766e; font-weight:500;">${data.eingabegerat || 'Keine Verknüpfung'}</span>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('') + `</div>`;
+        }
+        window[`setIcon_${f.id}_${i}`] = (v, ev) => { 
+            if(ev){ev.preventDefault();ev.stopPropagation();} 
+            document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+            setTimeout(() => { f.slots[`slot-${i}`].iconFile = v; renderApp(); }, 10); 
+        };
+        
+        let iconDropdown = renderStandardDropdown(`icon-${f.id}-${i}`, slot.iconFile, [{value:'', label:'--- Kein Icon ---'}, ...iconConfigList.map(x=>({value:x.file, label:x.label}))], `setIcon_${f.id}_${i}`, 'Icon wählen...');
+        
+        let slotFormHtml = `<div class="slot-form">
+            <h4><span>Platz ${i} bearbeiten</span></h4>
+            <div class="form-group no-print" style="margin-bottom: 12px;"><label>Icon:</label>${iconDropdown}</div>
+            ${customFieldsHtml}
+            ${ioHtml}
+        </div>`;
+
+        return tabsHtml + slotFormHtml;
     }
 
     window.updateSlotField = function(fId, slotN, ioId, field, val) {
@@ -1776,7 +1807,7 @@
                         <div style="font-weight:700; font-size:0.85rem; margin-bottom:8px; color:#334155;">${io.label}</div>
                         <div class="io-fields-grid" style="grid-template-columns: 1fr;">
                             <input type="text" placeholder="Bezeichnung (z.B. Deckenlicht)" value="${currentBez}" onchange="updateHwFieldEx('${hw.instanceId}', 'bezeichnung', '${io.id}', this.value)">
-                            <div style="font-size: 0.8rem; background: #ffffff; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; line-height: 1.4; margin-top: 6px;">
+                            <div style="font-size: 0.8rem; background: #ffffff; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; line-height: 1.4; margin-top: 6px;">
                                 <div style="margin-bottom:2px;"><span style="color:#64748b;">Taster:</span> <b>${currentMap}</b></div>
                                 <div style="margin-bottom:2px;"><span style="color:#64748b;">App-Funktion:</span> <b>${currentApp}</b></div>
                                 <div><span style="color:#64748b;">Globale Gruppe:</span> <b>${currentGrp}</b></div>
