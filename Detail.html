@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V6.0</title>
+    <title>ServiceProDetail Konfigurator V6.1</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -2347,7 +2347,6 @@
                     const s = f.slots[`slot-${i}`] || { iconFile: '', ioData: {}, customFields: {} };
                     const ic = iconConfigList.find(x => x.file === s.iconFile);
                     
-                    // Jede Position (1 bis total) im Raster abbilden, auch leere Plätze mit Platzhalter
                     const imgPath = ic ? `icons-schalter/${ic.file}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
                     vSlots += `<div class="print-switch-slot"><span style="position:absolute; top:2px; left:4px; font-size:9px; font-weight:700; color:#64748b;">${i}</span><img src="${imgPath}"></div>`;
                     
@@ -2395,7 +2394,14 @@
             hwHtml = `<div class="print-section-title">Hardware</div>` + d.hardware.map(hw => {
                 const cfg = hardwareConfigList.find(x=>x.id===hw.configId); if(!cfg) return '';
                 
-                let fh = ''; if(cfg.fields) cfg.fields.forEach(f => fh += `<div style="font-size:0.8rem;"><b>${f}:</b> ${hw.fields[f]||''}</div>`);
+                // NEU: Felder-Block mit unterem Abstand versehen (Abstand nach Bemerkung)
+                let fh = ''; 
+                if(cfg.fields) {
+                    cfg.fields.forEach(f => {
+                        fh += `<div style="font-size:0.8rem; margin-bottom: 3px;"><b>${f}:</b> ${hw.fields[f]||''}</div>`;
+                    });
+                    if(fh) fh = `<div style="margin-bottom: 8px;">${fh}</div>`;
+                }
                 
                 let ioh = ''; 
                 const activeIoList = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
@@ -2405,7 +2411,8 @@
                         if(io.type === 'bus') {
                             if(hw.subNodes && hw.subNodes[io.id] && hw.subNodes[io.id].length > 0) {
                                 hw.subNodes[io.id].forEach(sub => {
-                                    ioh += `<div style="font-size:0.8rem; margin-top:2px; border-left:2px solid var(--primary); padding-left:6px;">
+                                    // NEU: Graue Striche (border-bottom) und Abstände für Sub-Nodes ergänzt
+                                    ioh += `<div style="font-size:0.8rem; margin-top:4px; padding-bottom:4px; margin-bottom:4px; border-bottom:1px solid #f1f5f9; border-left:2px solid var(--primary); padding-left:6px;">
                                         <b>${sub.name}</b> (Ort: ${sub.location || 'k.A.'}, ${sub.channels||1} Kanäle)<br>
                                         <span style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px;">
                                             <div><b>Taster:</b> ${sub.mapping||'-'}</div>
