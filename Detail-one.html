@@ -1068,20 +1068,22 @@
     };
 
     window.updateFrameField = function(fId, field, val) {
-        const d = projectData.details.find(x => x.id === activeDetailId);
-        if (d && d.frames) {
-            const f = d.frames.find(x => x.id === fId);
-            if (f) {
-                // Wenn der Name der Schaltstelle geändert wird, aktualisieren wir auch alle Verknüpfungen
-                if (field === 'name') {
-                    replaceStringInAllReferences(`${d.name} ${f.name}`, `${d.name} ${val}`);
-                }
+    const d = projectData.details.find(x => x.id === activeDetailId);
+    if (d && d.frames) {
+        const f = d.frames.find(x => x.id === fId);
+        if (f) {
+            if (field === 'name') {
+                const oldFullName = `${d.name} ${f.name}`;
+                f[field] = val; // Erst aktualisieren
+                replaceStringInAllReferences(oldFullName, `${d.name} ${val}`);
+            } else {
                 f[field] = val;
-                saveToLocal();
-                renderApp();
             }
+            saveToLocal();
+            renderApp();
         }
-    };
+    }
+};
 
     window.deleteFrame = function(fId) {
         if(confirm("Schaltstelle wirklich löschen?")) {
