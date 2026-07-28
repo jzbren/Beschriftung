@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.0</title>
+    <title>ServiceProDetail Konfigurator V5.1</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -161,7 +161,6 @@
 
         @media print {
             body { background: white; height: auto; overflow: visible; }
-            /* NEU: #workspace-container hinzugefügt, damit die Eingabemasken verschwinden */
             .sidebar, .top-bar, .action-buttons, .no-print, .delete-btn, #workspace-container { display: none !important; }
             .main-content { padding: 0; margin: 0 !important; }
             .pane { box-shadow: none; border: none; padding: 0; margin-bottom: 15px; }
@@ -280,7 +279,6 @@
             </div>
             <div id="assign-extras" style="display:none; margin-bottom: 20px;"></div>
             
-            <!-- NEU: Suchfeld für das Zuweisungs-Modal -->
             <div style="margin-bottom: 15px;">
                 <input type="text" id="assign-search-input" placeholder="Nach Raum, Hardware oder Eingang suchen..." onkeyup="filterAssignModal(this.value)" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9rem;">
             </div>
@@ -318,6 +316,7 @@
     let projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
     let activeDetailId = null; 
     let draggedSlot = null;
+    let _activeSwitchRef = null;
 
     document.addEventListener('keydown', e => { 
         if (e.ctrlKey || e.metaKey) { 
@@ -395,7 +394,7 @@
         if(ev && ev.target.id !== id) return; 
         document.getElementById(id).style.display = 'none'; 
         if(id === 'assign-modal') {
-            _activeSwitchRef = null; // Globale Referenz sauber zurücksetzen
+            _activeSwitchRef = null; 
         }
         renderApp();
     }
@@ -403,6 +402,54 @@
     window.updateActiveDetailField = function(field, val) {
         const d = projectData.details.find(x => x.id === activeDetailId);
         if (d) {
+            if (field === 'name') {
+                const oldName = d.name;
+                const newName = val;
+                
+                if (d.hardware) {
+                    d.hardware.forEach(hw => {
+                        const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+                        if (cfg) {
+                            const hwName = hw.fields['Geräte-Bez.'] || cfg.name;
+                            const activeIo = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
+                            if (activeIo) {
+                                activeIo.forEach(io => {
+                                    if (io.type === 'bus') {
+                                        if (hw.subNodes && hw.subNodes[io.id]) {
+                                            hw.subNodes[io.id].forEach(sub => {
+                                                replaceStringInAllReferences(`${oldName} ${hwName} ${sub.name || 'Neues Gerät'}`, `${newName} ${hwName} ${sub.name || 'Neues Gerät'}`);
+                                            });
+                                        }
+                                    } else {
+                                        replaceStringInAllReferences(`${oldName} ${hwName} ${io.label}`, `${newName} ${hwName} ${io.label}`);
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+                
+                if (d.frames) {
+                    d.frames.forEach(f => {
+                        for (let slotKey in f.slots) {
+                            const slotN = slotKey.replace('slot-', '');
+                            const slot = f.slots[slotKey];
+                            const ic = iconConfigList.find(x => x.file === slot.iconFile);
+                            if (ic && ic.io) {
+                                ic.io.forEach(io => {
+                                    let data = slot.ioData?.[io.id] || {};
+                                    const customBez = data.bezeichnung ? data.bezeichnung : `${ic.label} (Platz ${slotN})`;
+                                    // ANGEPASSTES FORMAT: Detail | Schaltstelle | Platz | Bezeichnung
+                                    const oldIdent = `${oldName} | ${f.name} | Platz ${slotN} | ${customBez}`;
+                                    const newIdent = `${newName} | ${f.name} | Platz ${slotN} | ${customBez}`;
+                                    replaceStringInAllReferences(oldIdent, newIdent);
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+            
             d[field] = val;
             saveToLocal();
             renderApp();
@@ -505,8 +552,11 @@
             if(names.includes(newName)) { alert("Name existiert bereits!"); renderGlobalsLists(); return; }
             
             projectData[type][idx].name = newName;
+            
             if(type !== 'globalFunctions') {
-                renameGlobalItemReferences(type, oldName, newName);
+                renameGlobalItemReferences(oldName, newName);
+            } else {
+                renameGlobalFunctionReferences(oldName, newName);
             }
         } else {
             projectData[type][idx][field] = val;
@@ -521,10 +571,51 @@
             projectData[type].splice(idx, 1);
             if(type !== 'globalFunctions') {
                 removeGlobalItemReferences(name);
+            } else {
+                removeGlobalFunctionReferences(name);
             }
             saveToLocal(); renderGlobalsLists();
         }
     }
+
+    window.renameGlobalFunctionReferences = function(oldName, newName) {
+        if (!oldName || !newName || oldName === newName) return;
+        projectData.details.forEach(d => {
+            if (d.frames) {
+                d.frames.forEach(f => {
+                    for(let slotKey in f.slots) {
+                        const slot = f.slots[slotKey];
+                        if(slot && slot.ioData) {
+                            for(let ioKey in slot.ioData) {
+                                if(slot.ioData[ioKey].funktion === oldName) {
+                                    slot.ioData[ioKey].funktion = newName;
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    };
+
+    window.removeGlobalFunctionReferences = function(name) {
+        projectData.details.forEach(d => {
+            if (d.frames) {
+                d.frames.forEach(f => {
+                    for(let slotKey in f.slots) {
+                        const slot = f.slots[slotKey];
+                        if(slot && slot.ioData) {
+                            for(let ioKey in slot.ioData) {
+                                if(slot.ioData[ioKey].funktion === name) {
+                                    slot.ioData[ioKey].funktion = "";
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    };
 
     window.renameGlobalItemReferences = function(oldName, newName) {
         if (!oldName || !newName || oldName === newName) return;
@@ -535,7 +626,7 @@
                         const slot = f.slots[slotKey];
                         if(slot && slot.ioData) {
                             for(let ioKey in slot.ioData) {
-                                if(slot.ioData[ioKey].eingabegerat && slot.ioData[ioKey].eingabegerat.includes(oldName)) {
+                                if(slot.ioData[ioKey].eingabegerat) {
                                     let items = slot.ioData[ioKey].eingabegerat.split(',').map(x=>x.trim());
                                     let i = items.indexOf(oldName);
                                     if (i !== -1) { items[i] = newName; slot.ioData[ioKey].eingabegerat = items.join(', '); }
@@ -557,6 +648,20 @@
                         for(let ioKey in hw.appFunctions) {
                             let list = (hw.appFunctions[ioKey] || '').split(',').map(x=>x.trim()).filter(x=>x);
                             let i = list.indexOf(oldName); if (i !== -1) { list[i] = newName; hw.appFunctions[ioKey] = list.join(', '); }
+                        }
+                    }
+                    if (hw.subNodes) {
+                        for(let ioKey in hw.subNodes) {
+                            hw.subNodes[ioKey].forEach(sub => {
+                                if (sub.globalGroup) {
+                                    let list = (sub.globalGroup || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                    let i = list.indexOf(oldName); if (i !== -1) { list[i] = newName; sub.globalGroup = list.join(', '); }
+                                }
+                                if (sub.appFunctions) {
+                                    let list = (sub.appFunctions || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                    let i = list.indexOf(oldName); if (i !== -1) { list[i] = newName; sub.appFunctions = list.join(', '); }
+                                }
+                            });
                         }
                     }
                 });
@@ -595,6 +700,20 @@
                             hw.appFunctions[ioKey] = list.filter(x => x !== name).join(', ');
                         }
                     }
+                    if (hw.subNodes) {
+                        for(let ioKey in hw.subNodes) {
+                            hw.subNodes[ioKey].forEach(sub => {
+                                if (sub.globalGroup) {
+                                    let list = (sub.globalGroup || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                    sub.globalGroup = list.filter(x => x !== name).join(', ');
+                                }
+                                if (sub.appFunctions) {
+                                    let list = (sub.appFunctions || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                    sub.appFunctions = list.filter(x => x !== name).join(', ');
+                                }
+                            });
+                        }
+                    }
                 });
             }
         });
@@ -610,6 +729,17 @@
                         if (hw.mappings[key]) {
                             let items = hw.mappings[key].split(',').map(x=>x.trim());
                             let i = items.indexOf(oldStr); if (i !== -1) { items[i] = newStr; hw.mappings[key] = items.join(', '); }
+                        }
+                    }
+                    if (hw.subNodes) {
+                        for(let ioKey in hw.subNodes) {
+                            hw.subNodes[ioKey].forEach(sub => {
+                                if (sub.mapping) {
+                                    let items = sub.mapping.split(',').map(x=>x.trim());
+                                    let i = items.indexOf(oldStr);
+                                    if (i !== -1) { items[i] = newStr; sub.mapping = items.join(', '); }
+                                }
+                            });
                         }
                     }
                 });
@@ -723,10 +853,9 @@
         if (activeDetailId) {
             const activeDetail = projectData.details.find(d => d.id === activeDetailId);
             if (activeDetail) {
-                autoFilterText = activeDetail.name; // Nimmt den Namen des aktuellen Details
+                autoFilterText = activeDetail.name; 
             }
         }
-        
         
         const searchInput = document.getElementById('assign-search-input');
         if(searchInput) searchInput.value = autoFilterText;
@@ -753,7 +882,6 @@
                             }
                             isChecked = currentList.includes(sourceName);
                             
-                            // Wenn keine eigene Bezeichnung da ist, den verknüpften Schalter als Anzeige nutzen
                             const manualBez = hw.bezeichnung?.[io.id] || '';
                             const fallbackBez = hw.mappings?.[io.id] || '';
                             
@@ -867,11 +995,9 @@
             const hwBlocks = detailSec.querySelectorAll('.assign-hw-block');
             
             hwBlocks.forEach(hwBlock => {
-                // Den gesamten Textinhalt des Hardware-Blocks durchsuchen
                 const text = hwBlock.innerText.toLowerCase();
                 const detailTitle = detailSec.querySelector('h3').innerText.toLowerCase();
                 
-                // Zusätzlich prüfen, ob der Suchbegriff in den verknüpften Bezeichnungen oder Eingängen steckt
                 if(text.includes(query) || detailTitle.includes(query)) {
                     hwBlock.style.display = '';
                     detailHasVisibleHw = true;
@@ -888,7 +1014,6 @@
         let switchRef = _activeSwitchRef;
         if (subId === 'null' || !subId) subId = null;
 
-        // 1. Exklusiv-Prüfung für Schalter: Diesen spezifischen Schalter von allen anderen Eingängen im Projekt entfernen
         if (type === 'switch' && isChecked) {
             projectData.details.forEach(pd => {
                 if (pd.hardware) {
@@ -959,7 +1084,6 @@
         }
         targetObj[propKey] = list.join(', ');
 
-        // UI-Rückwärts-Synchronisation exakt für den aktuell aktiven switchRef
         if (type === 'switch' && switchRef && switchRef.fId) {
             let hwNameStr = '';
             projectData.details.forEach(pd => {
@@ -1068,22 +1192,38 @@
     };
 
     window.updateFrameField = function(fId, field, val) {
-    const d = projectData.details.find(x => x.id === activeDetailId);
-    if (d && d.frames) {
-        const f = d.frames.find(x => x.id === fId);
-        if (f) {
-            if (field === 'name') {
-                const oldFullName = `${d.name} ${f.name}`;
-                f[field] = val; // Erst aktualisieren
-                replaceStringInAllReferences(oldFullName, `${d.name} ${val}`);
-            } else {
-                f[field] = val;
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        if (d && d.frames) {
+            const f = d.frames.find(x => x.id === fId);
+            if (f) {
+                if (field === 'name') {
+                    const oldFName = f.name;
+                    const newFName = val;
+                    
+                    for (let slotKey in f.slots) {
+                        const slotN = slotKey.replace('slot-', '');
+                        const slot = f.slots[slotKey];
+                        const ic = iconConfigList.find(x => x.file === slot.iconFile);
+                        if (ic && ic.io) {
+                            ic.io.forEach(io => {
+                                let data = slot.ioData?.[io.id] || {};
+                                const customBez = data.bezeichnung ? data.bezeichnung : `${ic.label} (Platz ${slotN})`;
+                                // ANGEPASSTES FORMAT: Detail | Schaltstelle | Platz | Bezeichnung
+                                const oldIdent = `${d.name} | ${oldFName} | Platz ${slotN} | ${customBez}`;
+                                const newIdent = `${d.name} | ${newFName} | Platz ${slotN} | ${customBez}`;
+                                replaceStringInAllReferences(oldIdent, newIdent);
+                            });
+                        }
+                    }
+                    f[field] = val;
+                } else {
+                    f[field] = val;
+                }
+                saveToLocal();
+                renderApp();
             }
-            saveToLocal();
-            renderApp();
         }
-    }
-};
+    };
 
     window.deleteFrame = function(fId) {
         if(confirm("Schaltstelle wirklich löschen?")) {
@@ -1374,8 +1514,8 @@
                     const slotLabel = ic ? ic.label : 'Platz';
                     const customBez = data.bezeichnung ? data.bezeichnung : `${slotLabel} (Platz ${i})`;
 
-                    // Absolut eindeutiger Identifizierer mit Detail, Frame, exaktem Platz (i) und IO-ID
-                    const switchIdent = `${d.name} | ${f.name} | Platz ${i} (${io.id}) - ${customBez} (${io.label})`;
+                    // HIER ANGEPASST: Kürzeres Format -> Detail | Schaltstelle | Platz | Bezeichnung
+                    const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
                     
                     const hasWarn = checkCollision(switchIdent);
                     const warnHtml = hasWarn ? `<span class="collision-warn" title="Achtung: Dieser Taster ist mehrfach direkt zugewiesen!">⚠️</span>` : '';
@@ -1435,21 +1575,21 @@
         if (field === 'bezeichnung') {
             const ic = iconConfigList.find(x => x.file === slot.iconFile);
             if(ic) {
-                // ioLabel sauber auslesen, damit es nicht zum Absturz kommt
-                const ioDef = ic.io ? ic.io.find(x => x.id === ioId) : null;
-                const ioLabel = ioDef ? ioDef.label : '';
-                
                 const oldBezeichnung = cData.bezeichnung || `${ic.label} (Platz ${slotN})`;
                 const newBezeichnung = val || `${ic.label} (Platz ${slotN})`;
                 
-                replaceStringInAllReferences(`${d.name} ${f.name} ${oldBezeichnung} (${ioLabel})`, `${d.name} ${f.name} ${newBezeichnung} (${ioLabel})`);
+                // ANGEPASSTES FORMAT: Detail | Schaltstelle | Platz | Bezeichnung
+                const oldIdent = `${d.name} | ${f.name} | Platz ${slotN} | ${oldBezeichnung}`;
+                const newIdent = `${d.name} | ${f.name} | Platz ${slotN} | ${newBezeichnung}`;
+                
+                replaceStringInAllReferences(oldIdent, newIdent);
             }
         }
         
         cData[field] = val; 
         slot.ioData[ioId] = cData;
         
-        saveToLocal(); // Speichert die Daten dauerhaft
+        saveToLocal();
         renderApp();
     };
 
@@ -1780,7 +1920,6 @@
                     if(ic) {
                         vSlots += `<div class="print-switch-slot"><img src="icons-schalter/${ic.file}"></div>`;
                         
-                        // Custom Fields (wie 1-Wire Temperaturfühler etc. aus V5)
                         let cfRows = '';
                         if (s.customFields) {
                             for (let cf in s.customFields) {
@@ -1791,7 +1930,6 @@
                             if (cfRows) cfRows = `<div style="margin-bottom:4px; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">${cfRows}</div>`;
                         }
 
-                        // IO Daten
                         let ioRows = '';
                         if(ic.io) {
                             ioRows = ic.io.map(io => {
@@ -1822,10 +1960,8 @@
             hwHtml = `<div class="print-section-title">Hardware</div>` + d.hardware.map(hw => {
                 const cfg = hardwareConfigList.find(x=>x.id===hw.configId); if(!cfg) return '';
                 
-                // Hardware Basis-Felder
                 let fh = ''; if(cfg.fields) cfg.fields.forEach(f => fh += `<div style="font-size:0.8rem;"><b>${f}:</b> ${hw.fields[f]||''}</div>`);
                 
-                // IOs & SubNodes (angepasst an V5 Struktur)
                 let ioh = ''; 
                 const activeIoList = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
                 
@@ -1855,7 +1991,7 @@
                     });
                 }
                 
-                return `<div class="print-hw-container"><div class="print-hw-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div><div><b>${cfg.name}</b>${fh}<div style="margin-top:5px;">${ioh}</div></div></div>`;
+                return `<div class="print-hw-container"><div class="print-hw-image"><img src="icons-schalter/${cfg.image}"></div><div><b>${cfg.name}</b>${fh}<div style="margin-top:5px;">${ioh}</div></div></div>`;
             }).join('');
         }
 
@@ -1887,7 +2023,6 @@
     }
 
     function exportProject() {
-        // Aktuelles Datum und Uhrzeit formatieren (z.B. 2026-07-28_14-30)
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -1900,7 +2035,6 @@
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
         
-        // Den Zeitstempel in den Dateinamen einbauen
         downloadAnchor.setAttribute("download", `${projectData.projectName || 'Projekt'}_${timestamp}.ServiceProDetail`);
         
         document.body.appendChild(downloadAnchor);
