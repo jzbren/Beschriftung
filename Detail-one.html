@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.0</title>
+    <title>ServiceProDetail Konfigurator V5.1</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -161,7 +161,8 @@
 
         @media print {
             body { background: white; height: auto; overflow: visible; }
-            .sidebar, .top-bar, .action-buttons, .no-print, .delete-btn { display: none !important; }
+            /* NEU: #workspace-container hinzugefügt, damit die Eingabemasken verschwinden */
+            .sidebar, .top-bar, .action-buttons, .no-print, .delete-btn, #workspace-container { display: none !important; }
             .main-content { padding: 0; margin: 0 !important; }
             .pane { box-shadow: none; border: none; padding: 0; margin-bottom: 15px; }
             .print-detail-page { page-break-after: always; }
