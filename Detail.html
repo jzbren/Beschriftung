@@ -2361,7 +2361,8 @@
                                 return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">
                                     <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
                                     Bezeichnung: ${dat.bezeichnung||''}<br>
-                                    Art: ${dat.art||''} | Funktion: ${dat.funktion||''}<br>
+                                    Art: ${dat.art||''}<br>
+                                    Funktion: ${dat.funktion||''}<br>
                                     Gruppe: ${dat.gruppe||''}<br>
                                     Ziel: ${dat.eingabegerat||''}
                                 </div>`;
@@ -2393,12 +2394,14 @@
                     activeIoList.forEach(io => { 
                         if(io.type === 'bus') {
                             if(hw.subNodes && hw.subNodes[io.id] && hw.subNodes[io.id].length > 0) {
-                                ioh += `<div style="font-size:0.8rem; margin-top:6px; font-weight:bold; color:#1e293b;">${io.label} (Bus):</div>`;
-                                hw.subNodes[io.id].forEach(sub => {
-                                    ioh += `<div style="font-size:0.8rem; margin-top:2px; border-left:2px solid var(--primary); padding-left:6px;">
-                                        <b>${sub.name}</b> (Ort: ${sub.location || 'k.A.'}, ${sub.channels||1} Kanäle)<br>
-                                        <span style="color:#64748b; font-size:0.75rem;">Taster: ${sub.mapping||'-'} | App: ${sub.appFunctions||'-'} | Grp: ${sub.globalGroup||'-'}</span>
-                                    </div>`;
+                                ioh += `<div style="font-size:0.8rem; margin-top:2px; border-left:2px solid var(--primary); padding-left:6px;">
+                                    <b>${sub.name}</b> (Ort: ${sub.location || 'k.A.'}, ${sub.channels||1} Kanäle)<br>
+                                    <span style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px;">
+                                        <div><b>Taster:</b> ${sub.mapping||'-'}</div>
+                                        <div><b>App:</b> ${sub.appFunctions||'-'}</div>
+                                        <div><b>Gruppe:</b> ${sub.globalGroup||'-'}</div>
+                                    </span>
+                                </div>`;
                                 });
                             }
                         } else {
@@ -2409,8 +2412,12 @@
                             
                             ioh += `<div style="font-size:0.8rem; margin-top:4px; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
                                 <b>${io.label}:</b> ${bez ? `<span style="color:#0f766e;">${bez}</span>` : ''}<br>
-                                <span style="color:#64748b; font-size:0.75rem;">Taster: ${map} | App: ${app} | Grp: ${grp}</span>
-                            </div>`; 
+                                <span style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px;">
+                                    <div><b>Taster:</b> ${map}</div>
+                                    <div><b>App:</b> ${app}</div>
+                                    <div><b>Gruppe:</b> ${grp}</div>
+                                </span>
+                            </div>`;
                         }
                     });
                 }
