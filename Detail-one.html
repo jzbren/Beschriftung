@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.3</title>
+    <title>ServiceProDetail Konfigurator V5.2</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -160,34 +160,34 @@
         .add-global-row input { flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; }
 
         @media print {
-            body { background: white; height: auto; overflow: visible; font-size: 11pt; }
-            .sidebar, .top-bar, .action-buttons, .no-print, .delete-btn { display: none !important; }
-            .main-content { padding: 0; margin: 0 !important; width: 100% !important; max-width: none !important; }
-            .pane { box-shadow: none; border: none; padding: 0; margin-bottom: 15px; }
-            
-            .print-detail-page { page-break-after: always; page-break-inside: avoid; }
-            .print-header-block { border-bottom: 2px solid #0f766e; padding-bottom: 6px; margin-bottom: 15px; }
-            .print-header-block h2 { margin: 0 0 2px 0; font-size: 1.4rem; color: #0f172a; }
-            .print-header-block p { margin: 0; color: #64748b; font-size: 0.9rem; }
-        
-            .print-section-title { font-size: 1.05rem; font-weight: bold; color: #0f766e; border-bottom: 1px solid #cbd5e1; margin: 15px 0 8px 0; padding-bottom: 3px; }
-            .print-frame-title { font-size: 0.9rem; font-weight: bold; margin: 12px 0 6px 0; color: #1e293b; background: #f8fafc; padding: 5px 8px; border-left: 3px solid #0f766e; }
-            
-            .print-switch-frame { display: grid; gap: 4px; background: #f8fafc; border: 2px solid #cbd5e1; padding: 6px; border-radius: 6px; justify-content: center; }
-            .print-switch-slot { background: #fff; border: 1px solid #94a3b8; display: flex; justify-content: center; align-items: center; position: relative; width: 45px; height: 45px; }
-            .print-switch-slot img { width: 100%; height: 100%; object-fit: contain; }
-            
-            .print-slots-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; page-break-inside: avoid; }
-            .print-slot-item-block { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 6px; page-break-inside: avoid; }
-            .print-io-grid { display: grid; grid-template-columns: 85px 1fr; gap: 3px; font-size: 0.8rem; }
-            .print-io-block { margin-bottom: 5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
-            .print-io-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        
-            .print-hw-container { display: grid; grid-template-columns: 65px 1fr; gap: 10px; border: 1px solid #cbd5e1; border-left: 4px solid #0f766e; border-radius: 6px; padding: 8px; margin-bottom: 10px; page-break-inside: avoid; background: #fff; }
-            .print-hw-image img { width: 100%; object-fit: contain; }
-            .print-hw-io-block { font-size: 0.8rem; margin-top: 4px; padding: 5px 6px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; page-break-inside: avoid; }
-            .print-hw-sub-block { font-size: 0.8rem; margin-top: 4px; padding: 5px 6px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; border-left: 3px solid #166534; page-break-inside: avoid; }
-        }
+    body { background: white; height: auto; overflow: visible; font-size: 11pt; }
+    .sidebar, .top-bar, .action-buttons, .no-print, .delete-btn { display: none !important; }
+    .main-content { padding: 0; margin: 0 !important; width: 100% !important; max-width: none !important; }
+    .pane { box-shadow: none; border: none; padding: 0; margin-bottom: 15px; }
+    
+    .print-detail-page { page-break-after: always; page-break-inside: avoid; }
+    .print-header-block { border-bottom: 2px solid #0f766e; padding-bottom: 6px; margin-bottom: 15px; }
+    .print-header-block h2 { margin: 0 0 2px 0; font-size: 1.4rem; color: #0f172a; }
+    .print-header-block p { margin: 0; color: #64748b; font-size: 0.9rem; }
+
+    .print-section-title { font-size: 1.05rem; font-weight: bold; color: #0f766e; border-bottom: 1px solid #cbd5e1; margin: 15px 0 8px 0; padding-bottom: 3px; }
+    .print-frame-title { font-size: 0.9rem; font-weight: bold; margin: 12px 0 6px 0; color: #1e293b; background: #f8fafc; padding: 5px 8px; border-left: 3px solid #0f766e; }
+    
+    .print-switch-frame { display: grid; gap: 4px; background: #f8fafc; border: 2px solid #cbd5e1; padding: 6px; border-radius: 6px; justify-content: center; }
+    .print-switch-slot { background: #fff; border: 1px solid #94a3b8; display: flex; justify-content: center; align-items: center; position: relative; width: 45px; height: 45px; }
+    .print-switch-slot img { width: 100%; height: 100%; object-fit: contain; }
+    
+    .print-slots-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; page-break-inside: avoid; }
+    .print-slot-item-block { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 6px; page-break-inside: avoid; }
+    .print-io-grid { display: grid; grid-template-columns: 85px 1fr; gap: 3px; font-size: 0.8rem; }
+    .print-io-block { margin-bottom: 5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
+    .print-io-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+    .print-hw-container { display: grid; grid-template-columns: 65px 1fr; gap: 10px; border: 1px solid #cbd5e1; border-left: 4px solid #0f766e; border-radius: 6px; padding: 8px; margin-bottom: 10px; page-break-inside: avoid; background: #fff; }
+    .print-hw-image img { width: 100%; object-fit: contain; }
+    .print-hw-io-block { font-size: 0.8rem; margin-top: 4px; padding: 5px 6px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; page-break-inside: avoid; }
+    .print-hw-sub-block { font-size: 0.8rem; margin-top: 4px; padding: 5px 6px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; border-left: 3px solid #166534; page-break-inside: avoid; }
+}
     </style>
 </head>
 <body>
