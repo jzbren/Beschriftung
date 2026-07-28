@@ -200,7 +200,7 @@ const hardwareConfigList = [
         name: "Miniserver Gen. 2", 
         image: "Miniserver-Gen-2.jpg", 
         power: 2.2, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse", "Bemerkung"], 
         io: [
             { id: "DI_1", label: "DI 1", type: "in" },
             { id: "DI_2", label: "DI 2", type: "in" }, 
@@ -231,7 +231,7 @@ const hardwareConfigList = [
         name: "Miniserver Go", 
         image: "Miniserver-Go.jpg", 
         power: 2.0, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse", "Bemerkung"], 
         io: [
             { id: "AIR_BASE", label: "Air Geräte (Max 128)", type: "bus", busType: "air" }, 
             { id: "LINK_1", label: "Loxone Link", type: "bus", busType: "link" }
@@ -242,7 +242,7 @@ const hardwareConfigList = [
         name: "Miniserver Compact", 
         image: "Miniserver-Compact.jpg", 
         power: 2.5, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse", "Bemerkung"], 
         profiles: [
             
             {
@@ -284,7 +284,7 @@ const hardwareConfigList = [
         name: "Audioserver", 
         image: "Audioserver.jpg", 
         power: 5.0, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "IP-Adresse", "Bemerkung"], 
         profiles: [
             {
                 id: "stereo_12_34",
@@ -355,7 +355,7 @@ const hardwareConfigList = [
         name: "Tree Extension", 
         image: "Tree-Extension.jpg", 
         power: 1.3, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus", "Bemerkung"], 
         io: [
             { id: "TREE_LEFT", label: "Tree Ast Links", type: "bus", busType: "tree" }, 
             { id: "TREE_RIGHT", label: "Tree Ast Rechts", type: "bus", busType: "tree" }
@@ -366,7 +366,7 @@ const hardwareConfigList = [
         name: "Air Base Extension", 
         image: "Air-Extension.jpg", 
         power: 1.5, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus", "Bemerkung"], 
         io: [
             { id: "AIR_OUT", label: "Air Geräte", type: "bus", busType: "air" }
         ] 
@@ -376,7 +376,7 @@ const hardwareConfigList = [
         name: "DALI Extension", 
         image: "Dali-Extension.jpg", 
         power: 1.5, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus", "Bemerkung"], 
         io: [
             { id: "DALI_1", label: "DALI Bus 1", type: "bus", busType: "dali" }
         ] 
@@ -386,7 +386,7 @@ const hardwareConfigList = [
         name: "DALI Extension (10 Geräte)", 
         image: "Dali-Extension-10.jpg", 
         power: 1.5, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus", "Bemerkung"], 
         io: [
             { id: "DALI_1", label: "DALI Bus 1", type: "bus", busType: "dali", limit:10 }
         ] 
@@ -396,7 +396,7 @@ const hardwareConfigList = [
         name: "Relay Extension", 
         image: "Relay-Extension.jpg", 
         power: 1.5, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus", "Bemerkung"], 
         io: [
             { id: "O_1", label: "Relais 1", type: "out" }, { id: "O_2", label: "Relais 2", type: "out" }, 
             { id: "O_3", label: "Relais 3", type: "out" }, { id: "O_4", label: "Relais 4", type: "out" },
@@ -413,7 +413,7 @@ const hardwareConfigList = [
         name: "DI Extension", 
         image: "DI-Extension.jpg", 
         power: 1.0, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus", "Bemerkung"], 
         io: [
             { id: "DI_1", label: "DI 1", type: "in" },
             { id: "DI_2", label: "DI 2", type: "in" },
@@ -442,7 +442,7 @@ const hardwareConfigList = [
         name: "Dimmer Extension", 
         image: "Dimmer-Extension.jpg", 
         power: 1.5, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus", "Bemerkung"], 
         io: [
             { id: "DI_1", label: "DI 1", type: "in" },
             { id: "DI_2", label: "DI 2", type: "in" },
@@ -463,7 +463,7 @@ const hardwareConfigList = [
         name: "Modbus Extension", 
         image: "Modbus-Extension.jpg", 
         power: 1.0, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Link Bus", "Bemerkung"], 
         io: [
             { id: "MODBUS", label: "Modbus RTU", type: "bus", busType: "modbus", limit: 32 }
         ] 
@@ -485,7 +485,7 @@ const hardwareConfigList = [
         name: "Nano DI Tree", 
         image: "DI-Tree.jpg", 
         power: 0.2, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Bemerkung"], 
         io: [
             { id: "DI_1", label: "DI 1", type: "in" }, { id: "DI_2", label: "DI 2", type: "in" }, 
             { id: "DI_3", label: "DI 3", type: "in" }, { id: "DI_4", label: "DI 4", type: "in" }, 
@@ -498,7 +498,7 @@ const hardwareConfigList = [
         name: "Nano 2 Relay Tree", 
         image: "Nano-2-Relay.jpg", 
         power: 0.5, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"],
+        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Bemerkung"],
         // PROFILE anstelle fixer IOs
         profiles: [
             {
@@ -526,7 +526,7 @@ const hardwareConfigList = [
         name: "RGBW 24V Dimmer Tree", 
         image: "RGBW-Dimmer-Tree.png", 
         power: 0.5, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Tree Ast"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Tree Ast", "Bemerkung"], 
         profiles: [
             {
                 id: "4x_single",
@@ -568,7 +568,7 @@ const hardwareConfigList = [
         name: "RGBW 24V Dimmer Air", 
         image: "RGBW-Dimmer-Air.jpg", 
         power: 0.5, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Air Link"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Air Link", "Bemerkung"], 
         profiles: [
             {
                 id: "4x_single",
@@ -611,7 +611,7 @@ const hardwareConfigList = [
         image: "Nano-Dimmer-Air.jpg", 
         power: null, 
         defaultPower: 0.5, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Montagehöhe", "Air Link"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Leistung (W)", "Air Link", "Bemerkung"], 
         io: [ 
             { id: "O_1", label: "Dimmer", type: "out" }
         ] 
@@ -621,7 +621,7 @@ const hardwareConfigList = [
         name: "Nano IO Air", 
         image: "Nano-IO-Air.jpg", 
         power: 0.5, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Air Link", "Bemerkung"], 
         profiles: [
             {
                 id: "2x_relay",
@@ -650,7 +650,7 @@ const hardwareConfigList = [
         name: "Multi Extension Air", 
         image: "Multi-Extension-Air.jpg", 
         power: 1.5, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Air Link", "Bemerkung"], 
         profiles: [
             {
                 id: "4x_single",
@@ -747,7 +747,7 @@ const hardwareConfigList = [
         name: "DALI Air", 
         image: "Dali-Air.jpg", 
         power: 0.5, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Air Link", "Bemerkung"], 
         io: [
             { id: "DALI_OUT", label: "DALI Geräte", type: "bus", busType: "dali", limit: 10 }
         ] 
@@ -757,7 +757,7 @@ const hardwareConfigList = [
         name: "ree to Air Bridge", 
         image: "Tree-to-Air.jpg", 
         power: 0.5, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Bemerkung"], 
         io: [
             { id: "AIR_OUT", label: "Air Geräte", type: "bus", busType: "air", limit: 50 }
         ] 
@@ -767,21 +767,21 @@ const hardwareConfigList = [
         name: "Präsenzmelder Tree", 
         image: "Präsenzmelder.jpg", 
         power: 0.2, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast"]
+        fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Bemerkung"]
     },
     { 
         id: "lox_presence_air", 
         name: "Präsenzmelder Air", 
         image: "Präsenzmelder.jpg", 
         power: 0.2, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"]     
+        fields: ["S.-Nr.", "Geräte-Bez.", "Air Link", "Bemerkung"]     
     },
     { 
         id: "lox_shading_air", 
         name: "Shadingaktor Air", 
         image: "Storenaktor-Air.jpg", 
         power: 0.5, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Air Link"], 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Air Link", "Bemerkung"], 
         io: [
             { id: "M_1_UP", label: "Motor(Auf )", type: "out" },
             { id: "M_1_DOWN", label: "Motor(Ab)", type: "out" }
@@ -792,7 +792,7 @@ const hardwareConfigList = [
         name: "4-Kanal DALI Aktor (Fix)", 
         image: "dali-aktor.jpg", 
         power: 2.0, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Dali Bus"],
+        fields: ["S.-Nr.", "Geräte-Bez.", "Dali Bus", "Bemerkung"],
         channels: 4,
         io: [
             { id: "CH_1", label: "DALI Kanal 1", type: "out" },
