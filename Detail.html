@@ -490,8 +490,24 @@
         if (d) {
             if (field === 'name') {
                 const oldName = d.name;
-                const newName = val;
-                
+                const newName = val.trim();
+    
+                // NEU: Prüfen, ob der Name bereits bei einem anderen Detail existiert
+                const nameExists = projectData.details.some(x => x.id !== activeDetailId && x.name === newName);
+                if (nameExists) {
+                    alert("Ein Detail mit diesem Namen existiert bereits! Bitte wähle einen eindeutigen Namen.");
+                    renderApp(); // Setzt das Eingabefeld im UI wieder zurück
+                    return;
+                }
+    
+                if (newName === "" || oldName === newName) {
+                    d[field] = newName;
+                    saveToLocal();
+                    renderApp();
+                    return;
+                }
+    
+                // Ab hier läuft deine bestehende Logik für die Namensänderung und Ersetzung weiter...
                 if (d.hardware) {
                     d.hardware.forEach(hw => {
                         const cfg = hardwareConfigList.find(x => x.id === hw.configId);
@@ -506,8 +522,9 @@
                                                 replaceStringInAllReferences(`${oldName} ${hwName} ${sub.name || 'Neues Gerät'}`, `${newName} ${hwName} ${sub.name || 'Neues Gerät'}`);
                                             });
                                         }
+                                    } else {
+                                        replaceStringInAllReferences(`${oldName} ${hwName} ${io.label}`, `${newName} ${hwName} ${io.label}`);
                                     }
-                                    replaceStringInAllReferences(`${oldName} ${hwName} ${io.label}`, `${newName} ${hwName} ${io.label}`);
                                 });
                             }
                         }
