@@ -332,6 +332,7 @@
     window.onload = () => {
         let savedData = loadFromLocal();
         if (savedData && savedData.details) {
+            projectData = migrateProjectData(savedData);
             projectData = savedData; 
             
             if(!projectData.appFunctions) projectData.appFunctions = [];
@@ -2050,6 +2051,7 @@
             try {
                 const parsed = JSON.parse(e.target.result);
                 if(parsed && parsed.details) {
+                    projectData = migrateProjectData(parsed);
                     projectData = parsed;
                     activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null;
                     renderApp();
@@ -2063,6 +2065,56 @@
         };
         reader.readAsText(file);
     }
+
+    function migrateProjectData(data) {
+    if (!data || !data.details) return data;
+    
+    // Hilfsfunktion zum Bereinigen der Strings (entfernt alles in Klammern am Ende, z.B. (TA_1) oder (Taster Schliesser))
+    function cleanStr(str) {
+        if (typeof str !== 'string') return str;
+        return str.split(',').map(item => {
+            let trimmed = item.trim();
+            // Entfernt alle Klammer-Blöcke am Ende des jeweiligen Eintrags
+            return trimmed.replace(/(\s*\([^)]+\))+$/, '').trim();
+        }).filter(x => x).join(', ');
+    }
+
+    data.details.forEach(d => {
+        // 1. Taster-Verknüpfungen bereinigen
+        if (d.frames) {
+            d.frames.forEach(f => {
+                for (let slotKey in f.slots) {
+                    const slot = f.slots[slotKey];
+                    if (slot && slot.ioData) {
+                        for (let ioKey in slot.ioData) {
+                            if (slot.ioData[ioKey].eingabegerat) {
+                                slot.ioData[ioKey].eingabegerat = cleanStr(slot.ioData[ioKey].eingabegerat);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        // 2. Hardware-Mappings bereinigen
+        if (d.hardware) {
+            d.hardware.forEach(hw => {
+                if (hw.mappings) {
+                    for (let k in hw.mappings) {
+                        if (hw.mappings[k]) hw.mappings[k] = cleanStr(hw.mappings[k]);
+                    }
+                }
+                if (hw.subNodes) {
+                    for (let sKey in hw.subNodes) {
+                        hw.subNodes[sKey].forEach(sub => {
+                            if (sub.mapping) sub.mapping = cleanStr(sub.mapping);
+                        });
+                    }
+                }
+            });
+        }
+    });
+    return data;
+}
 </script>
 </body>
 </html>
