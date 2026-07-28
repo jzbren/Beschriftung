@@ -1783,8 +1783,8 @@
     window.deleteSubNode = function(hwInstanceId, ioId, subId) {
         projectData.details.forEach(d => {
             if(d.hardware) d.hardware.forEach(hw => {
-                if(hw.instanceId === hwInstanceId && hw.subNodes && hw.subNodes[io.id]) {
-                    hw.subNodes[io.id] = hw.subNodes[io.id].filter(x => x.id !== subId);
+                if(hw.instanceId === hwInstanceId && hw.subNodes && hw.subNodes[ioId]) {
+                    hw.subNodes[ioId] = hw.subNodes[ioId].filter(x => x.id !== subId);
                 }
             });
         });
