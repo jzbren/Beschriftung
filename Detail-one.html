@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.1</title>
+    <title>ServiceProDetail Konfigurator V5.2</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -2069,13 +2069,21 @@
     function migrateProjectData(data) {
     if (!data || !data.details) return data;
     
-    // Hilfsfunktion zum Bereinigen der Strings (entfernt alles in Klammern am Ende, z.B. (TA_1) oder (Taster Schliesser))
     function cleanStr(str) {
         if (typeof str !== 'string') return str;
         return str.split(',').map(item => {
             let trimmed = item.trim();
-            // Entfernt alle Klammer-Blöcke am Ende des jeweiligen Eintrags
-            return trimmed.replace(/(\s*\([^)]+\))+$/, '').trim();
+            
+            // 1. Entfernt IO-IDs in Klammern (wie (TA_1), (SA_1), etc.), die mitten im Text stehen
+            trimmed = trimmed.replace(/\s*\([A-Za-z0-9_-]+\)/g, '');
+            
+            // 2. Ersetzt den alten Bindestrich nach dem Platz durch den neuen Trenner " | " (z.B. "Platz 1 - Bezeichnung" -> "Platz 1 | Bezeichnung")
+            trimmed = trimmed.replace(/(Platz\s+\d+)\s*-\s*/i, '$1 | ');
+            
+            // 3. Entfernt restliche Klammern am Ende
+            trimmed = trimmed.replace(/(\s*\([^)]+\))+$/, '').trim();
+            
+            return trimmed;
         }).filter(x => x).join(', ');
     }
 
