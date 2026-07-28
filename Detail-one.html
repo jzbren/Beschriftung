@@ -160,22 +160,22 @@
         .add-global-row input { flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; }
 
         @media print {
-    body { background: white; height: auto; overflow: visible; }
-    .sidebar, .top-bar, .action-buttons, .no-print, .delete-btn { display: none !important; }
-    .main-content { padding: 0; margin: 0 !important; }
-    .pane { box-shadow: none; border: none; padding: 0; margin-bottom: 15px; }
-    .print-detail-page { page-break-after: always; }
-    .print-header-block { border-bottom: 2px solid #0f766e; padding-bottom: 5px; margin-bottom: 15px; }
-    .print-section-title { font-size: 1.1rem; font-weight: bold; color: #0f766e; border-bottom: 1px solid #cbd5e1; margin: 20px 0 10px 0; }
-    .print-frame-title { font-size: 0.95rem; font-weight: bold; margin-bottom: 8px; color: #1e293b; }
-    .print-switch-frame { display: grid; gap: 4px; background: #f8fafc; border: 2px solid #cbd5e1; padding: 10px; border-radius: 6px; }
-    .print-switch-slot { background: #fff; border: 1px solid #94a3b8; display: flex; justify-content: center; align-items: center; position: relative; width: 60px; height: 60px; }
-    .print-switch-slot img { width: 100%; height: 100%; }
-    .print-slots-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-    .print-slot-item-block { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; page-break-inside: avoid; }
-    .print-hw-container { display: grid; grid-template-columns: 80px 1fr; gap: 12px; border: 1px solid #cbd5e1; border-left: 4px solid var(--primary); padding: 10px; margin-bottom: 10px; page-break-inside: avoid; }
-    .print-hw-image img { width: 100%; object-fit: contain; }
-}
+            body { background: white; height: auto; overflow: visible; }
+            .sidebar, .top-bar, .action-buttons, .no-print, .delete-btn { display: none !important; }
+            .main-content { padding: 0; margin: 0 !important; }
+            .pane { box-shadow: none; border: none; padding: 0; margin-bottom: 15px; }
+            .print-detail-page { page-break-after: always; }
+            .print-header-block { border-bottom: 2px solid #0f766e; padding-bottom: 5px; margin-bottom: 15px; }
+            .print-section-title { font-size: 1.1rem; font-weight: bold; color: #0f766e; border-bottom: 1px solid #cbd5e1; margin: 20px 0 10px 0; }
+            .print-frame-title { font-size: 0.95rem; font-weight: bold; margin-bottom: 8px; color: #1e293b; }
+            .print-switch-frame { display: grid; gap: 4px; background: #f8fafc; border: 2px solid #cbd5e1; padding: 10px; border-radius: 6px; }
+            .print-switch-slot { background: #fff; border: 1px solid #94a3b8; display: flex; justify-content: center; align-items: center; position: relative; width: 60px; height: 60px; }
+            .print-switch-slot img { width: 100%; height: 100%; }
+            .print-slots-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+            .print-slot-item-block { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; page-break-inside: avoid; }
+            .print-hw-container { display: grid; grid-template-columns: 80px 1fr; gap: 12px; border: 1px solid #cbd5e1; border-left: 4px solid var(--primary); padding: 10px; margin-bottom: 10px; page-break-inside: avoid; }
+            .print-hw-image img { width: 100%; object-fit: contain; }
+        }
     </style>
 </head>
 <body>
@@ -1696,55 +1696,55 @@
     }
 
     function buildDetailPrintHtml(d) {
-    let framesHtml = '';
-    if(d.frames && d.frames.length > 0) {
-        framesHtml = d.frames.map(f => {
-            const [r, c] = f.layout.split('x').map(Number); let vSlots = ''; let blocks = [];
-            for(let i=1; i<=r*c; i++) {
-                const s = f.slots[`slot-${i}`]; const ic = iconConfigList.find(x=>x.file===s?.iconFile);
-                if(ic) {
-                    vSlots += `<div class="print-switch-slot"><img src="${BASE_ICON_PATH}${ic.file}"></div>`;
-                    let ioRows = ic.io.map(io => {
-                        const dat = s.ioData?.[io.id] || {};
-                        return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">
-                            <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
-                            Bezeichnung: ${dat.bezeichnung||''}<br>
-                            Art: ${dat.art||''}<br>
-                            Gruppe: ${dat.gruppe||''}<br>
-                            Ziel: ${dat.eingabegerat||''}
-                        </div>`;
-                    }).join('');
-                    blocks.push(`<div class="print-slot-item-block"><b>Platz ${i} - ${ic.label}</b><div style="margin-top:5px;">${ioRows}</div></div>`);
+        let framesHtml = '';
+        if(d.frames && d.frames.length > 0) {
+            framesHtml = d.frames.map(f => {
+                const [r, c] = f.layout.split('x').map(Number); let vSlots = ''; let blocks = [];
+                for(let i=1; i<=r*c; i++) {
+                    const s = f.slots[`slot-${i}`]; const ic = iconConfigList.find(x=>x.file===s?.iconFile);
+                    if(ic) {
+                        vSlots += `<div class="print-switch-slot"><img src="icons-schalter/${ic.file}"></div>`;
+                        let ioRows = ic.io.map(io => {
+                            const dat = s.ioData?.[io.id] || {};
+                            return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">
+                                <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
+                                Bezeichnung: ${dat.bezeichnung||''}<br>
+                                Art: ${dat.art||''}<br>
+                                Gruppe: ${dat.gruppe||''}<br>
+                                Ziel: ${dat.eingabegerat||''}
+                            </div>`;
+                        }).join('');
+                        blocks.push(`<div class="print-slot-item-block"><b>Platz ${i} - ${ic.label}</b><div style="margin-top:5px;">${ioRows}</div></div>`);
+                    }
                 }
-            }
-            if(blocks.length === 0) return '';
-            let visHtml = `<div style="display:flex; justify-content:center; margin: 10px 0;"><div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px);">${vSlots}</div></div>`;
-            let bStr = ''; for(let i=0; i<blocks.length; i+=2) bStr += `<div class="print-slots-grid-2col">${blocks[i]}${blocks[i+1]||'<div></div>'}</div>`;
-            return `<div><div class="print-frame-title">Schaltstelle: ${f.name}</div>${visHtml}${bStr}</div>`;
-        }).join('');
-        if(framesHtml) framesHtml = `<div class="print-section-title">Schalter Belegungen</div>${framesHtml}`;
-    }
-    
-    let hwHtml = '';
-    if(d.hardware.length) {
-        hwHtml = `<div class="print-section-title">Hardware</div>` + d.hardware.map(hw => {
-            const cfg = hardwareConfigList.find(x=>x.id===hw.configId); if(!cfg) return '';
-            let fh = ''; if(cfg.fields) cfg.fields.forEach(f => fh += `<div style="font-size:0.8rem;"><b>${f}:</b> ${hw.fields[f]||''}</div>`);
-            let ioh = ''; if(cfg.io) cfg.io.forEach(io => { 
-                if(io.isDaliBus && hw.daliDevices && hw.daliDevices[io.id]) {
-                    hw.daliDevices[io.id].forEach(sub => {
-                        ioh += `<div style="font-size:0.8rem; margin-top:2px; border-left:2px solid var(--primary); padding-left:6px;"><b>DALI:</b> ${sub.name} (Ort: ${sub.location || 'k.A.'}, Grp: ${sub.group || '-'}, ${sub.channels} Adr.)</div>`;
-                    });
-                } else if(io.type!=='bus') {
-                    ioh += `<div style="font-size:0.8rem; margin-top:2px;"><b>${io.label}:</b> ${hw.mappings[io.id]||''}</div>`; 
-                }
-            });
-            return `<div class="print-hw-container"><div class="print-hw-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div><div><b>${cfg.name}</b>${fh}<div style="margin-top:5px;">${ioh}</div></div></div>`;
-        }).join('');
-    }
+                if(blocks.length === 0) return '';
+                let visHtml = `<div style="display:flex; justify-content:center; margin: 10px 0;"><div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px);">${vSlots}</div></div>`;
+                let bStr = ''; for(let i=0; i<blocks.length; i+=2) bStr += `<div class="print-slots-grid-2col">${blocks[i]}${blocks[i+1]||'<div></div>'}</div>`;
+                return `<div><div class="print-frame-title">Schaltstelle: ${f.name}</div>${visHtml}${bStr}</div>`;
+            }).join('');
+            if(framesHtml) framesHtml = `<div class="print-section-title">Schalter Belegungen</div>${framesHtml}`;
+        }
+        
+        let hwHtml = '';
+        if(d.hardware.length) {
+            hwHtml = `<div class="print-section-title">Hardware</div>` + d.hardware.map(hw => {
+                const cfg = hardwareConfigList.find(x=>x.id===hw.configId); if(!cfg) return '';
+                let fh = ''; if(cfg.fields) cfg.fields.forEach(f => fh += `<div style="font-size:0.8rem;"><b>${f}:</b> ${hw.fields[f]||''}</div>`);
+                let ioh = ''; if(cfg.io) cfg.io.forEach(io => { 
+                    if(io.isDaliBus && hw.daliDevices && hw.daliDevices[io.id]) {
+                        hw.daliDevices[io.id].forEach(sub => {
+                            ioh += `<div style="font-size:0.8rem; margin-top:2px; border-left:2px solid var(--primary); padding-left:6px;"><b>DALI:</b> ${sub.name} (Ort: ${sub.location || 'k.A.'}, Grp: ${sub.group || '-'}, ${sub.channels} Adr.)</div>`;
+                        });
+                    } else if(io.type!=='bus') {
+                        ioh += `<div style="font-size:0.8rem; margin-top:2px;"><b>${io.label}:</b> ${hw.mappings[io.id]||''}</div>`; 
+                    }
+                });
+                return `<div class="print-hw-container"><div class="print-hw-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div><div><b>${cfg.name}</b>${fh}<div style="margin-top:5px;">${ioh}</div></div></div>`;
+            }).join('');
+        }
 
-    return `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName}</h2><p>${projectData.location||''}</p></div><h3 style="color:#0f766e; margin:0;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}</h3>${framesHtml}${hwHtml}</div>`;
-}
+        return `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName}</h2><p>${projectData.location||''}</p></div><h3 style="color:#0f766e; margin:0;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}</h3>${framesHtml}${hwHtml}</div>`;
+    }
 
     function updatePrintContainers() {
         const d = projectData.details.find(x => x.id === activeDetailId);
