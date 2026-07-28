@@ -708,9 +708,18 @@
     window.openAssignModal = function(type, sourceName, switchRef = null) {
         _activeSwitchRef = (type === 'switch') ? switchRef : null;
         document.getElementById('assign-title').innerText = sourceName;
+
+        let autoFilterText = '';
+        if (activeDetailId) {
+            const activeDetail = projectData.details.find(d => d.id === activeDetailId);
+            if (activeDetail) {
+                autoFilterText = activeDetail.name; // Nimmt den Namen des aktuellen Details
+            }
+        }
+        
         
         const searchInput = document.getElementById('assign-search-input');
-        if(searchInput) searchInput.value = '';
+        if(searchInput) searchInput.value = autoFilterText;
         
         let hwHtml = '';
         projectData.details.forEach(d => {
@@ -835,6 +844,7 @@
         }
 
         document.getElementById('assign-modal').style.display = 'flex';
+        filterAssignModal(autoFilterText);
     };
 
     window.filterAssignModal = function(term) {
