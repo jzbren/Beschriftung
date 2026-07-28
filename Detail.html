@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.5</title>
+    <title>ServiceProDetail Konfigurator V5.6</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -322,8 +322,8 @@
         details: [],
         appFunctions: [],
         globalGroups: [
-            { name: "Zentral Auf /Ab", description: "Beschattung Fährt Komplett Auf oder Ab" },
-            { name: "Zentral Ein/ Aus", description: "Licht Schaltet überall Ein oder Aus" }
+            { name: "Zentral Auf /Ab", description: "Beschattung Fährt Komplett Auf oder Ab", linkedAppFunctions: [] },
+            { name: "Zentral Ein/ Aus", description: "Licht Schaltet überall Ein oder Aus", linkedAppFunctions: [] }
         ],
         globalFunctions: [
             { name: "Zentral Ein/ Aus", description: "Licht Zentral Ein/ Aus" },
@@ -396,6 +396,13 @@
                 });
             }
         });
+
+        if (data.globalGroups) {
+            data.globalGroups.forEach(g => {
+                if (typeof g === 'object' && !g.linkedAppFunctions) g.linkedAppFunctions = [];
+            });
+        }
+
         return data;
     }
 
@@ -590,7 +597,7 @@
         const val = input.value.trim();
         const names = projectData.globalGroups.map(x => typeof x === 'object' ? x.name : x);
         if(val && !names.includes(val)) {
-            projectData.globalGroups.push({ name: val, description: "" });
+            projectData.globalGroups.push({ name: val, description: "", linkedAppFunctions: [] });
             input.value = '';
             saveToLocal(); renderGlobalsLists();
         }
@@ -611,7 +618,7 @@
         val = val.trim();
         if(!projectData[type][idx]) return;
         if(typeof projectData[type][idx] === 'string') {
-            projectData[type][idx] = { name: projectData[type][idx], description: "" };
+            projectData[type][idx] = { name: projectData[type][idx], description: "", linkedAppFunctions: [] };
         }
         if(field === 'name') {
             const oldName = projectData[type][idx].name;
@@ -938,6 +945,104 @@
         const searchInput = document.getElementById('assign-search-input');
         if(searchInput) searchInput.value = autoFilterText;
         
+        // 1. Cross-Link Section (App Functions <-> Global Groups)
+        let crossLinkHtml = '';
+        if (type === 'appFunction') {
+            let groupCheckboxes = '';
+            projectData.globalGroups.forEach(ggObj => {
+                const ggName = typeof ggObj === 'object' ? ggObj.name : ggObj;
+                if(typeof ggObj === 'object' && !ggObj.linkedAppFunctions) ggObj.linkedAppFunctions = [];
+                const grpObj = typeof ggObj === 'object' ? ggObj : projectData.globalGroups.find(g => g.name === ggName);
+                const isChecked = grpObj && grpObj.linkedAppFunctions ? grpObj.linkedAppFunctions.includes(sourceName) : false;
+
+                groupCheckboxes += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:0.9rem; cursor:pointer;">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleGroupAppFunctionLink('${ggName.replace(/'/g, "\\'")}', '${sourceName.replace(/'/g, "\\'")}', this.checked)" style="width:15px;height:15px;cursor:pointer;">
+                    <span>📂 ${ggName}</span>
+                </label>`;
+            });
+            if(groupCheckboxes) {
+                crossLinkHtml = `<div style="margin-bottom: 20px; background: #eff6ff; padding: 12px; border-radius: 6px; border: 1px solid #bfdbfe;">
+                    <h4 style="margin:0 0 8px 0; color:#1e40af; font-size:0.95rem;">📂 Verknüpfte Globale Gruppen</h4>
+                    ${groupCheckboxes}
+                </div>`;
+            }
+        } else if (type === 'globalGroup') {
+            let appFnCheckboxes = '';
+            const grpObj = projectData.globalGroups.find(g => (typeof g === 'object' ? g.name : g) === sourceName);
+            if (grpObj && typeof grpObj === 'string') {
+                const idx = projectData.globalGroups.indexOf(grpObj);
+                projectData.globalGroups[idx] = { name: grpObj, description: '', linkedAppFunctions: [] };
+            }
+            const activeGrp = projectData.globalGroups.find(g => (typeof g === 'object' ? g.name : g) === sourceName);
+            if(activeGrp && !activeGrp.linkedAppFunctions) activeGrp.linkedAppFunctions = [];
+
+            projectData.appFunctions.forEach(afObj => {
+                const afName = typeof afObj === 'object' ? afObj.name : afObj;
+                const isChecked = activeGrp && activeGrp.linkedAppFunctions ? activeGrp.linkedAppFunctions.includes(afName) : false;
+
+                appFnCheckboxes += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:0.9rem; cursor:pointer;">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleGroupAppFunctionLink('${sourceName.replace(/'/g, "\\'")}', '${afName.replace(/'/g, "\\'")}', this.checked)" style="width:15px;height:15px;cursor:pointer;">
+                    <span>📱 ${afName}</span>
+                </label>`;
+            });
+            if(appFnCheckboxes) {
+                crossLinkHtml = `<div style="margin-bottom: 20px; background: #f0fdf4; padding: 12px; border-radius: 6px; border: 1px solid #bbf7d0;">
+                    <h4 style="margin:0 0 8px 0; color:#166534; font-size:0.95rem;">📱 Verknüpfte App-Funktionen</h4>
+                    ${appFnCheckboxes}
+                </div>`;
+            }
+        }
+
+        // 2. Switch Slots (Schaltstellen Ein- / Ausgänge) Section
+        let switchSlotsHtml = '';
+        if (type === 'appFunction' || type === 'globalGroup') {
+            projectData.details.forEach(d => {
+                let detailFramesHtml = '';
+                if (d.frames) {
+                    d.frames.forEach(f => {
+                        const [r, col] = f.layout.split('x').map(Number);
+                        const total = r * col;
+                        let frameSlotsHtml = '';
+                        for(let i=1; i<=total; i++) {
+                            const slot = f.slots[`slot-${i}`];
+                            if (!slot) continue;
+                            const ic = iconConfigList.find(x => x.file === slot.iconFile);
+                            if (!ic || !ic.io) continue;
+
+                            let slotIoCheckboxes = '';
+                            ic.io.forEach(io => {
+                                const dat = slot.ioData?.[io.id] || {};
+                                const currentList = (dat.eingabegerat || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                const isChecked = currentList.includes(sourceName);
+
+                                slotIoCheckboxes += `<label style="display:flex; align-items:flex-start; gap:8px; margin:6px 0 6px 20px; font-size:0.85rem; cursor:pointer;">
+                                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleSwitchSlotAssignmentFromModal('${f.id}', ${i}, '${io.id}', '${sourceName.replace(/'/g, "\\'")}', this.checked)" style="width:15px;height:15px;cursor:pointer;margin-top:2px;">
+                                    <div><b>${io.label}</b> (${io.type === 'in' ? 'Eingang' : 'Ausgang'}) ${dat.bezeichnung ? `— <span style="color:#0f766e;">"${dat.bezeichnung}"</span>` : ''}</div>
+                                </label>`;
+                            });
+
+                            if (slotIoCheckboxes) {
+                                frameSlotsHtml += `<div style="margin: 8px 0; border-left: 2px solid #14b8a6; padding-left: 10px;">
+                                    <div style="font-weight:600; font-size:0.9rem; color:#334155;">Platz ${i} — ${ic.label}</div>
+                                    ${slotIoCheckboxes}
+                                </div>`;
+                            }
+                        }
+                        if (frameSlotsHtml) {
+                            detailFramesHtml += `<div style="margin-bottom: 10px;"><b style="color:#0f766e; font-size:0.9rem;">Schaltstelle: ${f.name}</b>${frameSlotsHtml}</div>`;
+                        }
+                    });
+                }
+                if (detailFramesHtml) {
+                    switchSlotsHtml += `<div style="margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <h4 style="margin:0 0 8px 0; color:#0f766e; font-size:0.95rem;">🔘 Schaltstellen (Plätze)</h4>
+                        ${detailFramesHtml}
+                    </div>`;
+                }
+            });
+        }
+
+        // 3. Hardware Section
         let hwHtml = '';
         projectData.details.forEach(d => {
             let detailHtml = '';
@@ -1011,7 +1116,8 @@
             }
         });
         
-        document.getElementById('assign-hw-list').innerHTML = hwHtml || '<p style="color:#64748b;">Keine Hardware-Komponenten im Projekt gefunden.</p>';
+        let finalHwListHtml = crossLinkHtml + switchSlotsHtml + (hwHtml ? `<h4 style="margin: 15px 0 10px 0; color:#0f766e; font-size:0.95rem;">⚡ Hardware Komponenten</h4>` + hwHtml : '');
+        document.getElementById('assign-hw-list').innerHTML = finalHwListHtml || '<p style="color:#64748b;">Keine Zuweisungsobjekte im Projekt gefunden.</p>';
 
         const extrasDiv = document.getElementById('assign-extras');
         if(type === 'switch' && switchRef) {
@@ -1061,6 +1167,47 @@
 
         document.getElementById('assign-modal').style.display = 'flex';
         filterAssignModal(autoFilterText);
+    };
+
+    window.toggleSwitchSlotAssignmentFromModal = function(fId, slotN, ioId, sourceName, isChecked) {
+        const d = projectData.details.find(x => x.frames && x.frames.some(f => f.id === fId));
+        if (!d) return;
+        const f = d.frames.find(x => x.id === fId);
+        if (!f) return;
+        const slot = f.slots[`slot-${slotN}`];
+        if (!slot) return;
+        if (!slot.ioData) slot.ioData = {};
+        if (!slot.ioData[ioId]) slot.ioData[ioId] = { bezeichnung: '', eingabegerat: '' };
+
+        let list = (slot.ioData[ioId].eingabegerat || '').split(',').map(x => x.trim()).filter(x => x);
+        if (isChecked && !list.includes(sourceName)) {
+            list.push(sourceName);
+        }
+        if (!isChecked) {
+            list = list.filter(x => x !== sourceName);
+        }
+        slot.ioData[ioId].eingabegerat = list.join(', ');
+        saveToLocal();
+        renderApp();
+    };
+
+    window.toggleGroupAppFunctionLink = function(groupName, appFnName, isChecked) {
+        const ggObj = projectData.globalGroups.find(g => (typeof g === 'object' ? g.name : g) === groupName);
+        if (ggObj) {
+            if (typeof ggObj === 'string') {
+                const idx = projectData.globalGroups.indexOf(ggObj);
+                projectData.globalGroups[idx] = { name: ggObj, description: '', linkedAppFunctions: [] };
+            }
+            const target = projectData.globalGroups.find(g => (typeof g === 'object' ? g.name : g) === groupName);
+            if (!target.linkedAppFunctions) target.linkedAppFunctions = [];
+            if (isChecked && !target.linkedAppFunctions.includes(appFnName)) {
+                target.linkedAppFunctions.push(appFnName);
+            }
+            if (!isChecked) {
+                target.linkedAppFunctions = target.linkedAppFunctions.filter(x => x !== appFnName);
+            }
+            saveToLocal();
+        }
     };
 
     window.filterAssignModal = function(term) {
