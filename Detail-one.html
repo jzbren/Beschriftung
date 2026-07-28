@@ -1843,10 +1843,22 @@
     }
 
     function exportProject() {
+        // Aktuelles Datum und Uhrzeit formatieren (z.B. 2026-07-28_14-30)
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const timestamp = `${year}-${month}-${day}_${hours}-${minutes}`;
+
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projectData, null, 2));
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", `${projectData.projectName || 'Projekt'}.ServiceProDetail`);
+        
+        // Den Zeitstempel in den Dateinamen einbauen
+        downloadAnchor.setAttribute("download", `${projectData.projectName || 'Projekt'}_${timestamp}.ServiceProDetail`);
+        
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         downloadAnchor.remove();
