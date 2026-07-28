@@ -628,7 +628,11 @@ const hardwareConfigList = [
                 label: "2x Einzelrelais",
                 io: [
                     { id: "I_1", label: "I1", type: "in" }, 
-                    { id: "I_2", label: "I2", type: "in" }, 
+                    { id: "I_2", label: "I2", type: "in" },
+                    { id: "I_3", label: "I3", type: "in" },
+                    { id: "I_4", label: "I4", type: "in" },
+                    { id: "I_5", label: "I5", type: "in" },
+                    { id: "I_6", label: "I6", type: "in" },
                     { id: "O_1", label: "Relais 1", type: "out" }, 
                     { id: "O_2", label: "Relais 2", type: "out" }
                 ]
@@ -637,8 +641,12 @@ const hardwareConfigList = [
                 id: "1x_shading",
                 label: "1x Storenaktor (Auf/Ab)",
                 io: [
-                    { id: "I_1", label: "Taster Auf", type: "in" }, 
-                    { id: "I_2", label: "Taster Ab", type: "in" }, 
+                    { id: "I_1", label: "I1", type: "in" }, 
+                    { id: "I_2", label: "I2", type: "in" },
+                    { id: "I_3", label: "I3", type: "in" },
+                    { id: "I_4", label: "I4", type: "in" },
+                    { id: "I_5", label: "I5", type: "in" },
+                    { id: "I_6", label: "I6", type: "in" },
                     { id: "O_UP", label: "Motor Auf", type: "out" }, 
                     { id: "O_DOWN", label: "Motor Ab", type: "out" }
                 ]
