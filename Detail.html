@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.8</title>
+    <title>ServiceProDetail Konfigurator V5.9</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -325,7 +325,7 @@
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
     const DEFAULT_PROJECT_DATA = { 
-        version: "5.8", 
+        version: "5.9", 
         projectName: "Projekt", 
         location: "", 
         details: [],
@@ -966,7 +966,6 @@
             nd.id = generateId(); 
             nd.name += " (Kopie)"; 
             
-            // Alle Verknüpfungen/Zuweisungen in der Kopie vollständig bereinigen
             if(nd.hardware) {
                 nd.hardware.forEach(h => {
                     h.instanceId = generateId();
@@ -1052,7 +1051,6 @@
         const searchInput = document.getElementById('assign-search-input');
         if(searchInput) searchInput.value = autoFilterText;
         
-        // 1. Cross-Link Section (App Functions <-> Global Groups)
         let crossLinkHtml = '';
         if (type === 'appFunction') {
             let groupCheckboxes = '';
@@ -1100,7 +1098,6 @@
             }
         }
 
-        // 2. Switch Slots (Schaltstellen Ein- / Ausgänge) Section
         let switchSlotsHtml = '';
         if (type === 'appFunction' || type === 'globalGroup') {
             projectData.details.forEach(d => {
@@ -1150,7 +1147,6 @@
             });
         }
 
-        // 3. Hardware Section
         let hwHtml = '';
         projectData.details.forEach(d => {
             let detailHtml = '';
@@ -1783,7 +1779,7 @@
             });
         });
         saveToLocal();
-        if (field === 'channels' || field === 'name') renderApp(); 
+        renderApp(); 
     }
 
     window.deleteSubNode = function(hwInstanceId, ioId, subId) {
@@ -2095,8 +2091,8 @@
 
                                 return `
                                 <tr>
-                                    <td><input type="text" value="${sub.name}" oninput="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)"></td>
-                                    <td><input type="text" value="${sub.location}" oninput="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'location', this.value)"></td>
+                                    <td><input type="text" value="${sub.name}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)"></td>
+                                    <td><input type="text" value="${sub.location}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'location', this.value)"></td>
                                     <td><input type="number" min="1" max="16" value="${sub.channels}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'channels', this.value)" style="width:50px; border:1px solid transparent; background:transparent;"></td>
                                     <td style="font-size: 0.75rem; color: #475569; line-height: 1.3;">
                                         <b>Taster:</b> ${sub.mapping || '-'}<br>
