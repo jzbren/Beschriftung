@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.9</title>
+    <title>ServiceProDetail Konfigurator V6.0</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -325,7 +325,7 @@
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
     const DEFAULT_PROJECT_DATA = { 
-        version: "5.9", 
+        version: "6.0", 
         projectName: "Projekt", 
         location: "", 
         details: [],
@@ -506,9 +506,8 @@
                                                 replaceStringInAllReferences(`${oldName} ${hwName} ${sub.name || 'Neues Gerät'}`, `${newName} ${hwName} ${sub.name || 'Neues Gerät'}`);
                                             });
                                         }
-                                    } else {
-                                        replaceStringInAllReferences(`${oldName} ${hwName} ${io.label}`, `${newName} ${hwName} ${io.label}`);
                                     }
+                                    replaceStringInAllReferences(`${oldName} ${hwName} ${io.label}`, `${newName} ${hwName} ${io.label}`);
                                 });
                             }
                         }
@@ -1736,9 +1735,8 @@
                                 replaceStringInAllReferences(`${d.name} ${oldName} ${sub.name || 'Neues Gerät'}`, `${d.name} ${newName} ${sub.name || 'Neues Gerät'}`);
                             });
                         }
-                    } else {
-                        replaceStringInAllReferences(`${d.name} ${oldName} ${io.label}`, `${d.name} ${newName} ${io.label}`);
                     }
+                    replaceStringInAllReferences(`${d.name} ${oldName} ${io.label}`, `${d.name} ${newName} ${io.label}`);
                 });
             }
         }
