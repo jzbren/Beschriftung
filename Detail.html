@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.7</title>
+    <title>ServiceProDetail Konfigurator V5.8</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -171,7 +171,7 @@
         .globals-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
         .globals-section { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; }
         .globals-section h3 { margin-top: 0; color: #0f766e; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 15px; font-size: 1rem; font-weight: 700; }
-        .globals-list { max-height: 400px; overflow-y: auto; margin-top: 15px; flex: 1; }
+        .globals-list { max-height: 350px; overflow-y: auto; margin-top: 15px; flex: 1; }
         .global-item { display: flex; flex-direction: column; gap: 6px; background: #fff; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
         .global-item input { border: 1px solid #cbd5e1; padding: 6px 10px; font-size: 0.875rem; border-radius: 4px; width: 100%; box-sizing: border-box; }
         .global-item input:focus { border-color: #0f766e; outline: none; box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1); }
@@ -262,6 +262,9 @@
                 <div class="globals-section">
                     <h3>📱 App-Funktionen</h3>
                     <p style="font-size:0.75rem; color:#64748b; margin-bottom:10px;">Zentrale App-Funktionen.</p>
+                    <div class="add-global-row" style="margin-bottom:8px;">
+                        <input type="text" id="appfn-search-input" placeholder="App-Funktionen durchsuchen..." onkeyup="renderGlobalsLists()">
+                    </div>
                     <div class="add-global-row">
                         <input type="text" id="new-appfn-input" placeholder="Neue App-Funktion..." onkeydown="if(event.key==='Enter') addAppFunction()">
                         <button class="btn primary" style="padding:6px 10px;" onclick="addAppFunction()">+</button>
@@ -271,6 +274,9 @@
                 <div class="globals-section">
                     <h3>📂 Globale Gruppen</h3>
                     <p style="font-size:0.75rem; color:#64748b; margin-bottom:10px;">Globale Gruppen (z.B. Zentral Aus).</p>
+                    <div class="add-global-row" style="margin-bottom:8px;">
+                        <input type="text" id="glbgrp-search-input" placeholder="Globale Gruppen durchsuchen..." onkeyup="renderGlobalsLists()">
+                    </div>
                     <div class="add-global-row">
                         <input type="text" id="new-glbgrp-input" placeholder="Neue Gruppe..." onkeydown="if(event.key==='Enter') addGlobalGroup()">
                         <button class="btn primary" style="padding:6px 10px;" onclick="addGlobalGroup()">+</button>
@@ -280,6 +286,9 @@
                 <div class="globals-section">
                     <h3>⚡ Globale Funktionen</h3>
                     <p style="font-size:0.75rem; color:#64748b; margin-bottom:10px;">Auswahlbare Funktionen für Schaltplätze.</p>
+                    <div class="add-global-row" style="margin-bottom:8px;">
+                        <input type="text" id="glbfn-search-input" placeholder="Globale Funktionen durchsuchen..." onkeyup="renderGlobalsLists()">
+                    </div>
                     <div class="add-global-row">
                         <input type="text" id="new-glbfn-input" placeholder="Neue Funktion..." onkeydown="if(event.key==='Enter') addGlobalFunction()">
                         <button class="btn primary" style="padding:6px 10px;" onclick="addGlobalFunction()">+</button>
@@ -316,7 +325,7 @@
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
     const DEFAULT_PROJECT_DATA = { 
-        version: "5.6", 
+        version: "5.8", 
         projectName: "Projekt", 
         location: "", 
         details: [],
@@ -533,10 +542,13 @@
     };
 
     function renderGlobalsLists() {
+        const appFnSearch = (document.getElementById('appfn-search-input')?.value || '').toLowerCase();
         const appFnList = document.getElementById('appfn-list');
         appFnList.innerHTML = projectData.appFunctions.map((item, idx) => {
             const name = typeof item === 'object' ? item.name : item;
             const desc = typeof item === 'object' ? (item.description || '') : '';
+            const searchStr = `${name} ${desc}`.toLowerCase();
+            if (appFnSearch && !searchStr.includes(appFnSearch)) return '';
             return `
                 <div class="global-item">
                     <div style="display: flex; gap: 5px; align-items: center;">
@@ -549,10 +561,13 @@
             `;
         }).join('');
 
+        const glbGrpSearch = (document.getElementById('glbgrp-search-input')?.value || '').toLowerCase();
         const glbGrpList = document.getElementById('glbgrp-list');
         glbGrpList.innerHTML = projectData.globalGroups.map((item, idx) => {
             const name = typeof item === 'object' ? item.name : item;
             const desc = typeof item === 'object' ? (item.description || '') : '';
+            const searchStr = `${name} ${desc}`.toLowerCase();
+            if (glbGrpSearch && !searchStr.includes(glbGrpSearch)) return '';
             return `
                 <div class="global-item">
                     <div style="display: flex; gap: 5px; align-items: center;">
@@ -565,10 +580,13 @@
             `;
         }).join('');
 
+        const glbFnSearch = (document.getElementById('glbfn-search-input')?.value || '').toLowerCase();
         const glbFnList = document.getElementById('glbfn-list');
         glbFnList.innerHTML = projectData.globalFunctions.map((item, idx) => {
             const name = typeof item === 'object' ? item.name : item;
             const desc = typeof item === 'object' ? (item.description || '') : '';
+            const searchStr = `${name} ${desc}`.toLowerCase();
+            if (glbFnSearch && !searchStr.includes(glbFnSearch)) return '';
             return `
                 <div class="global-item">
                     <div style="display: flex; gap: 5px; align-items: center;">
@@ -943,7 +961,65 @@
     
     function duplicateDetail(id) {
         const d = projectData.details.find(x => x.id === id);
-        if (d) { const nd = JSON.parse(JSON.stringify(d)); nd.id = generateId(); nd.name += " (Kopie)"; if(nd.hardware) nd.hardware.forEach(h => h.instanceId = generateId()); if(nd.frames) nd.frames.forEach(f => f.id = generateId()); projectData.details.push(nd); activeDetailId = nd.id; renderApp(); }
+        if (d) { 
+            const nd = JSON.parse(JSON.stringify(d)); 
+            nd.id = generateId(); 
+            nd.name += " (Kopie)"; 
+            
+            // Alle Verknüpfungen/Zuweisungen in der Kopie vollständig bereinigen
+            if(nd.hardware) {
+                nd.hardware.forEach(h => {
+                    h.instanceId = generateId();
+                    h.mappings = {};
+                    h.appFunctions = {};
+                    h.globalGroup = {};
+                    if(h.subNodes) {
+                        for(let sKey in h.subNodes) {
+                            h.subNodes[sKey].forEach(sub => {
+                                sub.mapping = "";
+                                sub.appFunctions = "";
+                                sub.globalGroup = "";
+                            });
+                        }
+                    }
+                    if(h.fields) {
+                        for(let fKey in h.fields) {
+                            if(/ast|bus|bridge|dali|link/i.test(fKey)) h.fields[fKey] = "";
+                        }
+                    }
+                });
+            }
+            if(nd.frames) {
+                nd.frames.forEach(f => {
+                    f.id = generateId();
+                    if(f.slots) {
+                        for(let sKey in f.slots) {
+                            const slot = f.slots[sKey];
+                            if(slot) {
+                                if(slot.customFields) {
+                                    for(let cfKey in slot.customFields) {
+                                        if(/ast|bus|bridge|dali|link/i.test(cfKey)) slot.customFields[cfKey] = "";
+                                    }
+                                }
+                                if(slot.ioData) {
+                                    for(let ioKey in slot.ioData) {
+                                        if(slot.ioData[ioKey]) {
+                                            slot.ioData[ioKey].eingabegerat = "";
+                                            slot.ioData[ioKey].funktion = "";
+                                            slot.ioData[ioKey].gruppe = "";
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            projectData.details.push(nd); 
+            activeDetailId = nd.id; 
+            renderApp(); 
+        }
     }
     
     function deleteDetail(id) {
@@ -992,7 +1068,7 @@
                 </label>`;
             });
             if(groupCheckboxes) {
-                crossLinkHtml = `<div style="margin-bottom: 20px; background: #eff6ff; padding: 12px; border-radius: 6px; border: 1px solid #bfdbfe;">
+                crossLinkHtml = `<div class="assign-crosslink-block" style="margin-bottom: 20px; background: #eff6ff; padding: 12px; border-radius: 6px; border: 1px solid #bfdbfe;">
                     <h4 style="margin:0 0 8px 0; color:#1e40af; font-size:0.95rem;">📂 Verknüpfte Globale Gruppen</h4>
                     ${groupCheckboxes}
                 </div>`;
@@ -1017,7 +1093,7 @@
                 </label>`;
             });
             if(appFnCheckboxes) {
-                crossLinkHtml = `<div style="margin-bottom: 20px; background: #f0fdf4; padding: 12px; border-radius: 6px; border: 1px solid #bbf7d0;">
+                crossLinkHtml = `<div class="assign-crosslink-block" style="margin-bottom: 20px; background: #f0fdf4; padding: 12px; border-radius: 6px; border: 1px solid #bbf7d0;">
                     <h4 style="margin:0 0 8px 0; color:#166534; font-size:0.95rem;">📱 Verknüpfte App-Funktionen</h4>
                     ${appFnCheckboxes}
                 </div>`;
@@ -1065,7 +1141,8 @@
                     });
                 }
                 if (detailFramesHtml) {
-                    switchSlotsHtml += `<div style="margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                    switchSlotsHtml += `<div class="assign-detail-block" style="margin-bottom: 15px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <h3 style="margin-top:0; color:#0f766e; font-size:1.05rem; border-bottom:1px solid #cbd5e1; padding-bottom:5px;">${d.name} <span style="color:#64748b;font-size:0.85rem;font-weight:normal;">(${d.room || 'Kein Raum'})</span></h3>
                         <h4 style="margin:0 0 8px 0; color:#0f766e; font-size:0.95rem;">🔘 Schaltstellen (Plätze)</h4>
                         ${detailFramesHtml}
                     </div>`;
@@ -1244,25 +1321,20 @@
     window.filterAssignModal = function(term) {
         const query = term.toLowerCase().trim();
         const hwListContainer = document.getElementById('assign-hw-list');
-        const detailSections = hwListContainer.querySelectorAll('.assign-detail-block');
+        const detailBlocks = hwListContainer.querySelectorAll('.assign-detail-block');
+        const crosslinkBlock = hwListContainer.querySelector('.assign-crosslink-block');
         
-        detailSections.forEach(detailSec => {
-            let detailHasVisibleHw = false;
-            const hwBlocks = detailSec.querySelectorAll('.assign-hw-block');
-            
-            hwBlocks.forEach(hwBlock => {
-                const text = hwBlock.innerText.toLowerCase();
-                const detailTitle = detailSec.querySelector('h3').innerText.toLowerCase();
-                
-                if(text.includes(query) || detailTitle.includes(query)) {
-                    hwBlock.style.display = '';
-                    detailHasVisibleHw = true;
-                } else {
-                    hwBlock.style.display = 'none';
-                }
-            });
-            
-            detailSec.style.display = detailHasVisibleHw ? '' : 'none';
+        if (crosslinkBlock) {
+            crosslinkBlock.style.display = (!query || crosslinkBlock.innerText.toLowerCase().includes(query)) ? '' : 'none';
+        }
+
+        detailBlocks.forEach(block => {
+            const text = block.innerText.toLowerCase();
+            if (!query || text.includes(query)) {
+                block.style.display = '';
+            } else {
+                block.style.display = 'none';
+            }
         });
     };
 
