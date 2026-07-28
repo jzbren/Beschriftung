@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.2</title>
+    <title>ServiceProDetail Konfigurator V5.3</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1050,6 +1050,48 @@
             }
             c.style.display = c.getAttribute('data-label')?.includes(t) ? 'block' : 'none';
         }); 
+    };
+
+    window.addFrameToDetail = function() {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        if (d) {
+            if (!d.frames) d.frames = [];
+            d.frames.push({
+                id: generateId(),
+                name: `Schaltstelle ${d.frames.length + 1}`,
+                layout: '1x1',
+                slots: {}
+            });
+            saveToLocal();
+            renderApp();
+        }
+    };
+
+    window.updateFrameField = function(fId, field, val) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        if (d && d.frames) {
+            const f = d.frames.find(x => x.id === fId);
+            if (f) {
+                // Wenn der Name der Schaltstelle geändert wird, aktualisieren wir auch alle Verknüpfungen
+                if (field === 'name') {
+                    replaceStringInAllReferences(`${d.name} ${f.name}`, `${d.name} ${val}`);
+                }
+                f[field] = val;
+                saveToLocal();
+                renderApp();
+            }
+        }
+    };
+
+    window.deleteFrame = function(fId) {
+        if(confirm("Schaltstelle wirklich löschen?")) {
+            const d = projectData.details.find(x => x.id === activeDetailId);
+            if (d && d.frames) {
+                d.frames = d.frames.filter(x => x.id !== fId);
+                saveToLocal();
+                renderApp();
+            }
+        }
     };
 
     function checkCollision(switchIdentifier) {
