@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V6.1</title>
+    <title>ServiceProDetail Konfigurator V6.2</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -346,7 +346,7 @@
     let projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
     let activeDetailId = null; 
     let draggedSlot = null;
-    let draggedDetailId = null; // NEU: Für das Sortieren der Sidebar
+    let draggedDetailId = null;
     let _activeSwitchRef = null;
 
     document.addEventListener('keydown', e => { 
@@ -494,11 +494,10 @@
                 const oldName = d.name;
                 const newName = val.trim();
     
-                // NEU: Prüfen, ob der Name bereits bei einem anderen Detail existiert
                 const nameExists = projectData.details.some(x => x.id !== activeDetailId && x.name === newName);
                 if (nameExists) {
                     alert("Ein Detail mit diesem Namen existiert bereits! Bitte wähle einen eindeutigen Namen.");
-                    renderApp(); // Setzt das Eingabefeld im UI wieder zurück
+                    renderApp(); 
                     return;
                 }
     
@@ -509,7 +508,6 @@
                     return;
                 }
     
-                // Ab hier läuft deine bestehende Logik für die Namensänderung und Ersetzung weiter...
                 if (d.hardware) {
                     d.hardware.forEach(hw => {
                         const cfg = hardwareConfigList.find(x => x.id === hw.configId);
@@ -649,6 +647,46 @@
             saveToLocal(); renderGlobalsLists();
         }
     }
+
+    // NEU: Schnelles Hinzufügen von App-Funktionen direkt aus dem Assign-Modal
+    window.quickAddAppFunction = function() {
+        const input = document.getElementById('quick-new-appfn');
+        if(!input) return;
+        const val = input.value.trim();
+        const names = projectData.appFunctions.map(x => typeof x === 'object' ? x.name : x);
+        if(val && !names.includes(val)) {
+            projectData.appFunctions.push({ name: val, description: "" });
+            if (_activeSwitchRef) {
+                toggleSwitchExtraTarget(_activeSwitchRef.fId, _activeSwitchRef.slotN, _activeSwitchRef.ioId, val, true);
+            } else {
+                saveToLocal();
+            }
+            const sourceName = document.getElementById('assign-title').innerText;
+            openAssignModal('switch', sourceName, _activeSwitchRef);
+        } else if (names.includes(val)) {
+            alert("Diese App-Funktion existiert bereits!");
+        }
+    };
+
+    // NEU: Schnelles Hinzufügen von Globalen Gruppen direkt aus dem Assign-Modal
+    window.quickAddGroup = function() {
+        const input = document.getElementById('quick-new-grp');
+        if(!input) return;
+        const val = input.value.trim();
+        const names = projectData.globalGroups.map(x => typeof x === 'object' ? x.name : x);
+        if(val && !names.includes(val)) {
+            projectData.globalGroups.push({ name: val, description: "", linkedAppFunctions: [] });
+            if (_activeSwitchRef) {
+                toggleSwitchExtraTarget(_activeSwitchRef.fId, _activeSwitchRef.slotN, _activeSwitchRef.ioId, val, true);
+            } else {
+                saveToLocal();
+            }
+            const sourceName = document.getElementById('assign-title').innerText;
+            openAssignModal('switch', sourceName, _activeSwitchRef);
+        } else if (names.includes(val)) {
+            alert("Diese Gruppe existiert bereits!");
+        }
+    };
 
     window.updateGlobalItem = function(type, idx, field, val) {
         val = val.trim();
@@ -958,12 +996,10 @@
             const div = document.createElement('div');
             div.className = `detail-item ${detail.id === activeDetailId ? 'active' : ''}`;
             
-            // NEU: Drag & Drop Attribute und Events für die Sidebar-Sortierung
             div.draggable = true;
             div.ondragstart = (e) => { 
                 draggedDetailId = detail.id; 
                 e.dataTransfer.effectAllowed = 'move'; 
-                // Kurze Verzögerung, damit das geklickte Element nicht direkt visuell verschwindet
                 setTimeout(() => div.style.opacity = '0.5', 0);
             };
             div.ondragend = () => { div.style.opacity = '1'; };
@@ -976,7 +1012,6 @@
                     const sourceIdx = projectData.details.findIndex(d => d.id === draggedDetailId);
                     const targetIdx = projectData.details.findIndex(d => d.id === detail.id);
                     if (sourceIdx > -1 && targetIdx > -1) {
-                        // Element aus dem Array schneiden und an neuer Position einfügen
                         const [movedItem] = projectData.details.splice(sourceIdx, 1);
                         projectData.details.splice(targetIdx, 0, movedItem);
                         saveToLocal();
@@ -1274,7 +1309,14 @@
         if(type === 'switch' && switchRef) {
             let extraHtml = `<div style="display:flex; gap: 20px;">`;
             
-            let appHtml = `<div style="flex:1; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:8px;"><h4 style="margin-top:0; color:#166534;">📱 App-Funktionen</h4>`;
+            let appHtml = `<div style="flex:1; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:8px;">
+                <h4 style="margin-top:0; color:#166534; margin-bottom:10px;">📱 App-Funktionen</h4>
+                <div style="display:flex; gap:5px; margin-bottom:12px;">
+                    <input type="text" id="quick-new-appfn" placeholder="Neue App-Funktion..." onkeydown="if(event.key==='Enter') quickAddAppFunction()" style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:0.85rem;">
+                    <button class="btn primary" style="padding:6px 10px;" onclick="quickAddAppFunction()">+</button>
+                </div>
+                <div style="max-height: 180px; overflow-y: auto; padding-right: 5px;">`;
+                
             projectData.appFunctions.forEach(afObj => {
                 const af = typeof afObj === 'object' ? afObj.name : afObj;
                 const afDesc = typeof afObj === 'object' ? afObj.description : '';
@@ -1287,11 +1329,21 @@
                 const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
                 const isChecked = eingabeList.includes(af);
 
-                appHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${af.replace(/'/g, "\\'")}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> <div><div style="font-weight:500;">${af}</div>${afDesc ? `<div style="font-size:0.75rem; color:#475569;">${afDesc}</div>` : ''}</div></label>`;
+                appHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;">
+                    <input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${af.replace(/'/g, "\\'")}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> 
+                    <div><div style="font-weight:500;">${af}</div>${afDesc ? `<div style="font-size:0.75rem; color:#475569;">${afDesc}</div>` : ''}</div>
+                </label>`;
             });
-            appHtml += `</div>`;
+            appHtml += `</div></div>`;
 
-            let grpHtml = `<div style="flex:1; background:#eff6ff; border:1px solid #bfdbfe; padding:15px; border-radius:8px;"><h4 style="margin-top:0; color:#1e40af;">📂 Globale Gruppen</h4>`;
+            let grpHtml = `<div style="flex:1; background:#eff6ff; border:1px solid #bfdbfe; padding:15px; border-radius:8px;">
+                <h4 style="margin-top:0; color:#1e40af; margin-bottom:10px;">📂 Globale Gruppen</h4>
+                <div style="display:flex; gap:5px; margin-bottom:12px;">
+                    <input type="text" id="quick-new-grp" placeholder="Neue Gruppe..." onkeydown="if(event.key==='Enter') quickAddGroup()" style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:0.85rem;">
+                    <button class="btn primary" style="padding:6px 10px;" onclick="quickAddGroup()">+</button>
+                </div>
+                <div style="max-height: 180px; overflow-y: auto; padding-right: 5px;">`;
+                
             projectData.globalGroups.forEach(ggObj => {
                 const gg = typeof ggObj === 'object' ? ggObj.name : ggObj;
                 const ggDesc = typeof ggObj === 'object' ? ggObj.description : '';
@@ -1304,9 +1356,12 @@
                 const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
                 const isChecked = eingabeList.includes(gg);
 
-                grpHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${gg.replace(/'/g, "\\'")}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> <div><div style="font-weight:500;">${gg}</div>${ggDesc ? `<div style="font-size:0.75rem; color:#475569;">${ggDesc}</div>` : ''}</div></label>`;
+                grpHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;">
+                    <input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${gg.replace(/'/g, "\\'")}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> 
+                    <div><div style="font-weight:500;">${gg}</div>${ggDesc ? `<div style="font-size:0.75rem; color:#475569;">${ggDesc}</div>` : ''}</div>
+                </label>`;
             });
-            grpHtml += `</div>`;
+            grpHtml += `</div></div>`;
 
             extraHtml += appHtml + grpHtml + `</div><hr style="border:0; border-top:1px solid #cbd5e1; margin: 20px 0;">`;
             extrasDiv.innerHTML = extraHtml;
@@ -1704,7 +1759,6 @@
     window.handleDragOver = function(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
     window.handleDragLeave = function(e) { e.currentTarget.classList.remove('drag-over'); }
 
-    // NEU: Vollständig überarbeitete handleDrop Funktion mit Bezeichnungs-Mapping
     window.handleDrop = function(e, targetFId, targetSNum) {
         e.preventDefault(); e.currentTarget.classList.remove('drag-over');
         if(draggedSlot && (draggedSlot.fId !== targetFId || draggedSlot.sNum !== targetSNum)) {
@@ -1716,10 +1770,8 @@
                 const sourceSlotData = sourceF.slots[`slot-${draggedSlot.sNum}`];
                 const targetSlotData = targetF.slots[`slot-${targetSNum}`];
                 
-                // 1. Array für alle Text-Ersetzungen vorbereiten
                 let replacements = [];
 
-                // Hilfsfunktion zum Sammeln der Namensänderungen (Platz X wird zu Platz Y)
                 const collectReplacements = (slotData, oldSlotN, newSlotN, frameName) => {
                     if(!slotData || !slotData.iconFile) return;
                     const ic = iconConfigList.find(x => x.file === slotData.iconFile);
@@ -1727,11 +1779,9 @@
                     
                     ic.io.forEach(io => {
                         const dat = slotData.ioData?.[io.id] || {};
-                        // Generiere den ALTEN Bezeichner
                         const oldBez = dat.bezeichnung ? dat.bezeichnung : `${ic.label} (Platz ${oldSlotN})`;
                         const oldStr = `${d.name} | ${frameName} | Platz ${oldSlotN} | ${oldBez}`;
                         
-                        // Generiere den NEUEN Bezeichner
                         const newBez = dat.bezeichnung ? dat.bezeichnung : `${ic.label} (Platz ${newSlotN})`;
                         const newStr = `${d.name} | ${frameName} | Platz ${newSlotN} | ${newBez}`;
                         
@@ -1739,16 +1789,13 @@
                     });
                 };
 
-                // Sammle Änderungen für den Slot der bewegt wird, und für den, der verdrängt wird
                 collectReplacements(sourceSlotData, draggedSlot.sNum, targetSNum, sourceF.name);
                 collectReplacements(targetSlotData, targetSNum, draggedSlot.sNum, targetF.name);
 
-                // 2. Eigentlicher Datentausch
                 const temp = JSON.parse(JSON.stringify(targetSlotData || {}));
                 targetF.slots[`slot-${targetSNum}`] = JSON.parse(JSON.stringify(sourceSlotData || {}));
                 sourceF.slots[`slot-${draggedSlot.sNum}`] = temp;
 
-                // 3. Überall im Projekt (Hardware, Gruppen etc.) den Text umschreiben
                 replacements.forEach(rep => {
                     if(rep.oldStr !== rep.newStr) {
                         replaceStringInAllReferences(rep.oldStr, rep.newStr);
@@ -2469,7 +2516,6 @@
             hwHtml = `<div class="print-section-title">Hardware</div>` + d.hardware.map(hw => {
                 const cfg = hardwareConfigList.find(x=>x.id===hw.configId); if(!cfg) return '';
                 
-                // NEU: Felder-Block mit unterem Abstand versehen (Abstand nach Bemerkung)
                 let fh = ''; 
                 if(cfg.fields) {
                     cfg.fields.forEach(f => {
@@ -2486,7 +2532,6 @@
                         if(io.type === 'bus') {
                             if(hw.subNodes && hw.subNodes[io.id] && hw.subNodes[io.id].length > 0) {
                                 hw.subNodes[io.id].forEach(sub => {
-                                    // NEU: Graue Striche (border-bottom) und Abstände für Sub-Nodes ergänzt
                                     ioh += `<div style="font-size:0.8rem; margin-top:4px; padding-bottom:4px; margin-bottom:4px; border-bottom:1px solid #f1f5f9; border-left:2px solid var(--primary); padding-left:6px;">
                                         <b>${sub.name}</b> (Ort: ${sub.location || 'k.A.'}, ${sub.channels||1} Kanäle)<br>
                                         <span style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px;">
@@ -2558,9 +2603,7 @@
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projectData, null, 2));
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
-        
         downloadAnchor.setAttribute("download", `${projectData.projectName || 'Projekt'}_${timestamp}.ServiceProDetail`);
-        
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         downloadAnchor.remove();
