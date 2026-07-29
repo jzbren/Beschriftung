@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V6.3</title>
+    <title>ServiceProDetail Konfigurator V6.4</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -2140,7 +2140,7 @@
         return tabsHtml + slotFormHtml;
     }
 
-    window.updateSlotField = function(fId, slotN, ioId, field, val) {
+    window.updateSlotField = function(fId, slotN, ioId, field, val, shouldRender = false) {
         const d = projectData.details.find(x => x.id === activeDetailId); 
         const f = d.frames.find(x => x.id === fId);
         if(!f.slots[`slot-${slotN}`].ioData) f.slots[`slot-${slotN}`].ioData = {};
@@ -2148,7 +2148,8 @@
         const slot = f.slots[`slot-${slotN}`]; 
         const cData = slot.ioData[ioId] || {bezeichnung:'', art:'TA'};
         
-        if (field === 'bezeichnung') {
+        // Namensänderungen & Referenzen nur bei Bedarf aktualisieren
+        if (field === 'bezeichnung' && shouldRender) {
             const ic = iconConfigList.find(x => x.file === slot.iconFile);
             if(ic) {
                 const oldBezeichnung = cData.bezeichnung || `${ic.label} (Platz ${slotN})`;
@@ -2165,7 +2166,10 @@
         slot.ioData[ioId] = cData;
         
         saveToLocal();
-        renderApp();
+        
+        if (shouldRender) {
+            renderApp();
+        }
     };
 
     function updateSlotCustomField(fId, slotN, fieldName, val) {
