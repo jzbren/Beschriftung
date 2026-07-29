@@ -2539,7 +2539,7 @@
                                 Art: ${dat.art||''}<br>
                                 Funktion: ${dat.funktion||''}<br>
                                 Gruppe: ${dat.gruppe||''}<br>
-                                Ziel: ${dat.eingabegerat||''}
+                                <span style="font-weight: normal;">Ziel (Hardware): ${dat.eingabegerat||''}</span>
                             </div>`;
                         }).join('');
                     }
@@ -2611,7 +2611,6 @@
             }).join('');
         }
 
-        // NEU: Untereinander angeordnet, Name und Beschreibung untereinander im Block
         let globalsPrintHtml = '';
         let hasGlobals = (projectData.appFunctions && projectData.appFunctions.length > 0) ||
                          (projectData.globalGroups && projectData.globalGroups.length > 0) ||
@@ -2695,154 +2694,6 @@
         };
     }
 
-    function buildDetailPrintHtml(d) {
-        let framesHtml = '';
-        if(d.frames && d.frames.length > 0) {
-            framesHtml = d.frames.map(f => {
-                const [r, c] = f.layout.split('x').map(Number); 
-                let vSlots = ''; 
-                let blocks = [];
-                const total = r * c;
-
-                for(let i=1; i<=total; i++) {
-                    const s = f.slots[`slot-${i}`] || { iconFile: '', ioData: {}, customFields: {} };
-                    const ic = iconConfigList.find(x => x.file === s.iconFile);
-                    
-                    const imgPath = ic ? `icons-schalter/${ic.file}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
-                    vSlots += `<div class="print-switch-slot"><span style="position:absolute; top:2px; left:4px; font-size:9px; font-weight:700; color:#64748b;">${i}</span><img src="${imgPath}"></div>`;
-                    
-                    let cfRows = '';
-                    if (s.customFields) {
-                        for (let cf in s.customFields) {
-                            if (s.customFields[cf]) {
-                                cfRows += `<div style="font-size:0.8rem; color:#475569;"><b>${cf}:</b> ${s.customFields[cf]}</div>`;
-                            }
-                        }
-                        if (cfRows) cfRows = `<div style="margin-bottom:4px; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">${cfRows}</div>`;
-                    }
-
-                    let ioRows = '';
-                    if(ic && ic.io) {
-                        ioRows = ic.io.map(io => {
-                            const dat = s.ioData?.[io.id] || {};
-                            const slotLabel = ic ? ic.label : 'Platz';
-                            const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
-                            const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
-                            
-                            const hwLinks = getHardwareLinksForSwitch(switchIdent);
-
-                            return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">
-                                <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
-                                Bezeichnung: ${dat.bezeichnung||''}<br>
-                                Art: ${dat.art||''}<br>
-                                Funktion: ${dat.funktion||''}<br>
-                                Gruppe (Lokal): ${dat.gruppe||''}<br>
-                                Ziel (Hardware): ${dat.eingabegerat||''}<br>
-                                ${hwLinks.appFns ? `<b>App (via HW):</b> <span style="color:#0f766e;">${hwLinks.appFns}</span><br>` : ''}
-                                ${hwLinks.groups ? `<b>Gruppe (via HW):</b> <span style="color:#0f766e;">${hwLinks.groups}</span>` : ''}
-                            </div>`;
-                        }).join('');
-                    }
-                    
-                    const slotLabel = ic ? ic.label : 'Kein Icon';
-                    blocks.push(`<div class="print-slot-item-block"><b>Platz ${i} - ${slotLabel}</b><div style="margin-top:5px;">${cfRows}${ioRows}</div></div>`);
-                }
-
-                let visHtml = `<div style="display:flex; justify-content:center; margin: 10px 0;"><div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px);">${vSlots}</div></div>`;
-                let bStr = ''; 
-                for(let i=0; i<blocks.length; i+=2) {
-                    bStr += `<div class="print-slots-grid-2col">${blocks[i]}${blocks[i+1]||'<div></div>'}</div>`;
-                }
-                return `<div><div class="print-frame-title">Schaltstelle: ${f.name}</div>${visHtml}${bStr}</div>`;
-            }).join('');
-            if(framesHtml) framesHtml = `<div class="print-section-title">Schalter Belegungen</div>${framesHtml}`;
-        }
-        
-        let hwHtml = '';
-        if(d.hardware.length) {
-            hwHtml = `<div class="print-section-title">Hardware</div>` + d.hardware.map(hw => {
-                const cfg = hardwareConfigList.find(x=>x.id===hw.configId); if(!cfg) return '';
-                
-                let fh = ''; 
-                if(cfg.fields) {
-                    cfg.fields.forEach(f => {
-                        fh += `<div style="font-size:0.8rem; margin-bottom: 3px;"><b>${f}:</b> ${hw.fields[f]||''}</div>`;
-                    });
-                    if(fh) fh = `<div style="margin-bottom: 8px;">${fh}</div>`;
-                }
-                
-                let ioh = ''; 
-                const activeIoList = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
-                
-                if(activeIoList) {
-                    activeIoList.forEach(io => { 
-                        if(io.type === 'bus') {
-                            if(hw.subNodes && hw.subNodes[io.id] && hw.subNodes[io.id].length > 0) {
-                                hw.subNodes[io.id].forEach(sub => {
-                                    ioh += `<div style="font-size:0.8rem; margin-top:4px; padding-bottom:4px; margin-bottom:4px; border-bottom:1px solid #f1f5f9; border-left:2px solid var(--primary); padding-left:6px;">
-                                        <b>${sub.name}</b> (Ort: ${sub.location || 'k.A.'}, ${sub.channels||1} Kanäle)<br>
-                                        <span style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px;">
-                                            <div><b>Taster:</b> ${sub.mapping||'-'}</div>
-                                            <div><b>App:</b> ${sub.appFunctions||'-'}</div>
-                                            <div><b>Gruppe:</b> ${sub.globalGroup||'-'}</div>
-                                        </span>
-                                    </div>`;
-                                });
-                            }
-                        } else {
-                            const map = hw.mappings?.[io.id] || '-';
-                            const app = hw.appFunctions?.[io.id] || '-';
-                            const grp = hw.globalGroup?.[io.id] || '-';
-                            const bez = hw.bezeichnung?.[io.id] || '';
-                            
-                            ioh += `<div style="font-size:0.8rem; margin-top:4px; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
-                                <b>${io.label}:</b> ${bez ? `<span style="color:#0f766e;">${bez}</span>` : ''}<br>
-                                <span style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px;">
-                                    <div><b>Taster:</b> ${map}</div>
-                                    <div><b>App:</b> ${app}</div>
-                                    <div><b>Gruppe:</b> ${grp}</div>
-                                </span>
-                            </div>`;
-                        }
-                    });
-                }
-                
-                return `<div class="print-hw-container"><div class="print-hw-image"><img src="icons-schalter/${cfg.image}"></div><div><b>${cfg.name}</b>${fh}<div style="margin-top:5px;">${ioh}</div></div></div>`;
-            }).join('');
-        }
-
-        let globalsPrintHtml = '';
-        let hasGlobals = (projectData.appFunctions && projectData.appFunctions.length > 0) ||
-                         (projectData.globalGroups && projectData.globalGroups.length > 0) ||
-                         (projectData.globalFunctions && projectData.globalFunctions.length > 0);
-        if (hasGlobals) {
-            let renderItemsList = (list) => {
-                if (!list || list.length === 0) return '<div style="font-size:0.8rem; color:#94a3b8; font-style:italic;">Keine Einträge</div>';
-                return list.map(item => {
-                    const name = typeof item === 'object' ? item.name : item;
-                    const desc = typeof item === 'object' ? item.description : '';
-                    return `<div style="margin-bottom:8px; page-break-inside: avoid;">
-                        <div style="font-size:0.85rem; font-weight:600; color:#1e293b;">${name}</div>
-                        ${desc ? `<div style="font-size:0.75rem; color:#475569; margin-top:2px; line-height:1.3;">${desc}</div>` : ''}
-                    </div>`;
-                }).join('');
-            };
-
-            let appFnHtml = renderItemsList(projectData.appFunctions);
-            let grpHtml = renderItemsList(projectData.globalGroups);
-            let fnHtml = renderItemsList(projectData.globalFunctions);
-
-            globalsPrintHtml = `<div class="print-section-title">Zentrale Einstellungen & Definitionen</div>` +
-                `<div style="display:flex; flex-direction:column; gap:14px; background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:6px; page-break-inside: avoid;">` +
-                `<div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">App-Funktionen</div>${appFnHtml}</div>` +
-                `<div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">Globale Gruppen</div>${grpHtml}</div>` +
-                `<div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">Globale Funktionen</div>${fnHtml}</div>` +
-                `</div>`;
-        }
-
-        return `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName}</h2><p>${projectData.location||''}</p></div><h3 style="color:#0f766e; margin:0;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}</h3>${framesHtml}${hwHtml}${globalsPrintHtml}</div>`;
-    }
-
     function updatePrintContainers() {
         const d = projectData.details.find(x => x.id === activeDetailId);
         if(d) {
@@ -2895,12 +2746,10 @@
                                 else slotText += `<b>Taster ${i}</b>`;
                                 
                                 let details = [];
-                                if(dat.funktion) details.push(`Funktion: ${dat.funktion}`);
-                                if(dat.gruppe) details.push(`Lokal-Gruppe: ${dat.gruppe}`);
-                                if(hwLinks.appFns) details.push(`App: ${hwLinks.appFns}`);
-                                if(hwLinks.groups) details.push(`Global-Gruppe: ${hwLinks.groups}`);
-                                
-                                if(details.length > 0) slotText += ` <span style="color:#475569;">(${details.join(' | ')})</span>`;
+                                if(dat.funktion) slotText += `<div style="color:#475569;">Funktion: ${dat.funktion}</div>`;
+                                if(dat.gruppe) slotText += `<div style="color:#475569;">Gruppe (Lokal): ${dat.gruppe}</div>`;
+                                if(hwLinks.appFns) slotText += `<div style="color:#475569;">App: ${hwLinks.appFns}</div>`;
+                                if(hwLinks.groups) slotText += `<div style="color:#475569;">Gruppe (global): ${hwLinks.groups}</div>`;
                                 slotText += `</div>`;
                             }
                         });
