@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V6.0</title>
+    <title>ServiceProDetail Konfigurator V6.5</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -29,6 +29,7 @@
         .detail-item { padding: 12px 14px; background: #1e293b; margin-bottom: 8px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; border: 1px solid transparent; }
         .detail-item:hover { background: #334155; }
         .detail-item.active { background: #0f766e; border-color: #14b8a6; box-shadow: 0 2px 4px rgba(15, 118, 110, 0.3); }
+        .detail-item.drag-over-detail { box-shadow: 0 -3px 0 0 var(--primary); background: #334155; }
         .detail-item-info { display: flex; flex-direction: column; }
         .detail-item-room { font-size: 0.75rem; color: #94a3b8; margin-bottom: 3px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.03em; }
 
@@ -42,7 +43,21 @@
 
         /* Main Content */
         .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px 40px; min-width: 0; transition: width 0.3s; }
-        .top-bar { display: flex; flex-direction: column; gap: 12px; background: var(--panel-bg); padding: 18px 22px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-bottom: 20px; }
+        .top-bar { 
+            position: sticky; 
+            top: -20px; 
+            z-index: 100; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            background: var(--panel-bg); 
+            padding: 18px 22px; 
+            border-radius: 0 0 10px 10px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+            border: 1px solid #e2e8f0; 
+            border-top: none;
+            margin-bottom: 20px; 
+        }
         .top-bar-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .header-left { display: flex; align-items: center; gap: 12px; }
         .toggle-sidebar-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1.1rem; cursor: pointer; color: #475569; padding: 6px 12px; transition: background 0.2s; }
@@ -63,6 +78,8 @@
         button.btn.warning { background: var(--warning); color: white; border: none; }
         button.btn.info { background: #f0fdf4; color: #0f766e; border: 1px solid #bbf7d0; font-weight: 600; }
         button.btn.info:hover { background: #dcfce7; }
+        button.btn.special { background: #fef08a; border: 1px solid #fde047; color: #854d0e; font-weight: 700; }
+        button.btn.special:hover { background: #fde047; }
 
         /* Workspace Grid */
         .workspace { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 1100px; margin: 0 auto; }
@@ -221,11 +238,22 @@
                 </div>
                 <div class="action-buttons">
                     <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
-                    <button class="btn info" onclick="openGlobalsModal()">⚙️ App & Gruppen</button>
-                    <button class="btn warning" onclick="openBusOverviewModal()">Bus-Topologie</button>
-                    <button class="btn danger" onclick="resetProject()">Neu anfangen</button>
+                    
+                    <!-- Projektverwaltung -->
+                    <button class="btn danger" onclick="resetProject()">Neu</button>
                     <button class="btn" onclick="document.getElementById('file-input').click()">Öffnen</button>
                     <button class="btn primary" onclick="exportProject()">Speichern</button>
+                    
+                    <span style="border-left: 1px solid #cbd5e1; height: 24px; margin: 0 4px;"></span>
+                    
+                    <!-- Einstellungen & Ansichten -->
+                    <button class="btn info" onclick="openGlobalsModal()">⚙️ App & Gruppen</button>
+                    <button class="btn warning" onclick="openBusOverviewModal()">Bus-Topologie</button>
+                    
+                    <span style="border-left: 1px solid #cbd5e1; height: 24px; margin: 0 4px;"></span>
+                    
+                    <!-- Drucken -->
+                    <button class="btn special" onclick="printCustomerDoc()">Kunden-Doku</button>
                     <button class="btn" onclick="printAllDetails()">Alles Drucken</button>
                     <button class="btn" onclick="printCurrentDetail()">Aktuelles Detail</button>
                 </div>
@@ -238,6 +266,7 @@
         <div id="workspace-container"></div>
         <div id="print-all-container" style="display: none;"></div>
         <div id="print-single-container" style="display: none;"></div>
+        <div id="print-customer-container" style="display: none;"></div>
     </div>
 
     <!-- Bus Overview Modal -->
@@ -345,6 +374,7 @@
     let projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
     let activeDetailId = null; 
     let draggedSlot = null;
+    let draggedDetailId = null;
     let _activeSwitchRef = null;
 
     document.addEventListener('keydown', e => { 
@@ -492,11 +522,10 @@
                 const oldName = d.name;
                 const newName = val.trim();
     
-                // NEU: Prüfen, ob der Name bereits bei einem anderen Detail existiert
                 const nameExists = projectData.details.some(x => x.id !== activeDetailId && x.name === newName);
                 if (nameExists) {
                     alert("Ein Detail mit diesem Namen existiert bereits! Bitte wähle einen eindeutigen Namen.");
-                    renderApp(); // Setzt das Eingabefeld im UI wieder zurück
+                    renderApp(); 
                     return;
                 }
     
@@ -507,7 +536,6 @@
                     return;
                 }
     
-                // Ab hier läuft deine bestehende Logik für die Namensänderung und Ersetzung weiter...
                 if (d.hardware) {
                     d.hardware.forEach(hw => {
                         const cfg = hardwareConfigList.find(x => x.id === hw.configId);
@@ -647,6 +675,44 @@
             saveToLocal(); renderGlobalsLists();
         }
     }
+
+    window.quickAddAppFunction = function() {
+        const input = document.getElementById('quick-new-appfn');
+        if(!input) return;
+        const val = input.value.trim();
+        const names = projectData.appFunctions.map(x => typeof x === 'object' ? x.name : x);
+        if(val && !names.includes(val)) {
+            projectData.appFunctions.push({ name: val, description: "" });
+            if (_activeSwitchRef) {
+                toggleSwitchExtraTarget(_activeSwitchRef.fId, _activeSwitchRef.slotN, _activeSwitchRef.ioId, val, true);
+            } else {
+                saveToLocal();
+            }
+            const sourceName = document.getElementById('assign-title').innerText;
+            openAssignModal('switch', sourceName, _activeSwitchRef);
+        } else if (names.includes(val)) {
+            alert("Diese App-Funktion existiert bereits!");
+        }
+    };
+
+    window.quickAddGroup = function() {
+        const input = document.getElementById('quick-new-grp');
+        if(!input) return;
+        const val = input.value.trim();
+        const names = projectData.globalGroups.map(x => typeof x === 'object' ? x.name : x);
+        if(val && !names.includes(val)) {
+            projectData.globalGroups.push({ name: val, description: "", linkedAppFunctions: [] });
+            if (_activeSwitchRef) {
+                toggleSwitchExtraTarget(_activeSwitchRef.fId, _activeSwitchRef.slotN, _activeSwitchRef.ioId, val, true);
+            } else {
+                saveToLocal();
+            }
+            const sourceName = document.getElementById('assign-title').innerText;
+            openAssignModal('switch', sourceName, _activeSwitchRef);
+        } else if (names.includes(val)) {
+            alert("Diese Gruppe existiert bereits!");
+        }
+    };
 
     window.updateGlobalItem = function(type, idx, field, val) {
         val = val.trim();
@@ -955,6 +1021,32 @@
 
             const div = document.createElement('div');
             div.className = `detail-item ${detail.id === activeDetailId ? 'active' : ''}`;
+            
+            div.draggable = true;
+            div.ondragstart = (e) => { 
+                draggedDetailId = detail.id; 
+                e.dataTransfer.effectAllowed = 'move'; 
+                setTimeout(() => div.style.opacity = '0.5', 0);
+            };
+            div.ondragend = () => { div.style.opacity = '1'; };
+            div.ondragover = (e) => { e.preventDefault(); div.classList.add('drag-over-detail'); };
+            div.ondragleave = (e) => { div.classList.remove('drag-over-detail'); };
+            div.ondrop = (e) => {
+                e.preventDefault();
+                div.classList.remove('drag-over-detail');
+                if (draggedDetailId && draggedDetailId !== detail.id) {
+                    const sourceIdx = projectData.details.findIndex(d => d.id === draggedDetailId);
+                    const targetIdx = projectData.details.findIndex(d => d.id === detail.id);
+                    if (sourceIdx > -1 && targetIdx > -1) {
+                        const [movedItem] = projectData.details.splice(sourceIdx, 1);
+                        projectData.details.splice(targetIdx, 0, movedItem);
+                        saveToLocal();
+                        renderApp();
+                    }
+                }
+                draggedDetailId = null;
+            };
+
             div.onclick = () => { activeDetailId = detail.id; renderApp(); };
             div.innerHTML = `
                 <div class="detail-item-info">
@@ -971,9 +1063,26 @@
     }
 
     function addNewDetail() {
-        const newDetail = { id: generateId(), name: `Detail ${projectData.details.length + 1}`, room: "", frames: [], hardware: [] };
-        projectData.details.push(newDetail); activeDetailId = newDetail.id; renderApp();
-    }
+            let counter = projectData.details.length + 1;
+            let newName = `Detail ${counter}`;
+            
+            while (projectData.details.some(d => d.name === newName)) {
+                counter++;
+                newName = `Detail ${counter}`;
+            }
+        
+            const newDetail = { 
+                id: generateId(), 
+                name: newName, 
+                room: "", 
+                frames: [], 
+                hardware: [] 
+            };
+            
+            projectData.details.push(newDetail); 
+            activeDetailId = newDetail.id; 
+            renderApp();
+        }
     
     function duplicateDetail(id) {
         const d = projectData.details.find(x => x.id === id);
@@ -1243,7 +1352,14 @@
         if(type === 'switch' && switchRef) {
             let extraHtml = `<div style="display:flex; gap: 20px;">`;
             
-            let appHtml = `<div style="flex:1; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:8px;"><h4 style="margin-top:0; color:#166534;">📱 App-Funktionen</h4>`;
+            let appHtml = `<div style="flex:1; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:8px;">
+                <h4 style="margin-top:0; color:#166534; margin-bottom:10px;">📱 App-Funktionen</h4>
+                <div style="display:flex; gap:5px; margin-bottom:12px;">
+                    <input type="text" id="quick-new-appfn" placeholder="Neue App-Funktion..." onkeydown="if(event.key==='Enter') quickAddAppFunction()" style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:0.85rem;">
+                    <button class="btn primary" style="padding:6px 10px;" onclick="quickAddAppFunction()">+</button>
+                </div>
+                <div style="max-height: 180px; overflow-y: auto; padding-right: 5px;">`;
+                
             projectData.appFunctions.forEach(afObj => {
                 const af = typeof afObj === 'object' ? afObj.name : afObj;
                 const afDesc = typeof afObj === 'object' ? afObj.description : '';
@@ -1256,11 +1372,21 @@
                 const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
                 const isChecked = eingabeList.includes(af);
 
-                appHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${af.replace(/'/g, "\\'")}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> <div><div style="font-weight:500;">${af}</div>${afDesc ? `<div style="font-size:0.75rem; color:#475569;">${afDesc}</div>` : ''}</div></label>`;
+                appHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;">
+                    <input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${af.replace(/'/g, "\\'")}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> 
+                    <div><div style="font-weight:500;">${af}</div>${afDesc ? `<div style="font-size:0.75rem; color:#475569;">${afDesc}</div>` : ''}</div>
+                </label>`;
             });
-            appHtml += `</div>`;
+            appHtml += `</div></div>`;
 
-            let grpHtml = `<div style="flex:1; background:#eff6ff; border:1px solid #bfdbfe; padding:15px; border-radius:8px;"><h4 style="margin-top:0; color:#1e40af;">📂 Globale Gruppen</h4>`;
+            let grpHtml = `<div style="flex:1; background:#eff6ff; border:1px solid #bfdbfe; padding:15px; border-radius:8px;">
+                <h4 style="margin-top:0; color:#1e40af; margin-bottom:10px;">📂 Globale Gruppen</h4>
+                <div style="display:flex; gap:5px; margin-bottom:12px;">
+                    <input type="text" id="quick-new-grp" placeholder="Neue Gruppe..." onkeydown="if(event.key==='Enter') quickAddGroup()" style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:0.85rem;">
+                    <button class="btn primary" style="padding:6px 10px;" onclick="quickAddGroup()">+</button>
+                </div>
+                <div style="max-height: 180px; overflow-y: auto; padding-right: 5px;">`;
+                
             projectData.globalGroups.forEach(ggObj => {
                 const gg = typeof ggObj === 'object' ? ggObj.name : ggObj;
                 const ggDesc = typeof ggObj === 'object' ? ggObj.description : '';
@@ -1273,9 +1399,12 @@
                 const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
                 const isChecked = eingabeList.includes(gg);
 
-                grpHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;"><input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${gg.replace(/'/g, "\\'")}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> <div><div style="font-weight:500;">${gg}</div>${ggDesc ? `<div style="font-size:0.75rem; color:#475569;">${ggDesc}</div>` : ''}</div></label>`;
+                grpHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;">
+                    <input type="checkbox" ${isChecked?'checked':''} onchange="toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${gg.replace(/'/g, "\\'")}', this.checked)" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> 
+                    <div><div style="font-weight:500;">${gg}</div>${ggDesc ? `<div style="font-size:0.75rem; color:#475569;">${ggDesc}</div>` : ''}</div>
+                </label>`;
             });
-            grpHtml += `</div>`;
+            grpHtml += `</div></div>`;
 
             extraHtml += appHtml + grpHtml + `</div><hr style="border:0; border-top:1px solid #cbd5e1; margin: 20px 0;">`;
             extrasDiv.innerHTML = extraHtml;
@@ -1672,15 +1801,51 @@
     window.handleDragStart = function(e, fId, sNum) { draggedSlot = { fId, sNum }; e.dataTransfer.effectAllowed = 'move'; }
     window.handleDragOver = function(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
     window.handleDragLeave = function(e) { e.currentTarget.classList.remove('drag-over'); }
+
     window.handleDrop = function(e, targetFId, targetSNum) {
         e.preventDefault(); e.currentTarget.classList.remove('drag-over');
         if(draggedSlot && (draggedSlot.fId !== targetFId || draggedSlot.sNum !== targetSNum)) {
             const d = projectData.details.find(x => x.id === activeDetailId);
-            const sourceF = d.frames.find(x => x.id === draggedSlot.fId); const targetF = d.frames.find(x => x.id === targetFId);
+            const sourceF = d.frames.find(x => x.id === draggedSlot.fId); 
+            const targetF = d.frames.find(x => x.id === targetFId);
+            
             if(sourceF && targetF) {
-                const temp = JSON.parse(JSON.stringify(targetF.slots[`slot-${targetSNum}`] || {}));
-                targetF.slots[`slot-${targetSNum}`] = JSON.parse(JSON.stringify(sourceF.slots[`slot-${draggedSlot.sNum}`] || {}));
+                const sourceSlotData = sourceF.slots[`slot-${draggedSlot.sNum}`];
+                const targetSlotData = targetF.slots[`slot-${targetSNum}`];
+                
+                let replacements = [];
+
+                const collectReplacements = (slotData, oldSlotN, newSlotN, frameName) => {
+                    if(!slotData || !slotData.iconFile) return;
+                    const ic = iconConfigList.find(x => x.file === slotData.iconFile);
+                    if(!ic || !ic.io) return;
+                    
+                    ic.io.forEach(io => {
+                        const dat = slotData.ioData?.[io.id] || {};
+                        const oldBez = dat.bezeichnung ? dat.bezeichnung : `${ic.label} (Platz ${oldSlotN})`;
+                        const oldStr = `${d.name} | ${frameName} | Platz ${oldSlotN} | ${oldBez}`;
+                        
+                        const newBez = dat.bezeichnung ? dat.bezeichnung : `${ic.label} (Platz ${newSlotN})`;
+                        const newStr = `${d.name} | ${frameName} | Platz ${newSlotN} | ${newBez}`;
+                        
+                        replacements.push({oldStr, newStr});
+                    });
+                };
+
+                collectReplacements(sourceSlotData, draggedSlot.sNum, targetSNum, sourceF.name);
+                collectReplacements(targetSlotData, targetSNum, draggedSlot.sNum, targetF.name);
+
+                const temp = JSON.parse(JSON.stringify(targetSlotData || {}));
+                targetF.slots[`slot-${targetSNum}`] = JSON.parse(JSON.stringify(sourceSlotData || {}));
                 sourceF.slots[`slot-${draggedSlot.sNum}`] = temp;
+
+                replacements.forEach(rep => {
+                    if(rep.oldStr !== rep.newStr) {
+                        replaceStringInAllReferences(rep.oldStr, rep.newStr);
+                    }
+                });
+
+                saveToLocal();
                 renderApp();
             }
         }
@@ -1757,7 +1922,9 @@
                 });
             }
         }
-        hw.fields[field] = val; saveToLocal(); renderApp();
+        hw.fields[field] = val;
+        saveToLocal();
+        renderApp();
     };
 
     window.addSubNode = function(hwInstanceId, ioId) {
@@ -2394,7 +2561,6 @@
             hwHtml = `<div class="print-section-title">Hardware</div>` + d.hardware.map(hw => {
                 const cfg = hardwareConfigList.find(x=>x.id===hw.configId); if(!cfg) return '';
                 
-                // NEU: Felder-Block mit unterem Abstand versehen (Abstand nach Bemerkung)
                 let fh = ''; 
                 if(cfg.fields) {
                     cfg.fields.forEach(f => {
@@ -2411,7 +2577,6 @@
                         if(io.type === 'bus') {
                             if(hw.subNodes && hw.subNodes[io.id] && hw.subNodes[io.id].length > 0) {
                                 hw.subNodes[io.id].forEach(sub => {
-                                    // NEU: Graue Striche (border-bottom) und Abstände für Sub-Nodes ergänzt
                                     ioh += `<div style="font-size:0.8rem; margin-top:4px; padding-bottom:4px; margin-bottom:4px; border-bottom:1px solid #f1f5f9; border-left:2px solid var(--primary); padding-left:6px;">
                                         <b>${sub.name}</b> (Ort: ${sub.location || 'k.A.'}, ${sub.channels||1} Kanäle)<br>
                                         <span style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px;">
@@ -2444,7 +2609,36 @@
             }).join('');
         }
 
-        return `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName}</h2><p>${projectData.location||''}</p></div><h3 style="color:#0f766e; margin:0;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}</h3>${framesHtml}${hwHtml}</div>`;
+        let globalsPrintHtml = '';
+        let hasGlobals = (projectData.appFunctions && projectData.appFunctions.length > 0) ||
+                         (projectData.globalGroups && projectData.globalGroups.length > 0) ||
+                         (projectData.globalFunctions && projectData.globalFunctions.length > 0);
+        if (hasGlobals) {
+            let renderItemsList = (list) => {
+                if (!list || list.length === 0) return '<div style="font-size:0.8rem; color:#94a3b8; font-style:italic;">Keine Einträge</div>';
+                return list.map(item => {
+                    const name = typeof item === 'object' ? item.name : item;
+                    const desc = typeof item === 'object' ? item.description : '';
+                    return `<div style="margin-bottom:8px; page-break-inside: avoid;">
+                        <div style="font-size:0.85rem; font-weight:600; color:#1e293b;">${name}</div>
+                        ${desc ? `<div style="font-size:0.75rem; color:#475569; margin-top:2px; line-height:1.3;">${desc}</div>` : ''}
+                    </div>`;
+                }).join('');
+            };
+
+            let appFnHtml = renderItemsList(projectData.appFunctions);
+            let grpHtml = renderItemsList(projectData.globalGroups);
+            let fnHtml = renderItemsList(projectData.globalFunctions);
+
+            globalsPrintHtml = `<div class="print-section-title">Zentrale Einstellungen & Definitionen</div>` +
+                `<div style="display:flex; flex-direction:column; gap:14px; background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:6px; page-break-inside: avoid;">` +
+                `<div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">App-Funktionen</div>${appFnHtml}</div>` +
+                `<div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">Globale Gruppen</div>${grpHtml}</div>` +
+                `<div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">Globale Funktionen</div>${fnHtml}</div>` +
+                `</div>`;
+        }
+
+        return `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName}</h2><p>${projectData.location||''}</p></div><h3 style="color:#0f766e; margin:0;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}</h3>${framesHtml}${hwHtml}${globalsPrintHtml}</div>`;
     }
 
     function updatePrintContainers() {
@@ -2457,9 +2651,120 @@
         document.getElementById('print-all-container').innerHTML = allHtml;
     }
 
+    function printCustomerDoc() {
+        let html = `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName} - Kunden-Dokumentation</h2><p>${projectData.location||''}</p></div>`;
+
+        // Iteration über alle Details für die Kunden-Schalteransicht
+        projectData.details.forEach(d => {
+            if(!d.frames || d.frames.length === 0) return;
+
+            html += `<div style="margin-bottom: 30px; page-break-inside: avoid;">`;
+            html += `<h3 style="color:#0f766e; border-bottom: 2px solid #0f766e; padding-bottom: 5px;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(${d.room})</span>` : ''}</h3>`;
+
+            d.frames.forEach(f => {
+                const [r, c] = f.layout.split('x').map(Number);
+                const total = r * c;
+                let vSlots = '';
+                let slotListHtml = '';
+
+                for(let i=1; i<=total; i++) {
+                    const s = f.slots[`slot-${i}`] || { iconFile: '', ioData: {} };
+                    const ic = iconConfigList.find(x => x.file === s.iconFile);
+                    const imgPath = ic ? `icons-schalter/${ic.file}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
+
+                    vSlots += `<div class="print-switch-slot"><span style="position:absolute; top:2px; left:4px; font-size:9px; font-weight:700; color:#64748b;">${i}</span><img src="${imgPath}"></div>`;
+
+                    let slotText = '';
+                    if(ic && ic.io) {
+                        ic.io.forEach(io => {
+                            const dat = s.ioData?.[io.id] || {};
+                            if(dat.bezeichnung || dat.funktion || dat.gruppe) {
+                                slotText += `<div style="margin-bottom: 4px;">`;
+                                if(dat.bezeichnung) slotText += `<b>${dat.bezeichnung}</b>`;
+                                else slotText += `<b>Taster ${i}</b>`;
+                                
+                                let details = [];
+                                if(dat.funktion) details.push(`Funktion: ${dat.funktion}`);
+                                if(dat.gruppe) details.push(`Gruppe: ${dat.gruppe}`);
+                                
+                                if(details.length > 0) slotText += ` <span style="color:#475569;">(${details.join(' | ')})</span>`;
+                                slotText += `</div>`;
+                            }
+                        });
+                    }
+                    if(slotText) {
+                        slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid var(--primary);">${slotText}</div>`;
+                    } else {
+                        slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #cbd5e1; color:#94a3b8;"><b>Taster ${i}</b> - Nicht belegt</div>`;
+                    }
+                }
+
+                html += `<div style="margin-top: 15px;">
+                    <h4 style="margin-bottom:10px;">${f.name}</h4>
+                    <div style="display:flex; gap: 30px; align-items: flex-start;">
+                        <div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px); flex-shrink:0;">${vSlots}</div>
+                        <div style="flex:1;">${slotListHtml}</div>
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+        });
+        html += `</div>`;
+
+        // Generiere Globale Einstellungen (Ende des Dokuments)
+        let hasGlobals = (projectData.appFunctions && projectData.appFunctions.length > 0) ||
+                         (projectData.globalGroups && projectData.globalGroups.length > 0) ||
+                         (projectData.globalFunctions && projectData.globalFunctions.length > 0);
+        
+        if (hasGlobals) {
+            let renderItemsList = (list) => {
+                if (!list || list.length === 0) return '<div style="font-size:0.9rem; color:#94a3b8; font-style:italic;">Keine Einträge</div>';
+                return list.map(item => {
+                    const name = typeof item === 'object' ? item.name : item;
+                    const desc = typeof item === 'object' ? item.description : '';
+                    return `<div style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #e2e8f0; page-break-inside: avoid;">
+                        <div style="font-size:1rem; font-weight:600; color:#1e293b;">${name}</div>
+                        ${desc ? `<div style="font-size:0.85rem; color:#475569; margin-top:4px;">${desc}</div>` : ''}
+                    </div>`;
+                }).join('');
+            };
+
+            html += `<div class="print-detail-page" style="page-break-before: always;">
+                <div class="print-header-block"><h2>Zentrale Einstellungen & Erklärungen</h2></div>`;
+            
+            if (projectData.globalFunctions && projectData.globalFunctions.length > 0) {
+                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">Globale Funktionen</h3>
+                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Erklärung der verwendeten Taster-Funktionen im Projekt.</p>
+                         ${renderItemsList(projectData.globalFunctions)}</div><br>`;
+            }
+            if (projectData.globalGroups && projectData.globalGroups.length > 0) {
+                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">Globale Gruppen</h3>
+                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Gruppenfunktionen, die über mehrere Räume hinweg wirken.</p>
+                         ${renderItemsList(projectData.globalGroups)}</div><br>`;
+            }
+            if (projectData.appFunctions && projectData.appFunctions.length > 0) {
+                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">App-Funktionen</h3>
+                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Funktionen, die in der Smart Home App verfügbar sind.</p>
+                         ${renderItemsList(projectData.appFunctions)}</div>`;
+            }
+            html += `</div>`;
+        }
+
+        document.getElementById('print-customer-container').innerHTML = html;
+        
+        document.getElementById('print-single-container').style.display = 'none';
+        document.getElementById('print-all-container').style.display = 'none';
+        document.getElementById('print-customer-container').style.display = 'block';
+        
+        window.print();
+        
+        setTimeout(() => { document.getElementById('print-customer-container').style.display = 'none'; }, 500);
+    }
+
     function printCurrentDetail() {
         document.getElementById('print-single-container').style.display = 'block';
         document.getElementById('print-all-container').style.display = 'none';
+        document.getElementById('print-customer-container').style.display = 'none';
         window.print();
         setTimeout(() => { document.getElementById('print-single-container').style.display = 'none'; }, 500);
     }
@@ -2467,6 +2772,7 @@
     function printAllDetails() {
         document.getElementById('print-single-container').style.display = 'none';
         document.getElementById('print-all-container').style.display = 'block';
+        document.getElementById('print-customer-container').style.display = 'none';
         window.print();
         setTimeout(() => { document.getElementById('print-all-container').style.display = 'none'; }, 500);
     }
@@ -2483,9 +2789,7 @@
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projectData, null, 2));
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
-        
         downloadAnchor.setAttribute("download", `${projectData.projectName || 'Projekt'}_${timestamp}.ServiceProDetail`);
-        
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         downloadAnchor.remove();
