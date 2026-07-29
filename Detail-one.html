@@ -2579,7 +2579,39 @@
             }).join('');
         }
 
-        return `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName}</h2><p>${projectData.location||''}</p></div><h3 style="color:#0f766e; margin:0;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}</h3>${framesHtml}${hwHtml}</div>`;
+        // NEU: Globale App-Funktionen, Gruppen & Funktionen für den Kunden im Druck hinzufügen
+        let globalsPrintHtml = '';
+        let hasGlobals = (projectData.appFunctions && projectData.appFunctions.length > 0) ||
+                         (projectData.globalGroups && projectData.globalGroups.length > 0) ||
+                         (projectData.globalFunctions && projectData.globalFunctions.length > 0);
+        if (hasGlobals) {
+            let appFnList = (projectData.appFunctions || []).map(item => {
+                const name = typeof item === 'object' ? item.name : item;
+                const desc = typeof item === 'object' ? item.description : '';
+                return `<div style="font-size:0.75rem; margin-bottom:3px;"><b>${name}</b>${desc ? ` — <span style="color:#475569;">${desc}</span>` : ''}</div>`;
+            }).join('');
+
+            let grpList = (projectData.globalGroups || []).map(item => {
+                const name = typeof item === 'object' ? item.name : item;
+                const desc = typeof item === 'object' ? item.description : '';
+                return `<div style="font-size:0.75rem; margin-bottom:3px;"><b>${name}</b>${desc ? ` — <span style="color:#475569;">${desc}</span>` : ''}</div>`;
+            }).join('');
+
+            let fnList = (projectData.globalFunctions || []).map(item => {
+                const name = typeof item === 'object' ? item.name : item;
+                const desc = typeof item === 'object' ? item.description : '';
+                return `<div style="font-size:0.75rem; margin-bottom:3px;"><b>${name}</b>${desc ? ` — <span style="color:#475569;">${desc}</span>` : ''}</div>`;
+            }).join('');
+
+            globalsPrintHtml = `<div class="print-section-title">Zentrale Einstellungen & Definitionen</div>` +
+                `<div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; background:#f8fafc; border:1px solid #e2e8f0; padding:10px; border-radius:6px; page-break-inside: avoid;">` +
+                `<div><b style="color:#0f766e; font-size:0.8rem;">App-Funktionen</b><div style="margin-top:4px;">${appFnList || '<span style="color:#94a3b8;font-size:0.75rem;">Keine</span>'}</div></div>` +
+                `<div><b style="color:#0f766e; font-size:0.8rem;">Globale Gruppen</b><div style="margin-top:4px;">${grpList || '<span style="color:#94a3b8;font-size:0.75rem;">Keine</span>'}</div></div>` +
+                `<div><b style="color:#0f766e; font-size:0.8rem;">Globale Funktionen</b><div style="margin-top:4px;">${fnList || '<span style="color:#94a3b8;font-size:0.75rem;">Keine</span>'}</div></div>` +
+                `</div>`;
+        }
+
+        return `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName}</h2><p>${projectData.location||''}</p></div><h3 style="color:#0f766e; margin:0;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}</h3>${framesHtml}${hwHtml}${globalsPrintHtml}</div>`;
     }
 
     function updatePrintContainers() {
