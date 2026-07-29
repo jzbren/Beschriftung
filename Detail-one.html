@@ -2579,35 +2579,33 @@
             }).join('');
         }
 
-        // NEU: Globale App-Funktionen, Gruppen & Funktionen für den Kunden im Druck hinzufügen
+        // NEU: Untereinander angeordnet, Name und Beschreibung untereinander im Block
         let globalsPrintHtml = '';
         let hasGlobals = (projectData.appFunctions && projectData.appFunctions.length > 0) ||
                          (projectData.globalGroups && projectData.globalGroups.length > 0) ||
                          (projectData.globalFunctions && projectData.globalFunctions.length > 0);
         if (hasGlobals) {
-            let appFnList = (projectData.appFunctions || []).map(item => {
-                const name = typeof item === 'object' ? item.name : item;
-                const desc = typeof item === 'object' ? item.description : '';
-                return `<div style="font-size:0.75rem; margin-bottom:3px;"><b>${name}</b>${desc ? ` — <span style="color:#475569;">${desc}</span>` : ''}</div>`;
-            }).join('');
+            let renderItemsList = (list) => {
+                if (!list || list.length === 0) return '<div style="font-size:0.8rem; color:#94a3b8; font-style:italic;">Keine Einträge</div>';
+                return list.map(item => {
+                    const name = typeof item === 'object' ? item.name : item;
+                    const desc = typeof item === 'object' ? item.description : '';
+                    return `<div style="margin-bottom:8px; page-break-inside: avoid;">
+                        <div style="font-size:0.85rem; font-weight:600; color:#1e293b;">${name}</div>
+                        ${desc ? `<div style="font-size:0.75rem; color:#475569; margin-top:2px; line-height:1.3;">${desc}</div>` : ''}
+                    </div>`;
+                }).join('');
+            };
 
-            let grpList = (projectData.globalGroups || []).map(item => {
-                const name = typeof item === 'object' ? item.name : item;
-                const desc = typeof item === 'object' ? item.description : '';
-                return `<div style="font-size:0.75rem; margin-bottom:3px;"><b>${name}</b>${desc ? ` — <span style="color:#475569;">${desc}</span>` : ''}</div>`;
-            }).join('');
-
-            let fnList = (projectData.globalFunctions || []).map(item => {
-                const name = typeof item === 'object' ? item.name : item;
-                const desc = typeof item === 'object' ? item.description : '';
-                return `<div style="font-size:0.75rem; margin-bottom:3px;"><b>${name}</b>${desc ? ` — <span style="color:#475569;">${desc}</span>` : ''}</div>`;
-            }).join('');
+            let appFnHtml = renderItemsList(projectData.appFunctions);
+            let grpHtml = renderItemsList(projectData.globalGroups);
+            let fnHtml = renderItemsList(projectData.globalFunctions);
 
             globalsPrintHtml = `<div class="print-section-title">Zentrale Einstellungen & Definitionen</div>` +
-                `<div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; background:#f8fafc; border:1px solid #e2e8f0; padding:10px; border-radius:6px; page-break-inside: avoid;">` +
-                `<div><b style="color:#0f766e; font-size:0.8rem;">App-Funktionen</b><div style="margin-top:4px;">${appFnList || '<span style="color:#94a3b8;font-size:0.75rem;">Keine</span>'}</div></div>` +
-                `<div><b style="color:#0f766e; font-size:0.8rem;">Globale Gruppen</b><div style="margin-top:4px;">${grpList || '<span style="color:#94a3b8;font-size:0.75rem;">Keine</span>'}</div></div>` +
-                `<div><b style="color:#0f766e; font-size:0.8rem;">Globale Funktionen</b><div style="margin-top:4px;">${fnList || '<span style="color:#94a3b8;font-size:0.75rem;">Keine</span>'}</div></div>` +
+                `<div style="display:flex; flex-direction:column; gap:14px; background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:6px; page-break-inside: avoid;">` +
+                `<div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">App-Funktionen</div>${appFnHtml}</div>` +
+                `<div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">Globale Gruppen</div>${grpHtml}</div>` +
+                `<div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">Globale Funktionen</div>${fnHtml}</div>` +
                 `</div>`;
         }
 
