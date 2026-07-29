@@ -3,161 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V5.2</title>
+    <title>ServiceProDetail Konfigurator V6.1</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
             --primary: #0f766e; --primary-hover: #0d9488;
             --danger: #ef4444; --danger-hover: #dc2626;
-            --warning: #f59e0b; --bg-color: #f3f4f6;
-            --text-color: #1f2937; --panel-bg: #ffffff;
+            --warning: #f59e0b; --bg-color: #f8fafc;
+            --text-color: #1e293b; --panel-bg: #ffffff;
             --sidebar-width: 320px;
         }
         body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
 
         /* Sidebar & Layout */
-        .sidebar { width: var(--sidebar-width); background: #1e293b; color: white; display: flex; flex-direction: column; padding: 20px 15px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); flex-shrink: 0; box-sizing: border-box; z-index: 100; }
+        .sidebar { width: var(--sidebar-width); background: #0f172a; color: white; display: flex; flex-direction: column; padding: 20px 15px; box-shadow: 2px 0 10px rgba(0,0,0,0.1); transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); flex-shrink: 0; box-sizing: border-box; z-index: 100; }
         .sidebar.collapsed { margin-left: calc(-1 * var(--sidebar-width)); }
-        .sidebar-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 15px; }
-        .sidebar-header h2 { margin: 0; font-size: 1.2rem; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 12px; margin-bottom: 15px; }
+        .sidebar-header h2 { margin: 0; font-size: 1.15rem; font-weight: 600; letter-spacing: -0.01em; }
 
         .sidebar-search { margin-bottom: 15px; }
-        .sidebar-search input { width: 100%; padding: 8px 12px; border-radius: 4px; border: 1px solid #475569; background: #334155; color: white; box-sizing: border-box; font-size: 0.9rem; }
-        .sidebar-search input:focus { outline: none; border-color: #10b981; background: #475569; }
+        .sidebar-search input { width: 100%; padding: 9px 12px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: white; box-sizing: border-box; font-size: 0.9rem; }
+        .sidebar-search input:focus { outline: none; border-color: var(--primary); background: #1e293b; }
 
-        .detail-list { flex: 1; overflow-y: auto; }
-        .detail-item { padding: 10px; background: #334155; margin-bottom: 8px; border-radius: 4px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
-        .detail-item:hover { background: #475569; }
-        .detail-item.active { background: var(--primary); border-left: 4px solid #10b981; }
+        .detail-list { flex: 1; overflow-y: auto; padding-right: 2px; }
+        .detail-item { padding: 12px 14px; background: #1e293b; margin-bottom: 8px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; border: 1px solid transparent; }
+        .detail-item:hover { background: #334155; }
+        .detail-item.active { background: #0f766e; border-color: #14b8a6; box-shadow: 0 2px 4px rgba(15, 118, 110, 0.3); }
+        .detail-item.drag-over-detail { box-shadow: 0 -3px 0 0 var(--primary); background: #334155; }
         .detail-item-info { display: flex; flex-direction: column; }
-        .detail-item-room { font-size: 0.75rem; color: #94a3b8; margin-bottom: 2px; }
+        .detail-item-room { font-size: 0.75rem; color: #94a3b8; margin-bottom: 3px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.03em; }
 
-        .sidebar-actions { display: flex; align-items: center; gap: 5px; }
+        .sidebar-actions { display: flex; align-items: center; gap: 6px; }
         .icon-btn { background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center; color: white; font-size: 1.2rem; }
         .icon-btn:hover { opacity: 0.8; }
-        .delete-btn { background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 1.1rem; padding: 0 4px; border-radius: 3px; }
-        .delete-btn:hover { color: #f87171; background: rgba(255,0,0,0.1); }
-        .sidebar-btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; }
+        .delete-btn { background: none; border: none; color: #fca5a5; cursor: pointer; font-size: 1.1rem; padding: 2px 6px; border-radius: 4px; }
+        .delete-btn:hover { color: #fff; background: rgba(239, 68, 68, 0.2); }
+        .sidebar-btn { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 10px; width: 100%; transition: background 0.2s; }
         .sidebar-btn:hover { background: var(--primary-hover); }
 
         /* Main Content */
         .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px 40px; min-width: 0; transition: width 0.3s; }
-        .top-bar { display: flex; flex-direction: column; gap: 10px; background: var(--panel-bg); padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .top-bar { display: flex; flex-direction: column; gap: 12px; background: var(--panel-bg); padding: 18px 22px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-bottom: 20px; }
         .top-bar-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-        .header-left { display: flex; align-items: center; gap: 10px; }
-        .toggle-sidebar-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 1.2rem; cursor: pointer; color: #475569; padding: 4px 10px; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .toggle-sidebar-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1.1rem; cursor: pointer; color: #475569; padding: 6px 12px; transition: background 0.2s; }
+        .toggle-sidebar-btn:hover { background: #f1f5f9; }
 
-        .top-bar input[type="text"] { font-size: 1.2rem; font-weight: bold; border: 1px solid transparent; padding: 5px; background: transparent; width: 350px; }
-        .top-bar input[type="text"].location-input { font-size: 0.95rem; font-weight: normal; color: #475569; width: 450px; margin-left: 55px; }
-        .top-bar input[type="text"]:hover, .top-bar input[type="text"]:focus { border-bottom: 1px solid var(--feller-border); outline: none; }
+        .top-bar input[type="text"] { font-size: 1.15rem; font-weight: 600; border: 1px solid transparent; padding: 6px 10px; border-radius: 6px; background: transparent; width: 350px; color: #0f172a; }
+        .top-bar input[type="text"].location-input { font-size: 0.9rem; font-weight: normal; color: #64748b; width: 450px; margin-left: 48px; }
+        .top-bar input[type="text"]:hover, .top-bar input[type="text"]:focus { background: #f8fafc; border-color: #cbd5e1; outline: none; }
         
-        .action-buttons { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .action-buttons { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
         
-        button.btn { background: white; border: 1px solid #d1d5db; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
-        button.btn:hover { background: #f3f4f6; }
+        button.btn { background: white; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500; display: flex; align-items: center; gap: 6px; transition: all 0.2s; color: #334155; }
+        button.btn:hover { background: #f8fafc; border-color: #94a3b8; }
         button.btn.primary { background: var(--primary); color: white; border: none; }
         button.btn.primary:hover { background: var(--primary-hover); }
         button.btn.danger { background: white; border: 1px solid #fca5a5; color: var(--danger); }
         button.btn.danger:hover { background: #fef2f2; border-color: var(--danger); }
         button.btn.warning { background: var(--warning); color: white; border: none; }
-        button.btn.info { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; }
-        button.btn.info:hover { background: #bae6fd; }
+        button.btn.info { background: #f0fdf4; color: #0f766e; border: 1px solid #bbf7d0; font-weight: 600; }
+        button.btn.info:hover { background: #dcfce7; }
 
         /* Workspace Grid */
-        .workspace { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 1200px; margin: 0 auto; }
+        .workspace { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 1100px; margin: 0 auto; }
 
-        .pane { background: var(--panel-bg); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .pane h3 { margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; color: #0f172a; display: flex; justify-content: space-between; align-items: center; }
+        .pane { background: var(--panel-bg); padding: 24px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .pane h3 { margin-top: 0; margin-bottom: 18px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; color: #0f172a; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; }
 
-        .frame-header-row { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; }
-        .frame-header-row input { font-weight: bold; flex: 1; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; }
-        .frame-header-row select { padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; }
+        .frame-header-row { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .frame-header-row input { font-weight: 600; flex: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: white; font-size: 0.95rem; }
+        .frame-header-row select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background: white; font-size: 0.9rem; }
 
-        /* Switch Visualizer */
-        .visualizer-container { display: flex; justify-content: center; align-items: center; padding: 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; margin-bottom: 15px; }
-        .switch-frame { background-color: var(--feller-white); border: 2px solid #e2e8f0; padding: 20px; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), inset 0 0 10px rgba(255,255,255,0.5); display: grid; gap: 2px; }
-        .switch-slot { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 3px; display: flex; justify-content: center; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; overflow: hidden; width: 80px; height: 80px; cursor: grab; }
+        /* Switch Visualizer & Legend Flex Layout */
+        .visualizer-container { display: flex; justify-content: center; align-items: stretch; gap: 20px; padding: 20px; background: #f8fafc; border: 2px dashed #e2e8f0; border-radius: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .switch-frame { background-color: var(--feller-white); border: 2px solid #cbd5e1; padding: 16px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: grid; gap: 4px; align-self: center; }
+        .switch-slot { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 4px; display: flex; justify-content: center; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); position: relative; overflow: hidden; width: 75px; height: 75px; cursor: pointer; transition: all 0.2s; }
+        .switch-slot:hover { border-color: var(--primary); }
+        .switch-slot.active-slot { border: 2px solid var(--primary); box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15); background-color: #f0fdf4; }
         .switch-slot.drag-over { border: 2px solid var(--primary); opacity: 0.7; }
         .switch-slot img { width: 100%; height: 100%; object-fit: fill; padding: 0; box-sizing: border-box; opacity: 0.9; pointer-events: none; }
-        .slot-badge { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: bold; color: #64748b; z-index: 2; pointer-events: none; }
+        .slot-badge { position: absolute; top: 3px; left: 6px; font-size: 10px; font-weight: 700; color: #64748b; z-index: 2; pointer-events: none; background: rgba(255,255,255,0.9); padding: 1px 4px; border-radius: 3px; }
+
+        /* Slot Legend List */
+        .slot-legend { flex: 1; min-width: 260px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: center; }
+        .slot-legend-title { font-weight: 700; font-size: 0.9rem; color: #0f766e; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .slot-legend-items { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+        .slot-legend-row { padding: 6px 10px; border-radius: 6px; cursor: pointer; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; transition: all 0.15s; }
+        .slot-legend-row:hover { background: #f1f5f9; border-color: #94a3b8; }
+        .slot-legend-row.active { background: #f0fdf4; border-color: #14b8a6; box-shadow: 0 1px 3px rgba(15, 118, 110, 0.15); }
+
+        /* Slot Tabs Navigation */
+        .slot-tabs { display: flex; gap: 6px; margin-bottom: 16px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; overflow-x: auto; }
+        .slot-tab-btn { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-size: 0.875rem; font-weight: 600; cursor: pointer; color: #475569; transition: all 0.2s; white-space: nowrap; }
+        .slot-tab-btn:hover { background: #e2e8f0; }
+        .slot-tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 1px 3px rgba(15, 118, 110, 0.3); }
 
         /* Forms & Fields */
-        .form-group { display: flex; margin-bottom: 10px; align-items: center; }
-        .form-group label { width: 140px; font-size: 0.85rem; font-weight: 500; color: #475569; }
-        .form-group input, .form-group select { flex: 1; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.9rem; }
-        .slot-form { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; }
-        .slot-form h4 { margin: 0 0 10px 0; color: var(--primary); }
+        .form-group { display: flex; margin-bottom: 14px; align-items: center; }
+        .form-group label { width: 130px; font-size: 0.875rem; font-weight: 600; color: #475569; }
+        .form-group input, .form-group select { flex: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; background: #fff; color: #1e293b; transition: border-color 0.2s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1); }
+        
+        .slot-form { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+        .slot-form h4 { margin: 0 0 16px 0; color: var(--primary); font-size: 1rem; font-weight: 700; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; display: flex; align-items: center; gap: 8px; }
 
         /* Custom Searchable Dropdown */
         .custom-select { position: relative; flex: 1; font-family: inherit; min-width: 140px; }
-        .select-selected { background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; padding: 6px 8px; font-size: 0.85rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .select-items { display: none; position: absolute; background-color: #fff; border: 1px solid #cbd5e1; border-radius: 4px; top: 100%; left: 0; right: 0; z-index: 999; margin-top: 4px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto; min-width: 100%; }
+        .select-selected { background-color: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px; font-size: 0.875rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #1e293b; transition: border-color 0.2s; }
+        .select-selected:hover { border-color: #94a3b8; }
+        .select-items { display: none; position: absolute; background-color: #fff; border: 1px solid #cbd5e1; border-radius: 8px; top: 100%; left: 0; right: 0; z-index: 999; margin-top: 4px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); max-height: 250px; overflow-y: auto; min-width: 100%; }
         .select-items.show { display: block !important; }
-        .dropdown-search { width: calc(100% - 16px) !important; margin: 8px; padding: 6px; box-sizing: border-box; border: 1px solid #cbd5e1 !important; border-radius: 3px; }
-        .dropdown-option { padding: 8px 10px; font-size: 0.85rem; cursor: pointer; border-bottom: 1px solid #f8fafc; }
-        .dropdown-option:hover { background-color: #f1f5f9; color: var(--primary); }
+        .dropdown-search { width: calc(100% - 16px) !important; margin: 8px; padding: 8px; box-sizing: border-box; border: 1px solid #cbd5e1 !important; border-radius: 6px; }
+        .dropdown-option { padding: 9px 12px; font-size: 0.875rem; cursor: pointer; border-bottom: 1px solid #f8fafc; color: #334155; }
+        .dropdown-option:hover { background-color: #f0fdf4; color: var(--primary); }
 
-        .io-section { margin-top: 10px; }
-        .io-complex-row { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px; padding: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-        .io-header { display: flex; align-items: center; font-size: 0.8rem; font-weight: bold; color: #334155; margin-bottom: 6px; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; }
-        .io-type { font-size: 0.65rem; padding: 2px 4px; border-radius: 3px; margin-right: 6px; text-transform: uppercase; font-weight: bold; }
+        .io-section { margin-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .io-complex-row { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; box-shadow: inset 0 1px 1px rgba(0,0,0,0.01); }
+        .io-header { display: flex; align-items: center; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; letter-spacing: 0.02em; }
+        .io-type { font-size: 0.65rem; padding: 3px 6px; border-radius: 4px; margin-right: 8px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; }
         .io-type.in { background: #dbeafe; color: #1e40af; }
         .io-type.out { background: #fce7f3; color: #9f1239; }
         .io-type.bus { background: #fef3c7; color: #92400e; }
 
-        .io-fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .io-fields-grid input, .io-fields-grid select { padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; width: 100%; box-sizing: border-box; background: #fff; }
+        .io-fields-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; align-items: center; }
+        .io-fields-grid input, .io-fields-grid select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.875rem; width: 100%; box-sizing: border-box; background: #fff; }
+        .io-fields-grid input:focus, .io-fields-grid select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1); }
 
         /* Hardware Editor */
-        .hardware-list { margin-top: 20px; }
-        .hw-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--primary); display: grid; grid-template-columns: 100px 1fr; gap: 15px; align-items: start; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .hw-card-image img { width: 100%; height: auto; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; padding: 4px; }
+        .hardware-list { margin-top: 15px; }
+        .hw-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin-bottom: 15px; border-left: 4px solid var(--primary); display: grid; grid-template-columns: 90px 1fr; gap: 18px; align-items: start; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+        .hw-card-image img { width: 100%; height: auto; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px; background: #f8fafc; }
         .hw-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
-        .hw-card-header h4 { margin: 0; font-size: 1.1rem; color: #0f172a; }
-        .hw-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .hw-card-header h4 { margin: 0; font-size: 1.05rem; color: #0f172a; font-weight: 700; }
 
-        /* DALI Inline Sub-Device Styling */
-        .bus-container { margin-top:15px; background:#f8fafc; padding:12px; border-radius:6px; border:1px solid #e2e8f0; overflow: visible; }
-        .bus-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 8px; }
-        .bus-header h5 { margin: 0; font-size: 0.9rem; color: #1e293b; }
-        .bus-limit-badge, .topo-badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
+        /* DALI & Hardware Table Styling */
+        .bus-container { margin-top:15px; background:#f8fafc; padding:14px; border-radius:8px; border:1px solid #e2e8f0; }
+        .bus-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 10px; }
+        .bus-header h5 { margin: 0; font-size: 0.9rem; color: #1e293b; font-weight: 700; }
+        .bus-limit-badge, .topo-badge { font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; font-weight: 700; }
         .bus-limit-badge.ok, .topo-badge.ok { background: #dcfce7; color: #166534; }
         .bus-limit-badge.full, .topo-badge.full { background: #fee2e2; color: #991b1b; }
         
-        .dali-table { width: 100%; border-collapse: collapse; margin-top: 5px; background: #fff; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.02); overflow: visible;}
-        .dali-table th { background: #f1f5f9; padding: 6px 8px; text-align: left; font-size: 0.8rem; color: #475569; border-bottom: 1px solid #cbd5e1; font-weight: 600;}
-        .dali-table td { padding: 4px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        .dali-table { width: 100%; border-collapse: collapse; margin-top: 8px; background: #fff; border-radius: 6px; border: 1px solid #e2e8f0; overflow: hidden; }
+        .dali-table th { background: #f1f5f9; padding: 8px 10px; text-align: left; font-size: 0.8rem; color: #475569; border-bottom: 1px solid #cbd5e1; font-weight: 700; }
+        .dali-table td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
         .dali-table tr:last-child td { border-bottom: none; }
-        .dali-table input, .dali-table select { width: 100%; border: 1px solid transparent; padding: 4px 6px; border-radius: 4px; background: transparent; font-size: 0.85rem; box-sizing: border-box; }
+        .dali-table input, .dali-table select { width: 100%; border: 1px solid transparent; padding: 6px 8px; border-radius: 4px; background: transparent; font-size: 0.85rem; box-sizing: border-box; }
         .dali-table input:focus, .dali-table select:focus { border: 1px solid #cbd5e1; background: #fff; outline: none; }
         .dali-table input:hover, .dali-table select:hover { background: #f8fafc; border: 1px solid #e2e8f0; }
 
         /* Modal Generell */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: white; width: 90%; max-width: 1100px; max-height: 85vh; border-radius: 8px; padding: 30px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; }
-        .modal-header h2 { margin: 0; color: #1e293b; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 90%; max-width: 1100px; max-height: 85vh; border-radius: 12px; padding: 30px; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding-bottom: 12px; margin-bottom: 20px; }
+        .modal-header h2 { margin: 0; color: #1e293b; font-size: 1.25rem; font-weight: 700; }
         
         /* Modal Bus-Übersicht */
-        .topo-master { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
-        .topo-master-title { font-size: 1.1rem; font-weight: bold; color: #0f766e; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+        .topo-master { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-bottom: 15px; }
+        .topo-master-title { font-size: 1.05rem; font-weight: 700; color: #0f766e; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
         .topo-bus { margin-left: 20px; border-left: 2px solid #94a3b8; padding-left: 15px; margin-top: 15px; position: relative; }
         .topo-bus::before { content: ''; position: absolute; left: -2px; top: 12px; width: 12px; border-top: 2px solid #94a3b8; }
-        .topo-bus-title { font-weight: bold; color: #1e293b; margin-bottom: 10px; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center;}
-        .topo-device { margin-left: 15px; padding: 8px 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+        .topo-bus-title { font-weight: 700; color: #1e293b; margin-bottom: 10px; font-size: 0.95rem; display: flex; justify-content: space-between; align-items: center;}
+        .topo-device { margin-left: 15px; padding: 10px 14px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
         .topo-device-info { display: flex; gap: 15px; color: #64748b; font-size: 0.8rem; }
 
         /* Globals Manager */
         .globals-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-        .globals-section { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; display: flex; flex-direction: column; }
-        .globals-section h3 { margin-top: 0; color: #0f766e; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 15px; font-size: 1rem; }
-        .globals-list { max-height: 400px; overflow-y: auto; margin-top: 15px; flex: 1; }
-        .global-item { display: flex; flex-direction: column; gap: 6px; background: #fff; padding: 10px; border: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 8px; }
-        .global-item input { border: 1px solid #cbd5e1; padding: 6px 8px; font-size: 0.9rem; border-radius: 3px; width: 100%; box-sizing: border-box; }
-        .global-item input:focus, .global-item input:hover { border: 1px solid #0f766e; background: #f8fafc; outline: none; }
+        .globals-section { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; }
+        .globals-section h3 { margin-top: 0; color: #0f766e; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 15px; font-size: 1rem; font-weight: 700; }
+        .globals-list { max-height: 350px; overflow-y: auto; margin-top: 15px; flex: 1; }
+        .global-item { display: flex; flex-direction: column; gap: 6px; background: #fff; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+        .global-item input { border: 1px solid #cbd5e1; padding: 6px 10px; font-size: 0.875rem; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        .global-item input:focus { border-color: #0f766e; outline: none; box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1); }
         
-        .add-global-row { display: flex; gap: 10px; }
-        .add-global-row input { flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; }
+        .add-global-row { display: flex; gap: 8px; }
+        .add-global-row input { flex: 1; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.875rem; }
 
         @media print {
             body { background: white; height: auto; overflow: visible; }
@@ -186,7 +207,7 @@
             <button class="icon-btn toggle-sidebar-btn-inner no-print" onclick="toggleSidebar()">×</button>
         </div>
         <div class="sidebar-search">
-            <input type="text" id="detail-search-input" placeholder="Nach Detail oder Raum suchen..." onkeyup="filterDetails()">
+            <input type="text" id="detail-search-input" placeholder="Suche (Detail, Raum, Schaltstelle, Gruppe)..." onkeyup="filterDetails()">
         </div>
         <div class="detail-list" id="detail-list"></div>
         <button class="sidebar-btn" onclick="addNewDetail()">+ Neues Detail / Raum</button>
@@ -202,12 +223,12 @@
                 <div class="action-buttons">
                     <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
                     <button class="btn info" onclick="openGlobalsModal()">⚙️ App & Gruppen</button>
-                    <button class="btn warning" onclick="openBusOverviewModal()"><img src="icons/Switch.svg" alt="Bus" style="height:16px;"> Bus-Topologie</button>
-                    <button class="btn danger" onclick="resetProject()"><img src="icons/Radierer.svg" alt="Neu" style="height:16px;"> Neu anfangen</button>
-                    <button class="btn" onclick="document.getElementById('file-input').click()"><img src="icons/Hochladen.svg" alt="Öffnen" style="height:16px;"> Öffnen</button>
-                    <button class="btn primary" onclick="exportProject()"><img src="icons/Download.svg" alt="Speichern" style="height:16px;"> Speichern</button>
-                    <button class="btn" onclick="printAllDetails()"><img src="icons/Drucken.svg" alt="Drucken" style="height:16px;"> Alles Drucken</button>
-                    <button class="btn" onclick="printCurrentDetail()"><img src="icons/Drucken.svg" alt="Drucken" style="height:16px;"> Aktuelles Detail</button>
+                    <button class="btn warning" onclick="openBusOverviewModal()">Bus-Topologie</button>
+                    <button class="btn danger" onclick="resetProject()">Neu anfangen</button>
+                    <button class="btn" onclick="document.getElementById('file-input').click()">Öffnen</button>
+                    <button class="btn primary" onclick="exportProject()">Speichern</button>
+                    <button class="btn" onclick="printAllDetails()">Alles Drucken</button>
+                    <button class="btn" onclick="printCurrentDetail()">Aktuelles Detail</button>
                 </div>
             </div>
             <div class="top-bar-row">
@@ -242,6 +263,9 @@
                 <div class="globals-section">
                     <h3>📱 App-Funktionen</h3>
                     <p style="font-size:0.75rem; color:#64748b; margin-bottom:10px;">Zentrale App-Funktionen.</p>
+                    <div class="add-global-row" style="margin-bottom:8px;">
+                        <input type="text" id="appfn-search-input" placeholder="App-Funktionen durchsuchen..." onkeyup="renderGlobalsLists()">
+                    </div>
                     <div class="add-global-row">
                         <input type="text" id="new-appfn-input" placeholder="Neue App-Funktion..." onkeydown="if(event.key==='Enter') addAppFunction()">
                         <button class="btn primary" style="padding:6px 10px;" onclick="addAppFunction()">+</button>
@@ -251,6 +275,9 @@
                 <div class="globals-section">
                     <h3>📂 Globale Gruppen</h3>
                     <p style="font-size:0.75rem; color:#64748b; margin-bottom:10px;">Globale Gruppen (z.B. Zentral Aus).</p>
+                    <div class="add-global-row" style="margin-bottom:8px;">
+                        <input type="text" id="glbgrp-search-input" placeholder="Globale Gruppen durchsuchen..." onkeyup="renderGlobalsLists()">
+                    </div>
                     <div class="add-global-row">
                         <input type="text" id="new-glbgrp-input" placeholder="Neue Gruppe..." onkeydown="if(event.key==='Enter') addGlobalGroup()">
                         <button class="btn primary" style="padding:6px 10px;" onclick="addGlobalGroup()">+</button>
@@ -260,6 +287,9 @@
                 <div class="globals-section">
                     <h3>⚡ Globale Funktionen</h3>
                     <p style="font-size:0.75rem; color:#64748b; margin-bottom:10px;">Auswahlbare Funktionen für Schaltplätze.</p>
+                    <div class="add-global-row" style="margin-bottom:8px;">
+                        <input type="text" id="glbfn-search-input" placeholder="Globale Funktionen durchsuchen..." onkeyup="renderGlobalsLists()">
+                    </div>
                     <div class="add-global-row">
                         <input type="text" id="new-glbfn-input" placeholder="Neue Funktion..." onkeydown="if(event.key==='Enter') addGlobalFunction()">
                         <button class="btn primary" style="padding:6px 10px;" onclick="addGlobalFunction()">+</button>
@@ -280,10 +310,10 @@
             <div id="assign-extras" style="display:none; margin-bottom: 20px;"></div>
             
             <div style="margin-bottom: 15px;">
-                <input type="text" id="assign-search-input" placeholder="Nach Raum, Hardware oder Eingang suchen..." onkeyup="filterAssignModal(this.value)" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-size: 0.9rem;">
+                <input type="text" id="assign-search-input" placeholder="Nach Raum, Hardware oder Eingang suchen..." onkeyup="filterAssignModal(this.value)" style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 0.9rem;">
             </div>
 
-            <div id="assign-hw-list" style="overflow-y: auto; max-height: 45vh; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px;"></div>
+            <div id="assign-hw-list" style="overflow-y: auto; max-height: 45vh; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px;"></div>
             <div style="margin-top: 20px; text-align: right;">
                 <button class="btn primary" onclick="closeModal('assign-modal')">Fertig</button>
             </div>
@@ -296,14 +326,14 @@
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
     const DEFAULT_PROJECT_DATA = { 
-        version: "4.5", 
+        version: "6.0", 
         projectName: "Projekt", 
         location: "", 
         details: [],
         appFunctions: [],
         globalGroups: [
-            { name: "Zentral Auf /Ab", description: "Beschattung Fährt Komplett Auf oder Ab" },
-            { name: "Zentral Ein/ Aus", description: "Licht Schaltet überall Ein oder Aus" }
+            { name: "Zentral Auf /Ab", description: "Beschattung Fährt Komplett Auf oder Ab", linkedAppFunctions: [] },
+            { name: "Zentral Ein/ Aus", description: "Licht Schaltet überall Ein oder Aus", linkedAppFunctions: [] }
         ],
         globalFunctions: [
             { name: "Zentral Ein/ Aus", description: "Licht Zentral Ein/ Aus" },
@@ -316,6 +346,7 @@
     let projectData = JSON.parse(JSON.stringify(DEFAULT_PROJECT_DATA));
     let activeDetailId = null; 
     let draggedSlot = null;
+    let draggedDetailId = null; // NEU: Für das Sortieren der Sidebar
     let _activeSwitchRef = null;
 
     document.addEventListener('keydown', e => { 
@@ -329,11 +360,67 @@
         document.querySelectorAll('.select-items').forEach(item => item.classList.remove('show'));
     });
 
+    function migrateProjectData(data) {
+        if (!data || !data.details) return data;
+        
+        function cleanStr(str) {
+            if (typeof str !== 'string') return str;
+            return str.split(',').map(item => {
+                let trimmed = item.trim();
+                trimmed = trimmed.replace(/\s*\([A-Za-z0-9_-]+\)/g, '');
+                trimmed = trimmed.replace(/(Platz\s+\d+)\s*-\s*/i, '$1 | ');
+                trimmed = trimmed.replace(/(\s*\([^)]+\))+$/, '').trim();
+                return trimmed;
+            }).filter(x => x).join(', ');
+        }
+
+        data.details.forEach(d => {
+            if (d.frames) {
+                d.frames.forEach(f => {
+                    if(!f.activeSlot) f.activeSlot = 1;
+                    for (let slotKey in f.slots) {
+                        const slot = f.slots[slotKey];
+                        if (slot && slot.ioData) {
+                            for (let ioKey in slot.ioData) {
+                                if (slot.ioData[ioKey].eingabegerat) {
+                                    slot.ioData[ioKey].eingabegerat = cleanStr(slot.ioData[ioKey].eingabegerat);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            if (d.hardware) {
+                d.hardware.forEach(hw => {
+                    if (hw.mappings) {
+                        for (let k in hw.mappings) {
+                            if (hw.mappings[k]) hw.mappings[k] = cleanStr(hw.mappings[k]);
+                        }
+                    }
+                    if (hw.subNodes) {
+                        for (let sKey in hw.subNodes) {
+                            hw.subNodes[sKey].forEach(sub => {
+                                if (sub.mapping) sub.mapping = cleanStr(sub.mapping);
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        if (data.globalGroups) {
+            data.globalGroups.forEach(g => {
+                if (typeof g === 'object' && !g.linkedAppFunctions) g.linkedAppFunctions = [];
+            });
+        }
+
+        return data;
+    }
+
     window.onload = () => {
         let savedData = loadFromLocal();
         if (savedData && savedData.details) {
-            projectData = migrateProjectData(savedData);
-            projectData = savedData; 
+            projectData = migrateProjectData(savedData); 
             
             if(!projectData.appFunctions) projectData.appFunctions = [];
             if(!projectData.globalGroups) projectData.globalGroups = [];
@@ -405,8 +492,24 @@
         if (d) {
             if (field === 'name') {
                 const oldName = d.name;
-                const newName = val;
-                
+                const newName = val.trim();
+    
+                // NEU: Prüfen, ob der Name bereits bei einem anderen Detail existiert
+                const nameExists = projectData.details.some(x => x.id !== activeDetailId && x.name === newName);
+                if (nameExists) {
+                    alert("Ein Detail mit diesem Namen existiert bereits! Bitte wähle einen eindeutigen Namen.");
+                    renderApp(); // Setzt das Eingabefeld im UI wieder zurück
+                    return;
+                }
+    
+                if (newName === "" || oldName === newName) {
+                    d[field] = newName;
+                    saveToLocal();
+                    renderApp();
+                    return;
+                }
+    
+                // Ab hier läuft deine bestehende Logik für die Namensänderung und Ersetzung weiter...
                 if (d.hardware) {
                     d.hardware.forEach(hw => {
                         const cfg = hardwareConfigList.find(x => x.id === hw.configId);
@@ -440,7 +543,6 @@
                                 ic.io.forEach(io => {
                                     let data = slot.ioData?.[io.id] || {};
                                     const customBez = data.bezeichnung ? data.bezeichnung : `${ic.label} (Platz ${slotN})`;
-                                    // ANGEPASSTES FORMAT: Detail | Schaltstelle | Platz | Bezeichnung
                                     const oldIdent = `${oldName} | ${f.name} | Platz ${slotN} | ${customBez}`;
                                     const newIdent = `${newName} | ${f.name} | Platz ${slotN} | ${customBez}`;
                                     replaceStringInAllReferences(oldIdent, newIdent);
@@ -458,10 +560,13 @@
     };
 
     function renderGlobalsLists() {
+        const appFnSearch = (document.getElementById('appfn-search-input')?.value || '').toLowerCase();
         const appFnList = document.getElementById('appfn-list');
         appFnList.innerHTML = projectData.appFunctions.map((item, idx) => {
             const name = typeof item === 'object' ? item.name : item;
             const desc = typeof item === 'object' ? (item.description || '') : '';
+            const searchStr = `${name} ${desc}`.toLowerCase();
+            if (appFnSearch && !searchStr.includes(appFnSearch)) return '';
             return `
                 <div class="global-item">
                     <div style="display: flex; gap: 5px; align-items: center;">
@@ -474,10 +579,13 @@
             `;
         }).join('');
 
+        const glbGrpSearch = (document.getElementById('glbgrp-search-input')?.value || '').toLowerCase();
         const glbGrpList = document.getElementById('glbgrp-list');
         glbGrpList.innerHTML = projectData.globalGroups.map((item, idx) => {
             const name = typeof item === 'object' ? item.name : item;
             const desc = typeof item === 'object' ? (item.description || '') : '';
+            const searchStr = `${name} ${desc}`.toLowerCase();
+            if (glbGrpSearch && !searchStr.includes(glbGrpSearch)) return '';
             return `
                 <div class="global-item">
                     <div style="display: flex; gap: 5px; align-items: center;">
@@ -490,10 +598,13 @@
             `;
         }).join('');
 
+        const glbFnSearch = (document.getElementById('glbfn-search-input')?.value || '').toLowerCase();
         const glbFnList = document.getElementById('glbfn-list');
         glbFnList.innerHTML = projectData.globalFunctions.map((item, idx) => {
             const name = typeof item === 'object' ? item.name : item;
             const desc = typeof item === 'object' ? (item.description || '') : '';
+            const searchStr = `${name} ${desc}`.toLowerCase();
+            if (glbFnSearch && !searchStr.includes(glbFnSearch)) return '';
             return `
                 <div class="global-item">
                     <div style="display: flex; gap: 5px; align-items: center;">
@@ -522,7 +633,7 @@
         const val = input.value.trim();
         const names = projectData.globalGroups.map(x => typeof x === 'object' ? x.name : x);
         if(val && !names.includes(val)) {
-            projectData.globalGroups.push({ name: val, description: "" });
+            projectData.globalGroups.push({ name: val, description: "", linkedAppFunctions: [] });
             input.value = '';
             saveToLocal(); renderGlobalsLists();
         }
@@ -543,7 +654,7 @@
         val = val.trim();
         if(!projectData[type][idx]) return;
         if(typeof projectData[type][idx] === 'string') {
-            projectData[type][idx] = { name: projectData[type][idx], description: "" };
+            projectData[type][idx] = { name: projectData[type][idx], description: "", linkedAppFunctions: [] };
         }
         if(field === 'name') {
             const oldName = projectData[type][idx].name;
@@ -810,11 +921,71 @@
         const search = (document.getElementById('detail-search-input')?.value || '').toLowerCase();
 
         projectData.details.forEach(detail => {
-            const searchStr = `${detail.name} ${detail.room || ''}`.toLowerCase();
+            let searchStr = `${detail.name} ${detail.room || ''}`;
+            
+            if (detail.frames) {
+                detail.frames.forEach(f => {
+                    searchStr += ` ${f.name}`;
+                    if (f.slots) {
+                        for (let sKey in f.slots) {
+                            const slot = f.slots[sKey];
+                            if (slot && slot.ioData) {
+                                for (let ioKey in slot.ioData) {
+                                    const io = slot.ioData[ioKey];
+                                    if (io) {
+                                        if (io.bezeichnung) searchStr += ` ${io.bezeichnung}`;
+                                        if (io.gruppe) searchStr += ` ${io.gruppe}`;
+                                        if (io.funktion) searchStr += ` ${io.funktion}`;
+                                        if (io.eingabegerat) searchStr += ` ${io.eingabegerat}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            if (detail.hardware) {
+                detail.hardware.forEach(hw => {
+                    for (let k in hw.fields) {
+                        if (hw.fields[k]) searchStr += ` ${hw.fields[k]}`;
+                    }
+                });
+            }
+            searchStr = searchStr.toLowerCase();
+
             if(search && !searchStr.includes(search)) return;
 
             const div = document.createElement('div');
             div.className = `detail-item ${detail.id === activeDetailId ? 'active' : ''}`;
+            
+            // NEU: Drag & Drop Attribute und Events für die Sidebar-Sortierung
+            div.draggable = true;
+            div.ondragstart = (e) => { 
+                draggedDetailId = detail.id; 
+                e.dataTransfer.effectAllowed = 'move'; 
+                // Kurze Verzögerung, damit das geklickte Element nicht direkt visuell verschwindet
+                setTimeout(() => div.style.opacity = '0.5', 0);
+            };
+            div.ondragend = () => { div.style.opacity = '1'; };
+            div.ondragover = (e) => { e.preventDefault(); div.classList.add('drag-over-detail'); };
+            div.ondragleave = (e) => { div.classList.remove('drag-over-detail'); };
+            div.ondrop = (e) => {
+                e.preventDefault();
+                div.classList.remove('drag-over-detail');
+                if (draggedDetailId && draggedDetailId !== detail.id) {
+                    const sourceIdx = projectData.details.findIndex(d => d.id === draggedDetailId);
+                    const targetIdx = projectData.details.findIndex(d => d.id === detail.id);
+                    if (sourceIdx > -1 && targetIdx > -1) {
+                        // Element aus dem Array schneiden und an neuer Position einfügen
+                        const [movedItem] = projectData.details.splice(sourceIdx, 1);
+                        projectData.details.splice(targetIdx, 0, movedItem);
+                        saveToLocal();
+                        renderApp();
+                    }
+                }
+                draggedDetailId = null;
+            };
+
             div.onclick = () => { activeDetailId = detail.id; renderApp(); };
             div.innerHTML = `
                 <div class="detail-item-info">
@@ -837,7 +1008,64 @@
     
     function duplicateDetail(id) {
         const d = projectData.details.find(x => x.id === id);
-        if (d) { const nd = JSON.parse(JSON.stringify(d)); nd.id = generateId(); nd.name += " (Kopie)"; if(nd.hardware) nd.hardware.forEach(h => h.instanceId = generateId()); if(nd.frames) nd.frames.forEach(f => f.id = generateId()); projectData.details.push(nd); activeDetailId = nd.id; renderApp(); }
+        if (d) { 
+            const nd = JSON.parse(JSON.stringify(d)); 
+            nd.id = generateId(); 
+            nd.name += " (Kopie)"; 
+            
+            if(nd.hardware) {
+                nd.hardware.forEach(h => {
+                    h.instanceId = generateId();
+                    h.mappings = {};
+                    h.appFunctions = {};
+                    h.globalGroup = {};
+                    if(h.subNodes) {
+                        for(let sKey in h.subNodes) {
+                            h.subNodes[sKey].forEach(sub => {
+                                sub.mapping = "";
+                                sub.appFunctions = "";
+                                sub.globalGroup = "";
+                            });
+                        }
+                    }
+                    if(h.fields) {
+                        for(let fKey in h.fields) {
+                            if(/ast|bus|bridge|dali|link/i.test(fKey)) h.fields[fKey] = "";
+                        }
+                    }
+                });
+            }
+            if(nd.frames) {
+                nd.frames.forEach(f => {
+                    f.id = generateId();
+                    if(f.slots) {
+                        for(let sKey in f.slots) {
+                            const slot = f.slots[sKey];
+                            if(slot) {
+                                if(slot.customFields) {
+                                    for(let cfKey in slot.customFields) {
+                                        if(/ast|bus|bridge|dali|link/i.test(cfKey)) slot.customFields[cfKey] = "";
+                                    }
+                                }
+                                if(slot.ioData) {
+                                    for(let ioKey in slot.ioData) {
+                                        if(slot.ioData[ioKey]) {
+                                            slot.ioData[ioKey].eingabegerat = "";
+                                            slot.ioData[ioKey].funktion = "";
+                                            slot.ioData[ioKey].gruppe = "";
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            projectData.details.push(nd); 
+            activeDetailId = nd.id; 
+            renderApp(); 
+        }
     }
     
     function deleteDetail(id) {
@@ -846,6 +1074,15 @@
 
     function updateProjectField(field, value) { projectData[field] = value; saveToLocal(); }
     
+    window.selectSlot = function(fId, slotNum) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        if(!d || !d.frames) return;
+        const f = d.frames.find(x => x.id === fId);
+        if(!f) return;
+        f.activeSlot = slotNum;
+        renderApp();
+    };
+
     window.openAssignModal = function(type, sourceName, switchRef = null) {
         _activeSwitchRef = (type === 'switch') ? switchRef : null;
         document.getElementById('assign-title').innerText = sourceName;
@@ -861,6 +1098,102 @@
         const searchInput = document.getElementById('assign-search-input');
         if(searchInput) searchInput.value = autoFilterText;
         
+        let crossLinkHtml = '';
+        if (type === 'appFunction') {
+            let groupCheckboxes = '';
+            projectData.globalGroups.forEach(ggObj => {
+                const ggName = typeof ggObj === 'object' ? ggObj.name : ggObj;
+                if(typeof ggObj === 'object' && !ggObj.linkedAppFunctions) ggObj.linkedAppFunctions = [];
+                const grpObj = typeof ggObj === 'object' ? ggObj : projectData.globalGroups.find(g => g.name === ggName);
+                const isChecked = grpObj && grpObj.linkedAppFunctions ? grpObj.linkedAppFunctions.includes(sourceName) : false;
+
+                groupCheckboxes += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:0.9rem; cursor:pointer;">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleGroupAppFunctionLink('${ggName.replace(/'/g, "\\'")}', '${sourceName.replace(/'/g, "\\'")}', this.checked)" style="width:15px;height:15px;cursor:pointer;">
+                    <span>📂 ${ggName}</span>
+                </label>`;
+            });
+            if(groupCheckboxes) {
+                crossLinkHtml = `<div class="assign-crosslink-block" style="margin-bottom: 20px; background: #eff6ff; padding: 12px; border-radius: 6px; border: 1px solid #bfdbfe;">
+                    <h4 style="margin:0 0 8px 0; color:#1e40af; font-size:0.95rem;">📂 Verknüpfte Globale Gruppen</h4>
+                    ${groupCheckboxes}
+                </div>`;
+            }
+        } else if (type === 'globalGroup') {
+            let appFnCheckboxes = '';
+            const grpObj = projectData.globalGroups.find(g => (typeof g === 'object' ? g.name : g) === sourceName);
+            if (grpObj && typeof grpObj === 'string') {
+                const idx = projectData.globalGroups.indexOf(grpObj);
+                projectData.globalGroups[idx] = { name: grpObj, description: '', linkedAppFunctions: [] };
+            }
+            const activeGrp = projectData.globalGroups.find(g => (typeof g === 'object' ? g.name : g) === sourceName);
+            if(activeGrp && !activeGrp.linkedAppFunctions) activeGrp.linkedAppFunctions = [];
+
+            projectData.appFunctions.forEach(afObj => {
+                const afName = typeof afObj === 'object' ? afObj.name : afObj;
+                const isChecked = activeGrp && activeGrp.linkedAppFunctions ? activeGrp.linkedAppFunctions.includes(afName) : false;
+
+                appFnCheckboxes += `<label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:0.9rem; cursor:pointer;">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleGroupAppFunctionLink('${sourceName.replace(/'/g, "\\'")}', '${afName.replace(/'/g, "\\'")}', this.checked)" style="width:15px;height:15px;cursor:pointer;">
+                    <span>📱 ${afName}</span>
+                </label>`;
+            });
+            if(appFnCheckboxes) {
+                crossLinkHtml = `<div class="assign-crosslink-block" style="margin-bottom: 20px; background: #f0fdf4; padding: 12px; border-radius: 6px; border: 1px solid #bbf7d0;">
+                    <h4 style="margin:0 0 8px 0; color:#166534; font-size:0.95rem;">📱 Verknüpfte App-Funktionen</h4>
+                    ${appFnCheckboxes}
+                </div>`;
+            }
+        }
+
+        let switchSlotsHtml = '';
+        if (type === 'appFunction' || type === 'globalGroup') {
+            projectData.details.forEach(d => {
+                let detailFramesHtml = '';
+                if (d.frames) {
+                    d.frames.forEach(f => {
+                        const [r, col] = f.layout.split('x').map(Number);
+                        const total = r * col;
+                        let frameSlotsHtml = '';
+                        for(let i=1; i<=total; i++) {
+                            const slot = f.slots[`slot-${i}`];
+                            if (!slot) continue;
+                            const ic = iconConfigList.find(x => x.file === slot.iconFile);
+                            if (!ic || !ic.io) continue;
+
+                            let slotIoCheckboxes = '';
+                            ic.io.forEach(io => {
+                                const dat = slot.ioData?.[io.id] || {};
+                                const currentList = (dat.eingabegerat || '').split(',').map(x=>x.trim()).filter(x=>x);
+                                const isChecked = currentList.includes(sourceName);
+
+                                slotIoCheckboxes += `<label style="display:flex; align-items:flex-start; gap:8px; margin:6px 0 6px 20px; font-size:0.85rem; cursor:pointer;">
+                                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleSwitchSlotAssignmentFromModal('${f.id}', ${i}, '${io.id}', '${sourceName.replace(/'/g, "\\'")}', this.checked)" style="width:15px;height:15px;cursor:pointer;margin-top:2px;">
+                                    <div><b>${io.label}</b> (${io.type === 'in' ? 'Eingang' : 'Ausgang'}) ${dat.bezeichnung ? `— <span style="color:#0f766e;">"${dat.bezeichnung}"</span>` : ''}</div>
+                                </label>`;
+                            });
+
+                            if (slotIoCheckboxes) {
+                                frameSlotsHtml += `<div style="margin: 8px 0; border-left: 2px solid #14b8a6; padding-left: 10px;">
+                                    <div style="font-weight:600; font-size:0.9rem; color:#334155;">Platz ${i} — ${ic.label}</div>
+                                    ${slotIoCheckboxes}
+                                </div>`;
+                            }
+                        }
+                        if (frameSlotsHtml) {
+                            detailFramesHtml += `<div style="margin-bottom: 10px;"><b style="color:#0f766e; font-size:0.9rem;">Schaltstelle: ${f.name}</b>${frameSlotsHtml}</div>`;
+                        }
+                    });
+                }
+                if (detailFramesHtml) {
+                    switchSlotsHtml += `<div class="assign-detail-block" style="margin-bottom: 15px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <h3 style="margin-top:0; color:#0f766e; font-size:1.05rem; border-bottom:1px solid #cbd5e1; padding-bottom:5px;">${d.name} <span style="color:#64748b;font-size:0.85rem;font-weight:normal;">(${d.room || 'Kein Raum'})</span></h3>
+                        <h4 style="margin:0 0 8px 0; color:#0f766e; font-size:0.95rem;">🔘 Schaltstellen (Plätze)</h4>
+                        ${detailFramesHtml}
+                    </div>`;
+                }
+            });
+        }
+
         let hwHtml = '';
         projectData.details.forEach(d => {
             let detailHtml = '';
@@ -934,13 +1267,14 @@
             }
         });
         
-        document.getElementById('assign-hw-list').innerHTML = hwHtml || '<p style="color:#64748b;">Keine Hardware-Komponenten im Projekt gefunden.</p>';
+        let finalHwListHtml = crossLinkHtml + switchSlotsHtml + (hwHtml ? `<h4 style="margin: 15px 0 10px 0; color:#0f766e; font-size:0.95rem;">⚡ Hardware Komponenten</h4>` + hwHtml : '');
+        document.getElementById('assign-hw-list').innerHTML = finalHwListHtml || '<p style="color:#64748b;">Keine Zuweisungsobjekte im Projekt gefunden.</p>';
 
         const extrasDiv = document.getElementById('assign-extras');
         if(type === 'switch' && switchRef) {
-            let extraHtml = `<div style="display:flex; gap: 30px;">`;
+            let extraHtml = `<div style="display:flex; gap: 20px;">`;
             
-            let appHtml = `<div style="flex:1; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:6px;"><h4 style="margin-top:0; color:#166534;">📱 App-Funktionen</h4>`;
+            let appHtml = `<div style="flex:1; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:8px;"><h4 style="margin-top:0; color:#166534;">📱 App-Funktionen</h4>`;
             projectData.appFunctions.forEach(afObj => {
                 const af = typeof afObj === 'object' ? afObj.name : afObj;
                 const afDesc = typeof afObj === 'object' ? afObj.description : '';
@@ -957,7 +1291,7 @@
             });
             appHtml += `</div>`;
 
-            let grpHtml = `<div style="flex:1; background:#eff6ff; border:1px solid #bfdbfe; padding:15px; border-radius:6px;"><h4 style="margin-top:0; color:#1e40af;">📂 Globale Gruppen</h4>`;
+            let grpHtml = `<div style="flex:1; background:#eff6ff; border:1px solid #bfdbfe; padding:15px; border-radius:8px;"><h4 style="margin-top:0; color:#1e40af;">📂 Globale Gruppen</h4>`;
             projectData.globalGroups.forEach(ggObj => {
                 const gg = typeof ggObj === 'object' ? ggObj.name : ggObj;
                 const ggDesc = typeof ggObj === 'object' ? ggObj.description : '';
@@ -986,28 +1320,64 @@
         filterAssignModal(autoFilterText);
     };
 
+    window.toggleSwitchSlotAssignmentFromModal = function(fId, slotN, ioId, sourceName, isChecked) {
+        const d = projectData.details.find(x => x.frames && x.frames.some(f => f.id === fId));
+        if (!d) return;
+        const f = d.frames.find(x => x.id === fId);
+        if (!f) return;
+        const slot = f.slots[`slot-${slotN}`];
+        if (!slot) return;
+        if (!slot.ioData) slot.ioData = {};
+        if (!slot.ioData[ioId]) slot.ioData[ioId] = { bezeichnung: '', eingabegerat: '' };
+
+        let list = (slot.ioData[ioId].eingabegerat || '').split(',').map(x => x.trim()).filter(x => x);
+        if (isChecked && !list.includes(sourceName)) {
+            list.push(sourceName);
+        }
+        if (!isChecked) {
+            list = list.filter(x => x !== sourceName);
+        }
+        slot.ioData[ioId].eingabegerat = list.join(', ');
+        saveToLocal();
+        renderApp();
+    };
+
+    window.toggleGroupAppFunctionLink = function(groupName, appFnName, isChecked) {
+        const ggObj = projectData.globalGroups.find(g => (typeof g === 'object' ? g.name : g) === groupName);
+        if (ggObj) {
+            if (typeof ggObj === 'string') {
+                const idx = projectData.globalGroups.indexOf(ggObj);
+                projectData.globalGroups[idx] = { name: ggObj, description: '', linkedAppFunctions: [] };
+            }
+            const target = projectData.globalGroups.find(g => (typeof g === 'object' ? g.name : g) === groupName);
+            if (!target.linkedAppFunctions) target.linkedAppFunctions = [];
+            if (isChecked && !target.linkedAppFunctions.includes(appFnName)) {
+                target.linkedAppFunctions.push(appFnName);
+            }
+            if (!isChecked) {
+                target.linkedAppFunctions = target.linkedAppFunctions.filter(x => x !== appFnName);
+            }
+            saveToLocal();
+        }
+    };
+
     window.filterAssignModal = function(term) {
         const query = term.toLowerCase().trim();
         const hwListContainer = document.getElementById('assign-hw-list');
-        const detailSections = hwListContainer.querySelectorAll('.assign-detail-block');
+        const detailBlocks = hwListContainer.querySelectorAll('.assign-detail-block');
+        const crosslinkBlock = hwListContainer.querySelector('.assign-crosslink-block');
         
-        detailSections.forEach(detailSec => {
-            let detailHasVisibleHw = false;
-            const hwBlocks = detailSec.querySelectorAll('.assign-hw-block');
-            
-            hwBlocks.forEach(hwBlock => {
-                const text = hwBlock.innerText.toLowerCase();
-                const detailTitle = detailSec.querySelector('h3').innerText.toLowerCase();
-                
-                if(text.includes(query) || detailTitle.includes(query)) {
-                    hwBlock.style.display = '';
-                    detailHasVisibleHw = true;
-                } else {
-                    hwBlock.style.display = 'none';
-                }
-            });
-            
-            detailSec.style.display = detailHasVisibleHw ? '' : 'none';
+        if (crosslinkBlock) {
+            crosslinkBlock.style.display = (!query || crosslinkBlock.innerText.toLowerCase().includes(query)) ? '' : 'none';
+        }
+
+        detailBlocks.forEach(block => {
+            const text = block.innerText.toLowerCase();
+            if (!query || text.includes(query)) {
+                block.style.display = '';
+            } else {
+                block.style.display = 'none';
+            }
         });
     };
 
@@ -1185,6 +1555,7 @@
                 id: generateId(),
                 name: `Schaltstelle ${d.frames.length + 1}`,
                 layout: '1x1',
+                activeSlot: 1,
                 slots: {}
             });
             saveToLocal();
@@ -1209,7 +1580,6 @@
                             ic.io.forEach(io => {
                                 let data = slot.ioData?.[io.id] || {};
                                 const customBez = data.bezeichnung ? data.bezeichnung : `${ic.label} (Platz ${slotN})`;
-                                // ANGEPASSTES FORMAT: Detail | Schaltstelle | Platz | Bezeichnung
                                 const oldIdent = `${d.name} | ${oldFName} | Platz ${slotN} | ${customBez}`;
                                 const newIdent = `${d.name} | ${newFName} | Platz ${slotN} | ${customBez}`;
                                 replaceStringInAllReferences(oldIdent, newIdent);
@@ -1278,7 +1648,9 @@
 
         let framesHtml = d.frames.map(f => {
             const [r, col] = f.layout.split('x').map(Number); const tot = r * col;
+            if(!f.activeSlot || f.activeSlot > tot) f.activeSlot = 1;
             for(let i=1; i<=tot; i++) { if(!f.slots[`slot-${i}`]) f.slots[`slot-${i}`] = { iconFile: '', ioData: {} }; }
+            
             return `
             <div class="pane">
                 <div class="frame-header-row">
@@ -1298,23 +1670,29 @@
                     </select>
                     <button class="delete-btn" onclick="deleteFrame('${f.id}')" title="Schaltstelle löschen">×</button>
                 </div>
-                <div class="visualizer-container"><div class="switch-frame" style="grid-template-columns: repeat(${col}, 80px); grid-template-rows: repeat(${r}, 80px);">${generateVisualizerHtml(d, f, r, col)}</div></div>
-                <div>${generateSlotsHtml(d, f, tot)}</div>
+                <div class="visualizer-container">
+                    <div class="switch-frame" style="grid-template-columns: repeat(${col}, 75px); grid-template-rows: repeat(${r}, 75px);">${generateVisualizerHtml(d, f, r, col)}</div>
+                    <div class="slot-legend">
+                        <div class="slot-legend-title">📋 Belegungsübersicht</div>
+                        <div class="slot-legend-items">${generateSlotLegendHtml(d, f, r, col)}</div>
+                    </div>
+                </div>
+                <div>${generateSlotEditorHtml(d, f, tot)}</div>
             </div>`;
         }).join('');
 
         let html = `
         <div class="workspace">
-            <div class="pane" style="padding-bottom: 15px;">
+            <div class="pane" style="padding-bottom: 18px;">
                 <div class="form-group"><label>Raum / Zone:</label><input type="text" value="${d.room || ''}" placeholder="z.B. Wohnzimmer" onchange="updateActiveDetailField('room', this.value)"></div>
-                <div class="form-group"><label>Detail Name:</label><input type="text" value="${d.name}" onchange="updateActiveDetailField('name', this.value)"></div>
-                <button class="btn" style="width:100%; justify-content:center; margin-top:10px;" onclick="addFrameToDetail()">+ Neue Schaltstelle hinzufügen</button>
+                <div class="form-group" style="margin-bottom:0;"><label>Detail Name:</label><input type="text" value="${d.name}" onchange="updateActiveDetailField('name', this.value)"></div>
+                <button class="btn" style="width:100%; justify-content:center; margin-top:16px;" onclick="addFrameToDetail()">+ Neue Schaltstelle hinzufügen</button>
             </div>
             ${framesHtml}
             <div class="pane">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <h3>Hardware Komponenten</h3>
-                    <div class="no-print" style="width:220px;">${hwPicker}</div>
+                    <div class="no-print" style="width:240px;">${hwPicker}</div>
                 </div>
                 <div class="hardware-list">${generateHardwareHtml(d)}</div>
             </div>
@@ -1325,15 +1703,59 @@
     window.handleDragStart = function(e, fId, sNum) { draggedSlot = { fId, sNum }; e.dataTransfer.effectAllowed = 'move'; }
     window.handleDragOver = function(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
     window.handleDragLeave = function(e) { e.currentTarget.classList.remove('drag-over'); }
+
+    // NEU: Vollständig überarbeitete handleDrop Funktion mit Bezeichnungs-Mapping
     window.handleDrop = function(e, targetFId, targetSNum) {
         e.preventDefault(); e.currentTarget.classList.remove('drag-over');
         if(draggedSlot && (draggedSlot.fId !== targetFId || draggedSlot.sNum !== targetSNum)) {
             const d = projectData.details.find(x => x.id === activeDetailId);
-            const sourceF = d.frames.find(x => x.id === draggedSlot.fId); const targetF = d.frames.find(x => x.id === targetFId);
+            const sourceF = d.frames.find(x => x.id === draggedSlot.fId); 
+            const targetF = d.frames.find(x => x.id === targetFId);
+            
             if(sourceF && targetF) {
-                const temp = JSON.parse(JSON.stringify(targetF.slots[`slot-${targetSNum}`] || {}));
-                targetF.slots[`slot-${targetSNum}`] = JSON.parse(JSON.stringify(sourceF.slots[`slot-${draggedSlot.sNum}`] || {}));
+                const sourceSlotData = sourceF.slots[`slot-${draggedSlot.sNum}`];
+                const targetSlotData = targetF.slots[`slot-${targetSNum}`];
+                
+                // 1. Array für alle Text-Ersetzungen vorbereiten
+                let replacements = [];
+
+                // Hilfsfunktion zum Sammeln der Namensänderungen (Platz X wird zu Platz Y)
+                const collectReplacements = (slotData, oldSlotN, newSlotN, frameName) => {
+                    if(!slotData || !slotData.iconFile) return;
+                    const ic = iconConfigList.find(x => x.file === slotData.iconFile);
+                    if(!ic || !ic.io) return;
+                    
+                    ic.io.forEach(io => {
+                        const dat = slotData.ioData?.[io.id] || {};
+                        // Generiere den ALTEN Bezeichner
+                        const oldBez = dat.bezeichnung ? dat.bezeichnung : `${ic.label} (Platz ${oldSlotN})`;
+                        const oldStr = `${d.name} | ${frameName} | Platz ${oldSlotN} | ${oldBez}`;
+                        
+                        // Generiere den NEUEN Bezeichner
+                        const newBez = dat.bezeichnung ? dat.bezeichnung : `${ic.label} (Platz ${newSlotN})`;
+                        const newStr = `${d.name} | ${frameName} | Platz ${newSlotN} | ${newBez}`;
+                        
+                        replacements.push({oldStr, newStr});
+                    });
+                };
+
+                // Sammle Änderungen für den Slot der bewegt wird, und für den, der verdrängt wird
+                collectReplacements(sourceSlotData, draggedSlot.sNum, targetSNum, sourceF.name);
+                collectReplacements(targetSlotData, targetSNum, draggedSlot.sNum, targetF.name);
+
+                // 2. Eigentlicher Datentausch
+                const temp = JSON.parse(JSON.stringify(targetSlotData || {}));
+                targetF.slots[`slot-${targetSNum}`] = JSON.parse(JSON.stringify(sourceSlotData || {}));
                 sourceF.slots[`slot-${draggedSlot.sNum}`] = temp;
+
+                // 3. Überall im Projekt (Hardware, Gruppen etc.) den Text umschreiben
+                replacements.forEach(rep => {
+                    if(rep.oldStr !== rep.newStr) {
+                        replaceStringInAllReferences(rep.oldStr, rep.newStr);
+                    }
+                });
+
+                saveToLocal();
                 renderApp();
             }
         }
@@ -1405,9 +1827,8 @@
                                 replaceStringInAllReferences(`${d.name} ${oldName} ${sub.name || 'Neues Gerät'}`, `${d.name} ${newName} ${sub.name || 'Neues Gerät'}`);
                             });
                         }
-                    } else {
-                        replaceStringInAllReferences(`${d.name} ${oldName} ${io.label}`, `${d.name} ${newName} ${io.label}`);
                     }
+                    replaceStringInAllReferences(`${d.name} ${oldName} ${io.label}`, `${d.name} ${newName} ${io.label}`);
                 });
             }
         }
@@ -1448,14 +1869,14 @@
             });
         });
         saveToLocal();
-        if (field === 'channels' || field === 'name') renderApp(); 
+        renderApp(); 
     }
 
     window.deleteSubNode = function(hwInstanceId, ioId, subId) {
         projectData.details.forEach(d => {
             if(d.hardware) d.hardware.forEach(hw => {
-                if(hw.instanceId === hwInstanceId && hw.subNodes && hw.subNodes[io.id]) {
-                    hw.subNodes[io.id] = hw.subNodes[io.id].filter(x => x.id !== subId);
+                if(hw.instanceId === hwInstanceId && hw.subNodes && hw.subNodes[ioId]) {
+                    hw.subNodes[ioId] = hw.subNodes[ioId].filter(x => x.id !== subId);
                 }
             });
         });
@@ -1464,105 +1885,177 @@
 
     function generateVisualizerHtml(d, f, r, c) {
         let h = ''; let cnt = 1;
+        const active = f.activeSlot || 1;
         for(let i=0; i<r*c; i++) {
+            const isActive = (cnt === active);
             const path = f.slots[`slot-${cnt}`].iconFile ? `${BASE_ICON_PATH}${f.slots[`slot-${cnt}`].iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
-            h += `<div class="switch-slot" draggable="true" ondragstart="handleDragStart(event, '${f.id}', ${cnt})" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${f.id}', ${cnt})"><span class="slot-badge">${cnt}</span><img src="${path}"></div>`; cnt++;
+            h += `<div class="switch-slot ${isActive ? 'active-slot' : ''}" onclick="selectSlot('${f.id}', ${cnt})" draggable="true" ondragstart="handleDragStart(event, '${f.id}', ${cnt})" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${f.id}', ${cnt})" title="Platz ${cnt} bearbeiten"><span class="slot-badge">${cnt}</span><img src="${path}"></div>`; 
+            cnt++;
         }
         return h;
     }
 
-    function generateSlotsHtml(d, f, total) {
+    function generateSlotLegendHtml(d, f, r, c) {
         let h = '';
-
-        for(let i=1; i<=total; i++) {
-            const slot = f.slots[`slot-${i}`]; const ic = iconConfigList.find(x => x.file === slot.iconFile); let ioHtml = '';
+        const total = r * c;
+        for(let i = 1; i <= total; i++) {
+            const slot = f.slots[`slot-${i}`] || { iconFile: '', ioData: {} };
+            const ic = iconConfigList.find(x => x.file === slot.iconFile);
+            const slotLabel = ic ? ic.label : 'Kein Icon';
             
-            let customFieldsHtml = '';
-            if (ic && ic.fields && Array.isArray(ic.fields)) {
-                if (!slot.customFields) slot.customFields = {};
-                customFieldsHtml = `<div style="margin-bottom: 10px; display: grid; grid-template-columns: 1fr; gap: 6px;">` + 
-                ic.fields.map(fieldName => {
-                    const fieldValue = slot.customFields[fieldName] || '';
-                    
-                    if (/ast|bus|bridge|dali|link/i.test(fieldName)) {
-                        const fn = `setSlotCustomF_${f.id}_${i}_${sanitizeFnName(fieldName)}`;
-                        window[fn] = (v, ev) => { 
-                            if(ev){ev.preventDefault();ev.stopPropagation();} 
-                            document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
-                            setTimeout(() => { updateSlotCustomField(f.id, i, fieldName, v); }, 10); 
-                        };
-                        const expectedType = getFieldBusType(fieldName);
-                        const busNodes = getAllBusNodes(expectedType);
-                        return `<div class="form-group" style="margin-bottom:4px;">
-                            <label style="width: 100px; font-size:0.8rem;">${fieldName}:</label>
-                            <div style="flex:1;">${renderStandardDropdown(`slotcf-${f.id}-${i}-${sanitizeFnName(fieldName)}`, fieldValue, [{value:'', label:'--- Keine Zuordnung ---'}, ...busNodes], fn, 'Bus...')}</div>
-                        </div>`;
-                    } else {
-                        return `<div class="form-group" style="margin-bottom:4px;">
-                            <label style="width: 100px; font-size:0.8rem;">${fieldName}:</label>
-                            <input type="text" value="${fieldValue}" placeholder="${fieldName} eingeben..." onchange="updateSlotCustomField('${f.id}', ${i}, '${fieldName.replace(/'/g, "\\'")}', this.value)" style="flex:1; padding:4px 6px; font-size:0.85rem;">
-                        </div>`;
+            let descParts = [];
+            if (slot.ioData) {
+                for (let ioKey in slot.ioData) {
+                    const dat = slot.ioData[ioKey];
+                    if (dat && dat.bezeichnung) {
+                        descParts.push(dat.bezeichnung);
                     }
-                }).join('') + `</div>`;
+                }
             }
-
-            if(ic && ic.io) {
-                ioHtml = `<div class="io-section">` + ic.io.map(io => {
-                    let data = slot.ioData?.[io.id] || {bezeichnung:'', art:'TA', funktion:'', gruppe:'', eingabegerat:''};
-                    if(typeof data === 'string') data = {bezeichnung: data, art:'TA', funktion:'', gruppe:'', eingabegerat:''};
-                    if(!data.art) data.art = 'TA';
-                    
-                    const slotLabel = ic ? ic.label : 'Platz';
-                    const customBez = data.bezeichnung ? data.bezeichnung : `${slotLabel} (Platz ${i})`;
-
-                    // HIER ANGEPASST: Kürzeres Format -> Detail | Schaltstelle | Platz | Bezeichnung
-                    const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
-                    
-                    const hasWarn = checkCollision(switchIdent);
-                    const warnHtml = hasWarn ? `<span class="collision-warn" title="Achtung: Dieser Taster ist mehrfach direkt zugewiesen!">⚠️</span>` : '';
-
-                    const fnOptions = [{value:'', label:'--- Funktion wählen ---'}, ...projectData.globalFunctions.map(fnObj => {
-                        const fnName = typeof fnObj === 'object' ? fnObj.name : fnObj;
-                        return {value: fnName, label: fnName};
-                    })];
-
-                    window[`setSlotFn_${f.id}_${i}_${io.id}`] = (v, ev) => {
-                        if(ev){ev.preventDefault();ev.stopPropagation();}
-                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show'));
-                        setTimeout(() => { updateSlotField(f.id, i, io.id, 'funktion', v); }, 10);
-                    };
-
-                    const fnDropdown = renderStandardDropdown(`fn-${f.id}-${i}-${io.id}`, data.funktion || '', fnOptions, `setSlotFn_${f.id}_${i}_${io.id}`, 'Funktion wählen...');
-
-                    return `<div class="io-complex-row"><div class="io-header"><span class="io-type ${io.type}">${io.type==='in'?'Eingang':'Ausgang'}</span> ${io.label} ${warnHtml}</div>
-                    <div class="io-fields-grid">
-                        <input type="text" placeholder="Taster Bezeichnung" value="${data.bezeichnung||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','bezeichnung',this.value)">
-                        <select onchange="updateSlotField('${f.id}', '${i}','${io.id}','art',this.value)">
-                            <option value="TA" ${data.art==='TA'?'selected':''}>TA (Taster)</option>
-                            <option value="SA" ${data.art==='SA'?'selected':''}>SA (Schalter)</option>
-                            <option value="Imp." ${data.art==='Imp.'?'selected':''}>Imp. (Impuls)</option>
-                        </select>
-                        <div>${fnDropdown}</div>
-                        <input type="text" placeholder="Gruppe (Texteingabe)" value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${io.id}','gruppe',this.value)">
-                        
-                        <div style="grid-column: span 2; margin-top:5px;">
-                            <button class="btn info" style="width: 100%; justify-content: center; margin-bottom: 5px; font-weight: bold;" onclick="openAssignModal('switch', '${switchIdent.replace(/'/g, "\\'")}', {fId:'${f.id}', slotN:${i}, ioId:'${io.id}'})">🔗 Verknüpfungen / Zuweisen</button>
-                            <div style="font-size: 0.8rem; background: #f8fafc; padding: 6px; border-radius: 4px; border: 1px solid #cbd5e1;">
-                                <b>Aktuell verknüpft:</b><br>
-                                <span style="color:#0f766e;">${data.eingabegerat || '-'}</span>
-                            </div>
-                        </div>
-                    </div></div>`;
-                }).join('') + `</div>`;
+            if (slot.customFields) {
+                for (let cfKey in slot.customFields) {
+                    if (slot.customFields[cfKey] && /bemerkung|text|label/i.test(cfKey)) {
+                        descParts.push(slot.customFields[cfKey]);
+                    }
+                }
             }
-            window[`setIcon_${f.id}_${i}`] = (v, ev) => { 
-                if(ev){ev.preventDefault();ev.stopPropagation();} 
-                document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
-                setTimeout(() => { f.slots[`slot-${i}`].iconFile = v; renderApp(); }, 10); 
-            };
-            h += `<div class="slot-form ${slot.iconFile ? '' : 'no-print'}"><h4>Platz ${i}</h4><div class="form-group no-print"><label>Icon</label>${renderStandardDropdown(`icon-${f.id}-${i}`, slot.iconFile, [{value:'', label:'--- Kein Icon ---'}, ...iconConfigList.map(x=>({value:x.file, label:x.label}))], `setIcon_${f.id}_${i}`, 'Icon wählen...')}</div>${customFieldsHtml}${ioHtml}</div>`;
+            
+            const descText = descParts.length > 0 ? descParts.join(' / ') : '<span style="color:#94a3b8; font-style:italic;">Keine Bezeichnung</span>';
+            const isActive = (f.activeSlot === i);
+            
+            h += `<div class="slot-legend-row ${isActive ? 'active' : ''}" onclick="selectSlot('${f.id}', ${i})" title="Platz ${i} bearbeiten">
+                <div style="font-size: 0.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%;">
+                    <b style="color:#0f766e;">[Platz ${i}]</b> <span style="color:#334155;">${slotLabel}</span>: <span style="color:#475569;">${descText}</span>
+                </div>
+            </div>`;
         }
-        return h;
+        return h || '<div style="color:#94a3b8; font-size:0.8rem; font-style:italic;">Keine Plätze vorhanden</div>';
+    }
+
+    window.selectSlotIo = function(fId, slotN, ioKey) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        if(!d || !d.frames) return;
+        const f = d.frames.find(x => x.id === fId);
+        if(!f) return;
+        if(!f.activeIo) f.activeIo = {};
+        f.activeIo[`slot-${slotN}`] = ioKey;
+        renderApp();
+    };
+
+    function generateSlotEditorHtml(d, f, total) {
+        const active = f.activeSlot || 1;
+        
+        let tabsHtml = `<div class="slot-tabs">` + Array.from({length: total}, (_, i) => i + 1).map(i => `
+            <button class="slot-tab-btn ${active === i ? 'active' : ''}" onclick="selectSlot('${f.id}', ${i})">Platz ${i}</button>
+        `).join('') + `</div>`;
+
+        let i = active;
+        const slot = f.slots[`slot-${i}`] || { iconFile: '', ioData: {} }; 
+        const ic = iconConfigList.find(x => x.file === slot.iconFile); 
+        let ioHtml = '';
+        
+        let customFieldsHtml = '';
+        if (ic && ic.fields && Array.isArray(ic.fields)) {
+            if (!slot.customFields) slot.customFields = {};
+            customFieldsHtml = `<div style="margin-bottom: 14px; display: grid; grid-template-columns: 1fr; gap: 8px;">` + 
+            ic.fields.map(fieldName => {
+                const fieldValue = slot.customFields[fieldName] || '';
+                
+                if (/ast|bus|bridge|dali|link/i.test(fieldName)) {
+                    const fn = `setSlotCustomF_${f.id}_${i}_${sanitizeFnName(fieldName)}`;
+                    window[fn] = (v, ev) => { 
+                        if(ev){ev.preventDefault();ev.stopPropagation();} 
+                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+                        setTimeout(() => { updateSlotCustomField(f.id, i, fieldName, v); }, 10); 
+                    };
+                    const expectedType = getFieldBusType(fieldName);
+                    const busNodes = getAllBusNodes(expectedType);
+                    return `<div class="form-group" style="margin-bottom:4px;">
+                        <label style="width: 110px; font-size:0.85rem;">${fieldName}:</label>
+                        <div style="flex:1;">${renderStandardDropdown(`slotcf-${f.id}-${i}-${sanitizeFnName(fieldName)}`, fieldValue, [{value:'', label:'--- Keine Zuordnung ---'}, ...busNodes], fn, 'Bus...')}</div>
+                    </div>`;
+                } else {
+                    return `<div class="form-group" style="margin-bottom:4px;">
+                        <label style="width: 110px; font-size:0.85rem;">${fieldName}:</label>
+                        <input type="text" value="${fieldValue}" placeholder="${fieldName} eingeben..." onchange="updateSlotCustomField('${f.id}', ${i}, '${fieldName.replace(/'/g, "\\'")}', this.value)" style="flex:1; padding:6px 10px; font-size:0.875rem;">
+                    </div>`;
+                }
+            }).join('') + `</div>`;
+        }
+
+        if(ic && ic.io && ic.io.length > 0) {
+            if(!f.activeIo) f.activeIo = {};
+            let activeIoKey = f.activeIo[`slot-${i}`] || ic.io[0].id;
+            if(!ic.io.some(x => x.id === activeIoKey)) activeIoKey = ic.io[0].id;
+
+            let ioTabsHtml = `<div class="slot-tabs" style="margin-top: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">` + 
+                ic.io.map(io => `<button class="slot-tab-btn ${activeIoKey === io.id ? 'active' : ''}" style="font-size:0.8rem; padding:6px 12px;" onclick="selectSlotIo('${f.id}', ${i}, '${io.id}')">${io.label} (${io.type === 'in' ? 'Eingang' : 'Ausgang'})</button>`).join('') + 
+            `</div>`;
+
+            const activeIo = ic.io.find(x => x.id === activeIoKey) || ic.io[0];
+            let data = slot.ioData?.[activeIo.id] || {bezeichnung:'', art:'TA', funktion:'', gruppe:'', eingabegerat:''};
+            if(typeof data === 'string') data = {bezeichnung: data, art:'TA', funktion:'', gruppe:'', eingabegerat:''};
+            if(!data.art) data.art = 'TA';
+            
+            const slotLabel = ic ? ic.label : 'Platz';
+            const customBez = data.bezeichnung ? data.bezeichnung : `${slotLabel} (Platz ${i})`;
+
+            const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
+            const hasWarn = checkCollision(switchIdent);
+            const warnHtml = hasWarn ? `<span class="collision-warn" title="Achtung: Dieser Taster ist mehrfach direkt zugewiesen!" style="margin-left:5px;">⚠️</span>` : '';
+
+            const fnOptions = [{value:'', label:'--- Funktion wählen ---'}, ...projectData.globalFunctions.map(fnObj => {
+                const fnName = typeof fnObj === 'object' ? fnObj.name : fnObj;
+                return {value: fnName, label: fnName};
+            })];
+
+            window[`setSlotFn_${f.id}_${i}_${activeIo.id}`] = (v, ev) => {
+                if(ev){ev.preventDefault();ev.stopPropagation();}
+                document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show'));
+                setTimeout(() => { updateSlotField(f.id, i, activeIo.id, 'funktion', v); }, 10);
+            };
+
+            const fnDropdown = renderStandardDropdown(`fn-${f.id}-${i}-${activeIo.id}`, data.funktion || '', fnOptions, `setSlotFn_${f.id}_${i}_${activeIo.id}`, 'Funktion wählen...');
+
+            ioHtml = ioTabsHtml + `<div class="io-complex-row" style="margin-top: 10px;">
+                <div class="io-header"><span class="io-type ${activeIo.type}">${activeIo.type==='in'?'Eingang':'Ausgang'}</span> ${activeIo.label} ${warnHtml}</div>
+                <div class="io-fields-grid" style="grid-template-columns: 2fr 1fr; margin-bottom: 8px;">
+                    <input type="text" placeholder="Taster Bezeichnung" value="${data.bezeichnung||''}" onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','bezeichnung',this.value)">
+                    <select onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','art',this.value)">
+                        <option value="TA" ${data.art==='TA'?'selected':''}>TA (Taster)</option>
+                        <option value="SA" ${data.art==='SA'?'selected':''}>SA (Schalter)</option>
+                        <option value="Imp." ${data.art==='Imp.'?'selected':''}>Imp. (Impuls)</option>
+                    </select>
+                </div>
+                <div class="io-fields-grid" style="grid-template-columns: 2fr 1fr; margin-bottom: 10px;">
+                    <div>${fnDropdown}</div>
+                    <input type="text" placeholder="Gruppe..." value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','gruppe',this.value)">
+                </div>
+                <div>
+                    <button class="btn info" style="width: 100%; justify-content: center; margin-bottom: 6px; padding: 7px 12px;" onclick="openAssignModal('switch', '${switchIdent.replace(/'/g, "\\'")}', {fId:'${f.id}', slotN:${i}, ioId:'${activeIo.id}'})">🔗 Verknüpfungen / Zuweisen</button>
+                    <div style="font-size: 0.8rem; background: #ffffff; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; color: #475569;">
+                        <span style="font-weight:600; color:#334155;">Verknüpft:</span> <span style="color:#0f766e; font-weight:500;">${data.eingabegerat || 'Keine Verknüpfung'}</span>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        window[`setIcon_${f.id}_${i}`] = (v, ev) => { 
+            if(ev){ev.preventDefault();ev.stopPropagation();} 
+            document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+            setTimeout(() => { f.slots[`slot-${i}`].iconFile = v; renderApp(); }, 10); 
+        };
+        
+        let iconDropdown = renderStandardDropdown(`icon-${f.id}-${i}`, slot.iconFile, [{value:'', label:'--- Kein Icon ---'}, ...iconConfigList.map(x=>({value:x.file, label:x.label}))], `setIcon_${f.id}_${i}`, 'Icon wählen...');
+        
+        let slotFormHtml = `<div class="slot-form">
+            <h4><span>Platz ${i} bearbeiten</span></h4>
+            <div class="form-group no-print" style="margin-bottom: 12px;"><label>Icon:</label>${iconDropdown}</div>
+            ${customFieldsHtml}
+            ${ioHtml}
+        </div>`;
+
+        return tabsHtml + slotFormHtml;
     }
 
     window.updateSlotField = function(fId, slotN, ioId, field, val) {
@@ -1579,7 +2072,6 @@
                 const oldBezeichnung = cData.bezeichnung || `${ic.label} (Platz ${slotN})`;
                 const newBezeichnung = val || `${ic.label} (Platz ${slotN})`;
                 
-                // ANGEPASSTES FORMAT: Detail | Schaltstelle | Platz | Bezeichnung
                 const oldIdent = `${d.name} | ${f.name} | Platz ${slotN} | ${oldBezeichnung}`;
                 const newIdent = `${d.name} | ${f.name} | Platz ${slotN} | ${newBezeichnung}`;
                 
@@ -1627,7 +2119,7 @@
     }
 
     function generateHardwareHtml(d) {
-        if(!d.hardware.length) return '<p class="no-print" style="color:#64748b;">Noch keine Komponenten zugewiesen.</p>';
+        if(!d.hardware.length) return '<p class="no-print" style="color:#64748b; padding: 10px 0;">Noch keine Komponenten zugewiesen.</p>';
         
         return d.hardware.map(hw => {
             const cfg = hardwareConfigList.find(x => x.id === hw.configId); if(!cfg) return '';
@@ -1637,14 +2129,14 @@
             if(cfg.profiles) {
                 const selProfile = cfg.profiles.find(p => p.id === hw.activeProfile) || cfg.profiles[0];
                 activeIoList = selProfile.io;
-                profileHtml = `<div class="form-group" style="background:#fef3c7; padding:8px; border-radius:4px;"><label>Geräte-Profil:</label>
+                profileHtml = `<div class="form-group" style="background:#fef3c7; padding:10px; border-radius:6px; margin-bottom:12px;"><label>Geräte-Profil:</label>
                     <select style="flex:1; padding:6px; font-weight:bold;" onchange="changeHwProfile('${hw.instanceId}', this.value)">
                         ${cfg.profiles.map(p => `<option value="${p.id}" ${hw.activeProfile === p.id ? 'selected':''}>${p.label}</option>`).join('')}
                     </select>
                 </div>`;
             }
 
-            let fHtml = profileHtml; let inHtml = ''; let outHtml = ''; let busHtml = '';
+            let fHtml = profileHtml; let inRows = ''; let outRows = ''; let busHtml = '';
 
             if(cfg.fields) cfg.fields.forEach(f => {
                 if(/ast|bus|bridge|dali|link/i.test(f)) {
@@ -1662,7 +2154,7 @@
                 }
             });
 
-            activeIoList.forEach(io => {
+           activeIoList.forEach(io => {
                 if(io.type === 'bus') {
                     const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
                     
@@ -1689,8 +2181,8 @@
 
                                 return `
                                 <tr>
-                                    <td><input type="text" value="${sub.name}" oninput="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)"></td>
-                                    <td><input type="text" value="${sub.location}" oninput="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'location', this.value)"></td>
+                                    <td><input type="text" value="${sub.name}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)"></td>
+                                    <td><input type="text" value="${sub.location}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'location', this.value)"></td>
                                     <td><input type="number" min="1" max="16" value="${sub.channels}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'channels', this.value)" style="width:50px; border:1px solid transparent; background:transparent;"></td>
                                     <td style="font-size: 0.75rem; color: #475569; line-height: 1.3;">
                                         <b>Taster:</b> ${sub.mapping || '-'}<br>
@@ -1711,23 +2203,29 @@
                     const currentGrp = hw.globalGroup?.[io.id] || '-';
                     const currentBez = hw.bezeichnung?.[io.id] || '';
 
-                    const row = `<div class="io-complex-row" style="margin-bottom:10px; padding:10px; border-left:3px solid ${io.type==='in'?'#3b82f6':'#ef4444'}">
-                        <div style="font-weight:bold; font-size:0.85rem; margin-bottom:8px; color:#334155;">${io.label}</div>
-                        <div class="io-fields-grid" style="grid-template-columns: 1fr;">
-                            <input type="text" placeholder="Bezeichnung (z.B. Deckenlicht)" value="${currentBez}" onchange="updateHwFieldEx('${hw.instanceId}', 'bezeichnung', '${io.id}', this.value)">
-                            <div style="font-size: 0.8rem; background: #f8fafc; padding: 8px; border-radius: 4px; border: 1px solid #e2e8f0; line-height: 1.4;">
-                                <div style="margin-bottom:2px;"><span style="color:#64748b;">Taster:</span> <b>${currentMap}</b></div>
-                                <div style="margin-bottom:2px;"><span style="color:#64748b;">App-Funktion:</span> <b>${currentApp}</b></div>
-                                <div><span style="color:#64748b;">Globale Gruppe:</span> <b>${currentGrp}</b></div>
-                            </div>
-                        </div>
-                    </div>`;
+                    const row = `<tr>
+                        <td style="font-weight:600; color:#334155; width:90px;">${io.label}</td>
+                        <td style="width:180px;"><input type="text" placeholder="Bezeichnung..." value="${currentBez}" onchange="updateHwFieldEx('${hw.instanceId}', 'bezeichnung', '${io.id}', this.value)"></td>
+                        <td style="font-size: 0.75rem; color: #475569; line-height: 1.3;">
+                            <div><b>Taster:</b> ${currentMap}</div>
+                            <div><b>App:</b> ${currentApp}</div>
+                            <div><b>Gruppe:</b> ${currentGrp}</div>
+                        </td>
+                    </tr>`;
 
-                    if(io.type === 'in') inHtml += row; else outHtml += row;
+                    if(io.type === 'in') inRows += row; else outRows += row;
                 }
             });
 
-            return `<div class="hw-card"><div class="hw-card-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div><div class="hw-card-body"><div class="hw-card-header"><h4>${cfg.name}</h4><button class="delete-btn" onclick="deleteHardwareComponent('${hw.instanceId}')">Löschen</button></div>${fHtml}<div class="hw-io-grid">${inHtml?`<div><h5>Eingänge</h5>${inHtml}</div>`:''} ${outHtml?`<div><h5>Ausgänge</h5>${outHtml}</div>`:''}</div>${busHtml}</div></div>`;
+            let tablesHtml = '';
+            if(inRows) {
+                tablesHtml += `<div style="margin-top:10px;"><h5 style="margin:0 0 4px 0; color:#475569; font-size:0.85rem;">Eingänge</h5><table class="dali-table"><thead><tr><th>Kanal</th><th>Bezeichnung</th><th>Verknüpfungen</th></tr></thead><tbody>${inRows}</tbody></table></div>`;
+            }
+            if(outRows) {
+                tablesHtml += `<div style="margin-top:10px;"><h5 style="margin:0 0 4px 0; color:#475569; font-size:0.85rem;">Ausgänge</h5><table class="dali-table"><thead><tr><th>Kanal</th><th>Bezeichnung</th><th>Verknüpfungen</th></tr></thead><tbody>${outRows}</tbody></table></div>`;
+            }
+
+            return `<div class="hw-card"><div class="hw-card-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div><div class="hw-card-body"><div class="hw-card-header"><h4>${cfg.name}</h4><button class="delete-btn" onclick="deleteHardwareComponent('${hw.instanceId}')">Löschen</button></div>${fHtml}${tablesHtml}${busHtml}</div></div>`;
         }).join('');
     }
 
@@ -1800,7 +2298,7 @@
         });
 
         const totalPower = getProjectTotalPower();
-        h += `<div style="margin-bottom:25px; font-weight:bold; color:#0f766e; font-size:1.1rem; padding-bottom:10px; border-bottom:1px solid #cbd5e1;">⚡ Gesamtstromaufnahme Projekt: ${totalPower.toFixed(1)} W</div>`;
+        h += `<div style="margin-bottom:25px; font-weight:700; color:#0f766e; font-size:1.1rem; padding-bottom:10px; border-bottom:1px solid #cbd5e1;">⚡ Gesamtstromaufnahme Projekt: ${totalPower.toFixed(1)} W</div>`;
 
         function getDeviceChannelCount(childItem) {
             if (childItem.cfg.channels) return parseInt(childItem.cfg.channels);
@@ -1915,42 +2413,52 @@
         let framesHtml = '';
         if(d.frames && d.frames.length > 0) {
             framesHtml = d.frames.map(f => {
-                const [r, c] = f.layout.split('x').map(Number); let vSlots = ''; let blocks = [];
-                for(let i=1; i<=r*c; i++) {
-                    const s = f.slots[`slot-${i}`]; const ic = iconConfigList.find(x=>x.file===s?.iconFile);
-                    if(ic) {
-                        vSlots += `<div class="print-switch-slot"><img src="icons-schalter/${ic.file}"></div>`;
-                        
-                        let cfRows = '';
-                        if (s.customFields) {
-                            for (let cf in s.customFields) {
-                                if (s.customFields[cf]) {
-                                    cfRows += `<div style="font-size:0.8rem; color:#475569;"><b>${cf}:</b> ${s.customFields[cf]}</div>`;
-                                }
-                            }
-                            if (cfRows) cfRows = `<div style="margin-bottom:4px; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">${cfRows}</div>`;
-                        }
+                const [r, c] = f.layout.split('x').map(Number); 
+                let vSlots = ''; 
+                let blocks = [];
+                const total = r * c;
 
-                        let ioRows = '';
-                        if(ic.io) {
-                            ioRows = ic.io.map(io => {
-                                const dat = s.ioData?.[io.id] || {};
-                                return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">
-                                    <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
-                                    Bezeichnung: ${dat.bezeichnung||''}<br>
-                                    Art: ${dat.art||''} | Funktion: ${dat.funktion||''}<br>
-                                    Gruppe: ${dat.gruppe||''}<br>
-                                    Ziel: ${dat.eingabegerat||''}
-                                </div>`;
-                            }).join('');
+                for(let i=1; i<=total; i++) {
+                    const s = f.slots[`slot-${i}`] || { iconFile: '', ioData: {}, customFields: {} };
+                    const ic = iconConfigList.find(x => x.file === s.iconFile);
+                    
+                    const imgPath = ic ? `icons-schalter/${ic.file}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
+                    vSlots += `<div class="print-switch-slot"><span style="position:absolute; top:2px; left:4px; font-size:9px; font-weight:700; color:#64748b;">${i}</span><img src="${imgPath}"></div>`;
+                    
+                    let cfRows = '';
+                    if (s.customFields) {
+                        for (let cf in s.customFields) {
+                            if (s.customFields[cf]) {
+                                cfRows += `<div style="font-size:0.8rem; color:#475569;"><b>${cf}:</b> ${s.customFields[cf]}</div>`;
+                            }
                         }
-                        
-                        blocks.push(`<div class="print-slot-item-block"><b>Platz ${i} - ${ic.label}</b><div style="margin-top:5px;">${cfRows}${ioRows}</div></div>`);
+                        if (cfRows) cfRows = `<div style="margin-bottom:4px; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">${cfRows}</div>`;
                     }
+
+                    let ioRows = '';
+                    if(ic && ic.io) {
+                        ioRows = ic.io.map(io => {
+                            const dat = s.ioData?.[io.id] || {};
+                            return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">
+                                <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
+                                Bezeichnung: ${dat.bezeichnung||''}<br>
+                                Art: ${dat.art||''}<br>
+                                Funktion: ${dat.funktion||''}<br>
+                                Gruppe: ${dat.gruppe||''}<br>
+                                Ziel: ${dat.eingabegerat||''}
+                            </div>`;
+                        }).join('');
+                    }
+                    
+                    const slotLabel = ic ? ic.label : 'Kein Icon';
+                    blocks.push(`<div class="print-slot-item-block"><b>Platz ${i} - ${slotLabel}</b><div style="margin-top:5px;">${cfRows}${ioRows}</div></div>`);
                 }
-                if(blocks.length === 0) return '';
+
                 let visHtml = `<div style="display:flex; justify-content:center; margin: 10px 0;"><div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px);">${vSlots}</div></div>`;
-                let bStr = ''; for(let i=0; i<blocks.length; i+=2) bStr += `<div class="print-slots-grid-2col">${blocks[i]}${blocks[i+1]||'<div></div>'}</div>`;
+                let bStr = ''; 
+                for(let i=0; i<blocks.length; i+=2) {
+                    bStr += `<div class="print-slots-grid-2col">${blocks[i]}${blocks[i+1]||'<div></div>'}</div>`;
+                }
                 return `<div><div class="print-frame-title">Schaltstelle: ${f.name}</div>${visHtml}${bStr}</div>`;
             }).join('');
             if(framesHtml) framesHtml = `<div class="print-section-title">Schalter Belegungen</div>${framesHtml}`;
@@ -1961,7 +2469,14 @@
             hwHtml = `<div class="print-section-title">Hardware</div>` + d.hardware.map(hw => {
                 const cfg = hardwareConfigList.find(x=>x.id===hw.configId); if(!cfg) return '';
                 
-                let fh = ''; if(cfg.fields) cfg.fields.forEach(f => fh += `<div style="font-size:0.8rem;"><b>${f}:</b> ${hw.fields[f]||''}</div>`);
+                // NEU: Felder-Block mit unterem Abstand versehen (Abstand nach Bemerkung)
+                let fh = ''; 
+                if(cfg.fields) {
+                    cfg.fields.forEach(f => {
+                        fh += `<div style="font-size:0.8rem; margin-bottom: 3px;"><b>${f}:</b> ${hw.fields[f]||''}</div>`;
+                    });
+                    if(fh) fh = `<div style="margin-bottom: 8px;">${fh}</div>`;
+                }
                 
                 let ioh = ''; 
                 const activeIoList = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
@@ -1970,11 +2485,15 @@
                     activeIoList.forEach(io => { 
                         if(io.type === 'bus') {
                             if(hw.subNodes && hw.subNodes[io.id] && hw.subNodes[io.id].length > 0) {
-                                ioh += `<div style="font-size:0.8rem; margin-top:6px; font-weight:bold; color:#1e293b;">${io.label} (Bus):</div>`;
                                 hw.subNodes[io.id].forEach(sub => {
-                                    ioh += `<div style="font-size:0.8rem; margin-top:2px; border-left:2px solid var(--primary); padding-left:6px;">
+                                    // NEU: Graue Striche (border-bottom) und Abstände für Sub-Nodes ergänzt
+                                    ioh += `<div style="font-size:0.8rem; margin-top:4px; padding-bottom:4px; margin-bottom:4px; border-bottom:1px solid #f1f5f9; border-left:2px solid var(--primary); padding-left:6px;">
                                         <b>${sub.name}</b> (Ort: ${sub.location || 'k.A.'}, ${sub.channels||1} Kanäle)<br>
-                                        <span style="color:#64748b; font-size:0.75rem;">Taster: ${sub.mapping||'-'} | App: ${sub.appFunctions||'-'} | Grp: ${sub.globalGroup||'-'}</span>
+                                        <span style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px;">
+                                            <div><b>Taster:</b> ${sub.mapping||'-'}</div>
+                                            <div><b>App:</b> ${sub.appFunctions||'-'}</div>
+                                            <div><b>Gruppe:</b> ${sub.globalGroup||'-'}</div>
+                                        </span>
                                     </div>`;
                                 });
                             }
@@ -1986,8 +2505,12 @@
                             
                             ioh += `<div style="font-size:0.8rem; margin-top:4px; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
                                 <b>${io.label}:</b> ${bez ? `<span style="color:#0f766e;">${bez}</span>` : ''}<br>
-                                <span style="color:#64748b; font-size:0.75rem;">Taster: ${map} | App: ${app} | Grp: ${grp}</span>
-                            </div>`; 
+                                <span style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px;">
+                                    <div><b>Taster:</b> ${map}</div>
+                                    <div><b>App:</b> ${app}</div>
+                                    <div><b>Gruppe:</b> ${grp}</div>
+                                </span>
+                            </div>`;
                         }
                     });
                 }
@@ -2052,7 +2575,6 @@
                 const parsed = JSON.parse(e.target.result);
                 if(parsed && parsed.details) {
                     projectData = migrateProjectData(parsed);
-                    projectData = parsed;
                     activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null;
                     renderApp();
                     alert("Projekt erfolgreich geladen!");
@@ -2065,64 +2587,6 @@
         };
         reader.readAsText(file);
     }
-
-    function migrateProjectData(data) {
-    if (!data || !data.details) return data;
-    
-    function cleanStr(str) {
-        if (typeof str !== 'string') return str;
-        return str.split(',').map(item => {
-            let trimmed = item.trim();
-            
-            // 1. Entfernt IO-IDs in Klammern (wie (TA_1), (SA_1), etc.), die mitten im Text stehen
-            trimmed = trimmed.replace(/\s*\([A-Za-z0-9_-]+\)/g, '');
-            
-            // 2. Ersetzt den alten Bindestrich nach dem Platz durch den neuen Trenner " | " (z.B. "Platz 1 - Bezeichnung" -> "Platz 1 | Bezeichnung")
-            trimmed = trimmed.replace(/(Platz\s+\d+)\s*-\s*/i, '$1 | ');
-            
-            // 3. Entfernt restliche Klammern am Ende
-            trimmed = trimmed.replace(/(\s*\([^)]+\))+$/, '').trim();
-            
-            return trimmed;
-        }).filter(x => x).join(', ');
-    }
-
-    data.details.forEach(d => {
-        // 1. Taster-Verknüpfungen bereinigen
-        if (d.frames) {
-            d.frames.forEach(f => {
-                for (let slotKey in f.slots) {
-                    const slot = f.slots[slotKey];
-                    if (slot && slot.ioData) {
-                        for (let ioKey in slot.ioData) {
-                            if (slot.ioData[ioKey].eingabegerat) {
-                                slot.ioData[ioKey].eingabegerat = cleanStr(slot.ioData[ioKey].eingabegerat);
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        // 2. Hardware-Mappings bereinigen
-        if (d.hardware) {
-            d.hardware.forEach(hw => {
-                if (hw.mappings) {
-                    for (let k in hw.mappings) {
-                        if (hw.mappings[k]) hw.mappings[k] = cleanStr(hw.mappings[k]);
-                    }
-                }
-                if (hw.subNodes) {
-                    for (let sKey in hw.subNodes) {
-                        hw.subNodes[sKey].forEach(sub => {
-                            if (sub.mapping) sub.mapping = cleanStr(sub.mapping);
-                        });
-                    }
-                }
-            });
-        }
-    });
-    return data;
-}
 </script>
 </body>
 </html>
