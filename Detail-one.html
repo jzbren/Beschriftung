@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V6.2</title>
+    <title>ServiceProDetail Konfigurator V6.3</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1052,9 +1052,27 @@
     }
 
     function addNewDetail() {
-        const newDetail = { id: generateId(), name: `Detail ${projectData.details.length + 1}`, room: "", frames: [], hardware: [] };
-        projectData.details.push(newDetail); activeDetailId = newDetail.id; renderApp();
-    }
+            let counter = projectData.details.length + 1;
+            let newName = `Detail ${counter}`;
+            
+            // Prüfen, ob der Name bereits existiert, und ggf. hochzählen
+            while (projectData.details.some(d => d.name === newName)) {
+                counter++;
+                newName = `Detail ${counter}`;
+            }
+        
+            const newDetail = { 
+                id: generateId(), 
+                name: newName, 
+                room: "", 
+                frames: [], 
+                hardware: [] 
+            };
+            
+            projectData.details.push(newDetail); 
+            activeDetailId = newDetail.id; 
+            renderApp();
+        }
     
     function duplicateDetail(id) {
         const d = projectData.details.find(x => x.id === id);
