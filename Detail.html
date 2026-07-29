@@ -237,22 +237,11 @@
                 </div>
                 <div class="action-buttons">
                     <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
-                    
-                    <!-- Projektverwaltung -->
-                    <button class="btn danger" onclick="resetProject()">Neu</button>
-                    <button class="btn" onclick="document.getElementById('file-input').click()">Öffnen</button>
-                    <button class="btn primary" onclick="exportProject()">Speichern</button>
-                    
-                    <span style="border-left: 1px solid #cbd5e1; height: 24px; margin: 0 4px;"></span>
-                    
-                    <!-- Einstellungen & Ansichten -->
                     <button class="btn info" onclick="openGlobalsModal()">⚙️ App & Gruppen</button>
                     <button class="btn warning" onclick="openBusOverviewModal()">Bus-Topologie</button>
-                    
-                    <span style="border-left: 1px solid #cbd5e1; height: 24px; margin: 0 4px;"></span>
-                    
-                    <!-- Drucken -->
-                    <button class="btn special" onclick="printCustomerDoc()">Kunden-Doku</button>
+                    <button class="btn danger" onclick="resetProject()">Neu anfangen</button>
+                    <button class="btn" onclick="document.getElementById('file-input').click()">Öffnen</button>
+                    <button class="btn primary" onclick="exportProject()">Speichern</button>
                     <button class="btn" onclick="printAllDetails()">Alles Drucken</button>
                     <button class="btn" onclick="printCurrentDetail()">Aktuelles Detail</button>
                 </div>
@@ -265,7 +254,6 @@
         <div id="workspace-container"></div>
         <div id="print-all-container" style="display: none;"></div>
         <div id="print-single-container" style="display: none;"></div>
-        <div id="print-customer-container" style="display: none;"></div>
     </div>
 
     <!-- Bus Overview Modal -->
