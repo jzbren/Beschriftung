@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V6.6</title>
+    <title>ServiceProDetail Konfigurator V6.7</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -45,7 +45,7 @@
         .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; padding: 20px 40px; min-width: 0; transition: width 0.3s; }
         .top-bar { 
             position: sticky; 
-            top: -20px; 
+            top: -20px;
             z-index: 100; 
             display: flex; 
             flex-direction: column; 
@@ -60,6 +60,7 @@
         }
         .top-bar-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .header-left { display: flex; align-items: center; gap: 12px; }
+        button.btn { background: white; border: 1px solid #cbd5e1; padding: 7px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 500; display: flex; align-items: center; gap: 4px; transition: all 0.2s; color: #334155; white-space: nowrap; }
         .toggle-sidebar-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1.1rem; cursor: pointer; color: #475569; padding: 6px 12px; transition: background 0.2s; }
         .toggle-sidebar-btn:hover { background: #f1f5f9; }
 
@@ -78,8 +79,6 @@
         button.btn.warning { background: var(--warning); color: white; border: none; }
         button.btn.info { background: #f0fdf4; color: #0f766e; border: 1px solid #bbf7d0; font-weight: 600; }
         button.btn.info:hover { background: #dcfce7; }
-        button.btn.special { background: #fef08a; border: 1px solid #fde047; color: #854d0e; font-weight: 700; }
-        button.btn.special:hover { background: #fde047; }
 
         /* Workspace Grid */
         .workspace { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 1100px; margin: 0 auto; }
@@ -238,22 +237,11 @@
                 </div>
                 <div class="action-buttons">
                     <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
-                    
-                    <!-- Projektverwaltung -->
-                    <button class="btn danger" onclick="resetProject()">Neu</button>
-                    <button class="btn" onclick="document.getElementById('file-input').click()">Öffnen</button>
-                    <button class="btn primary" onclick="exportProject()">Speichern</button>
-                    
-                    <span style="border-left: 1px solid #cbd5e1; height: 24px; margin: 0 4px;"></span>
-                    
-                    <!-- Einstellungen & Ansichten -->
                     <button class="btn info" onclick="openGlobalsModal()">⚙️ App & Gruppen</button>
                     <button class="btn warning" onclick="openBusOverviewModal()">Bus-Topologie</button>
-                    
-                    <span style="border-left: 1px solid #cbd5e1; height: 24px; margin: 0 4px;"></span>
-                    
-                    <!-- Drucken -->
-                    <button class="btn special" onclick="printCustomerDoc()">Kunden-Doku</button>
+                    <button class="btn danger" onclick="resetProject()">Neu anfangen</button>
+                    <button class="btn" onclick="document.getElementById('file-input').click()">Öffnen</button>
+                    <button class="btn primary" onclick="exportProject()">Speichern</button>
                     <button class="btn" onclick="printAllDetails()">Alles Drucken</button>
                     <button class="btn" onclick="printCurrentDetail()">Aktuelles Detail</button>
                 </div>
@@ -266,7 +254,6 @@
         <div id="workspace-container"></div>
         <div id="print-all-container" style="display: none;"></div>
         <div id="print-single-container" style="display: none;"></div>
-        <div id="print-customer-container" style="display: none;"></div>
     </div>
 
     <!-- Bus Overview Modal -->
@@ -2121,7 +2108,7 @@
                 </div>
                 <div class="io-fields-grid" style="grid-template-columns: 2fr 1fr; margin-bottom: 10px;">
                     <div>${fnDropdown}</div>
-                    <input type="text" placeholder="Lokal-Gruppe..." value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','gruppe',this.value)">
+                    <input type="text" placeholder="Gruppe..." value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','gruppe',this.value)">
                 </div>
                 <div>
                     <button class="btn info" style="width: 100%; justify-content: center; margin-bottom: 6px; padding: 7px 12px;" onclick="openAssignModal('switch', '${switchIdent.replace(/'/g, "\\'")}', {fId:'${f.id}', slotN:${i}, ioId:'${activeIo.id}'})">🔗 Verknüpfungen / Zuweisen</button>
@@ -2267,7 +2254,7 @@
                                     <th>Bezeichnung (${busCfg.subDeviceLabel})</th>
                                     <th>Montageort</th>
                                     <th>Kanäle</th>
-                                    <th>Verknüpfungen (Taster / App / Gruppe)</th>
+                                    <th>Verknüpfungen</th>
                                     <th style="width: 30px;"></th>
                                 </tr></thead><tbody>` + subs.map(sub => {
 
@@ -2276,10 +2263,10 @@
                                     <td><input type="text" value="${sub.name}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)"></td>
                                     <td><input type="text" value="${sub.location}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'location', this.value)"></td>
                                     <td><input type="number" min="1" max="16" value="${sub.channels}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'channels', this.value)" style="width:50px; border:1px solid transparent; background:transparent;"></td>
-                                    <td style="font-size: 0.75rem; color: #475569; line-height: 1.3;">
-                                        <b>Taster:</b> ${sub.mapping || '-'}<br>
-                                        <b>App:</b> ${sub.appFunctions || '-'}<br>
-                                        <b>Gruppe:</b> ${sub.globalGroup || '-'}
+                                    <td style="font-size: 0.75rem; color: #475569; line-height: 1.4;">
+                                        <div><b>Taster:</b> ${sub.mapping || '-'}</div>
+                                        <div><b>App:</b> ${sub.appFunctions || '-'}</div>
+                                        <div><b>Gruppe:</b> ${sub.globalGroup || '-'}</div>
                                     </td>
                                     <td style="text-align: right;"><button class="delete-btn" style="padding: 2px 4px;" title="Löschen" onclick="deleteSubNode('${hw.instanceId}', '${io.id}', '${sub.id}')">✕</button></td>
                                 </tr>`;
@@ -2298,7 +2285,7 @@
                     const row = `<tr>
                         <td style="font-weight:600; color:#334155; width:90px;">${io.label}</td>
                         <td style="width:180px;"><input type="text" placeholder="Bezeichnung..." value="${currentBez}" onchange="updateHwFieldEx('${hw.instanceId}', 'bezeichnung', '${io.id}', this.value)"></td>
-                        <td style="font-size: 0.75rem; color: #475569; line-height: 1.3;">
+                        <td style="font-size: 0.75rem; color: #475569; line-height: 1.4;">
                             <div><b>Taster:</b> ${currentMap}</div>
                             <div><b>App:</b> ${currentApp}</div>
                             <div><b>Gruppe:</b> ${currentGrp}</div>
@@ -2501,57 +2488,6 @@
         document.getElementById('bus-modal').style.display = 'flex';
     }
 
-    // HILFSFUNKTION: Sucht projektweit nach Hardware, die mit einem spezifischen Schalter verknüpft ist, 
-    // und liest deren App-Funktionen und Globale Gruppen aus.
-    function getHardwareLinksForSwitch(switchIdent) {
-        let linkedAppFns = new Set();
-        let linkedGroups = new Set();
-
-        projectData.details.forEach(det => {
-            if(det.hardware) {
-                det.hardware.forEach(hw => {
-                    // Standard IO Mappings prüfen
-                    if(hw.mappings) {
-                        for(let ioId in hw.mappings) {
-                            let mapList = (hw.mappings[ioId] || '').split(',').map(x=>x.trim());
-                            if(mapList.includes(switchIdent)) {
-                                if(hw.appFunctions && hw.appFunctions[ioId]) {
-                                    hw.appFunctions[ioId].split(',').map(x=>x.trim()).filter(x=>x).forEach(x => linkedAppFns.add(x));
-                                }
-                                if(hw.globalGroup && hw.globalGroup[ioId]) {
-                                    hw.globalGroup[ioId].split(',').map(x=>x.trim()).filter(x=>x).forEach(x => linkedGroups.add(x));
-                                }
-                            }
-                        }
-                    }
-                    // Bus / SubNode Mappings prüfen
-                    if(hw.subNodes) {
-                        for(let ioId in hw.subNodes) {
-                            hw.subNodes[ioId].forEach(sub => {
-                                if(sub.mapping) {
-                                    let mapList = sub.mapping.split(',').map(x=>x.trim());
-                                    if(mapList.includes(switchIdent)) {
-                                        if(sub.appFunctions) {
-                                            sub.appFunctions.split(',').map(x=>x.trim()).filter(x=>x).forEach(x => linkedAppFns.add(x));
-                                        }
-                                        if(sub.globalGroup) {
-                                            sub.globalGroup.split(',').map(x=>x.trim()).filter(x=>x).forEach(x => linkedGroups.add(x));
-                                        }
-                                    }
-                                }
-                            });
-                        }
-                    }
-                });
-            }
-        });
-
-        return {
-            appFns: Array.from(linkedAppFns).join(', '),
-            groups: Array.from(linkedGroups).join(', ')
-        };
-    }
-
     function buildDetailPrintHtml(d) {
         let framesHtml = '';
         if(d.frames && d.frames.length > 0) {
@@ -2582,21 +2518,13 @@
                     if(ic && ic.io) {
                         ioRows = ic.io.map(io => {
                             const dat = s.ioData?.[io.id] || {};
-                            const slotLabel = ic ? ic.label : 'Platz';
-                            const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
-                            const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
-                            
-                            const hwLinks = getHardwareLinksForSwitch(switchIdent);
-
                             return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">
                                 <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
                                 Bezeichnung: ${dat.bezeichnung||''}<br>
                                 Art: ${dat.art||''}<br>
                                 Funktion: ${dat.funktion||''}<br>
-                                Gruppe (Lokal): ${dat.gruppe||''}<br>
-                                Ziel (Hardware): ${dat.eingabegerat||''}<br>
-                                ${hwLinks.appFns ? `<b>App (via HW):</b> <span style="color:#0f766e;">${hwLinks.appFns}</span><br>` : ''}
-                                ${hwLinks.groups ? `<b>Gruppe (via HW):</b> <span style="color:#0f766e;">${hwLinks.groups}</span>` : ''}
+                                Gruppe: ${dat.gruppe||''}<br>
+                                Ziel: ${dat.eingabegerat||''}
                             </div>`;
                         }).join('');
                     }
@@ -2638,7 +2566,7 @@
                                 hw.subNodes[io.id].forEach(sub => {
                                     ioh += `<div style="font-size:0.8rem; margin-top:4px; padding-bottom:4px; margin-bottom:4px; border-bottom:1px solid #f1f5f9; border-left:2px solid var(--primary); padding-left:6px;">
                                         <b>${sub.name}</b> (Ort: ${sub.location || 'k.A.'}, ${sub.channels||1} Kanäle)<br>
-                                        <span style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px;">
+                                        <span style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px; line-height:1.4;">
                                             <div><b>Taster:</b> ${sub.mapping||'-'}</div>
                                             <div><b>App:</b> ${sub.appFunctions||'-'}</div>
                                             <div><b>Gruppe:</b> ${sub.globalGroup||'-'}</div>
@@ -2654,7 +2582,7 @@
                             
                             ioh += `<div style="font-size:0.8rem; margin-top:4px; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
                                 <b>${io.label}:</b> ${bez ? `<span style="color:#0f766e;">${bez}</span>` : ''}<br>
-                                <span style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px;">
+                                <span style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px; line-height:1.4;">
                                     <div><b>Taster:</b> ${map}</div>
                                     <div><b>App:</b> ${app}</div>
                                     <div><b>Gruppe:</b> ${grp}</div>
@@ -2710,131 +2638,9 @@
         document.getElementById('print-all-container').innerHTML = allHtml;
     }
 
-    function printCustomerDoc() {
-        let html = `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName} - Kunden-Dokumentation</h2><p>${projectData.location||''}</p></div>`;
-
-        // Iteration über alle Details für die Kunden-Schalteransicht
-        projectData.details.forEach(d => {
-            if(!d.frames || d.frames.length === 0) return;
-
-            html += `<div style="margin-bottom: 30px; page-break-inside: avoid;">`;
-            html += `<h3 style="color:#0f766e; border-bottom: 2px solid #0f766e; padding-bottom: 5px;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(${d.room})</span>` : ''}</h3>`;
-
-            d.frames.forEach(f => {
-                const [r, c] = f.layout.split('x').map(Number);
-                const total = r * c;
-                let vSlots = '';
-                let slotListHtml = '';
-
-                for(let i=1; i<=total; i++) {
-                    const s = f.slots[`slot-${i}`] || { iconFile: '', ioData: {} };
-                    const ic = iconConfigList.find(x => x.file === s.iconFile);
-                    const imgPath = ic ? `icons-schalter/${ic.file}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
-
-                    vSlots += `<div class="print-switch-slot"><span style="position:absolute; top:2px; left:4px; font-size:9px; font-weight:700; color:#64748b;">${i}</span><img src="${imgPath}"></div>`;
-
-                    let slotText = '';
-                    if(ic && ic.io) {
-                        ic.io.forEach(io => {
-                            const dat = s.ioData?.[io.id] || {};
-                            
-                            // 1. Hole den eindeutigen Taster-Namen, wie er in den Mappings gespeichert ist
-                            const slotLabel = ic ? ic.label : 'Platz';
-                            const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
-                            const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
-                            
-                            // 2. Suche in der Hardware nach Links
-                            const hwLinks = getHardwareLinksForSwitch(switchIdent);
-
-                            if(dat.bezeichnung || dat.funktion || dat.gruppe || hwLinks.appFns || hwLinks.groups) {
-                                slotText += `<div style="margin-bottom: 4px;">`;
-                                if(dat.bezeichnung) slotText += `<b>${dat.bezeichnung}</b>`;
-                                else slotText += `<b>Taster ${i}</b>`;
-                                
-                                let details = [];
-                                if(dat.funktion) details.push(`Funktion: ${dat.funktion}`);
-                                if(dat.gruppe) details.push(`Lokal-Gruppe: ${dat.gruppe}`);
-                                if(hwLinks.appFns) details.push(`App: ${hwLinks.appFns}`);
-                                if(hwLinks.groups) details.push(`Global-Gruppe: ${hwLinks.groups}`);
-                                
-                                if(details.length > 0) slotText += ` <span style="color:#475569;">(${details.join(' | ')})</span>`;
-                                slotText += `</div>`;
-                            }
-                        });
-                    }
-                    if(slotText) {
-                        slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid var(--primary);">${slotText}</div>`;
-                    } else {
-                        slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #cbd5e1; color:#94a3b8;"><b>Taster ${i}</b> - Nicht belegt</div>`;
-                    }
-                }
-
-                html += `<div style="margin-top: 15px;">
-                    <h4 style="margin-bottom:10px;">${f.name}</h4>
-                    <div style="display:flex; gap: 30px; align-items: flex-start;">
-                        <div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px); flex-shrink:0;">${vSlots}</div>
-                        <div style="flex:1;">${slotListHtml}</div>
-                    </div>
-                </div>`;
-            });
-            html += `</div>`;
-        });
-        html += `</div>`;
-
-        // Generiere Globale Einstellungen (Ende des Dokuments)
-        let hasGlobals = (projectData.appFunctions && projectData.appFunctions.length > 0) ||
-                         (projectData.globalGroups && projectData.globalGroups.length > 0) ||
-                         (projectData.globalFunctions && projectData.globalFunctions.length > 0);
-        
-        if (hasGlobals) {
-            let renderItemsList = (list) => {
-                if (!list || list.length === 0) return '<div style="font-size:0.9rem; color:#94a3b8; font-style:italic;">Keine Einträge</div>';
-                return list.map(item => {
-                    const name = typeof item === 'object' ? item.name : item;
-                    const desc = typeof item === 'object' ? item.description : '';
-                    return `<div style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #e2e8f0; page-break-inside: avoid;">
-                        <div style="font-size:1rem; font-weight:600; color:#1e293b;">${name}</div>
-                        ${desc ? `<div style="font-size:0.85rem; color:#475569; margin-top:4px;">${desc}</div>` : ''}
-                    </div>`;
-                }).join('');
-            };
-
-            html += `<div class="print-detail-page" style="page-break-before: always;">
-                <div class="print-header-block"><h2>Zentrale Einstellungen & Erklärungen</h2></div>`;
-            
-            if (projectData.globalFunctions && projectData.globalFunctions.length > 0) {
-                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">Globale Funktionen</h3>
-                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Erklärung der verwendeten Taster-Funktionen im Projekt.</p>
-                         ${renderItemsList(projectData.globalFunctions)}</div><br>`;
-            }
-            if (projectData.globalGroups && projectData.globalGroups.length > 0) {
-                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">Globale Gruppen</h3>
-                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Gruppenfunktionen, die über mehrere Räume hinweg wirken.</p>
-                         ${renderItemsList(projectData.globalGroups)}</div><br>`;
-            }
-            if (projectData.appFunctions && projectData.appFunctions.length > 0) {
-                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">App-Funktionen</h3>
-                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Funktionen, die in der Smart Home App verfügbar sind.</p>
-                         ${renderItemsList(projectData.appFunctions)}</div>`;
-            }
-            html += `</div>`;
-        }
-
-        document.getElementById('print-customer-container').innerHTML = html;
-        
-        document.getElementById('print-single-container').style.display = 'none';
-        document.getElementById('print-all-container').style.display = 'none';
-        document.getElementById('print-customer-container').style.display = 'block';
-        
-        window.print();
-        
-        setTimeout(() => { document.getElementById('print-customer-container').style.display = 'none'; }, 500);
-    }
-
     function printCurrentDetail() {
         document.getElementById('print-single-container').style.display = 'block';
         document.getElementById('print-all-container').style.display = 'none';
-        document.getElementById('print-customer-container').style.display = 'none';
         window.print();
         setTimeout(() => { document.getElementById('print-single-container').style.display = 'none'; }, 500);
     }
@@ -2842,7 +2648,6 @@
     function printAllDetails() {
         document.getElementById('print-single-container').style.display = 'none';
         document.getElementById('print-all-container').style.display = 'block';
-        document.getElementById('print-customer-container').style.display = 'none';
         window.print();
         setTimeout(() => { document.getElementById('print-all-container').style.display = 'none'; }, 500);
     }
