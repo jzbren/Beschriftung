@@ -2140,7 +2140,7 @@
         return tabsHtml + slotFormHtml;
     }
 
-    window.updateSlotField = function(fId, slotN, ioId, field, val, shouldRender = false) {
+    window.updateSlotField = function(fId, slotN, ioId, field, val) {
         const d = projectData.details.find(x => x.id === activeDetailId); 
         const f = d.frames.find(x => x.id === fId);
         if(!f.slots[`slot-${slotN}`].ioData) f.slots[`slot-${slotN}`].ioData = {};
@@ -2148,8 +2148,7 @@
         const slot = f.slots[`slot-${slotN}`]; 
         const cData = slot.ioData[ioId] || {bezeichnung:'', art:'TA'};
         
-        // Namensänderungen & Referenzen nur bei Bedarf aktualisieren
-        if (field === 'bezeichnung' && shouldRender) {
+        if (field === 'bezeichnung') {
             const ic = iconConfigList.find(x => x.file === slot.iconFile);
             if(ic) {
                 const oldBezeichnung = cData.bezeichnung || `${ic.label} (Platz ${slotN})`;
@@ -2166,10 +2165,7 @@
         slot.ioData[ioId] = cData;
         
         saveToLocal();
-        
-        if (shouldRender) {
-            renderApp();
-        }
+        renderApp(); // <-- Hier das Kommentarzeichen "//" entfernen
     };
 
     function updateSlotCustomField(fId, slotN, fieldName, val) {
