@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V6.6</title>
+    <title>ServiceProDetail Konfigurator V6.7</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -228,32 +228,33 @@
         <button class="sidebar-btn" onclick="addNewDetail()">+ Neues Detail / Raum</button>
     </div>
 
-    <div class="main-content">
-        <div class="top-bar">
-            <div class="top-bar-row">
-                <div class="header-left">
-                    <button class="toggle-sidebar-btn no-print" onclick="toggleSidebar()">☰</button>
-                    <input type="text" id="project-name" value="Schalterdetail EFH Odermatt" onchange="updateProjectField('projectName', this.value)">
-                </div>
-                <div class="action-buttons">
-                    <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
-                    <button class="btn info" onclick="openGlobalsModal()">⚙️ App & Gruppen</button>
-                    <button class="btn warning" onclick="openBusOverviewModal()">Bus-Topologie</button>
-                    <button class="btn danger" onclick="resetProject()">Neu anfangen</button>
-                    <button class="btn" onclick="document.getElementById('file-input').click()">Öffnen</button>
-                    <button class="btn primary" onclick="exportProject()">Speichern</button>
-                    <button class="btn" onclick="printAllDetails()">Alles Drucken</button>
-                    <button class="btn" onclick="printCurrentDetail()">Aktuelles Detail</button>
-                </div>
+    <div class="top-bar">
+        <div class="top-bar-row">
+            <div class="header-left">
+                <button class="toggle-sidebar-btn no-print" onclick="toggleSidebar()">☰</button>
+                <input type="text" id="project-name" value="Schalterdetail EFH Odermatt" onchange="updateProjectField('projectName', this.value)">
             </div>
-            <div class="top-bar-row">
-                <input type="text" class="location-input" id="project-location" placeholder="Standort eingeben..." onchange="updateProjectField('location', this.value)">
+            <div class="action-buttons">
+                <input type="file" id="file-input" accept=".ServiceProDetail" style="display: none;" onchange="importProject(event)">
+                <button class="btn info" onclick="openGlobalsModal()">⚙️ App & Gruppen</button>
+                <button class="btn warning" onclick="openBusOverviewModal()">Bus-Topologie</button>
+                <button class="btn warning" onclick="printCustomerDoc()">📖 Kunden-Doku</button> <!-- Schöner gelber Button -->
+                <button class="btn" onclick="printCurrentDetail()">Aktuelles Detail</button>
+                <button class="btn" onclick="printAllDetails()">Alles Drucken</button>
+                <button class="btn primary" onclick="exportProject()">Speichern</button>
+                <button class="btn" onclick="document.getElementById('file-input').click()">Öffnen</button>
+                <button class="btn danger" onclick="resetProject()">Neu anfangen</button>
             </div>
         </div>
+        <div class="top-bar-row">
+            <input type="text" class="location-input" id="project-location" placeholder="Standort eingeben..." onchange="updateProjectField('location', this.value)">
+        </div>
+    </div>
 
         <div id="workspace-container"></div>
         <div id="print-all-container" style="display: none;"></div>
         <div id="print-single-container" style="display: none;"></div>
+        <div id="print-customer-container" style="display: none;"></div>
     </div>
 
     <!-- Bus Overview Modal -->
@@ -2499,7 +2500,7 @@
                 let vSlots = ''; 
                 let blocks = [];
                 const total = r * c;
-
+    
                 for(let i=1; i<=total; i++) {
                     const s = f.slots[`slot-${i}`] || { iconFile: '', ioData: {}, customFields: {} };
                     const ic = iconConfigList.find(x => x.file === s.iconFile);
@@ -2516,17 +2517,35 @@
                         }
                         if (cfRows) cfRows = `<div style="margin-bottom:4px; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">${cfRows}</div>`;
                     }
-
+    
                     let ioRows = '';
                     if(ic && ic.io) {
                         ioRows = ic.io.map(io => {
                             const dat = s.ioData?.[io.id] || {};
+                            
+                            // Hardware-Verknüpfungen ermitteln, falls dort App/Gruppe definiert wurden
+                            const slotLabel = ic ? ic.label : 'Platz';
+                            const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
+                            const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
+                            const hwLinks = getHardwareLinksForSwitch(switchIdent);
+    
+                            // Duplikate vermeiden: Nur anzeigen, wenn nicht bereits lokal gesetzt
+                            let combinedApp = [dat.funktion, hwLinks.appFns].filter(x => x).reduce((acc, curr) => {
+                                curr.split(',').forEach(item => { if(!acc.includes(item.trim())) acc.push(item.trim()); });
+                                return acc;
+                            }, []).join(', ');
+    
+                            let combinedGrp = [dat.gruppe, hwLinks.groups].filter(x => x).reduce((acc, curr) => {
+                                curr.split(',').forEach(item => { if(!acc.includes(item.trim())) acc.push(item.trim()); });
+                                return acc;
+                            }, []).join(', ');
+    
                             return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">
                                 <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
                                 Bezeichnung: ${dat.bezeichnung||''}<br>
                                 Art: ${dat.art||''}<br>
-                                Funktion: ${dat.funktion||''}<br>
-                                Gruppe: ${dat.gruppe||''}<br>
+                                ${combinedApp ? `App / Funktion: ${combinedApp}<br>` : ''}
+                                ${combinedGrp ? `Gruppe: ${combinedGrp}<br>` : ''}
                                 <span style="font-weight: normal;">Ziel (Hardware): ${dat.eingabegerat||''}</span>
                             </div>`;
                         }).join('');
@@ -2535,7 +2554,7 @@
                     const slotLabel = ic ? ic.label : 'Kein Icon';
                     blocks.push(`<div class="print-slot-item-block"><b>Platz ${i} - ${slotLabel}</b><div style="margin-top:5px;">${cfRows}${ioRows}</div></div>`);
                 }
-
+    
                 let visHtml = `<div style="display:flex; justify-content:center; margin: 10px 0;"><div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px);">${vSlots}</div></div>`;
                 let bStr = ''; 
                 for(let i=0; i<blocks.length; i+=2) {
@@ -2598,7 +2617,7 @@
                 return `<div class="print-hw-container"><div class="print-hw-image"><img src="icons-schalter/${cfg.image}"></div><div><b>${cfg.name}</b>${fh}<div style="margin-top:5px;">${ioh}</div></div></div>`;
             }).join('');
         }
-
+    
         let globalsPrintHtml = '';
         let hasGlobals = (projectData.appFunctions && projectData.appFunctions.length > 0) ||
                          (projectData.globalGroups && projectData.globalGroups.length > 0) ||
@@ -2615,11 +2634,11 @@
                     </div>`;
                 }).join('');
             };
-
+    
             let appFnHtml = renderItemsList(projectData.appFunctions);
             let grpHtml = renderItemsList(projectData.globalGroups);
             let fnHtml = renderItemsList(projectData.globalFunctions);
-
+    
             globalsPrintHtml = `<div class="print-section-title">Zentrale Einstellungen & Definitionen</div>` +
                 `<div style="display:flex; flex-direction:column; gap:14px; background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:6px; page-break-inside: avoid;">` +
                 `<div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">App-Funktionen</div>${appFnHtml}</div>` +
@@ -2627,7 +2646,7 @@
                 `<div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">Globale Funktionen</div>${fnHtml}</div>` +
                 `</div>`;
         }
-
+    
         return `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName}</h2><p>${projectData.location||''}</p></div><h3 style="color:#0f766e; margin:0;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}</h3>${framesHtml}${hwHtml}${globalsPrintHtml}</div>`;
     }
 
