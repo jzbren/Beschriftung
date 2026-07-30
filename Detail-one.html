@@ -2931,8 +2931,8 @@
                                     ioh += `<div style="font-size:0.8rem; margin-top:6px; padding-bottom:6px; margin-bottom:6px; border-bottom:1px solid #f1f5f9; border-left:2px solid var(--primary); padding-left:8px;">
                                         <div style="font-weight:bold; color:#1e293b;">${sub.name}</div>
                                         <div style="color:#475569; margin-top:2px;"><b>Ort:</b> ${sub.location || 'k.A.'} | <b>Kanäle:</b> ${sub.channels || 1}</div>
-                                        ${sub.funktion ? `<div style="color:#eab308; font-weight:600; margin-top:2px;">Funktion: ${sub.funktion}</div>` : ''}
-                                        ${sub.gruppe ? `<div style="color:#475569; margin-top:2px;">Gruppe: ${sub.gruppe}</div>` : ''}
+                                        ${sub.funktion ? `<div style="color:#1e293b; margin-top:2px;"><b>Funktion:</b> ${sub.funktion}</div>` : ''}
+                                        ${sub.gruppe ? `<div style="color:#475569; margin-top:2px;"><b>Gruppe:</b> ${sub.gruppe}</div>` : ''}
                                         <div style="color:#64748b; margin-top:4px; display:flex; flex-direction:column; gap:2px;">
                                             <div><b>Taster:</b> ${sub.mapping || '-'}</div>
                                             <div><b>App-Funktionen:</b> ${sub.appFunctions || '-'}</div>
@@ -2951,9 +2951,9 @@
                             
                             // Für Standard IOs:
                             ioh += `<div style="font-size:0.8rem; margin-top:6px; border-bottom:1px solid #f1f5f9; padding-bottom:6px;">
-                                <div style="font-weight:bold; color:#1e293b;">${io.label}${bez ? `: <span style="color:#0f766e; font-weight:normal;">${bez}</span>` : ''}</div>
-                                ${fnText ? `<div style="color:#eab308; font-weight:600; margin-top:2px;">Funktion: ${fnText}</div>` : ''}
-                                ${grpText ? `<div style="color:#475569; margin-top:2px;">Gruppe: ${grpText}</div>` : ''}
+                                <div style="font-weight:bold; color:#1e293b;">${io.label}${bez ? `: <span style="color:#1e293b; font-weight:bold;">${bez}</span>` : ''}</div>
+                                ${fnText ? `<div style="color:#1e293b; margin-top:2px;"><b>Funktion:</b> ${fnText}</div>` : ''}
+                                ${grpText ? `<div style="color:#475569; margin-top:2px;"><b>Gruppe:</b> ${grpText}</div>` : ''}
                                 <div style="color:#64748b; margin-top:4px; display:flex; flex-direction:column; gap:2px;">
                                     <div><b>Taster:</b> ${map}</div>
                                     <div><b>App-Funktionen:</b> ${app}</div>
