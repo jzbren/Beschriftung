@@ -2927,13 +2927,17 @@
                         if(io.type === 'bus') {
                             if(hw.subNodes && hw.subNodes[io.id] && hw.subNodes[io.id].length > 0) {
                                 hw.subNodes[io.id].forEach(sub => {
-                                    ioh += `<div style="font-size:0.8rem; margin-top:4px; padding-bottom:4px; margin-bottom:4px; border-bottom:1px solid #f1f5f9; border-left:2px solid var(--primary); padding-left:6px;">
-                                        <b>${sub.name}</b> (Ort: ${sub.location || 'k.A.'}, Funktion: ${sub.funktion || '-'}, Gruppe: ${sub.gruppe || '-'}, ${sub.channels||1} Kanäle)<br>
-                                        <span style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px;">
-                                            <div><b>Taster:</b> ${sub.mapping||'-'}</div>
-                                            <div><b>App:</b> ${sub.appFunctions||'-'}</div>
-                                            <div><b>Globale Gruppe:</b> ${sub.globalGroup||'-'}</div>
-                                        </span>
+                                    // Für SubNodes (z.B. DALI / Bus-Geräte):
+                                    ioh += `<div style="font-size:0.8rem; margin-top:6px; padding-bottom:6px; margin-bottom:6px; border-bottom:1px solid #f1f5f9; border-left:2px solid var(--primary); padding-left:8px;">
+                                        <div style="font-weight:bold; color:#1e293b;">${sub.name}</div>
+                                        <div style="color:#475569; margin-top:2px;"><b>Ort:</b> ${sub.location || 'k.A.'} | <b>Kanäle:</b> ${sub.channels || 1}</div>
+                                        ${sub.funktion ? `<div style="color:#eab308; font-weight:600; margin-top:2px;">Funktion: ${sub.funktion}</div>` : ''}
+                                        ${sub.gruppe ? `<div style="color:#475569; margin-top:2px;">Gruppe: ${sub.gruppe}</div>` : ''}
+                                        <div style="color:#64748b; margin-top:4px; display:flex; flex-direction:column; gap:2px;">
+                                            <div><b>Taster:</b> ${sub.mapping || '-'}</div>
+                                            <div><b>App-Funktionen:</b> ${sub.appFunctions || '-'}</div>
+                                            <div><b>Globale Gruppe:</b> ${sub.globalGroup || '-'}</div>
+                                        </div>
                                     </div>`;
                                 });
                             }
@@ -2945,13 +2949,16 @@
                             const grpText = hw.gruppe?.[io.id] || '';
                             const fnText = hw.funktion?.[io.id] || '';
                             
-                            ioh += `<div style="font-size:0.8rem; margin-top:4px; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
-                                <b>${io.label}:</b> ${bez ? `<span style="color:#0f766e;">${bez}</span>` : ''} ${fnText ? ` <span style="margin-left:8px; color:#eab308; font-weight:600;">[Fn: ${fnText}]</span>` : ''} ${grpText ? `<span style="margin-left:8px; color:#475569;">(Gruppe: ${grpText})</span>` : ''}<br>
-                                <span style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px;">
+                            // Für Standard IOs:
+                            ioh += `<div style="font-size:0.8rem; margin-top:6px; border-bottom:1px solid #f1f5f9; padding-bottom:6px;">
+                                <div style="font-weight:bold; color:#1e293b;">${io.label}${bez ? `: <span style="color:#0f766e; font-weight:normal;">${bez}</span>` : ''}</div>
+                                ${fnText ? `<div style="color:#eab308; font-weight:600; margin-top:2px;">Funktion: ${fnText}</div>` : ''}
+                                ${grpText ? `<div style="color:#475569; margin-top:2px;">Gruppe: ${grpText}</div>` : ''}
+                                <div style="color:#64748b; margin-top:4px; display:flex; flex-direction:column; gap:2px;">
                                     <div><b>Taster:</b> ${map}</div>
-                                    <div><b>App:</b> ${app}</div>
+                                    <div><b>App-Funktionen:</b> ${app}</div>
                                     <div><b>Globale Gruppe:</b> ${grp}</div>
-                                </span>
+                                </div>
                             </div>`;
                         }
                     });
