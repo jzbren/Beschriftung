@@ -3099,7 +3099,7 @@
                     if(cfg.fields) {
                         cfg.fields.forEach(f => {
                             // Ausschliessen was angezeigt wird bei der Hardware
-                            if (hw.fields[f] && !/ast|bus|bridge|dali|link|bemerkung|s-nr|seriennummer/i.test(f)) {
+                            if (hw.fields[f] && !/ast|bus|bridge|dali|link|bemerkung|s\.-?nr|seriennummer/i.test(f)) {
                                 fieldsHtml += `<div style="margin-bottom:2px;"><b>${f}:</b> ${hw.fields[f]}</div>`;
                             }
                         });
@@ -3129,13 +3129,15 @@
                                     const grp = hw.globalGroup?.[io.id];
                                     const bez = hw.bezeichnung?.[io.id];
                                     const func = hw.funktion?.[io.id];
+                                    const localGrp = hw.gruppe?.[io.id];
                                     
                                     ioh += `<div style="margin-top:6px; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
                                         <b style="color:#1e293b;">${io.label}${bez ? `: ${bez}` : ''}</b>
                                         <div style="color:#475569; font-size:0.8rem; margin-top:2px;">
+                                            ${localGrp ? `<b>Gruppe:</b> ${localGrp} &nbsp;|&nbsp; ` : ''}
                                             ${func ? `<b>Funktion:</b> ${func} &nbsp;|&nbsp; ` : ''}
                                             ${app ? `<b>App:</b> ${app} &nbsp;|&nbsp; ` : ''}
-                                            ${grp ? `<b>Gruppe:</b> ${grp}` : ''}
+                                            ${grp ? `<b>Globale Gruppe:</b> ${grp}` : ''}
                                         </div>
                                     </div>`;
                                 }
