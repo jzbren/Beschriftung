@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V7.4</title>
+    <title>ServiceProDetail Konfigurator V7.3</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1141,6 +1141,7 @@
                     h.appFunctions = {};
                     h.globalGroup = {};
                     h.funktion = {};
+                    h.ioPrint = {};
                     // h.gruppe bleibt als Eigenschaft erhalten
                     if(h.subNodes) {
                         for(let sKey in h.subNodes) {
@@ -1149,6 +1150,7 @@
                                 sub.appFunctions = "";
                                 sub.globalGroup = "";
                                 sub.funktion = "";
+                                sub.printInCustomerDoc = false;
                                 // sub.gruppe bleibt erhalten
                             });
                         }
@@ -1802,11 +1804,28 @@
         renderApp();
     };
 
-    window.toggleHwPrintCustomerDoc = function(hwInstanceId, checked) {
+    // NEU: Funktionen für Doku-Druck Checkboxen pro IO / SubNode
+    window.toggleHwIoPrintCustomerDoc = function(hwInstanceId, ioId, checked) {
         projectData.details.forEach(d => {
             if(d.hardware) {
                 const hw = d.hardware.find(x => x.instanceId === hwInstanceId);
-                if(hw) hw.printInCustomerDoc = checked;
+                if(hw) {
+                    if(!hw.ioPrint) hw.ioPrint = {};
+                    hw.ioPrint[ioId] = checked;
+                }
+            }
+        });
+        saveToLocal();
+    };
+
+    window.toggleSubNodePrintCustomerDoc = function(hwInstanceId, ioId, subId, checked) {
+        projectData.details.forEach(d => {
+            if(d.hardware) {
+                const hw = d.hardware.find(x => x.instanceId === hwInstanceId);
+                if(hw && hw.subNodes && hw.subNodes[ioId]) {
+                    const sub = hw.subNodes[ioId].find(x => x.id === subId);
+                    if(sub) sub.printInCustomerDoc = checked;
+                }
             }
         });
         saveToLocal();
@@ -2072,7 +2091,7 @@
             appFunctions: {},
             globalGroup: {},
             subNodes: {},
-            printInCustomerDoc: false
+            ioPrint: {}
         }); 
         renderApp();
     }
@@ -2092,7 +2111,7 @@
         const hw = d.hardware.find(x => x.instanceId === hwInstanceId);
         if(hw && confirm("Profil ändern? Bestehende IO-Verknüpfungen dieser Komponente werden zurückgesetzt.")) {
             hw.activeProfile = profileId;
-            hw.mappings = {}; hw.appFunctions = {}; hw.globalGroup = {}; hw.subNodes = {}; hw.gruppe = {}; hw.funktion = {};
+            hw.mappings = {}; hw.appFunctions = {}; hw.globalGroup = {}; hw.subNodes = {}; hw.gruppe = {}; hw.funktion = {}; hw.ioPrint = {};
             renderApp();
         }
     }
@@ -2133,7 +2152,7 @@
                     if(hw.instanceId === hwInstanceId) {
                         if(!hw.subNodes) hw.subNodes = {};
                         if(!hw.subNodes[ioId]) hw.subNodes[ioId] = [];
-                        hw.subNodes[ioId].push({ id: generateId(), name: "Neues Gerät", location: d.room || "", gruppe: "", funktion: "", channels: 1, globalGroup: "", appFunctions: "", mapping: "" });
+                        hw.subNodes[ioId].push({ id: generateId(), name: "Neues Gerät", location: d.room || "", gruppe: "", funktion: "", channels: 1, globalGroup: "", appFunctions: "", mapping: "", printInCustomerDoc: false });
                     }
                 });
             }
@@ -2475,6 +2494,7 @@
                                     <th>Gruppe</th>
                                     <th>Kanäle</th>
                                     <th>Verknüpfungen (Taster / App / Gruppe)</th>
+                                    <th style="width: 30px;" title="In Kunden-Doku drucken">📄</th>
                                     <th style="width: 30px;"></th>
                                 </tr></thead><tbody>` + subs.map(sub => {
                                     
@@ -2504,6 +2524,7 @@
                                             <button class="btn info" title="Zuweisen / Verknüpfen" style="padding: 2px 6px; font-size: 0.75rem; height: 24px; margin-left: 5px;" onclick="openAssignModal('hardwareIo', '${subNameStr.replace(/'/g, "\\'")}', null, {hwId:'${hw.instanceId}', ioId:'${io.id}', subId:'${sub.id}'})">🔗</button>
                                         </div>
                                     </td>
+                                    <td style="text-align:center;"><input type="checkbox" onchange="toggleSubNodePrintCustomerDoc('${hw.instanceId}', '${io.id}', '${sub.id}', this.checked)" ${sub.printInCustomerDoc ? 'checked' : ''} style="cursor:pointer; width:16px; height:16px;"></td>
                                     <td style="text-align: right;"><button class="delete-btn" style="padding: 2px 4px;" title="Löschen" onclick="deleteSubNode('${hw.instanceId}', '${io.id}', '${sub.id}')">✕</button></td>
                                 </tr>`;
                             }).join('') + `</tbody></table>`;
@@ -2544,6 +2565,7 @@
                                 <button class="btn info" title="Zuweisen / Verknüpfen" style="padding: 2px 6px; font-size: 0.75rem; height: 24px;" onclick="openAssignModal('hardwareIo', '${ioNameStr.replace(/'/g, "\\'")}', null, {hwId:'${hw.instanceId}', ioId:'${io.id}', subId:null})">🔗</button>
                             </div>
                         </td>
+                        <td style="text-align:center;"><input type="checkbox" onchange="toggleHwIoPrintCustomerDoc('${hw.instanceId}', '${io.id}', this.checked)" ${hw.ioPrint && hw.ioPrint[io.id] ? 'checked' : ''} style="cursor:pointer; width:16px; height:16px;"></td>
                     </tr>`;
 
                     if(io.type === 'in') inRows += row; else outRows += row;
@@ -2552,13 +2574,13 @@
 
             let tablesHtml = '';
             if(inRows) {
-                tablesHtml += `<div style="margin-top:10px;"><h5 style="margin:0 0 4px 0; color:#475569; font-size:0.85rem;">Eingänge</h5><table class="dali-table"><thead><tr><th>Kanal</th><th>Bezeichnung</th><th>Funktion</th><th>Gruppe</th><th>Verknüpfungen</th></tr></thead><tbody>${inRows}</tbody></table></div>`;
+                tablesHtml += `<div style="margin-top:10px;"><h5 style="margin:0 0 4px 0; color:#475569; font-size:0.85rem;">Eingänge</h5><table class="dali-table"><thead><tr><th>Kanal</th><th>Bezeichnung</th><th>Funktion</th><th>Gruppe</th><th>Verknüpfungen</th><th style="width: 30px;" title="Kunden-Doku">📄</th></tr></thead><tbody>${inRows}</tbody></table></div>`;
             }
             if(outRows) {
-                tablesHtml += `<div style="margin-top:10px;"><h5 style="margin:0 0 4px 0; color:#475569; font-size:0.85rem;">Ausgänge</h5><table class="dali-table"><thead><tr><th>Kanal</th><th>Bezeichnung</th><th>Funktion</th><th>Gruppe</th><th>Verknüpfungen</th></tr></thead><tbody>${outRows}</tbody></table></div>`;
+                tablesHtml += `<div style="margin-top:10px;"><h5 style="margin:0 0 4px 0; color:#475569; font-size:0.85rem;">Ausgänge</h5><table class="dali-table"><thead><tr><th>Kanal</th><th>Bezeichnung</th><th>Funktion</th><th>Gruppe</th><th>Verknüpfungen</th><th style="width: 30px;" title="Kunden-Doku">📄</th></tr></thead><tbody>${outRows}</tbody></table></div>`;
             }
 
-            return `<div class="hw-card"><div class="hw-card-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div><div class="hw-card-body"><div class="hw-card-header"><h4>${cfg.name}</h4><div style="display:flex; align-items:center; gap:15px;"><label style="font-size:0.85rem; display:flex; align-items:center; gap:6px; cursor:pointer; color:#475569; font-weight:normal;" class="no-print"><input type="checkbox" onchange="toggleHwPrintCustomerDoc('${hw.instanceId}', this.checked)" ${hw.printInCustomerDoc ? 'checked' : ''} style="cursor:pointer; width:16px; height:16px;">Kunden-Doku</label><button class="delete-btn" onclick="deleteHardwareComponent('${hw.instanceId}')">Löschen</button></div></div>${fHtml}${tablesHtml}${busHtml}</div></div>`;
+            return `<div class="hw-card"><div class="hw-card-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div><div class="hw-card-body"><div class="hw-card-header"><h4>${cfg.name}</h4><div style="display:flex; align-items:center; gap:15px;"><button class="delete-btn" onclick="deleteHardwareComponent('${hw.instanceId}')">Löschen</button></div></div>${fHtml}${tablesHtml}${busHtml}</div></div>`;
         }).join('');
     }
 
@@ -2999,7 +3021,7 @@
 
         projectData.details.forEach(d => {
             let hasFrames = d.frames && d.frames.length > 0;
-            let selectedHw = d.hardware ? d.hardware.filter(hw => hw.printInCustomerDoc) : [];
+            let selectedHw = d.hardware || [];
             let hasHardware = selectedHw.length > 0;
 
             if(!hasFrames && !hasHardware) return;
@@ -3088,7 +3110,7 @@
                         activeIoList.forEach(io => { 
                             if(io.type === 'bus' && hw.subNodes && hw.subNodes[io.id]) {
                                 hw.subNodes[io.id].forEach(sub => {
-                                    if(sub.name || sub.appFunctions || sub.globalGroup || sub.funktion) {
+                                    if (sub.printInCustomerDoc) {
                                         ioh += `<div style="margin-top:6px; padding-left:8px; border-left:2px solid var(--primary);">
                                             <b style="color:#0f766e;">${sub.name || 'Gerät'}</b>
                                             ${sub.location ? ` <span style="color:#64748b;">(Ort: ${sub.location})</span>` : ''}
@@ -3101,11 +3123,12 @@
                                     }
                                 });
                             } else {
-                                const app = hw.appFunctions?.[io.id];
-                                const grp = hw.globalGroup?.[io.id];
-                                const bez = hw.bezeichnung?.[io.id];
-                                const func = hw.funktion?.[io.id];
-                                if(app || grp || bez || func) {
+                                if (hw.ioPrint && hw.ioPrint[io.id]) {
+                                    const app = hw.appFunctions?.[io.id];
+                                    const grp = hw.globalGroup?.[io.id];
+                                    const bez = hw.bezeichnung?.[io.id];
+                                    const func = hw.funktion?.[io.id];
+                                    
                                     ioh += `<div style="margin-top:6px; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
                                         <b style="color:#1e293b;">${io.label}${bez ? `: ${bez}` : ''}</b>
                                         <div style="color:#475569; font-size:0.8rem; margin-top:2px;">
@@ -3119,22 +3142,26 @@
                         });
                     }
 
-                    // Remove trailing separators from empty elements nicely
+                    // Bereinigung von leeren Trennern
                     ioh = ioh.replace(/&nbsp;\|&nbsp; \n/g, '\n').replace(/&nbsp;\|&nbsp; <\/div>/g, '</div>');
 
-                    html += `
-                        <div style="display:flex; gap:15px; border:1px solid #cbd5e1; padding:12px; border-radius:6px; background:#f8fafc; page-break-inside: avoid; border-left:4px solid var(--primary);">
-                            <div style="width:70px; flex-shrink:0; align-self: flex-start;">
-                                <img src="icons-schalter/${cfg.image}" style="width:100%; object-fit:contain; border-radius:4px; background:#fff; border:1px solid #e2e8f0; padding:4px;">
-                            </div>
-                            <div style="flex:1; font-size:0.85rem; color:#334155;">
-                                <div style="font-weight:bold; font-size:1rem; color:#0f766e; margin-bottom:6px; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">
-                                    ${hw.fields['Geräte-Bez.'] || cfg.name}
+                    // Hardware Karte nur drucken, wenn es ioh gibt ODER wir Felder haben.
+                    // Meistens wollen wir es drucken, weil sonst der Rahmen fehlt.
+                    if (ioh || fieldsHtml) {
+                        html += `
+                            <div style="display:flex; gap:15px; border:1px solid #cbd5e1; padding:12px; border-radius:6px; background:#f8fafc; page-break-inside: avoid; border-left:4px solid var(--primary);">
+                                <div style="width:70px; flex-shrink:0; align-self: flex-start;">
+                                    <img src="icons-schalter/${cfg.image}" style="width:100%; object-fit:contain; border-radius:4px; background:#fff; border:1px solid #e2e8f0; padding:4px;">
                                 </div>
-                                <div style="margin-bottom:8px; display:grid; grid-template-columns:1fr 1fr; gap:4px;">${fieldsHtml}</div>
-                                ${ioh ? `<div style="margin-top:8px; border-top:1px dashed #cbd5e1; padding-top:6px;"><b>Zugehörige Funktionen & Verknüpfungen:</b>${ioh}</div>` : ''}
-                            </div>
-                        </div>`;
+                                <div style="flex:1; font-size:0.85rem; color:#334155;">
+                                    <div style="font-weight:bold; font-size:1rem; color:#0f766e; margin-bottom:6px; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">
+                                        ${hw.fields['Geräte-Bez.'] || cfg.name}
+                                    </div>
+                                    <div style="margin-bottom:8px; display:grid; grid-template-columns:1fr 1fr; gap:4px;">${fieldsHtml}</div>
+                                    ${ioh ? `<div style="margin-top:8px; border-top:1px dashed #cbd5e1; padding-top:6px;"><b>Zugehörige Funktionen & Verknüpfungen:</b>${ioh}</div>` : ''}
+                                </div>
+                            </div>`;
+                    }
                 });
                 html += `</div></div>`;
             }
