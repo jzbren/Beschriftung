@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V7.5</title>
+    <title>ServiceProDetail Konfigurator V7.4</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -3112,14 +3112,12 @@
                             if(io.type === 'bus' && hw.subNodes && hw.subNodes[io.id]) {
                                 hw.subNodes[io.id].forEach(sub => {
                                     if (sub.printInCustomerDoc) {
-                                        ioh += `<div style="margin-top:6px; padding-left:8px; border-left:2px solid var(--primary);">
-                                            <b style="color:#0f766e;">${sub.name || 'Gerät'}</b>
-                                            ${sub.location ? ` <span style="color:#64748b;">(Ort: ${sub.location})</span>` : ''}
-                                            <div style="color:#475569; font-size:0.8rem; margin-top:2px;">
-                                                ${sub.funktion ? `<b>Funktion:</b> ${sub.funktion} &nbsp;|&nbsp; ` : ''}
-                                                ${sub.appFunctions ? `<b>App:</b> ${sub.appFunctions} &nbsp;|&nbsp; ` : ''}
-                                                ${sub.globalGroup ? `<b>Gruppe:</b> ${sub.globalGroup}` : ''}
-                                            </div>
+                                        ioh += `<div style="margin-bottom: 6px; padding-left: 8px; border-left: 3px solid var(--primary); font-size: 0.8rem; color: #475569;">
+                                            <b style="color:#1e293b;">${sub.name || 'Gerät'}</b>${sub.location ? ` <span style="color:#64748b;">(Ort: ${sub.location})</span>` : ''}
+                                            ${sub.gruppe ? `<div><b>Gruppe:</b> ${sub.gruppe}</div>` : ''}
+                                            ${sub.funktion ? `<div><b>Funktion:</b> ${sub.funktion}</div>` : ''}
+                                            ${sub.appFunctions ? `<div><b>App-Funktionen:</b> ${sub.appFunctions}</div>` : ''}
+                                            ${sub.globalGroup ? `<div><b>Globale Gruppe:</b> ${sub.globalGroup}</div>` : ''}
                                         </div>`;
                                     }
                                 });
