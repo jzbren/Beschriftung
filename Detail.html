@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V6.6</title>
+    <title>ServiceProDetail Konfigurator V6.7</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -2504,6 +2504,119 @@
         document.getElementById('bus-modal').style.display = 'flex';
     }
 
+    
+
+    // HILFSFUNKTION: Sucht projektweit nach Hardware, die mit einem spezifischen Schalter verknüpft ist, 
+    // und liest deren App-Funktionen und Globale Gruppen aus.
+    function getHardwareLinksForSwitch(switchIdent) {
+        let linkedAppFns = new Set();
+        let linkedGroups = new Set();
+
+        projectData.details.forEach(det => {
+            if(det.hardware) {
+                det.hardware.forEach(hw => {
+                    // Standard IO Mappings prüfen
+                    if(hw.mappings) {
+                        for(let ioId in hw.mappings) {
+                            let mapList = (hw.mappings[ioId] || '').split(',').map(x=>x.trim());
+                            if(mapList.includes(switchIdent)) {
+                                if(hw.appFunctions && hw.appFunctions[ioId]) {
+                                    hw.appFunctions[ioId].split(',').map(x=>x.trim()).filter(x=>x).forEach(x => linkedAppFns.add(x));
+                                }
+                                if(hw.globalGroup && hw.globalGroup[ioId]) {
+                                    hw.globalGroup[ioId].split(',').map(x=>x.trim()).filter(x=>x).forEach(x => linkedGroups.add(x));
+                                }
+                            }
+                        }
+                    }
+                    // Bus / SubNode Mappings prüfen
+                    if(hw.subNodes) {
+                        for(let ioId in hw.subNodes) {
+                            hw.subNodes[ioId].forEach(sub => {
+                                if(sub.mapping) {
+                                    let mapList = sub.mapping.split(',').map(x=>x.trim());
+                                    if(mapList.includes(switchIdent)) {
+                                        if(sub.appFunctions) {
+                                            sub.appFunctions.split(',').map(x=>x.trim()).filter(x=>x).forEach(x => linkedAppFns.add(x));
+                                        }
+                                        if(sub.globalGroup) {
+                                            sub.globalGroup.split(',').map(x=>x.trim()).filter(x=>x).forEach(x => linkedGroups.add(x));
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        return {
+            appFns: Array.from(linkedAppFns).join(', '),
+            groups: Array.from(linkedGroups).join(', ')
+        };
+    }
+
+    // NEUE HILFSFUNKTION: Trennt Hardware, App-Funktionen und Gruppen sauber auf
+    function parseSlotLinks(dat, hwLinks) {
+        let rawEingabe = (dat.eingabegerat || '').split(',').map(x=>x.trim()).filter(x=>x);
+        let targetHw = [];
+        let directApp = [];
+        let directGrp = [];
+        
+        let appFnNames = projectData.appFunctions.map(a => typeof a === 'object' ? a.name : a);
+        let grpNames = projectData.globalGroups.map(g => typeof g === 'object' ? g.name : g);
+
+        rawEingabe.forEach(item => {
+            if(appFnNames.includes(item)) directApp.push(item);
+            else if(grpNames.includes(item)) directGrp.push(item);
+            else targetHw.push(item);
+        });
+
+        let combinedApp = [...directApp, ...(hwLinks.appFns ? hwLinks.appFns.split(',') : [])].map(x=>x.trim()).filter(x=>x);
+        let uniqueApp = [...new Set(combinedApp)].join(', ');
+
+        let combinedGrp = [dat.gruppe, ...directGrp, ...(hwLinks.groups ? hwLinks.groups.split(',') : [])].map(x=>typeof x === 'string' ? x.trim() : '').filter(x=>x);
+        let uniqueGrp = [...new Set(combinedGrp)].join(', ');
+
+        return { targetHw: targetHw.join(', '), uniqueApp, uniqueGrp };
+    }
+
+    // ANGEPASST: Globale Einstellungen für den Techniker-Druck generieren (nur 1x am Ende)
+    function buildGlobalsPrintHtml() {
+        let globalsPrintHtml = '';
+        let hasGlobals = (projectData.appFunctions && projectData.appFunctions.length > 0) ||
+                         (projectData.globalGroups && projectData.globalGroups.length > 0) ||
+                         (projectData.globalFunctions && projectData.globalFunctions.length > 0);
+        if (hasGlobals) {
+            let renderItemsList = (list) => {
+                if (!list || list.length === 0) return '<div style="font-size:0.8rem; color:#94a3b8; font-style:italic;">Keine Einträge</div>';
+                return list.map(item => {
+                    const name = typeof item === 'object' ? item.name : item;
+                    const desc = typeof item === 'object' ? item.description : '';
+                    return `<div style="margin-bottom:8px; page-break-inside: avoid;">
+                        <div style="font-size:0.85rem; font-weight:600; color:#1e293b;">${name}</div>
+                        ${desc ? `<div style="font-size:0.75rem; color:#475569; margin-top:2px; line-height:1.3;">${desc}</div>` : ''}
+                    </div>`;
+                }).join('');
+            };
+
+            let appFnHtml = renderItemsList(projectData.appFunctions);
+            let grpHtml = renderItemsList(projectData.globalGroups);
+            let fnHtml = renderItemsList(projectData.globalFunctions);
+
+            globalsPrintHtml = `<div class="print-detail-page" style="page-break-before: always;">
+                <div class="print-section-title">Zentrale Einstellungen & Definitionen</div>
+                <div style="display:flex; flex-direction:column; gap:14px; background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:6px; page-break-inside: avoid;">
+                <div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">App-Funktionen</div>${appFnHtml}</div>
+                <div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">Globale Gruppen</div>${grpHtml}</div>
+                <div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">Globale Funktionen</div>${fnHtml}</div>
+                </div></div>`;
+        }
+        return globalsPrintHtml;
+    }
+
+    // ANGEPASST: Detail-Ansicht für den Techniker-Druck
     function buildDetailPrintHtml(d) {
         let framesHtml = '';
         if(d.frames && d.frames.length > 0) {
@@ -2535,30 +2648,22 @@
                         ioRows = ic.io.map(io => {
                             const dat = s.ioData?.[io.id] || {};
                             
-                            // Hardware-Verknüpfungen ermitteln, falls dort App/Gruppe definiert wurden
                             const slotLabel = ic ? ic.label : 'Platz';
                             const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
                             const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
                             const hwLinks = getHardwareLinksForSwitch(switchIdent);
     
-                            // Duplikate vermeiden: Nur anzeigen, wenn nicht bereits lokal gesetzt
-                            let combinedApp = [dat.funktion, hwLinks.appFns].filter(x => x).reduce((acc, curr) => {
-                                curr.split(',').forEach(item => { if(!acc.includes(item.trim())) acc.push(item.trim()); });
-                                return acc;
-                            }, []).join(', ');
-    
-                            let combinedGrp = [dat.gruppe, hwLinks.groups].filter(x => x).reduce((acc, curr) => {
-                                curr.split(',').forEach(item => { if(!acc.includes(item.trim())) acc.push(item.trim()); });
-                                return acc;
-                            }, []).join(', ');
+                            // Nutze den neuen Parser für eine saubere Trennung
+                            const parsed = parseSlotLinks(dat, hwLinks);
     
                             return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">
                                 <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
                                 Bezeichnung: ${dat.bezeichnung||''}<br>
                                 Art: ${dat.art||''}<br>
-                                ${combinedApp ? `App / Funktion: ${combinedApp}<br>` : ''}
-                                ${combinedGrp ? `Gruppe: ${combinedGrp}<br>` : ''}
-                                <span style="font-weight: normal;">Ziel (Hardware): ${dat.eingabegerat||''}</span>
+                                <span style="font-weight: normal;">Ziel (Hardware): ${parsed.targetHw || '-'}</span><br>
+                                ${dat.funktion ? `Funktion (Global): ${dat.funktion}<br>` : ''}
+                                ${parsed.uniqueApp ? `App-Funktionen: ${parsed.uniqueApp}<br>` : ''}
+                                ${parsed.uniqueGrp ? `Gruppen: ${parsed.uniqueGrp}<br>` : ''}
                             </div>`;
                         }).join('');
                     }
@@ -2630,103 +2735,26 @@
             }).join('');
         }
     
-        let globalsPrintHtml = '';
-        let hasGlobals = (projectData.appFunctions && projectData.appFunctions.length > 0) ||
-                         (projectData.globalGroups && projectData.globalGroups.length > 0) ||
-                         (projectData.globalFunctions && projectData.globalFunctions.length > 0);
-        if (hasGlobals) {
-            let renderItemsList = (list) => {
-                if (!list || list.length === 0) return '<div style="font-size:0.8rem; color:#94a3b8; font-style:italic;">Keine Einträge</div>';
-                return list.map(item => {
-                    const name = typeof item === 'object' ? item.name : item;
-                    const desc = typeof item === 'object' ? item.description : '';
-                    return `<div style="margin-bottom:8px; page-break-inside: avoid;">
-                        <div style="font-size:0.85rem; font-weight:600; color:#1e293b;">${name}</div>
-                        ${desc ? `<div style="font-size:0.75rem; color:#475569; margin-top:2px; line-height:1.3;">${desc}</div>` : ''}
-                    </div>`;
-                }).join('');
-            };
-    
-            let appFnHtml = renderItemsList(projectData.appFunctions);
-            let grpHtml = renderItemsList(projectData.globalGroups);
-            let fnHtml = renderItemsList(projectData.globalFunctions);
-    
-            globalsPrintHtml = `<div class="print-section-title">Zentrale Einstellungen & Definitionen</div>` +
-                `<div style="display:flex; flex-direction:column; gap:14px; background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:6px; page-break-inside: avoid;">` +
-                `<div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">App-Funktionen</div>${appFnHtml}</div>` +
-                `<div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">Globale Gruppen</div>${grpHtml}</div>` +
-                `<div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">Globale Funktionen</div>${fnHtml}</div>` +
-                `</div>`;
-        }
-    
-        return `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName}</h2><p>${projectData.location||''}</p></div><h3 style="color:#0f766e; margin:0;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}</h3>${framesHtml}${hwHtml}${globalsPrintHtml}</div>`;
+        return `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName}</h2><p>${projectData.location||''}</p></div><h3 style="color:#0f766e; margin:0;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}</h3>${framesHtml}${hwHtml}</div>`;
     }
 
-    // HILFSFUNKTION: Sucht projektweit nach Hardware, die mit einem spezifischen Schalter verknüpft ist, 
-    // und liest deren App-Funktionen und Globale Gruppen aus.
-    function getHardwareLinksForSwitch(switchIdent) {
-        let linkedAppFns = new Set();
-        let linkedGroups = new Set();
-
-        projectData.details.forEach(det => {
-            if(det.hardware) {
-                det.hardware.forEach(hw => {
-                    // Standard IO Mappings prüfen
-                    if(hw.mappings) {
-                        for(let ioId in hw.mappings) {
-                            let mapList = (hw.mappings[ioId] || '').split(',').map(x=>x.trim());
-                            if(mapList.includes(switchIdent)) {
-                                if(hw.appFunctions && hw.appFunctions[ioId]) {
-                                    hw.appFunctions[ioId].split(',').map(x=>x.trim()).filter(x=>x).forEach(x => linkedAppFns.add(x));
-                                }
-                                if(hw.globalGroup && hw.globalGroup[ioId]) {
-                                    hw.globalGroup[ioId].split(',').map(x=>x.trim()).filter(x=>x).forEach(x => linkedGroups.add(x));
-                                }
-                            }
-                        }
-                    }
-                    // Bus / SubNode Mappings prüfen
-                    if(hw.subNodes) {
-                        for(let ioId in hw.subNodes) {
-                            hw.subNodes[ioId].forEach(sub => {
-                                if(sub.mapping) {
-                                    let mapList = sub.mapping.split(',').map(x=>x.trim());
-                                    if(mapList.includes(switchIdent)) {
-                                        if(sub.appFunctions) {
-                                            sub.appFunctions.split(',').map(x=>x.trim()).filter(x=>x).forEach(x => linkedAppFns.add(x));
-                                        }
-                                        if(sub.globalGroup) {
-                                            sub.globalGroup.split(',').map(x=>x.trim()).filter(x=>x).forEach(x => linkedGroups.add(x));
-                                        }
-                                    }
-                                }
-                            });
-                        }
-                    }
-                });
-            }
-        });
-
-        return {
-            appFns: Array.from(linkedAppFns).join(', '),
-            groups: Array.from(linkedGroups).join(', ')
-        };
-    }
-
+    // ANGEPASST: Container-Update für den Druck baut die Globals nur 1x am Ende ein
     function updatePrintContainers() {
         const d = projectData.details.find(x => x.id === activeDetailId);
+        let globalsHtml = buildGlobalsPrintHtml(); // Einmalige Erzeugung der Globals
+        
         if(d) {
-            document.getElementById('print-single-container').innerHTML = buildDetailPrintHtml(d);
+            document.getElementById('print-single-container').innerHTML = buildDetailPrintHtml(d) + globalsHtml;
         }
         let allHtml = '';
         projectData.details.forEach(det => { allHtml += buildDetailPrintHtml(det); });
-        document.getElementById('print-all-container').innerHTML = allHtml;
+        document.getElementById('print-all-container').innerHTML = allHtml + globalsHtml;
     }
 
+    // ANGEPASST: Kunden-Druck mit dem gleichen übersichtlichen Layout unter dem Ziel
     function printCustomerDoc() {
         let html = `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName} - Kunden-Dokumentation</h2><p>${projectData.location||''}</p></div>`;
 
-        // Iteration über alle Details für die Kunden-Schalteransicht
         projectData.details.forEach(d => {
             if(!d.frames || d.frames.length === 0) return;
 
@@ -2751,24 +2779,22 @@
                         ic.io.forEach(io => {
                             const dat = s.ioData?.[io.id] || {};
                             
-                            // 1. Hole den eindeutigen Taster-Namen, wie er in den Mappings gespeichert ist
                             const slotLabel = ic ? ic.label : 'Platz';
                             const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
                             const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
                             
-                            // 2. Suche in der Hardware nach Links
                             const hwLinks = getHardwareLinksForSwitch(switchIdent);
+                            const parsed = parseSlotLinks(dat, hwLinks);
 
-                            if(dat.bezeichnung || dat.funktion || dat.gruppe || hwLinks.appFns || hwLinks.groups) {
+                            if(dat.bezeichnung || dat.funktion || parsed.targetHw || parsed.uniqueApp || parsed.uniqueGrp) {
                                 slotText += `<div style="margin-bottom: 4px;">`;
                                 if(dat.bezeichnung) slotText += `<b>${dat.bezeichnung}</b>`;
                                 else slotText += `<b>Taster ${i}</b>`;
                                 
-                                let details = [];
-                                if(dat.funktion) slotText += `<div style="color:#475569;">Funktion: ${dat.funktion}</div>`;
-                                if(dat.gruppe) slotText += `<div style="color:#475569;">Gruppe (Lokal): ${dat.gruppe}</div>`;
-                                if(hwLinks.appFns) slotText += `<div style="color:#475569;">App: ${hwLinks.appFns}</div>`;
-                                if(hwLinks.groups) slotText += `<div style="color:#475569;">Gruppe (global): ${hwLinks.groups}</div>`;
+                                if(parsed.targetHw) slotText += `<div style="color:#475569;">Ziel (Hardware): ${parsed.targetHw}</div>`;
+                                if(dat.funktion) slotText += `<div style="color:#475569;">Funktion (Global): ${dat.funktion}</div>`;
+                                if(parsed.uniqueApp) slotText += `<div style="color:#475569;">App-Funktionen: ${parsed.uniqueApp}</div>`;
+                                if(parsed.uniqueGrp) slotText += `<div style="color:#475569;">Gruppen: ${parsed.uniqueGrp}</div>`;
                                 slotText += `</div>`;
                             }
                         });
@@ -2792,7 +2818,6 @@
         });
         html += `</div>`;
 
-        // Generiere Globale Einstellungen (Ende des Dokuments)
         let hasGlobals = (projectData.appFunctions && projectData.appFunctions.length > 0) ||
                          (projectData.globalGroups && projectData.globalGroups.length > 0) ||
                          (projectData.globalFunctions && projectData.globalFunctions.length > 0);
