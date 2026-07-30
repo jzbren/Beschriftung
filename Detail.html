@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V6.7</title>
+    <title>ServiceProDetail Konfigurator V6.8</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -2660,10 +2660,11 @@
                                 <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
                                 Bezeichnung: ${dat.bezeichnung||''}<br>
                                 Art: ${dat.art||''}<br>
+                                ${parsed.uniqueGrp ? `Gruppen: ${parsed.uniqueGrp}<br>` : ''}
                                 <span style="font-weight: normal;">Ziel (Hardware): ${parsed.targetHw || '-'}</span><br>
                                 ${dat.funktion ? `Funktion (Global): ${dat.funktion}<br>` : ''}
                                 ${parsed.uniqueApp ? `App-Funktionen: ${parsed.uniqueApp}<br>` : ''}
-                                ${parsed.uniqueGrp ? `Gruppen: ${parsed.uniqueGrp}<br>` : ''}
+                                
                             </div>`;
                         }).join('');
                     }
@@ -2791,7 +2792,6 @@
                                 if(dat.bezeichnung) slotText += `<b>${dat.bezeichnung}</b>`;
                                 else slotText += `<b>Taster ${i}</b>`;
                                 
-                                if(parsed.targetHw) slotText += `<div style="color:#475569;">Ziel (Hardware): ${parsed.targetHw}</div>`;
                                 if(dat.funktion) slotText += `<div style="color:#475569;">Funktion (Global): ${dat.funktion}</div>`;
                                 if(parsed.uniqueApp) slotText += `<div style="color:#475569;">App-Funktionen: ${parsed.uniqueApp}</div>`;
                                 if(parsed.uniqueGrp) slotText += `<div style="color:#475569;">Gruppen: ${parsed.uniqueGrp}</div>`;
