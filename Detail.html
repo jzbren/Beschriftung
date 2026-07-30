@@ -2662,7 +2662,7 @@
                                 Art: ${dat.art||''}<br>
                                 ${parsed.uniqueGrp ? `Gruppen: ${parsed.uniqueGrp}<br>` : ''}
                                 <span style="font-weight: normal;">Ziel (Hardware): ${parsed.targetHw || '-'}</span><br>
-                                ${dat.funktion ? `Funktion (Global): ${dat.funktion}<br>` : ''}
+                                ${dat.funktion ? `Funktion: ${dat.funktion}<br>` : ''}
                                 ${parsed.uniqueApp ? `App-Funktionen: ${parsed.uniqueApp}<br>` : ''}
                                 
                             </div>`;
@@ -2792,7 +2792,7 @@
                                 if(dat.bezeichnung) slotText += `<b>${dat.bezeichnung}</b>`;
                                 else slotText += `<b>Taster ${i}</b>`;
                                 
-                                if(dat.funktion) slotText += `<div style="color:#475569;">Funktion (Global): ${dat.funktion}</div>`;
+                                if(dat.funktion) slotText += `<div style="color:#475569;">Funktion: ${dat.funktion}</div>`;
                                 if(parsed.uniqueApp) slotText += `<div style="color:#475569;">App-Funktionen: ${parsed.uniqueApp}</div>`;
                                 if(parsed.uniqueGrp) slotText += `<div style="color:#475569;">Gruppen: ${parsed.uniqueGrp}</div>`;
                                 slotText += `</div>`;
