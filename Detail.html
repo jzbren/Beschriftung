@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V7.3</title>
+    <title>ServiceProDetail Konfigurator V7.4</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1802,6 +1802,16 @@
         renderApp();
     };
 
+    window.toggleHwPrintCustomerDoc = function(hwInstanceId, checked) {
+        projectData.details.forEach(d => {
+            if(d.hardware) {
+                const hw = d.hardware.find(x => x.instanceId === hwInstanceId);
+                if(hw) hw.printInCustomerDoc = checked;
+            }
+        });
+        saveToLocal();
+    };
+
     function renderStandardDropdown(dropdownId, currentValue, optionsList, callbackName, placeholder) {
         let optsHtml = optionsList.map(opt => `<div class="dropdown-option" data-label="${(opt.label || opt.value).toLowerCase()}" onclick="${callbackName}('${opt.value.replace(/'/g, "\\'")}', event)">${opt.label || opt.value}</div>`).join('');
         const dLabel = optionsList.find(o => o.value === currentValue)?.label || currentValue || placeholder;
@@ -2061,7 +2071,8 @@
             mappings: {}, 
             appFunctions: {},
             globalGroup: {},
-            subNodes: {} 
+            subNodes: {},
+            printInCustomerDoc: false
         }); 
         renderApp();
     }
@@ -2547,7 +2558,7 @@
                 tablesHtml += `<div style="margin-top:10px;"><h5 style="margin:0 0 4px 0; color:#475569; font-size:0.85rem;">Ausgänge</h5><table class="dali-table"><thead><tr><th>Kanal</th><th>Bezeichnung</th><th>Funktion</th><th>Gruppe</th><th>Verknüpfungen</th></tr></thead><tbody>${outRows}</tbody></table></div>`;
             }
 
-            return `<div class="hw-card"><div class="hw-card-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div><div class="hw-card-body"><div class="hw-card-header"><h4>${cfg.name}</h4><button class="delete-btn" onclick="deleteHardwareComponent('${hw.instanceId}')">Löschen</button></div>${fHtml}${tablesHtml}${busHtml}</div></div>`;
+            return `<div class="hw-card"><div class="hw-card-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div><div class="hw-card-body"><div class="hw-card-header"><h4>${cfg.name}</h4><div style="display:flex; align-items:center; gap:15px;"><label style="font-size:0.85rem; display:flex; align-items:center; gap:6px; cursor:pointer; color:#475569; font-weight:normal;" class="no-print"><input type="checkbox" onchange="toggleHwPrintCustomerDoc('${hw.instanceId}', this.checked)" ${hw.printInCustomerDoc ? 'checked' : ''} style="cursor:pointer; width:16px; height:16px;">Kunden-Doku</label><button class="delete-btn" onclick="deleteHardwareComponent('${hw.instanceId}')">Löschen</button></div></div>${fHtml}${tablesHtml}${busHtml}</div></div>`;
         }).join('');
     }
 
@@ -2987,17 +2998,16 @@
         let html = `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName} - Kunden-Dokumentation</h2><p>${projectData.location||''}</p></div>`;
 
         projectData.details.forEach(d => {
-            const hasFrames = d.frames && d.frames.length > 0;
-            const hasHardware = d.hardware && d.hardware.length > 0;
-            
-            // Überspringe Räume komplett, wenn weder Schalter noch Hardware vorhanden sind
-            if (!hasFrames && !hasHardware) return;
+            let hasFrames = d.frames && d.frames.length > 0;
+            let selectedHw = d.hardware ? d.hardware.filter(hw => hw.printInCustomerDoc) : [];
+            let hasHardware = selectedHw.length > 0;
+
+            if(!hasFrames && !hasHardware) return;
 
             html += `<div style="margin-bottom: 30px; page-break-inside: avoid;">`;
             html += `<h3 style="color:#0f766e; border-bottom: 2px solid #0f766e; padding-bottom: 5px;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(${d.room})</span>` : ''}</h3>`;
 
-            // --- TEIL 1: SCHALTER (Nur wenn vorhanden) ---
-            if (hasFrames) {
+            if(hasFrames) {
                 d.frames.forEach(f => {
                     const [r, c] = f.layout.split('x').map(Number);
                     const total = r * c;
@@ -3015,6 +3025,7 @@
                         if(ic && ic.io) {
                             ic.io.forEach(io => {
                                 const dat = s.ioData?.[io.id] || {};
+                                
                                 const slotLabel = ic ? ic.label : 'Platz';
                                 const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
                                 const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
@@ -3044,7 +3055,7 @@
                     }
 
                     html += `<div style="margin-top: 15px;">
-                        <h4 style="margin-bottom:10px; color:#1e293b;">Schaltstelle: ${f.name}</h4>
+                        <h4 style="margin-bottom:10px;">${f.name}</h4>
                         <div style="display:flex; gap: 30px; align-items: flex-start;">
                             <div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px); flex-shrink:0;">${vSlots}</div>
                             <div style="flex:1;">${slotListHtml}</div>
@@ -3053,88 +3064,85 @@
                 });
             }
 
-            // --- TEIL 2: SMARTE GERÄTE & STEUERUNGEN (Neue Kunden-Hardware-Ansicht) ---
-            if (hasHardware) {
-                let hwEndpoints = [];
-
-                d.hardware.forEach(hw => {
+            if(hasHardware) {
+                html += `<div style="margin-top: 25px;">
+                    <h4 style="margin-bottom:12px; color:#1e293b; font-size: 1.05rem;">Zugehörige Hardware</h4>
+                    <div style="display:flex; flex-direction:column; gap:12px;">`;
+                
+                selectedHw.forEach(hw => {
                     const cfg = hardwareConfigList.find(x => x.id === hw.configId);
-                    if (!cfg) return;
+                    if(!cfg) return;
 
-                    // 1. Bus-Geräte / SubNodes (z.B. DALI Leuchten, Tree Melder)
-                    if (hw.subNodes) {
-                        for (let ioKey in hw.subNodes) {
-                            hw.subNodes[ioKey].forEach(sub => {
-                                // Nur aufnehmen, wenn das Gerät einen echten Namen bekommen hat oder verknüpft ist
-                                if ((sub.name && sub.name !== 'Neues Gerät') || sub.appFunctions || sub.globalGroup) {
-                                    hwEndpoints.push({
-                                        name: sub.name || 'Gerät',
-                                        type: 'Smartes Gerät',
-                                        function: sub.funktion || '',
-                                        app: sub.appFunctions || '',
-                                        group: sub.globalGroup || ''
-                                    });
-                                }
-                            });
-                        }
+                    let fieldsHtml = '';
+                    if(cfg.fields) {
+                        cfg.fields.forEach(f => {
+                            if (hw.fields[f] && !/ast|bus|bridge|dali|link/i.test(f)) {
+                                fieldsHtml += `<div style="margin-bottom:2px;"><b>${f}:</b> ${hw.fields[f]}</div>`;
+                            }
+                        });
                     }
 
-                    // 2. Standard Ein-/Ausgänge (Relais, Sensoren)
+                    let ioh = ''; 
                     const activeIoList = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
-                    if (activeIoList) {
-                        activeIoList.forEach(io => {
-                            if (io.type !== 'bus') {
-                                const bez = hw.bezeichnung?.[io.id];
+                    if(activeIoList) {
+                        activeIoList.forEach(io => { 
+                            if(io.type === 'bus' && hw.subNodes && hw.subNodes[io.id]) {
+                                hw.subNodes[io.id].forEach(sub => {
+                                    if(sub.name || sub.appFunctions || sub.globalGroup || sub.funktion) {
+                                        ioh += `<div style="margin-top:6px; padding-left:8px; border-left:2px solid var(--primary);">
+                                            <b style="color:#0f766e;">${sub.name || 'Gerät'}</b>
+                                            ${sub.location ? ` <span style="color:#64748b;">(Ort: ${sub.location})</span>` : ''}
+                                            <div style="color:#475569; font-size:0.8rem; margin-top:2px;">
+                                                ${sub.funktion ? `<b>Funktion:</b> ${sub.funktion} &nbsp;|&nbsp; ` : ''}
+                                                ${sub.appFunctions ? `<b>App:</b> ${sub.appFunctions} &nbsp;|&nbsp; ` : ''}
+                                                ${sub.globalGroup ? `<b>Gruppe:</b> ${sub.globalGroup}` : ''}
+                                            </div>
+                                        </div>`;
+                                    }
+                                });
+                            } else {
                                 const app = hw.appFunctions?.[io.id];
                                 const grp = hw.globalGroup?.[io.id];
-                                const fn = hw.funktion?.[io.id];
-
-                                // Nur in die Kunden-Doku aufnehmen, wenn das IO benannt oder zugeordnet wurde
-                                if (bez || app || grp) {
-                                    hwEndpoints.push({
-                                        name: bez || io.label,
-                                        type: io.type === 'in' ? 'Sensor / Eingang' : 'Steuerung / Ausgang',
-                                        function: fn || '',
-                                        app: app || '',
-                                        group: grp || ''
-                                    });
+                                const bez = hw.bezeichnung?.[io.id];
+                                const func = hw.funktion?.[io.id];
+                                if(app || grp || bez || func) {
+                                    ioh += `<div style="margin-top:6px; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
+                                        <b style="color:#1e293b;">${io.label}${bez ? `: ${bez}` : ''}</b>
+                                        <div style="color:#475569; font-size:0.8rem; margin-top:2px;">
+                                            ${func ? `<b>Funktion:</b> ${func} &nbsp;|&nbsp; ` : ''}
+                                            ${app ? `<b>App:</b> ${app} &nbsp;|&nbsp; ` : ''}
+                                            ${grp ? `<b>Gruppe:</b> ${grp}` : ''}
+                                        </div>
+                                    </div>`;
                                 }
                             }
                         });
                     }
+
+                    // Remove trailing separators from empty elements nicely
+                    ioh = ioh.replace(/&nbsp;\|&nbsp; \n/g, '\n').replace(/&nbsp;\|&nbsp; <\/div>/g, '</div>');
+
+                    html += `
+                        <div style="display:flex; gap:15px; border:1px solid #cbd5e1; padding:12px; border-radius:6px; background:#f8fafc; page-break-inside: avoid; border-left:4px solid var(--primary);">
+                            <div style="width:70px; flex-shrink:0; align-self: flex-start;">
+                                <img src="icons-schalter/${cfg.image}" style="width:100%; object-fit:contain; border-radius:4px; background:#fff; border:1px solid #e2e8f0; padding:4px;">
+                            </div>
+                            <div style="flex:1; font-size:0.85rem; color:#334155;">
+                                <div style="font-weight:bold; font-size:1rem; color:#0f766e; margin-bottom:6px; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">
+                                    ${hw.fields['Geräte-Bez.'] || cfg.name}
+                                </div>
+                                <div style="margin-bottom:8px; display:grid; grid-template-columns:1fr 1fr; gap:4px;">${fieldsHtml}</div>
+                                ${ioh ? `<div style="margin-top:8px; border-top:1px dashed #cbd5e1; padding-top:6px;"><b>Zugehörige Funktionen & Verknüpfungen:</b>${ioh}</div>` : ''}
+                            </div>
+                        </div>`;
                 });
-
-                // HTML für die smarten Geräte generieren
-                if (hwEndpoints.length > 0) {
-                    html += `<div style="margin-top: 20px;">
-                        <h4 style="margin-bottom:10px; color:#1e293b; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">📱 Smarte Geräte & Automatik</h4>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">`; // Zweispaltig für Übersichtlichkeit
-
-                    hwEndpoints.forEach(ep => {
-                        html += `<div style="padding: 10px; border-left: 3px solid #14b8a6; background: #f0fdf4; border-radius: 0 6px 6px 0; break-inside: avoid;">
-                            <div style="font-weight: 600; color: #0f766e; margin-bottom: 4px;">${ep.name} <span style="font-weight: normal; font-size: 0.75rem; color: #64748b;">(${ep.type})</span></div>`;
-                        
-                        if (ep.function) html += `<div style="font-size: 0.8rem; color: #475569; margin-top: 2px;"><b>Funktion:</b> ${ep.function}</div>`;
-                        if (ep.app) html += `<div style="font-size: 0.8rem; color: #475569; margin-top: 2px;"><b>App:</b> ${ep.app}</div>`;
-                        if (ep.group) html += `<div style="font-size: 0.8rem; color: #475569; margin-top: 2px;"><b>Gruppe:</b> ${ep.group}</div>`;
-                        
-                        // Fallback, wenn nur ein Name vergeben wurde
-                        if (!ep.function && !ep.app && !ep.group) {
-                            html += `<div style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">Nur Automatikbetrieb / Keine direkten App-Funktionen</div>`;
-                        }
-
-                        html += `</div>`;
-                    });
-
-                    html += `</div></div>`;
-                }
+                html += `</div></div>`;
             }
 
             html += `</div>`;
         });
         html += `</div>`;
 
-        // --- TEIL 3: GLOBALE EINSTELLUNGEN ---
         let hasGlobals = (projectData.appFunctions && projectData.appFunctions.length > 0) ||
                          (projectData.globalGroups && projectData.globalGroups.length > 0) ||
                          (projectData.globalFunctions && projectData.globalFunctions.length > 0);
@@ -3147,76 +3155,73 @@
                     const desc = typeof item === 'object' ? item.description : '';
                     return `<div style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #e2e8f0; page-break-inside: avoid;">
                         <div style="font-size:1rem; font-weight:600; color:#1e293b;">${name}</div>
-                        ${desc ? `<div style="font-size:0.85rem; color:#475569; margin-top: 2px;">${desc}</div>` : ''}
+                        ${desc ? `<div style="font-size:0.85rem; color:#475569; margin-top:4px;">${desc}</div>` : ''}
                     </div>`;
                 }).join('');
             };
 
-            let appFnHtml = renderItemsList(projectData.appFunctions);
-            let grpHtml = renderItemsList(projectData.globalGroups);
-            let fnHtml = renderItemsList(projectData.globalFunctions);
-
             html += `<div class="print-detail-page" style="page-break-before: always;">
-                <div class="print-section-title">Zentrale Einstellungen & Definitionen</div>
-                <div style="display:flex; flex-direction:column; gap:14px; background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:6px; page-break-inside: avoid;">
-                <div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">App-Funktionen</div>${appFnHtml}</div>
-                <div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">Globale Gruppen</div>${grpHtml}</div>
-                <div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">Globale Funktionen</div>${fnHtml}</div>
-                </div></div>`;
+                <div class="print-header-block"><h2>Zentrale Einstellungen & Erklärungen</h2></div>`;
+            
+            if (projectData.globalFunctions && projectData.globalFunctions.length > 0) {
+                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">Globale Funktionen</h3>
+                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Erklärung der verwendeten Taster-Funktionen im Projekt.</p>
+                         ${renderItemsList(projectData.globalFunctions)}</div><br>`;
+            }
+            if (projectData.globalGroups && projectData.globalGroups.length > 0) {
+                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">Globale Gruppen</h3>
+                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Gruppenfunktionen, die über mehrere Räume hinweg wirken.</p>
+                         ${renderItemsList(projectData.globalGroups)}</div><br>`;
+            }
+            if (projectData.appFunctions && projectData.appFunctions.length > 0) {
+                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">App-Funktionen</h3>
+                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Funktionen, die in der Smart Home App verfügbar sind.</p>
+                         ${renderItemsList(projectData.appFunctions)}</div>`;
+            }
+            html += `</div>`;
         }
 
         document.getElementById('print-customer-container').innerHTML = html;
         
-        // Druckvorgang vorbereiten
-        const originalDisplay = document.getElementById('workspace-container').style.display;
-        document.getElementById('workspace-container').style.display = 'none';
-        document.getElementById('print-all-container').style.display = 'none';
         document.getElementById('print-single-container').style.display = 'none';
+        document.getElementById('print-all-container').style.display = 'none';
         document.getElementById('print-customer-container').style.display = 'block';
         
         window.print();
         
-        // Ansicht wiederherstellen
-        document.getElementById('workspace-container').style.display = originalDisplay;
-        document.getElementById('print-customer-container').style.display = 'none';
-    }
-
-    function printAllDetails() {
-        updatePrintContainers();
-        const originalDisplay = document.getElementById('workspace-container').style.display;
-        document.getElementById('workspace-container').style.display = 'none';
-        document.getElementById('print-single-container').style.display = 'none';
-        document.getElementById('print-customer-container').style.display = 'none';
-        document.getElementById('print-all-container').style.display = 'block';
-        
-        window.print();
-        
-        document.getElementById('workspace-container').style.display = originalDisplay;
-        document.getElementById('print-all-container').style.display = 'none';
+        setTimeout(() => { document.getElementById('print-customer-container').style.display = 'none'; }, 500);
     }
 
     function printCurrentDetail() {
-        updatePrintContainers();
-        const originalDisplay = document.getElementById('workspace-container').style.display;
-        document.getElementById('workspace-container').style.display = 'none';
-        document.getElementById('print-all-container').style.display = 'none';
-        document.getElementById('print-customer-container').style.display = 'none';
         document.getElementById('print-single-container').style.display = 'block';
-        
+        document.getElementById('print-all-container').style.display = 'none';
         window.print();
-        
-        document.getElementById('workspace-container').style.display = originalDisplay;
+        setTimeout(() => { document.getElementById('print-single-container').style.display = 'none'; }, 500);
+    }
+
+    function printAllDetails() {
         document.getElementById('print-single-container').style.display = 'none';
+        document.getElementById('print-all-container').style.display = 'block';
+        window.print();
+        setTimeout(() => { document.getElementById('print-all-container').style.display = 'none'; }, 500);
     }
 
     function exportProject() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const timestamp = `${year}-${month}-${day}_${hours}-${minutes}`;
+
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projectData, null, 2));
-        const dlAnchorElem = document.createElement('a');
-        dlAnchorElem.setAttribute("href", dataStr);
-        dlAnchorElem.setAttribute("download", (projectData.projectName || "Projekt") + ".ServiceProDetail");
-        document.body.appendChild(dlAnchorElem); // Erforderlich für Firefox
-        dlAnchorElem.click();
-        dlAnchorElem.remove();
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `${projectData.projectName || 'Projekt'}_${timestamp}.ServiceProDetail`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
     }
 
     function importProject(event) {
@@ -3225,19 +3230,21 @@
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
-                const importedData = JSON.parse(e.target.result);
-                projectData = migrateProjectData(importedData);
-                activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null;
-                saveToLocal();
-                renderApp();
-            } catch (error) {
-                alert("Fehler beim Laden der Datei. Ist es eine gültige .ServiceProDetail Datei?");
+                const parsed = JSON.parse(e.target.result);
+                if(parsed && parsed.details) {
+                    projectData = migrateProjectData(parsed);
+                    activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null;
+                    renderApp();
+                    alert("Projekt erfolgreich geladen!");
+                } else {
+                    alert("Ungültiges Dateiformat.");
+                }
+            } catch(err) {
+                alert("Fehler beim Lesen der Datei: " + err.message);
             }
         };
         reader.readAsText(file);
-        event.target.value = ''; // Input zurücksetzen
     }
-
 </script>
 </body>
 </html>
