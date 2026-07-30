@@ -3147,73 +3147,76 @@
                     const desc = typeof item === 'object' ? item.description : '';
                     return `<div style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #e2e8f0; page-break-inside: avoid;">
                         <div style="font-size:1rem; font-weight:600; color:#1e293b;">${name}</div>
-                        ${desc ? `<div style="font-size:0.85rem; color:#475569; margin-top:4px;">${desc}</div>` : ''}
+                        ${desc ? `<div style="font-size:0.85rem; color:#475569; margin-top: 2px;">${desc}</div>` : ''}
                     </div>`;
                 }).join('');
             };
 
+            let appFnHtml = renderItemsList(projectData.appFunctions);
+            let grpHtml = renderItemsList(projectData.globalGroups);
+            let fnHtml = renderItemsList(projectData.globalFunctions);
+
             html += `<div class="print-detail-page" style="page-break-before: always;">
-                <div class="print-header-block"><h2>Zentrale Einstellungen & Erklärungen</h2></div>`;
-            
-            if (projectData.globalFunctions && projectData.globalFunctions.length > 0) {
-                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">Globale Funktionen</h3>
-                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Erklärung der verwendeten Taster-Funktionen im Projekt.</p>
-                         ${renderItemsList(projectData.globalFunctions)}</div><br>`;
-            }
-            if (projectData.globalGroups && projectData.globalGroups.length > 0) {
-                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">Globale Gruppen</h3>
-                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Gruppenfunktionen, die über mehrere Räume hinweg wirken.</p>
-                         ${renderItemsList(projectData.globalGroups)}</div><br>`;
-            }
-            if (projectData.appFunctions && projectData.appFunctions.length > 0) {
-                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">App-Funktionen</h3>
-                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Funktionen, die in der Smart Home App verfügbar sind.</p>
-                         ${renderItemsList(projectData.appFunctions)}</div>`;
-            }
-            html += `</div>`;
+                <div class="print-section-title">Zentrale Einstellungen & Definitionen</div>
+                <div style="display:flex; flex-direction:column; gap:14px; background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:6px; page-break-inside: avoid;">
+                <div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">App-Funktionen</div>${appFnHtml}</div>
+                <div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">Globale Gruppen</div>${grpHtml}</div>
+                <div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">Globale Funktionen</div>${fnHtml}</div>
+                </div></div>`;
         }
 
         document.getElementById('print-customer-container').innerHTML = html;
         
-        document.getElementById('print-single-container').style.display = 'none';
+        // Druckvorgang vorbereiten
+        const originalDisplay = document.getElementById('workspace-container').style.display;
+        document.getElementById('workspace-container').style.display = 'none';
         document.getElementById('print-all-container').style.display = 'none';
+        document.getElementById('print-single-container').style.display = 'none';
         document.getElementById('print-customer-container').style.display = 'block';
         
         window.print();
         
-        setTimeout(() => { document.getElementById('print-customer-container').style.display = 'none'; }, 500);
-    }
-
-    function printCurrentDetail() {
-        document.getElementById('print-single-container').style.display = 'block';
-        document.getElementById('print-all-container').style.display = 'none';
-        window.print();
-        setTimeout(() => { document.getElementById('print-single-container').style.display = 'none'; }, 500);
+        // Ansicht wiederherstellen
+        document.getElementById('workspace-container').style.display = originalDisplay;
+        document.getElementById('print-customer-container').style.display = 'none';
     }
 
     function printAllDetails() {
+        updatePrintContainers();
+        const originalDisplay = document.getElementById('workspace-container').style.display;
+        document.getElementById('workspace-container').style.display = 'none';
         document.getElementById('print-single-container').style.display = 'none';
+        document.getElementById('print-customer-container').style.display = 'none';
         document.getElementById('print-all-container').style.display = 'block';
+        
         window.print();
-        setTimeout(() => { document.getElementById('print-all-container').style.display = 'none'; }, 500);
+        
+        document.getElementById('workspace-container').style.display = originalDisplay;
+        document.getElementById('print-all-container').style.display = 'none';
+    }
+
+    function printCurrentDetail() {
+        updatePrintContainers();
+        const originalDisplay = document.getElementById('workspace-container').style.display;
+        document.getElementById('workspace-container').style.display = 'none';
+        document.getElementById('print-all-container').style.display = 'none';
+        document.getElementById('print-customer-container').style.display = 'none';
+        document.getElementById('print-single-container').style.display = 'block';
+        
+        window.print();
+        
+        document.getElementById('workspace-container').style.display = originalDisplay;
+        document.getElementById('print-single-container').style.display = 'none';
     }
 
     function exportProject() {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const timestamp = `${year}-${month}-${day}_${hours}-${minutes}`;
-
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projectData, null, 2));
-        const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", `${projectData.projectName || 'Projekt'}_${timestamp}.ServiceProDetail`);
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
+        const dlAnchorElem = document.createElement('a');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", (projectData.projectName || "Projekt") + ".ServiceProDetail");
+        document.body.appendChild(dlAnchorElem); // Erforderlich für Firefox
+        dlAnchorElem.click();
+        dlAnchorElem.remove();
     }
 
     function importProject(event) {
@@ -3222,21 +3225,19 @@
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
-                const parsed = JSON.parse(e.target.result);
-                if(parsed && parsed.details) {
-                    projectData = migrateProjectData(parsed);
-                    activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null;
-                    renderApp();
-                    alert("Projekt erfolgreich geladen!");
-                } else {
-                    alert("Ungültiges Dateiformat.");
-                }
-            } catch(err) {
-                alert("Fehler beim Lesen der Datei: " + err.message);
+                const importedData = JSON.parse(e.target.result);
+                projectData = migrateProjectData(importedData);
+                activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null;
+                saveToLocal();
+                renderApp();
+            } catch (error) {
+                alert("Fehler beim Laden der Datei. Ist es eine gültige .ServiceProDetail Datei?");
             }
         };
         reader.readAsText(file);
+        event.target.value = ''; // Input zurücksetzen
     }
+
 </script>
 </body>
 </html>
