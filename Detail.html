@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V6.8</title>
+    <title>ServiceProDetail Konfigurator V6.9</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -2752,7 +2752,7 @@
         document.getElementById('print-all-container').innerHTML = allHtml + globalsHtml;
     }
 
-    // ANGEPASST: Kunden-Druck mit dem gleichen übersichtlichen Layout unter dem Ziel
+    // ANGEPASST: Kunden-Druck mit dem gleichen übersichtlichen Layout unter dem Ziel inkl. Platz-Nummer
     function printCustomerDoc() {
         let html = `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName} - Kunden-Dokumentation</h2><p>${projectData.location||''}</p></div>`;
 
@@ -2789,8 +2789,10 @@
 
                             if(dat.bezeichnung || dat.funktion || parsed.targetHw || parsed.uniqueApp || parsed.uniqueGrp) {
                                 slotText += `<div style="margin-bottom: 4px;">`;
-                                if(dat.bezeichnung) slotText += `<b>${dat.bezeichnung}</b>`;
-                                else slotText += `<b>Taster ${i}</b>`;
+                                
+                                // ANPASSUNG HIER: Platznummer und ggf. IO-Label (wie "Links", "Rechts") mit ausgeben
+                                if(dat.bezeichnung) slotText += `<b>Platz ${i} - ${dat.bezeichnung}</b>`;
+                                else slotText += `<b>Platz ${i} - ${io.label || 'Taster'}</b>`;
                                 
                                 if(dat.funktion) slotText += `<div style="color:#475569;">Funktion: ${dat.funktion}</div>`;
                                 if(parsed.uniqueApp) slotText += `<div style="color:#475569;">App-Funktionen: ${parsed.uniqueApp}</div>`;
@@ -2799,10 +2801,12 @@
                             }
                         });
                     }
+                    
+                    // ANPASSUNG HIER: Leere Plätze werden nun auch mit "Platz X" beschriftet
                     if(slotText) {
                         slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid var(--primary);">${slotText}</div>`;
                     } else {
-                        slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #cbd5e1; color:#94a3b8;"><b>Taster ${i}</b> - Nicht belegt</div>`;
+                        slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #cbd5e1; color:#94a3b8;"><b>Platz ${i}</b> - Nicht belegt</div>`;
                     }
                 }
 
