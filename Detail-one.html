@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V7.1</title>
+    <title>ServiceProDetail Konfigurator V7.0</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -161,7 +161,7 @@
         .bus-limit-badge.ok, .topo-badge.ok { background: #dcfce7; color: #166534; }
         .bus-limit-badge.full, .topo-badge.full { background: #fee2e2; color: #991b1b; }
         
-        .dali-table { width: 100%; border-collapse: collapse; margin-top: 8px; background: #fff; border-radius: 6px; border: 1px solid #e2e8f0; overflow: hidden; }
+        .dali-table { width: 100%; border-collapse: collapse; margin-top: 8px; background: #fff; border-radius: 6px; border: 1px solid #e2e8f0; }
         .dali-table th { background: #f1f5f9; padding: 8px 10px; text-align: left; font-size: 0.8rem; color: #475569; border-bottom: 1px solid #cbd5e1; font-weight: 700; }
         .dali-table td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
         .dali-table tr:last-child td { border-bottom: none; }
@@ -314,7 +314,7 @@
                 </div>
                 <div class="globals-section">
                     <h3>⚡ Globale Funktionen</h3>
-                    <p style="font-size:0.75rem; color:#64748b; margin-bottom:10px;">Auswahlbare Funktionen für Schaltplätze.</p>
+                    <p style="font-size:0.75rem; color:#64748b; margin-bottom:10px;">Auswahlbare Funktionen für Schaltplätze & Hardware.</p>
                     <div class="add-global-row" style="margin-bottom:8px;">
                         <input type="text" id="glbfn-search-input" placeholder="Globale Funktionen durchsuchen..." onkeyup="renderGlobalsLists()">
                     </div>
@@ -354,7 +354,7 @@
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
     const DEFAULT_PROJECT_DATA = { 
-        version: "7.0", 
+        version: "7.1", 
         projectName: "Projekt", 
         location: "", 
         details: [],
@@ -460,12 +460,14 @@
                     if(!hw.appFunctions) hw.appFunctions = {};
                     if(!hw.globalGroup) hw.globalGroup = {};
                     if(!hw.gruppe) hw.gruppe = {};
+                    if(!hw.funktion) hw.funktion = {};
                     if(hw.subNodes) {
                         for(let ioKey in hw.subNodes) {
                             hw.subNodes[ioKey].forEach(sub => {
                                 if(sub.appFunctions === undefined) sub.appFunctions = "";
                                 if(sub.globalGroup === undefined) sub.globalGroup = "";
                                 if(sub.gruppe === undefined) sub.gruppe = "";
+                                if(sub.funktion === undefined) sub.funktion = "";
                             });
                         }
                     }
@@ -779,6 +781,22 @@
                     }
                 });
             }
+            if (d.hardware) {
+                d.hardware.forEach(hw => {
+                    if (hw.funktion) {
+                        for(let k in hw.funktion) {
+                            if (hw.funktion[k] === oldName) hw.funktion[k] = newName;
+                        }
+                    }
+                    if (hw.subNodes) {
+                        for(let ioKey in hw.subNodes) {
+                            hw.subNodes[ioKey].forEach(sub => {
+                                if (sub.funktion === oldName) sub.funktion = newName;
+                            });
+                        }
+                    }
+                });
+            }
         });
     };
 
@@ -794,6 +812,22 @@
                                     slot.ioData[ioKey].funktion = "";
                                 }
                             }
+                        }
+                    }
+                });
+            }
+            if (d.hardware) {
+                d.hardware.forEach(hw => {
+                    if (hw.funktion) {
+                        for(let k in hw.funktion) {
+                            if (hw.funktion[k] === name) hw.funktion[k] = "";
+                        }
+                    }
+                    if (hw.subNodes) {
+                        for(let ioKey in hw.subNodes) {
+                            hw.subNodes[ioKey].forEach(sub => {
+                                if (sub.funktion === name) sub.funktion = "";
+                            });
                         }
                     }
                 });
@@ -1106,6 +1140,7 @@
                     h.mappings = {};
                     h.appFunctions = {};
                     h.globalGroup = {};
+                    h.funktion = {};
                     // h.gruppe bleibt als Eigenschaft erhalten
                     if(h.subNodes) {
                         for(let sKey in h.subNodes) {
@@ -1113,6 +1148,7 @@
                                 sub.mapping = "";
                                 sub.appFunctions = "";
                                 sub.globalGroup = "";
+                                sub.funktion = "";
                                 // sub.gruppe bleibt erhalten
                             });
                         }
@@ -2020,6 +2056,7 @@
             activeProfile: initialProfileId,
             fields: fields, 
             bezeichnung: {},
+            funktion: {},
             gruppe: {},
             mappings: {}, 
             appFunctions: {},
@@ -2044,7 +2081,7 @@
         const hw = d.hardware.find(x => x.instanceId === hwInstanceId);
         if(hw && confirm("Profil ändern? Bestehende IO-Verknüpfungen dieser Komponente werden zurückgesetzt.")) {
             hw.activeProfile = profileId;
-            hw.mappings = {}; hw.appFunctions = {}; hw.globalGroup = {}; hw.subNodes = {}; hw.gruppe = {};
+            hw.mappings = {}; hw.appFunctions = {}; hw.globalGroup = {}; hw.subNodes = {}; hw.gruppe = {}; hw.funktion = {};
             renderApp();
         }
     }
@@ -2085,7 +2122,7 @@
                     if(hw.instanceId === hwInstanceId) {
                         if(!hw.subNodes) hw.subNodes = {};
                         if(!hw.subNodes[ioId]) hw.subNodes[ioId] = [];
-                        hw.subNodes[ioId].push({ id: generateId(), name: "Neues Gerät", location: d.room || "", gruppe: "", channels: 1, globalGroup: "", appFunctions: "", mapping: "" });
+                        hw.subNodes[ioId].push({ id: generateId(), name: "Neues Gerät", location: d.room || "", gruppe: "", funktion: "", channels: 1, globalGroup: "", appFunctions: "", mapping: "" });
                     }
                 });
             }
@@ -2364,6 +2401,11 @@
     function generateHardwareHtml(d) {
         if(!d.hardware.length) return '<p class="no-print" style="color:#64748b; padding: 10px 0;">Noch keine Komponenten zugewiesen.</p>';
         
+        const fnOptions = [{value:'', label:'--- Funktion wählen ---'}, ...projectData.globalFunctions.map(fnObj => {
+            const fnName = typeof fnObj === 'object' ? fnObj.name : fnObj;
+            return {value: fnName, label: fnName};
+        })];
+
         return d.hardware.map(hw => {
             const cfg = hardwareConfigList.find(x => x.id === hw.configId); if(!cfg) return '';
             const hwBaseName = `${d.name} ${hw.fields['Geräte-Bez.'] || cfg.name}`;
@@ -2418,6 +2460,7 @@
                                 <thead><tr>
                                     <th>Bezeichnung (${busCfg.subDeviceLabel})</th>
                                     <th>Montageort</th>
+                                    <th>Funktion</th>
                                     <th>Gruppe</th>
                                     <th>Kanäle</th>
                                     <th>Verknüpfungen (Taster / App / Gruppe)</th>
@@ -2425,11 +2468,19 @@
                                 </tr></thead><tbody>` + subs.map(sub => {
                                     
                                 const subNameStr = `${hwBaseName} ${sub.name || 'Neues Gerät'}`;
+                                
+                                window[`setHwSubFn_${hw.instanceId}_${io.id}_${sub.id}`] = (v, ev) => {
+                                    if(ev){ev.preventDefault();ev.stopPropagation();}
+                                    document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show'));
+                                    setTimeout(() => { updateSubNode(hw.instanceId, io.id, sub.id, 'funktion', v); }, 10);
+                                };
+                                let fnDdSub = renderStandardDropdown(`hwsubfn-${hw.instanceId}-${io.id}-${sub.id}`, sub.funktion||'', fnOptions, `setHwSubFn_${hw.instanceId}_${io.id}_${sub.id}`, 'Funktion...');
 
                                 return `
                                 <tr>
                                     <td><input type="text" value="${sub.name}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)"></td>
                                     <td><input type="text" value="${sub.location}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'location', this.value)"></td>
+                                    <td style="min-width:140px;">${fnDdSub}</td>
                                     <td><input type="text" value="${sub.gruppe || ''}" placeholder="Gruppe..." onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'gruppe', this.value)"></td>
                                     <td><input type="number" min="1" max="16" value="${sub.channels}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'channels', this.value)" style="width:50px; border:1px solid transparent; background:transparent;"></td>
                                     <td style="font-size: 0.75rem; color: #475569; line-height: 1.3;">
@@ -2456,13 +2507,22 @@
                     const currentGrp = hw.globalGroup?.[io.id] || '-';
                     const currentBez = hw.bezeichnung?.[io.id] || '';
                     const currentGruppe = hw.gruppe?.[io.id] || '';
+                    const currentFn = hw.funktion?.[io.id] || '';
                     
                     const ioNameStr = `${hwBaseName} ${io.label}`;
+                    
+                    window[`setHwIoFn_${hw.instanceId}_${io.id}`] = (v, ev) => {
+                        if(ev){ev.preventDefault();ev.stopPropagation();}
+                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show'));
+                        setTimeout(() => { updateHwFieldEx(hw.instanceId, 'funktion', io.id, v); }, 10);
+                    };
+                    let fnDdIo = renderStandardDropdown(`hwiofn-${hw.instanceId}-${io.id}`, currentFn, fnOptions, `setHwIoFn_${hw.instanceId}_${io.id}`, 'Funktion...');
 
                     const row = `<tr>
                         <td style="font-weight:600; color:#334155; width:90px;">${io.label}</td>
-                        <td style="width:180px;"><input type="text" placeholder="Bezeichnung..." value="${currentBez}" onchange="updateHwFieldEx('${hw.instanceId}', 'bezeichnung', '${io.id}', this.value)"></td>
-                        <td style="width:140px;"><input type="text" placeholder="Gruppe..." value="${currentGruppe}" onchange="updateHwFieldEx('${hw.instanceId}', 'gruppe', '${io.id}', this.value)"></td>
+                        <td style="width:160px;"><input type="text" placeholder="Bezeichnung..." value="${currentBez}" onchange="updateHwFieldEx('${hw.instanceId}', 'bezeichnung', '${io.id}', this.value)"></td>
+                        <td style="width:160px;">${fnDdIo}</td>
+                        <td style="width:120px;"><input type="text" placeholder="Gruppe..." value="${currentGruppe}" onchange="updateHwFieldEx('${hw.instanceId}', 'gruppe', '${io.id}', this.value)"></td>
                         <td style="font-size: 0.75rem; color: #475569; line-height: 1.3;">
                             <div style="display:flex; justify-content:space-between;">
                                 <div>
@@ -2481,10 +2541,10 @@
 
             let tablesHtml = '';
             if(inRows) {
-                tablesHtml += `<div style="margin-top:10px;"><h5 style="margin:0 0 4px 0; color:#475569; font-size:0.85rem;">Eingänge</h5><table class="dali-table"><thead><tr><th>Kanal</th><th>Bezeichnung</th><th>Gruppe</th><th>Verknüpfungen</th></tr></thead><tbody>${inRows}</tbody></table></div>`;
+                tablesHtml += `<div style="margin-top:10px;"><h5 style="margin:0 0 4px 0; color:#475569; font-size:0.85rem;">Eingänge</h5><table class="dali-table"><thead><tr><th>Kanal</th><th>Bezeichnung</th><th>Funktion</th><th>Gruppe</th><th>Verknüpfungen</th></tr></thead><tbody>${inRows}</tbody></table></div>`;
             }
             if(outRows) {
-                tablesHtml += `<div style="margin-top:10px;"><h5 style="margin:0 0 4px 0; color:#475569; font-size:0.85rem;">Ausgänge</h5><table class="dali-table"><thead><tr><th>Kanal</th><th>Bezeichnung</th><th>Gruppe</th><th>Verknüpfungen</th></tr></thead><tbody>${outRows}</tbody></table></div>`;
+                tablesHtml += `<div style="margin-top:10px;"><h5 style="margin:0 0 4px 0; color:#475569; font-size:0.85rem;">Ausgänge</h5><table class="dali-table"><thead><tr><th>Kanal</th><th>Bezeichnung</th><th>Funktion</th><th>Gruppe</th><th>Verknüpfungen</th></tr></thead><tbody>${outRows}</tbody></table></div>`;
             }
 
             return `<div class="hw-card"><div class="hw-card-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div><div class="hw-card-body"><div class="hw-card-header"><h4>${cfg.name}</h4><button class="delete-btn" onclick="deleteHardwareComponent('${hw.instanceId}')">Löschen</button></div>${fHtml}${tablesHtml}${busHtml}</div></div>`;
@@ -2867,7 +2927,7 @@
                             if(hw.subNodes && hw.subNodes[io.id] && hw.subNodes[io.id].length > 0) {
                                 hw.subNodes[io.id].forEach(sub => {
                                     ioh += `<div style="font-size:0.8rem; margin-top:4px; padding-bottom:4px; margin-bottom:4px; border-bottom:1px solid #f1f5f9; border-left:2px solid var(--primary); padding-left:6px;">
-                                        <b>${sub.name}</b> (Ort: ${sub.location || 'k.A.'}, Gruppe: ${sub.gruppe || '-'}, ${sub.channels||1} Kanäle)<br>
+                                        <b>${sub.name}</b> (Ort: ${sub.location || 'k.A.'}, Funktion: ${sub.funktion || '-'}, Gruppe: ${sub.gruppe || '-'}, ${sub.channels||1} Kanäle)<br>
                                         <span style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px;">
                                             <div><b>Taster:</b> ${sub.mapping||'-'}</div>
                                             <div><b>App:</b> ${sub.appFunctions||'-'}</div>
@@ -2882,9 +2942,10 @@
                             const grp = hw.globalGroup?.[io.id] || '-';
                             const bez = hw.bezeichnung?.[io.id] || '';
                             const grpText = hw.gruppe?.[io.id] || '';
+                            const fnText = hw.funktion?.[io.id] || '';
                             
                             ioh += `<div style="font-size:0.8rem; margin-top:4px; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
-                                <b>${io.label}:</b> ${bez ? `<span style="color:#0f766e;">${bez}</span>` : ''} ${grpText ? `<span style="margin-left:8px; color:#475569;">(Gruppe: ${grpText})</span>` : ''}<br>
+                                <b>${io.label}:</b> ${bez ? `<span style="color:#0f766e;">${bez}</span>` : ''} ${fnText ? ` <span style="margin-left:8px; color:#eab308; font-weight:600;">[Fn: ${fnText}]</span>` : ''} ${grpText ? `<span style="margin-left:8px; color:#475569;">(Gruppe: ${grpText})</span>` : ''}<br>
                                 <span style="color:#64748b; font-size:0.75rem; display:block; margin-top:2px;">
                                     <div><b>Taster:</b> ${map}</div>
                                     <div><b>App:</b> ${app}</div>
