@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V7.4</title>
+    <title>ServiceProDetail Konfigurator V7.5</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -3131,14 +3131,12 @@
                                     const func = hw.funktion?.[io.id];
                                     const localGrp = hw.gruppe?.[io.id];
                                     
-                                    ioh += `<div style="margin-top:6px; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">
-                                        <b style="color:#1e293b;">${io.label}${bez ? `: ${bez}` : ''}</b>
-                                        <div style="color:#475569; font-size:0.8rem; margin-top:2px;">
-                                            ${localGrp ? `<b>Gruppe:</b> ${localGrp} &nbsp;|&nbsp; ` : ''}
-                                            ${func ? `<b>Funktion:</b> ${func} &nbsp;|&nbsp; ` : ''}
-                                            ${app ? `<b>App:</b> ${app} &nbsp;|&nbsp; ` : ''}
-                                            ${grp ? `<b>Globale Gruppe:</b> ${grp}` : ''}
-                                        </div>
+                                    ioh += `<div style="margin-bottom: 6px; padding-left: 8px; border-left: 3px solid var(--primary); font-size: 0.8rem; color: #475569;">
+                                        <b style="color:#1e293b;">${io.label}${bez ? ` - ${bez}` : ''}</b>
+                                        ${localGrp ? `<div><b>Gruppe:</b> ${localGrp}</div>` : ''}
+                                        ${func ? `<div><b>Funktion:</b> ${func}</div>` : ''}
+                                        ${app ? `<div><b>App-Funktionen:</b> ${app}</div>` : ''}
+                                        ${grp ? `<div><b>Globale Gruppe:</b> ${grp}</div>` : ''}
                                     </div>`;
                                 }
                             }
