@@ -762,7 +762,7 @@ const hardwareConfigList = [
     },
     { 
         id: "lox_tree_to_air", 
-        name: "ree to Air Bridge", 
+        name: "Tree to Air Bridge", 
         image: "Tree-to-Air.jpg", 
         power: 0.5, 
         fields: ["S.-Nr.", "Geräte-Bez.", "Tree Ast", "Bemerkung"], 
