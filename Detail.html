@@ -3098,7 +3098,8 @@
                     let fieldsHtml = '';
                     if(cfg.fields) {
                         cfg.fields.forEach(f => {
-                            if (hw.fields[f] && !/ast|bus|bridge|dali|link/i.test(f)) {
+                            // Ausschliessen was angezeigt wird bei der Hardware
+                            if (hw.fields[f] && !/ast|bus|bridge|dali|link|bemerkung|s-nr|seriennummer/i.test(f)) {
                                 fieldsHtml += `<div style="margin-bottom:2px;"><b>${f}:</b> ${hw.fields[f]}</div>`;
                             }
                         });
