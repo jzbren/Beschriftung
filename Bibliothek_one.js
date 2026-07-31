@@ -796,17 +796,10 @@ const hardwareConfigList = [
         ] 
     },
     { 
-        id: "dali_4ch_aktor_fix", 
-        name: "4-Kanal DALI Aktor (Fix)", 
-        image: "dali-aktor.jpg", 
+        id: "Tridonic_LCA-35W_Dali_2", 
+        name: "Tridonic LCA 35W 24V DALI 2", 
+        image: "TridonicLC35W.jpg", 
         power: 2.0, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Dali Bus", "Bemerkung"],
-        channels: 4,
-        io: [
-            { id: "CH_1", label: "DALI Kanal 1", type: "out" },
-            { id: "CH_2", label: "DALI Kanal 2", type: "out" },
-            { id: "CH_3", label: "DALI Kanal 3", type: "out" },
-            { id: "CH_4", label: "DALI Kanal 4", type: "out" }
-        ] 
+        fields: ["Geräte-Bez.", "Dali Bus", "Bemerkung", "LED Band Typ"],
     }
 ];
