@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V7.5</title>
+    <title>ServiceProDetail Konfigurator V7.4</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -2657,45 +2657,26 @@
         h += `<div style="margin-bottom:25px; font-weight:700; color:#0f766e; font-size:1.1rem; padding-bottom:10px; border-bottom:1px solid #cbd5e1;">⚡ Gesamtstromaufnahme Projekt: ${totalPower.toFixed(1)} W</div>`;
 
         function getDeviceChannelCount(childItem) {
-            // 1. Explizite Kanäle aus der Konfiguration haben Priorität, falls gesetzt
-            if (childItem.cfg && childItem.cfg.channels) {
-                return parseInt(childItem.cfg.channels);
-            }
-        
-            let totalUsed = 0;
-        
-            // 2. Direkte Belegung in der Hardware / activeIo ermitteln (z.B. das separate integrierte Gerät)
-            const activeIo = childItem.cfg?.profiles ? 
-                (childItem.cfg.profiles.find(p => p.id === childItem.hw.activeProfile)?.io || childItem.cfg.profiles[0]?.io) : 
-                childItem.cfg?.io;
-        
-            if (activeIo && Array.isArray(activeIo)) {
-                activeIo.forEach(io => {
-                    // Zählt alle aktiven/belegten Direkt-IOs (anhand typischer Zuweisungs-Eigenschaften)
-                    if (io.device || io.value || io.assigned || io.target || io.label) {
-                        totalUsed += parseInt(io.channels) || 1;
-                    }
-                });
-            }
-        
-            // 3. Sub-Geräte / Sub-Nodes (die extern verknüpften 3 Geräte) addieren
-            if (childItem.hw && childItem.hw.subNodes) {
+            if (childItem.cfg.channels) return parseInt(childItem.cfg.channels);
+            let fieldChannels = parseInt(childItem.hw.fields['Kanäle'] || childItem.hw.fields['Channels'] || 0);
+            if (fieldChannels > 0) return fieldChannels;
+            
+            const activeIo = childItem.cfg.profiles ? 
+                (childItem.cfg.profiles.find(p => p.id === childItem.hw.activeProfile)?.io || childItem.cfg.profiles[0].io) : 
+                childItem.cfg.io;
+            
+            if (activeIo && childItem.hw.subNodes) {
+                let subSum = 0;
                 for (let ioKey in childItem.hw.subNodes) {
                     childItem.hw.subNodes[ioKey].forEach(sub => {
-                        totalUsed += parseInt(sub.channels) || 1;
+                        subSum += parseInt(sub.channels) || 1;
                     });
                 }
+                if (subSum > 0) return subSum;
             }
-        
-            // 4. Fallbacks, falls weder activeIo noch subNodes etwas geliefert haben
-            if (totalUsed === 0) {
-                let fieldChannels = parseInt(childItem.hw?.fields?.['Kanäle'] || childItem.hw?.fields?.['Channels'] || 0);
-                if (fieldChannels > 0) return fieldChannels;
-                return 1;
-            }
-        
-            return totalUsed;
+            return 1;
         }
+
 
         function renderTopoNode(item, level) {
             const isRoot = level === 0;
