@@ -830,5 +830,32 @@ const hardwareConfigList = [
         io: [
             { id: "chanel_1", label: "Kanal 1", type: "out" }
         ]
+    },
+    { 
+        id: "EAGLERISE_LS_45_24_DALI_2", 
+        name: "EAGLERISE LS 45W 24V DALI 2", 
+        image: "TridonicLC35W.jpg",  
+        fields: ["Geräte-Bez.", "Dali Bus", "Bemerkung", "LED Band Typ"],
+        io: [
+            { id: "chanel_1", label: "Kanal 1", type: "out" }
+        ]
+    },
+    { 
+        id: "EAGLERISE_LS_80_24_DALI_2", 
+        name: "EAGLERISE LS 80W 24V DALI 2", 
+        image: "TridonicLC35W.jpg",  
+        fields: ["Geräte-Bez.", "Dali Bus", "Bemerkung", "LED Band Typ"],
+        io: [
+            { id: "chanel_1", label: "Kanal 1", type: "out" }
+        ]
+    },
+    { 
+        id: "EAGLERISE_LS_150_24_DALI_2", 
+        name: "EAGLERISE LS 150W 24V DALI 2", 
+        image: "TridonicLC35W.jpg",  
+        fields: ["Geräte-Bez.", "Dali Bus", "Bemerkung", "LED Band Typ"],
+        io: [
+            { id: "chanel_1", label: "Kanal 1", type: "out" }
+        ]
     }
 ];
