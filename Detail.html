@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V7.4</title>
+    <title>ServiceProDetail Konfigurator V7.5</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -2656,26 +2656,45 @@
         const totalPower = getProjectTotalPower();
         h += `<div style="margin-bottom:25px; font-weight:700; color:#0f766e; font-size:1.1rem; padding-bottom:10px; border-bottom:1px solid #cbd5e1;">⚡ Gesamtstromaufnahme Projekt: ${totalPower.toFixed(1)} W</div>`;
 
-        function getDeviceChannelCount(childItem) {
-            if (childItem.cfg.channels) return parseInt(childItem.cfg.channels);
-            let fieldChannels = parseInt(childItem.hw.fields['Kanäle'] || childItem.hw.fields['Channels'] || 0);
-            if (fieldChannels > 0) return fieldChannels;
+        function getDeviceChannelCount(hw) {
+                let totalChannels = 0;
             
-            const activeIo = childItem.cfg.profiles ? 
-                (childItem.cfg.profiles.find(p => p.id === childItem.hw.activeProfile)?.io || childItem.cfg.profiles[0].io) : 
-                childItem.cfg.io;
-            
-            if (activeIo && childItem.hw.subNodes) {
-                let subSum = 0;
-                for (let ioKey in childItem.hw.subNodes) {
-                    childItem.hw.subNodes[ioKey].forEach(sub => {
-                        subSum += parseInt(sub.channels) || 1;
+                // 1. Prüfen, ob das Gerät interne subNodes hat
+                if (hw.subNodes) {
+                    Object.keys(hw.subNodes).forEach(ioKey => {
+                        const nodeList = hw.subNodes[ioKey];
+                        if (Array.isArray(nodeList)) {
+                            nodeList.forEach(sub => {
+                                // Hier prüfen wir, ob das Sub-Gerät eine eigene Kanal-/Adressanzahl definiert hat, 
+                                // ansonsten greift der Fallback auf 1.
+                                let subChannels = parseInt(sub.channels || sub.kanäle || sub.kanalAnzahl || 1, 10);
+                                totalChannels += isNaN(subChannels) ? 1 : subChannels;
+                            });
+                        }
                     });
                 }
-                if (subSum > 0) return subSum;
+            
+                // 2. Falls keine subNodes da sind, aber direkt über IO-Profile Kanäle definiert sind
+                if (totalChannels === 0 && hw.activeProfile) {
+                    const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+                    if (cfg && cfg.profiles) {
+                        const profile = cfg.profiles.find(p => p.id === hw.activeProfile);
+                        if (profile && profile.channels) {
+                            totalChannels = parseInt(profile.channels, 10);
+                        }
+                    }
+                }
+            
+                // 3. Globaler Fallback auf Hardware-Felder (z.B. wenn ein Eingabefeld "Kanäle" existiert)
+                if (totalChannels === 0 && hw.fields) {
+                    const fieldChannels = parseInt(hw.fields['Kanäle'] || hw.fields['Channels'] || hw.fields['Adressen'] || 0, 10);
+                    if (fieldChannels > 0) {
+                        totalChannels = fieldChannels;
+                    }
+                }
+            
+                return totalChannels;
             }
-            return 1;
-        }
 
 
         function renderTopoNode(item, level) {
