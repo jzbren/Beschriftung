@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ServiceProDetail Konfigurator V7.5</title>
+    <title>ServiceProDetail Konfigurator V7.6</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -2591,6 +2591,38 @@
         saveToLocal();
         renderApp();
     }
+
+    function getBusUsedAdresses() {
+    let busMapping = {};
+
+    projectData.details.forEach(detail => {
+        if (!detail.hardware) return;
+        detail.hardware.forEach(hw => {
+            const hwName = hw.fields?.['Geräte-Bez.'] || 'Hardware';
+            
+            // Subnodes / Bus-Einträge durchgehen
+            if (hw.subNodes) {
+                for (let ioKey in hw.subNodes) {
+                    hw.subNodes[ioKey].forEach(sub => {
+                        const busType = sub.busType || ioKey;
+                        const addr = sub.address || sub.mapping;
+                        if (addr) {
+                            if (!busMapping[busType]) busMapping[busType] = [];
+                            busMapping[busType].push({
+                                address: addr,
+                                name: sub.name || 'Unbenannt',
+                                detail: detail.name,
+                                device: hwName
+                            });
+                        }
+                    });
+                }
+            }
+        });
+    });
+
+    return busMapping;
+}
 
     function getAllBusNodes(slaveType=null) {
         let list = [];
