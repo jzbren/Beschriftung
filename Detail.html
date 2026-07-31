@@ -2880,9 +2880,9 @@
             framesHtml = d.frames.map(f => {
                 const [r, c] = f.layout.split('x').map(Number); 
                 let vSlots = ''; 
-                let blocks = [];
+                let slotListHtml = '';
                 const total = r * c;
-    
+
                 for(let i=1; i<=total; i++) {
                     const s = f.slots[`slot-${i}`] || { iconFile: '', ioData: {}, customFields: {} };
                     const ic = iconConfigList.find(x => x.file === s.iconFile);
@@ -2894,13 +2894,13 @@
                     if (s.customFields) {
                         for (let cf in s.customFields) {
                             if (s.customFields[cf]) {
-                                cfRows += `<div style="font-size:0.8rem; color:#475569;"><b>${cf}:</b> ${s.customFields[cf]}</div>`;
+                                cfRows += `<div style="font-size:0.85rem; color:#475569; margin-bottom:2px;"><b>${cf}:</b> ${s.customFields[cf]}</div>`;
                             }
                         }
-                        if (cfRows) cfRows = `<div style="margin-bottom:4px; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">${cfRows}</div>`;
                     }
-    
+
                     let ioRows = '';
+                    let hasContent = false;
                     if(ic && ic.io) {
                         ioRows = ic.io.map(io => {
                             const dat = s.ioData?.[io.id] || {};
@@ -2909,47 +2909,69 @@
                             const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
                             const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
                             const hwLinks = getHardwareLinksForSwitch(switchIdent);
-    
+
                             const parsed = parseSlotLinks(dat, hwLinks);
-    
-                            return `<div style="margin-bottom:4px; font-size:0.8rem; border-bottom:1px solid #f1f5f9; padding-bottom:2px;">
+                            
+                            if(dat.bezeichnung || dat.art || dat.funktion || parsed.targetHw || parsed.uniqueApp || parsed.uniqueGrp) {
+                                hasContent = true;
+                            }
+
+                            return `<div style="margin-bottom:6px; font-size:0.85rem; border-top:1px dashed #e2e8f0; padding-top:4px;">
                                 <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
-                                Bezeichnung: ${dat.bezeichnung||''}<br>
-                                Art: ${dat.art||''}<br>
+                                ${dat.bezeichnung ? `Bezeichnung: ${dat.bezeichnung}<br>` : ''}
+                                ${dat.art ? `Art: ${dat.art}<br>` : ''}
                                 ${parsed.uniqueGrp ? `Gruppen: ${parsed.uniqueGrp}<br>` : ''}
-                                <span style="font-weight: normal;">Ziel (Hardware): ${parsed.targetHw || '-'}</span><br>
+                                <span style="color:#0f766e; font-weight: 500;">Ziel (Hardware): ${parsed.targetHw || '-'}</span><br>
                                 ${dat.funktion ? `Funktion: ${dat.funktion}<br>` : ''}
                                 ${parsed.uniqueApp ? `App-Funktionen: ${parsed.uniqueApp}<br>` : ''}
-                                
                             </div>`;
                         }).join('');
                     }
                     
                     const slotLabel = ic ? ic.label : 'Kein Icon';
-                    blocks.push(`<div class="print-slot-item-block"><b>Platz ${i} - ${slotLabel}</b><div style="margin-top:5px;">${cfRows}${ioRows}</div></div>`);
+                    
+                    if(cfRows || hasContent) {
+                        slotListHtml += `<div style="margin-bottom: 12px; padding-left: 10px; border-left: 3px solid var(--primary);">
+                            <b style="font-size: 0.95rem; color:#1e293b;">Platz ${i} - ${slotLabel}</b>
+                            <div style="margin-top:5px;">${cfRows}${ioRows}</div>
+                        </div>`;
+                    } else {
+                        slotListHtml += `<div style="margin-bottom: 12px; padding-left: 10px; border-left: 3px solid #cbd5e1; color:#94a3b8;">
+                            <b>Platz ${i} - ${slotLabel}</b> - Keine Details hinterlegt
+                        </div>`;
+                    }
                 }
-    
-                let visHtml = `<div style="display:flex; justify-content:center; margin: 10px 0;"><div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px);">${vSlots}</div></div>`;
-                let bStr = ''; 
-                for(let i=0; i<blocks.length; i+=2) {
-                    bStr += `<div class="print-slots-grid-2col">${blocks[i]}${blocks[i+1]||'<div></div>'}</div>`;
-                }
-                return `<div><div class="print-frame-title">Schaltstelle: ${f.name}</div>${visHtml}${bStr}</div>`;
+
+                return `<div style="margin-top: 20px;">
+                    <h4 style="margin-bottom:10px; color:#334155;">Schaltstelle: ${f.name}</h4>
+                    <div style="display:flex; gap: 30px; align-items: flex-start;">
+                        <div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px); flex-shrink:0;">${vSlots}</div>
+                        <div style="flex:1;">${slotListHtml}</div>
+                    </div>
+                </div>`;
             }).join('');
-            if(framesHtml) framesHtml = `<div class="print-section-title">Schalter Belegungen</div>${framesHtml}`;
+            
+            if(framesHtml) {
+                framesHtml = `<div style="margin-bottom: 30px; page-break-inside: avoid;">
+                    <h4 style="color:#1e293b; font-size: 1.1rem; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 15px;">Schalter Belegungen</h4>
+                    ${framesHtml}
+                </div>`;
+            }
         }
         
         let hwHtml = '';
         if(d.hardware.length) {
-            hwHtml = `<div class="print-section-title">Hardware</div>` + d.hardware.map(hw => {
+            hwHtml = d.hardware.map(hw => {
                 const cfg = hardwareConfigList.find(x=>x.id===hw.configId); if(!cfg) return '';
                 
-                let fh = ''; 
+                let fieldsHtml = ''; 
                 if(cfg.fields) {
                     cfg.fields.forEach(f => {
-                        fh += `<div style="font-size:0.8rem; margin-bottom: 3px;"><b>${f}:</b> ${hw.fields[f]||''}</div>`;
+                        // Im Gegensatz zur Kunden-Doku werden hier ALLE Felder angezeigt, keine Ausnahmen
+                        if(hw.fields[f]) {
+                            fieldsHtml += `<div style="margin-bottom:2px;"><b>${f}:</b> ${hw.fields[f]}</div>`;
+                        }
                     });
-                    if(fh) fh = `<div style="margin-bottom: 8px;">${fh}</div>`;
                 }
                 
                 let ioh = ''; 
@@ -2960,9 +2982,9 @@
                         if(io.type === 'bus') {
                             if(hw.subNodes && hw.subNodes[io.id] && hw.subNodes[io.id].length > 0) {
                                 hw.subNodes[io.id].forEach(sub => {
-                                    // Für SubNodes (z.B. DALI / Bus-Geräte):
-                                    ioh += `<div style="font-size:0.8rem; margin-top:6px; padding-bottom:6px; margin-bottom:6px; border-bottom:1px solid #f1f5f9; border-left:2px solid var(--primary); padding-left:8px;">
-                                        <div style="font-weight:bold; color:#1e293b;">${sub.name}</div>
+                                    // Alle SubNode Details (wie in der originalen DetailPrint) übernehmen, aber neues Design anwenden
+                                    ioh += `<div style="margin-bottom: 8px; padding-left: 8px; border-left: 3px solid var(--primary); font-size: 0.85rem; color: #475569;">
+                                        <b style="color:#1e293b;">${sub.name}</b>
                                         <div style="color:#475569; margin-top:2px;"><b>Ort:</b> ${sub.location || 'k.A.'} | <b>Kanäle:</b> ${sub.channels || 1}</div>
                                         ${sub.funktion ? `<div style="color:#1e293b; margin-top:2px;"><b>Funktion:</b> ${sub.funktion}</div>` : ''}
                                         ${sub.gruppe ? `<div style="color:#475569; margin-top:2px;"><b>Gruppe:</b> ${sub.gruppe}</div>` : ''}
@@ -2982,9 +3004,9 @@
                             const grpText = hw.gruppe?.[io.id] || '';
                             const fnText = hw.funktion?.[io.id] || '';
                             
-                            // Für Standard IOs:
-                            ioh += `<div style="font-size:0.8rem; margin-top:6px; border-bottom:1px solid #f1f5f9; padding-bottom:6px;">
-                                <div style="font-weight:bold; color:#1e293b;">${io.label}${bez ? `: <span style="color:#1e293b; font-weight:bold;">${bez}</span>` : ''}</div>
+                            // Alle Standard IO Details übernehmen, im neuen Design
+                            ioh += `<div style="margin-bottom: 8px; padding-left: 8px; border-left: 3px solid var(--primary); font-size: 0.85rem; color: #475569;">
+                                <b style="color:#1e293b;">${io.label}${bez ? `: <span style="color:#1e293b;">${bez}</span>` : ''}</b>
                                 ${fnText ? `<div style="color:#1e293b; margin-top:2px;"><b>Funktion:</b> ${fnText}</div>` : ''}
                                 ${grpText ? `<div style="color:#475569; margin-top:2px;"><b>Gruppe:</b> ${grpText}</div>` : ''}
                                 <div style="color:#64748b; margin-top:4px; display:flex; flex-direction:column; gap:2px;">
@@ -2997,11 +3019,38 @@
                     });
                 }
                 
-                return `<div class="print-hw-container"><div class="print-hw-image"><img src="icons-schalter/${cfg.image}"></div><div><b>${cfg.name}</b>${fh}<div style="margin-top:5px;">${ioh}</div></div></div>`;
+                return `
+                <div style="display:flex; gap:15px; border:1px solid #cbd5e1; padding:12px; border-radius:6px; background:#f8fafc; page-break-inside: avoid; border-left:4px solid var(--primary); margin-bottom: 15px;">
+                    <div style="width:70px; flex-shrink:0; align-self: flex-start;">
+                        <img src="icons-schalter/${cfg.image}" style="width:100%; object-fit:contain; border-radius:4px; background:#fff; border:1px solid #e2e8f0; padding:4px;">
+                    </div>
+                    <div style="flex:1; font-size:0.85rem; color:#334155;">
+                        <div style="font-weight:bold; font-size:1rem; color:#0f766e; margin-bottom:6px; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">
+                            ${cfg.name}
+                        </div>
+                        <div style="margin-bottom:8px; display:grid; grid-template-columns:1fr 1fr; gap:4px;">${fieldsHtml}</div>
+                        ${ioh ? `<div style="margin-top:12px; border-top:1px dashed #cbd5e1; padding-top:8px;"><b>Detail-Schnittstellen & Verknüpfungen:</b><div style="margin-top: 8px;">${ioh}</div></div>` : ''}
+                    </div>
+                </div>`;
             }).join('');
+            
+            hwHtml = `<div style="margin-top: 25px;">
+                <h4 style="color:#1e293b; font-size: 1.1rem; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 15px;">Hardware Details</h4>
+                <div style="display:flex; flex-direction:column;">${hwHtml}</div>
+            </div>`;
         }
     
-        return `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName}</h2><p>${projectData.location||''}</p></div><h3 style="color:#0f766e; margin:0;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}</h3>${framesHtml}${hwHtml}</div>`;
+        return `<div class="print-detail-page">
+            <div class="print-header-block">
+                <h2>${projectData.projectName} - Detaillierte Dokumentation</h2>
+                <p>${projectData.location||''}</p>
+            </div>
+            <h3 style="color:#0f766e; border-bottom: 2px solid #0f766e; padding-bottom: 5px; margin-bottom: 20px;">
+                ${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}
+            </h3>
+            ${framesHtml}
+            ${hwHtml}
+        </div>`;
     }
 
     function updatePrintContainers() {
