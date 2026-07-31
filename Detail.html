@@ -2656,28 +2656,45 @@
         const totalPower = getProjectTotalPower();
         h += `<div style="margin-bottom:25px; font-weight:700; color:#0f766e; font-size:1.1rem; padding-bottom:10px; border-bottom:1px solid #cbd5e1;">⚡ Gesamtstromaufnahme Projekt: ${totalPower.toFixed(1)} W</div>`;
 
-        function getDeviceChannelCount(item) {
-            let usedChannels = 0;
-        
-            // 1. Zählen, was direkt im Aktor selbst (über io-Felder oder zugewiesene Einträge) belegt ist
-            if (item.io && Array.isArray(item.io)) {
-                // Prüfen, welche io-Einträge tatsächlich belegt/ausgefüllt sind
-                // (z.B. wenn ein Gerät direkt in diesen Kanal eingetragen wurde)
-                const activeIoCount = item.io.filter(ioField => ioField.assignedDevice || ioField.value).length;
-                usedChannels += activeIoCount;
-            } else if (item.channels && item.isInstance) { 
-                // Falls die Instanz direkt eine feste Anzahl an belegten Kanälen speichert
-                // ...abhängig davon, wie eure Instanz-Datenstruktur aufgebaut ist
+        function getDeviceChannelCount(childItem) {
+            // 1. Explizite Kanäle aus der Konfiguration haben Priorität, falls gesetzt
+            if (childItem.cfg && childItem.cfg.channels) {
+                return parseInt(childItem.cfg.channels);
             }
         
-            // 2. Verknüpfte Sub-Geräte (Children) wie gewohnt aufaddieren
-            if (item.children && Array.isArray(item.children)) {
-                item.children.forEach(child => {
-                    usedChannels += getDeviceChannelCount(child);
+            let totalUsed = 0;
+        
+            // 2. Direkte Belegung in der Hardware / activeIo ermitteln (z.B. das separate integrierte Gerät)
+            const activeIo = childItem.cfg?.profiles ? 
+                (childItem.cfg.profiles.find(p => p.id === childItem.hw.activeProfile)?.io || childItem.cfg.profiles[0]?.io) : 
+                childItem.cfg?.io;
+        
+            if (activeIo && Array.isArray(activeIo)) {
+                activeIo.forEach(io => {
+                    // Zählt alle aktiven/belegten Direkt-IOs (anhand typischer Zuweisungs-Eigenschaften)
+                    if (io.device || io.value || io.assigned || io.target || io.label) {
+                        totalUsed += parseInt(io.channels) || 1;
+                    }
                 });
             }
         
-            return usedChannels;
+            // 3. Sub-Geräte / Sub-Nodes (die extern verknüpften 3 Geräte) addieren
+            if (childItem.hw && childItem.hw.subNodes) {
+                for (let ioKey in childItem.hw.subNodes) {
+                    childItem.hw.subNodes[ioKey].forEach(sub => {
+                        totalUsed += parseInt(sub.channels) || 1;
+                    });
+                }
+            }
+        
+            // 4. Fallbacks, falls weder activeIo noch subNodes etwas geliefert haben
+            if (totalUsed === 0) {
+                let fieldChannels = parseInt(childItem.hw?.fields?.['Kanäle'] || childItem.hw?.fields?.['Channels'] || 0);
+                if (fieldChannels > 0) return fieldChannels;
+                return 1;
+            }
+        
+            return totalUsed;
         }
 
         function renderTopoNode(item, level) {
