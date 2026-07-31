@@ -2479,9 +2479,29 @@
                         if(!hw.subNodes[io.id]) hw.subNodes[io.id] = [];
                         const subs = hw.subNodes[io.id];
 
+                        // --- BEGINN DER ÄNDERUNG ---
                         let totalAddresses = 0;
+                        
+                        // 1. Lokale Subnodes zählen (bisherige Logik)
                         subs.forEach(s => { totalAddresses += parseInt(s.channels) || 1; });
-                        const maxLimit = io.limit || busCfg.defaultLimit || 64;
+                        
+                        // 2. Externe, zugewiesene Geräte zählen (Topologie-Logik)
+                        const busIdStr = getBusIdString(d, hw, io);
+                        projectData.details.forEach(det => {
+                            if(det.hardware) {
+                                det.hardware.forEach(childHw => {
+                                    if(getParentBusId(childHw) === busIdStr) {
+                                        const childCfg = hardwareConfigList.find(x => x.id === childHw.configId);
+                                        if (childCfg) {
+                                            totalAddresses += getDeviceChannelCount({d: det, hw: childHw, cfg: childCfg});
+                                        }
+                                    }
+                                });
+                            }
+                        });
+
+                        // 3. Fallbacks für Limit identisch zur Topologie anwenden
+                        const maxLimit = io.limit || (busCfg ? busCfg.defaultLimit : null) || (io.busType === 'tree' ? 50 : io.busType === 'air' ? 50 : io.busType === 'link' ? 30 : 64);
                         const isFull = totalAddresses >= maxLimit;
 
                         let subsHtml = '';
@@ -2620,6 +2640,27 @@
         return null;
     }
 
+    function getDeviceChannelCount(childItem) {
+    if (childItem.cfg.channels) return parseInt(childItem.cfg.channels);
+    let fieldChannels = parseInt(childItem.hw.fields['Kanäle'] || childItem.hw.fields['Channels'] || 0);
+    if (fieldChannels > 0) return fieldChannels;
+    
+    const activeIo = childItem.cfg.profiles ? 
+        (childItem.cfg.profiles.find(p => p.id === childItem.hw.activeProfile)?.io || childItem.cfg.profiles[0].io) : 
+        childItem.cfg.io;
+    
+    if (activeIo && childItem.hw.subNodes) {
+        let subSum = 0;
+        for (let ioKey in childItem.hw.subNodes) {
+            childItem.hw.subNodes[ioKey].forEach(sub => {
+                subSum += parseInt(sub.channels) || 1;
+            });
+        }
+        if (subSum > 0) return subSum;
+    }
+    return 1;
+}
+
     function openBusOverviewModal() {
         const c = document.getElementById('bus-tree-content'); c.innerHTML = ''; let h = '';
         
@@ -2656,27 +2697,7 @@
         const totalPower = getProjectTotalPower();
         h += `<div style="margin-bottom:25px; font-weight:700; color:#0f766e; font-size:1.1rem; padding-bottom:10px; border-bottom:1px solid #cbd5e1;">⚡ Gesamtstromaufnahme Projekt: ${totalPower.toFixed(1)} W</div>`;
 
-        function getDeviceChannelCount(childItem) {
-            if (childItem.cfg.channels) return parseInt(childItem.cfg.channels);
-            let fieldChannels = parseInt(childItem.hw.fields['Kanäle'] || childItem.hw.fields['Channels'] || 0);
-            if (fieldChannels > 0) return fieldChannels;
-            
-            const activeIo = childItem.cfg.profiles ? 
-                (childItem.cfg.profiles.find(p => p.id === childItem.hw.activeProfile)?.io || childItem.cfg.profiles[0].io) : 
-                childItem.cfg.io;
-            
-            if (activeIo && childItem.hw.subNodes) {
-                let subSum = 0;
-                for (let ioKey in childItem.hw.subNodes) {
-                    childItem.hw.subNodes[ioKey].forEach(sub => {
-                        subSum += parseInt(sub.channels) || 1;
-                    });
-                }
-                if (subSum > 0) return subSum;
-            }
-            return 1;
-        }
-
+        
         function renderTopoNode(item, level) {
             const isRoot = level === 0;
             const activeIo = item.cfg.profiles ? (item.cfg.profiles.find(p=>p.id===item.hw.activeProfile)?.io || item.cfg.profiles[0].io) : item.cfg.io;
