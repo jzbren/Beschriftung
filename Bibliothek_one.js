@@ -35,7 +35,9 @@ const iconConfigList = [
             { id: "TA_2", label: "Punkt 2 (Oben Rechts)", type: "in" },
             { id: "TA_3", label: "Punkt 3 (Unten Links)", type: "in" },
             { id: "TA_4", label: "Punkt 4 (Unten Rechts)", type: "in" },
-            { id: "TA_CLICK", label: "Fläche (Zentraler Klick)", type: "in" }
+            { id: "TA_CLICK", label: "Fläche (Zentraler Klick)", type: "in" },
+            { id: "TEMP", label: "Temperatur", type: "out" },
+            { id: "LUFTFEUCHTIGKEIT", label: "Luftfeuchtigkeit", type: "out" }
         ] 
     },
     { 
@@ -867,17 +869,5 @@ const hardwareConfigList = [
         io: [
             { id: "chanel_1", label: "Kanal 1", type: "out" }
         ]
-    },
-    { 
-        id: "lox_nfc_code_touch", 
-        name: "Loxone NFC Code Touch", 
-        image: "Loxone-NFC.jpg", 
-        power: 0.2, 
-        fields: ["S.-Nr.", "Geräte-Bez.", "Tree / Air", "Bemerkung"], 
-        io: [
-            { id: "AUTH_NFC", label: "NFC Tag", type: "in" },
-            { id: "AUTH_CODE", label: "Code-Eingabe", type: "in" },
-            { id: "TA_BELL", label: "Klingeltaste", type: "in" }
-        ] 
     }
 ];
