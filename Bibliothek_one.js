@@ -801,5 +801,8 @@ const hardwareConfigList = [
         image: "TridonicLC35W.jpg", 
         power: 2.0, 
         fields: ["Geräte-Bez.", "Dali Bus", "Bemerkung", "LED Band Typ"],
+        io: [
+            { id: "chanel_1", label: "Kanal 1", type: "out" }
+        ]
     }
 ];
