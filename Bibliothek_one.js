@@ -798,8 +798,34 @@ const hardwareConfigList = [
     { 
         id: "Tridonic_LCA-35W_Dali_2", 
         name: "Tridonic LCA 35W 24V DALI 2", 
+        image: "TridonicLC35W.jpg",  
+        fields: ["Geräte-Bez.", "Dali Bus", "Bemerkung", "LED Band Typ"],
+        io: [
+            { id: "chanel_1", label: "Kanal 1", type: "out" }
+        ]
+    },
+    { 
+        id: "Tridonic_LCA-60W_Dali_2", 
+        name: "Tridonic LCA 60W 24V DALI 2", 
+        image: "TridonicLC35W.jpg",  
+        fields: ["Geräte-Bez.", "Dali Bus", "Bemerkung", "LED Band Typ"],
+        io: [
+            { id: "chanel_1", label: "Kanal 1", type: "out" }
+        ]
+    },
+    { 
+        id: "Tridonic_LCA-100W_Dali_2", 
+        name: "Tridonic LCA 35W 24V DALI 2", 
         image: "TridonicLC35W.jpg", 
-        power: 2.0, 
+        fields: ["Geräte-Bez.", "Dali Bus", "Bemerkung", "LED Band Typ"],
+        io: [
+            { id: "chanel_1", label: "Kanal 1", type: "out" }
+        ]
+    },
+    { 
+        id: "Tridonic_LCA-150W_Dali_2", 
+        name: "Tridonic LCA 35W 24V DALI 2", 
+        image: "TridonicLC35W.jpg",  
         fields: ["Geräte-Bez.", "Dali Bus", "Bemerkung", "LED Band Typ"],
         io: [
             { id: "chanel_1", label: "Kanal 1", type: "out" }
