@@ -807,7 +807,7 @@ const hardwareConfigList = [
     { 
         id: "Tridonic_LCA-60W_Dali_2", 
         name: "Tridonic LCA 60W 24V DALI 2", 
-        image: "TridonicLC35W.jpg",  
+        image: "TridonicLC60W.jpg",  
         fields: ["Geräte-Bez.", "Dali Bus", "Bemerkung", "LED Band Typ"],
         io: [
             { id: "chanel_1", label: "Kanal 1", type: "out" }
@@ -816,7 +816,7 @@ const hardwareConfigList = [
     { 
         id: "Tridonic_LCA-100W_Dali_2", 
         name: "Tridonic LCA 100W 24V DALI 2", 
-        image: "TridonicLC35W.jpg", 
+        image: "TridonicLC100W.jpg", 
         fields: ["Geräte-Bez.", "Dali Bus", "Bemerkung", "LED Band Typ"],
         io: [
             { id: "chanel_1", label: "Kanal 1", type: "out" }
@@ -825,7 +825,7 @@ const hardwareConfigList = [
     { 
         id: "Tridonic_LCA-150W_Dali_2", 
         name: "Tridonic LCA 150W 24V DALI 2", 
-        image: "TridonicLC35W.jpg",  
+        image: "TridonicLC150W.jpg",  
         fields: ["Geräte-Bez.", "Dali Bus", "Bemerkung", "LED Band Typ"],
         io: [
             { id: "chanel_1", label: "Kanal 1", type: "out" }
@@ -834,7 +834,7 @@ const hardwareConfigList = [
     { 
         id: "EAGLERISE_LS_45_24_DALI_2", 
         name: "EAGLERISE LS 45W 24V DALI 2", 
-        image: "TridonicLC35W.jpg",  
+        image: "EAGLERISE-LS-45-24-DALI2.jpg",  
         fields: ["Geräte-Bez.", "Dali Bus", "Bemerkung", "LED Band Typ"],
         io: [
             { id: "chanel_1", label: "Kanal 1", type: "out" }
@@ -843,7 +843,7 @@ const hardwareConfigList = [
     { 
         id: "EAGLERISE_LS_80_24_DALI_2", 
         name: "EAGLERISE LS 80W 24V DALI 2", 
-        image: "TridonicLC35W.jpg",  
+        image: "EAGLERISE-LS-80-24-DALI2.jpg",  
         fields: ["Geräte-Bez.", "Dali Bus", "Bemerkung", "LED Band Typ"],
         io: [
             { id: "chanel_1", label: "Kanal 1", type: "out" }
@@ -852,7 +852,16 @@ const hardwareConfigList = [
     { 
         id: "EAGLERISE_LS_150_24_DALI_2", 
         name: "EAGLERISE LS 150W 24V DALI 2", 
-        image: "TridonicLC35W.jpg",  
+        image: "EAGLERISE-LS-150-24-DALI2.jpg",  
+        fields: ["Geräte-Bez.", "Dali Bus", "Bemerkung", "LED Band Typ"],
+        io: [
+            { id: "chanel_1", label: "Kanal 1", type: "out" }
+        ]
+    },
+    { 
+        id: "Lunatone_RGBW_PWM_DIMMER_10A", 
+        name: "Lunatone RGBW PWM DIMMER 12-24V 10A", 
+        image: "Lunatone-RGBW-PWM-DIMMER-10A.jpg",  
         fields: ["Geräte-Bez.", "Dali Bus", "Bemerkung", "LED Band Typ"],
         io: [
             { id: "chanel_1", label: "Kanal 1", type: "out" }
