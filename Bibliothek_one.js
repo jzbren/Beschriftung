@@ -27,7 +27,7 @@ const iconConfigList = [
     { file: "", label: "--- Leerplatz ---", group: "Allgemein", io: [] },
     { 
         file: "Touch-Tree.png", 
-        label: "Touch Tree",
+        label: "Touch-Tree",
         fields: ["Bemerkung", "Tree Ast"],
         group: "Schalter & Taster", 
         io: [
