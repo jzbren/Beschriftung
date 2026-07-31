@@ -863,6 +863,7 @@ const hardwareConfigList = [
         name: "Lunatone RGBW PWM DIMMER 12-24V 10A", 
         image: "Lunatone-RGBW-PWM-DIMMER-10A.jpg",  
         fields: ["Geräte-Bez.", "Dali Bus", "Bemerkung", "LED Band Typ"],
+        channels: 4,
         io: [
             { id: "chanel_1", label: "Kanal 1", type: "out" }
         ]
