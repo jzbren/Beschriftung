@@ -866,5 +866,17 @@ const hardwareConfigList = [
         io: [
             { id: "chanel_1", label: "Kanal 1", type: "out" }
         ]
+    },
+    { 
+        id: "lox_nfc_code_touch", 
+        name: "Loxone NFC Code Touch", 
+        image: "Loxone-NFC.jpg", 
+        power: 0.2, 
+        fields: ["S.-Nr.", "Geräte-Bez.", "Tree / Air", "Bemerkung"], 
+        io: [
+            { id: "AUTH_NFC", label: "NFC Tag", type: "in" },
+            { id: "AUTH_CODE", label: "Code-Eingabe", type: "in" },
+            { id: "TA_BELL", label: "Klingeltaste", type: "in" }
+        ] 
     }
 ];
