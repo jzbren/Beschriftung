@@ -19,7 +19,7 @@
         });
     </script>
     
-    <title>ServiceProDetail Konfigurator V7.8</title>
+    <title>ServiceProDetail Konfigurator V7.9</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -2316,7 +2316,7 @@
                 } else {
                     return `<div class="form-group" style="margin-bottom:4px;">
                         <label style="width: 110px; font-size:0.85rem;">${fieldName}:</label>
-                        <input type="text" value="${fieldValue}" placeholder="${fieldName} eingeben..." onchange="updateSlotCustomField('${f.id}', ${i}, '${fieldName.replace(/'/g, "\\ оригинала")}', this.value)" style="flex:1; padding:6px 10px; font-size:0.875rem;">
+                        <input type="text" value="${fieldValue}" placeholder="${fieldName} eingeben..." onchange="updateSlotCustomField('${f.id}', ${i}, '${fieldName.replace(/'/g, "\\'")}', this.value)" style="flex:1; padding:6px 10px; font-size:0.875rem;">
                     </div>`;
                 }
             }).join('') + `</div>`;
@@ -2962,8 +2962,6 @@
                     const imgPath = ic ? `icons-schalter/${ic.file}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
                     vSlots += `<div class="print-switch-slot"><span style="position:absolute; top:2px; left:4px; font-size:9px; font-weight:700; color:#64748b;">${i}</span><img src="${imgPath}"></div>`;
                     
-                    if (s.printInCustomerDoc === false) continue;
-
                     let cfRows = '';
                     if (s.customFields) {
                         for (let cf in s.customFields) {
@@ -2973,48 +2971,43 @@
                         }
                     }
 
-                    let slotText = '';
-                    const hasIoDefinitions = ic && ic.io && ic.io.length > 0;
-
-                    if (hasIoDefinitions) {
-                        ic.io.forEach(io => {
-                            const dat = s.ioData?.[io.id] || {};
-                            if (dat.bezeichnung || dat.funktion || dat.gruppe) {
-                                slotText += `<div style="margin-bottom: 4px; font-size:0.85rem;">
-                                    <b>${io.label}: ${dat.bezeichnung || 'Taster'}</b>
-                                    ${dat.funktion ? `<div style="color:#475569;">Funktion: ${dat.funktion}</div>` : ''}
-                                    ${dat.gruppe ? `<div style="color:#475569;">Gruppe: ${dat.gruppe}</div>` : ''}
-                                </div>`;
-                            }
-                        });
-                    } else {
-                        const dat = s.ioData?.['default'] || {};
+                    let ioRows = '';
+                    let hasContent = false;
+                    const ioList = (ic && ic.io && ic.io.length > 0) ? ic.io : [{ id: 'default', label: 'Verknüpfungen', type: 'in' }];
+                    
+                    ioRows = ioList.map(io => {
+                        const dat = s.ioData?.[io.id] || {};
+                        
                         const slotLabel = ic ? ic.label : 'Platz';
                         const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
                         const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
                         const hwLinks = getHardwareLinksForSwitch(switchIdent);
-                        const parsed = parseSlotLinks(dat, hwLinks);
 
+                        const parsed = parseSlotLinks(dat, hwLinks);
+                        
                         if(dat.bezeichnung || dat.art || dat.funktion || parsed.targetHw || parsed.uniqueApp || parsed.uniqueGrp) {
-                            slotText += `<div style="margin-bottom: 4px; font-size:0.85rem;">`;
-                            if(dat.bezeichnung) slotText += `<b>Platz ${i} - ${dat.bezeichnung}</b>`;
-                            else slotText += `<b>Platz ${i} - ${slotLabel}</b>`;
-                            
-                            if(dat.art) slotText += `<div style="color:#475569;">Art: ${dat.art}</div>`;
-                            if(dat.funktion) slotText += `<div style="color:#475569;">Funktion: ${dat.funktion}</div>`;
-                            if(parsed.targetHw) slotText += `<div style="color:#0f766e;">Verknüpfung (Hardware): ${parsed.targetHw}</div>`;
-                            if(parsed.uniqueApp) slotText += `<div style="color:#475569;">App-Funktionen: ${parsed.uniqueApp}</div>`;
-                            if(parsed.uniqueGrp) slotText += `<div style="color:#475569;">Gruppen: ${parsed.uniqueGrp}</div>`;
-                            slotText += `</div>`;
+                            hasContent = true;
                         }
-                    }
+
+                        const isVirtualDefault = (io.id === 'default' && (!ic || !ic.io || ic.io.length === 0));
+
+                        return `<div style="margin-bottom:6px; font-size:0.85rem; border-top:1px dashed #e2e8f0; padding-top:4px;">
+                            ${!isVirtualDefault ? `<b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>` : ''}
+                            ${dat.bezeichnung ? `Bezeichnung: ${dat.bezeichnung}<br>` : ''}
+                            ${dat.art ? `Art: ${dat.art}<br>` : ''}
+                            ${parsed.uniqueGrp ? `Gruppen: ${parsed.uniqueGrp}<br>` : ''}
+                            <span style="color:#0f766e; font-weight: 500;">Ziel (Hardware): ${parsed.targetHw || '-'}</span><br>
+                            ${dat.funktion ? `Funktion: ${dat.funktion}<br>` : ''}
+                            ${parsed.uniqueApp ? `App-Funktionen: ${parsed.uniqueApp}<br>` : ''}
+                        </div>`;
+                    }).join('');
                     
                     const slotLabel = ic ? ic.label : 'Kein Icon';
                     
-                    if(cfRows || slotText) {
+                    if(cfRows || hasContent) {
                         slotListHtml += `<div style="margin-bottom: 12px; padding-left: 10px; border-left: 3px solid var(--primary);">
                             <b style="font-size: 0.95rem; color:#1e293b;">Platz ${i} - ${slotLabel}</b>
-                            <div style="margin-top:5px;">${cfRows}${slotText}</div>
+                            <div style="margin-top:5px;">${cfRows}${ioRows}</div>
                         </div>`;
                     } else {
                         slotListHtml += `<div style="margin-bottom: 12px; padding-left: 10px; border-left: 3px solid #cbd5e1; color:#94a3b8;">
@@ -3068,7 +3061,7 @@
                                         ${sub.funktion ? `<div style="color:#1e293b; margin-top:2px;"><b>Funktion:</b> ${sub.funktion}</div>` : ''}
                                         ${sub.gruppe ? `<div style="color:#475569; margin-top:2px;"><b>Gruppe:</b> ${sub.gruppe}</div>` : ''}
                                         <div style="color:#64748b; margin-top:4px; display:flex; flex-direction:column; gap:2px;">
-                                            <div><b>Taster / Verknüpfung:</b> ${sub.mapping || '-'}</div>
+                                            <div><b>Taster:</b> ${sub.mapping || '-'}</div>
                                             <div><b>App-Funktionen:</b> ${sub.appFunctions || '-'}</div>
                                             <div><b>Globale Gruppe:</b> ${sub.globalGroup || '-'}</div>
                                         </div>
@@ -3088,7 +3081,7 @@
                                 ${fnText ? `<div style="color:#1e293b; margin-top:2px;"><b>Funktion:</b> ${fnText}</div>` : ''}
                                 ${grpText ? `<div style="color:#475569; margin-top:2px;"><b>Gruppe:</b> ${grpText}</div>` : ''}
                                 <div style="color:#64748b; margin-top:4px; display:flex; flex-direction:column; gap:2px;">
-                                    <div><b>Taster / Verknüpfung:</b> ${map}</div>
+                                    <div><b>Taster:</b> ${map}</div>
                                     <div><b>App-Funktionen:</b> ${app}</div>
                                     <div><b>Globale Gruppe:</b> ${grp}</div>
                                 </div>
@@ -3165,29 +3158,19 @@
 
                     for(let i=1; i<=total; i++) {
                         const s = f.slots[`slot-${i}`] || { iconFile: '', ioData: {}, printInCustomerDoc: true };
-                        const ic = iconConfigList.find(x => x.file === s.iconFile);
-
-                        const imgPath = ic ? `icons-schalter/${ic.file}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
-                        vSlots += `<div class="print-switch-slot"><span style="position:absolute; top:2px; left:4px; font-size:9px; font-weight:700; color:#64748b;">${i}</span><img src="${imgPath}"></div>`;
-
                         if (s.printInCustomerDoc === false) continue;
 
-                        let slotText = '';
-                        const hasIoDefinitions = ic && ic.io && ic.io.length > 0;
+                        const ic = iconConfigList.find(x => x.file === s.iconFile);
+                        const imgPath = ic ? `icons-schalter/${ic.file}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
 
-                        if (hasIoDefinitions) {
-                            ic.io.forEach(io => {
-                                const dat = s.ioData?.[io.id] || {};
-                                if (dat.bezeichnung || dat.funktion || dat.gruppe) {
-                                    slotText += `<div style="margin-bottom: 4px;">
-                                        <b>${io.label}: ${dat.bezeichnung || 'Taster'}</b>
-                                        ${dat.funktion ? `<div style="color:#475569;">Funktion: ${dat.funktion}</div>` : ''}
-                                        ${dat.gruppe ? `<div style="color:#475569;">Gruppe: ${dat.gruppe}</div>` : ''}
-                                    </div>`;
-                                }
-                            });
-                        } else {
-                            const dat = s.ioData?.['default'] || {};
+                        vSlots += `<div class="print-switch-slot"><span style="position:absolute; top:2px; left:4px; font-size:9px; font-weight:700; color:#64748b;">${i}</span><img src="${imgPath}"></div>`;
+
+                        let slotText = '';
+                        const ioList = (ic && ic.io && ic.io.length > 0) ? ic.io : [{ id: 'default', label: 'Verknüpfungen', type: 'in' }];
+                        
+                        ioList.forEach(io => {
+                            const dat = s.ioData?.[io.id] || {};
+                            
                             const slotLabel = ic ? ic.label : 'Platz';
                             const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
                             const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
@@ -3197,16 +3180,16 @@
 
                             if(dat.bezeichnung || dat.funktion || parsed.targetHw || parsed.uniqueApp || parsed.uniqueGrp) {
                                 slotText += `<div style="margin-bottom: 4px;">`;
+                                
                                 if(dat.bezeichnung) slotText += `<b>Platz ${i} - ${dat.bezeichnung}</b>`;
-                                else slotText += `<b>Platz ${i} - ${slotLabel}</b>`;
+                                else slotText += `<b>Platz ${i} - ${io.label || 'Taster'}</b>`;
                                 
                                 if(dat.funktion) slotText += `<div style="color:#475569;">Funktion: ${dat.funktion}</div>`;
-                                if(parsed.targetHw) slotText += `<div style="color:#0f766e;">Verknüpfung (Hardware): ${parsed.targetHw}</div>`;
                                 if(parsed.uniqueApp) slotText += `<div style="color:#475569;">App-Funktionen: ${parsed.uniqueApp}</div>`;
                                 if(parsed.uniqueGrp) slotText += `<div style="color:#475569;">Gruppen: ${parsed.uniqueGrp}</div>`;
                                 slotText += `</div>`;
                             }
-                        }
+                        });
                         
                         if(slotText) {
                             slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid var(--primary);">${slotText}</div>`;
@@ -3254,7 +3237,6 @@
                                             <b style="color:#1e293b;">${sub.name || 'Gerät'}</b>${sub.location ? ` <span style="color:#64748b;">(Ort: ${sub.location})</span>` : ''}
                                             ${sub.gruppe ? `<div><b>Gruppe:</b> ${sub.gruppe}</div>` : ''}
                                             ${sub.funktion ? `<div><b>Funktion:</b> ${sub.funktion}</div>` : ''}
-                                            ${sub.mapping ? `<div><b>Taster / Verknüpfung:</b> ${sub.mapping}</div>` : ''}
                                             ${sub.appFunctions ? `<div><b>App-Funktionen:</b> ${sub.appFunctions}</div>` : ''}
                                             ${sub.globalGroup ? `<div><b>Globale Gruppe:</b> ${sub.globalGroup}</div>` : ''}
                                         </div>`;
@@ -3264,7 +3246,6 @@
                                 if (hw.ioPrint && hw.ioPrint[io.id]) {
                                     const app = hw.appFunctions?.[io.id];
                                     const grp = hw.globalGroup?.[io.id];
-                                    const map = hw.mappings?.[io.id];
                                     const bez = hw.bezeichnung?.[io.id];
                                     const func = hw.funktion?.[io.id];
                                     const localGrp = hw.gruppe?.[io.id];
@@ -3273,7 +3254,6 @@
                                         <b style="color:#1e293b;">${io.label}${bez ? ` - ${bez}` : ''}</b>
                                         ${localGrp ? `<div><b>Gruppe:</b> ${localGrp}</div>` : ''}
                                         ${func ? `<div><b>Funktion:</b> ${func}</div>` : ''}
-                                        ${map ? `<div><b>Taster / Verknüpfung:</b> ${map}</div>` : ''}
                                         ${app ? `<div><b>App-Funktionen:</b> ${app}</div>` : ''}
                                         ${grp ? `<div><b>Globale Gruppe:</b> ${grp}</div>` : ''}
                                     </div>`;
