@@ -19,7 +19,7 @@
         });
     </script>
     
-    <title>ServiceProDetail Konfigurator V7.9</title>
+    <title>ServiceProDetail Konfigurator V7.8</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1665,131 +1665,139 @@
         }
     };
 
-    window.filterAssignModal = function(term) {
-        const query = term.toLowerCase().trim();
-        const hwListContainer = document.getElementById('assign-hw-list');
-        const detailBlocks = hwListContainer.querySelectorAll('.assign-detail-block');
-        const crosslinkBlock = hwListContainer.querySelector('.assign-crosslink-block');
+            window.filterAssignModal = function(term) {
+                const query = term.toLowerCase().trim();
+                const hwListContainer = document.getElementById('assign-hw-list');
+                const detailBlocks = hwListContainer.querySelectorAll('.assign-detail-block');
+                const crosslinkBlock = hwListContainer.querySelector('.assign-crosslink-block');
+                
+                if (crosslinkBlock) {
+                    crosslinkBlock.style.display = (!query || crosslinkBlock.innerText.toLowerCase().includes(query)) ? '' : 'none';
+                }
         
-        if (crosslinkBlock) {
-            crosslinkBlock.style.display = (!query || crosslinkBlock.innerText.toLowerCase().includes(query)) ? '' : 'none';
-        }
-
-        detailBlocks.forEach(block => {
-            const text = block.innerText.toLowerCase();
-            if (!query || text.includes(query)) {
-                block.style.display = '';
-            } else {
-                block.style.display = 'none';
-            }
-        });
-    };
-
-    window.toggleHwAssignment = function(type, sourceName, hwId, ioId, subId, isChecked) {
-        let switchRef = _activeSwitchRef;
-        if (subId === 'null' || !subId) subId = null;
-
-        // Prüfen, ob MultiSelect für diese Komponente / diesen IO aktiv ist
-        let targetCfg = null;
-        let activeProfileId = null;
-        projectData.details.forEach(pd => {
-            if(pd.hardware) pd.hardware.forEach(hw => {
-                if(hw.instanceId === hwId) {
-                    targetCfg = hardwareConfigList.find(x => x.id === hw.configId);
-                    activeProfileId = hw.activeProfile;
-                }
-            });
-        });
-
-        let isMultiSelect = false;
-        if (targetCfg) {
-            if (targetCfg.MultiSelect) {
-                isMultiSelect = true;
-            } else {
-                let activeIoList = targetCfg.profiles ? 
-                    (targetCfg.profiles.find(p => p.id === activeProfileId)?.io || targetCfg.profiles[0].io) : 
-                    targetCfg.io;
-                let ioDef = activeIoList?.find(x => x.id === ioId);
-                if (ioDef && ioDef.MultiSelect) {
-                    isMultiSelect = true;
-                }
-            }
-        }
-
-        // Wenn kein MultiSelect aktiv ist, exklusive Zuordnung bereinigen
-        if (type === 'switch' && isChecked && !isMultiSelect) {
-            projectData.details.forEach(pd => {
-                if (pd.hardware) {
-                    pd.hardware.forEach(hw => {
-                        if (hw.mappings) {
-                            for (let k in hw.mappings) {
-                                let list = (hw.mappings[k] || '').split(',').map(x => x.trim()).filter(x => x);
-                                list = list.filter(x => x !== sourceName);
-                                hw.mappings[k] = list.join(', ');
-                            }
-                        }
-                        if (hw.subNodes) {
-                            for (let sKey in hw.subNodes) {
-                                hw.subNodes[sKey].forEach(sub => {
-                                    if (sub.mapping) {
-                                        let list = (sub.mapping || '').split(',').map(x => x.trim()).filter(x => x);
-                                        list = list.filter(x => x !== sourceName);
-                                        sub.mapping = list.join(', ');
-                                    }
-                                });
-                            }
-                        }
-                    });
-                }
-            });
-        }
-
-        let targetObj = null;
-        let targetProp = '';
-
-        projectData.details.forEach(d => {
-            if(d.hardware) d.hardware.forEach(hw => {
-                if(hw.instanceId === hwId) {
-                    if(subId && hw.subNodes && hw.subNodes[ioId]) {
-                        targetObj = hw.subNodes[ioId].find(x => x.id === subId);
-                        if(type === 'appFunction') targetProp = 'appFunctions';
-                        if(type === 'globalGroup') targetProp = 'globalGroup';
-                        if(type === 'switch') targetProp = 'mapping';
+                detailBlocks.forEach(block => {
+                    const text = block.innerText.toLowerCase();
+                    if (!query || text.includes(query)) {
+                        block.style.display = '';
                     } else {
-                        targetObj = hw;
-                        if(type === 'appFunction') {
-                            if(!targetObj.appFunctions) targetObj.appFunctions = {};
-                            targetObj = targetObj.appFunctions;
-                        }
-                        if(type === 'globalGroup') {
-                            if(!targetObj.globalGroup) targetObj.globalGroup = {};
-                            targetObj = targetObj.globalGroup;
-                        }
-                        if(type === 'switch') {
-                            if(!targetObj.mappings) targetObj.mappings = {};
-                            targetObj = targetObj.mappings;
-                        }
+                        block.style.display = 'none';
+                    }
+                });
+            };
+        
+            window.toggleHwAssignment = function(type, sourceName, hwId, ioId, subId, isChecked) {
+            let switchRef = _activeSwitchRef;
+            if (subId === 'null' || !subId) subId = null;
+        
+            // 1. Hardware-Konfiguration und Profil ermitteln
+            let targetCfg = null;
+            let activeProfileId = null;
+            projectData.details.forEach(pd => {
+                if(pd.hardware) pd.hardware.forEach(hw => {
+                    if(hw.instanceId === hwId) {
+                        targetCfg = hardwareConfigList.find(x => x.id === hw.configId);
+                        activeProfileId = hw.activeProfile;
+                    }
+                });
+            });
+        
+            // 2. MultiSelect robust prüfen (sowohl Groß- als auch Kleinschreibung)
+            let isMultiSelect = false;
+            if (targetCfg) {
+                if (targetCfg.MultiSelect || targetCfg.multiSelect) {
+                    isMultiSelect = true;
+                } else {
+                    let activeIoList = targetCfg.profiles ? 
+                        (targetCfg.profiles.find(p => p.id === activeProfileId)?.io || targetCfg.profiles[0].io) : 
+                        targetCfg.io;
+                    let ioDef = activeIoList?.find(x => x.id === ioId);
+                    if (ioDef && (ioDef.MultiSelect || ioDef.multiSelect)) {
+                        isMultiSelect = true;
                     }
                 }
+            }
+        
+            // 3. Wenn kein MultiSelect aktiv ist, exklusive Zuordnung bereinigen
+            if (type === 'switch' && isChecked && !isMultiSelect) {
+                projectData.details.forEach(pd => {
+                    if (pd.hardware) {
+                        pd.hardware.forEach(hw => {
+                            // Prüfen auf mappings oder mapping
+                            let mapObj = hw.mappings || hw.mapping;
+                            if (mapObj) {
+                                for (let k in mapObj) {
+                                    let list = (mapObj[k] || '').split(',').map(x => x.trim()).filter(x => x);
+                                    list = list.filter(x => x !== sourceName);
+                                    mapObj[k] = list.join(', ');
+                                }
+                            }
+                            if (hw.subNodes) {
+                                for (let sKey in hw.subNodes) {
+                                    hw.subNodes[sKey].forEach(sub => {
+                                        if (sub.mapping) {
+                                            let list = (sub.mapping || '').split(',').map(x => x.trim()).filter(x => x);
+                                            list = list.filter(x => x !== sourceName);
+                                            sub.mapping = list.join(', ');
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        
+            let targetObj = null;
+            let targetProp = '';
+        
+            projectData.details.forEach(d => {
+                if(d.hardware) d.hardware.forEach(hw => {
+                    if(hw.instanceId === hwId) {
+                        if(subId && hw.subNodes && hw.subNodes[ioId]) {
+                            targetObj = hw.subNodes[ioId].find(x => x.id === subId);
+                            if(type === 'appFunction') targetProp = 'appFunctions';
+                            if(type === 'globalGroup') targetProp = 'globalGroup';
+                            if(type === 'switch') targetProp = 'mapping';
+                        } else {
+                            targetObj = hw;
+                            if(type === 'appFunction') {
+                                if(!targetObj.appFunctions) targetObj.appFunctions = {};
+                                targetObj = targetObj.appFunctions;
+                            }
+                            if(type === 'globalGroup') {
+                                if(!targetObj.globalGroup) targetObj.globalGroup = {};
+                                targetObj = targetObj.globalGroup;
+                            }
+                            if(type === 'switch') {
+                                // Unterstützt sowohl mappings als auch mapping flexibel
+                                if (targetObj.mapping && typeof targetObj.mapping === 'object' && !targetObj.mappings) {
+                                    targetObj = targetObj.mapping;
+                                } else {
+                                    if(!targetObj.mappings) targetObj.mappings = {};
+                                    targetObj = targetObj.mappings;
+                                }
+                            }
+                        }
+                    }
+                });
             });
-        });
-
-        if(!targetObj) return;
-
-        const propKey = subId ? targetProp : ioId;
-
-        let list = (targetObj[propKey] || '').split(',').map(x => x.trim()).filter(x => x);
-        if (isChecked && !list.includes(sourceName)) {
-            list.push(sourceName);
-        }
-        if (!isChecked) {
-            list = list.filter(x => x !== sourceName);
-        }
-        targetObj[propKey] = list.join(', ');
-
-        saveToLocal();
-        renderApp();
-    };
+        
+            if(!targetObj) return;
+        
+            const propKey = subId ? targetProp : ioId;
+        
+            let list = (targetObj[propKey] || '').split(',').map(x => x.trim()).filter(x => x);
+            if (isChecked && !list.includes(sourceName)) {
+                list.push(sourceName);
+            }
+            if (!isChecked) {
+                list = list.filter(x => x !== sourceName);
+            }
+            targetObj[propKey] = list.join(', ');
+        
+            saveToLocal();
+            renderApp();
+        };
 
     window.toggleSwitchExtraTarget = function(fId, slotN, ioId, targetName, isChecked) {
         const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===fId));
