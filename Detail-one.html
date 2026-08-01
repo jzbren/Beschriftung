@@ -19,7 +19,7 @@
         });
     </script>
     
-    <title>ServiceProDetail Konfigurator V7.8</title>
+    <title>ServiceProDetail Konfigurator V7.9</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1775,6 +1775,9 @@
                     }
                     if(type === 'switch') {
                         if(!targetObj.mappings) targetObj.mappings = {};
+                        if(!targetObj.mappings[ioId]) {
+                            targetObj.mappings[ioId] = '';
+                        }
                         targetObj = targetObj.mappings;
                     }
                 }
@@ -1786,10 +1789,7 @@
 
     const propKey = subId ? targetProp : ioId;
 
-    // FIX: Exaktes Splitting, Duplikate verhindern und absolut sauberer Array-Abgleich für den Gegen-String
     let list = (targetObj[propKey] || '').split(',').map(x => x.trim()).filter(x => x);
-    
-    // Entferne vorsorglich exakte Duplikate, falls vorher Altlasten drin standen
     list = [...new Set(list)];
 
     if (isChecked) {
@@ -1836,7 +1836,7 @@
                         if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
                         
                         let eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x => x.trim()).filter(x => x);
-                        eingabeList = [...new Set(eingabeList)]; // Auch hier Duplikate ausschließen
+                        eingabeList = [...new Set(eingabeList)];
                         
                         if(isChecked && !eingabeList.includes(hwNameStr)) {
                             eingabeList.push(hwNameStr);
