@@ -19,7 +19,7 @@
         });
     </script>
     
-    <title>ServiceProDetail Konfigurator V7.8</title>
+    <title>ServiceProDetail Konfigurator V7.9</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1689,40 +1689,29 @@
     let switchRef = _activeSwitchRef;
     if (subId === 'null' || !subId) subId = null;
 
-    let targetHwInstance = null;
-    projectData.details.forEach(pd => {
-        if(pd.hardware) pd.hardware.forEach(hw => {
-            if(hw.instanceId === hwId) {
-                targetHwInstance = hw;
-            }
-        });
-    });
-
+    // 1. MultiSelect-Status korrekt über den aktuellen Slot / das Ziel-Icon ermitteln (z.B. Touch-Display = true)
     let isMultiSelect = false;
-
-    if (targetHwInstance) {
-        const hwList = typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : [];
-        const icoList = typeof iconConfigList !== 'undefined' ? iconConfigList : [];
-
-        let cfg = hwList.find(x => x.id === targetHwInstance.configId || x.file === targetHwInstance.configId || x.label === targetHwInstance.configId) ||
-                  icoList.find(x => x.id === targetHwInstance.configId || x.file === targetHwInstance.configId || x.label === targetHwInstance.configId);
-
-        if (cfg) {
-            if (cfg.MultiSelect || cfg.multiSelect) {
-                isMultiSelect = true;
-            } else {
-                let activeIoList = cfg.profiles ? 
-                    (cfg.profiles.find(p => p.id === targetHwInstance.activeProfile)?.io || cfg.profiles[0].io) : 
-                    cfg.io;
-                let ioDef = activeIoList?.find(x => x.id === ioId);
-                if (ioDef && (ioDef.MultiSelect || ioDef.multiSelect)) {
-                    isMultiSelect = true;
+    if (switchRef && switchRef.fId) {
+        const d = projectData.details.find(x => x.frames && x.frames.some(f => f.id === switchRef.fId));
+        if (d) {
+            const f = d.frames.find(x => x.id === switchRef.fId);
+            if (f) {
+                const slot = f.slots[`slot-${switchRef.slotN}`];
+                if (slot) {
+                    const icoList = typeof iconConfigList !== 'undefined' ? iconConfigList : [];
+                    const hwList = typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : [];
+                    const slotType = slot.icon || slot.type;
+                    const cfg = icoList.find(x => x.file === slotType || x.label === slotType || x.id === slotType) ||
+                                hwList.find(x => x.id === slotType || x.label === slotType);
+                    if (cfg && (cfg.MultiSelect || cfg.multiSelect)) {
+                        isMultiSelect = true;
+                    }
                 }
             }
         }
     }
 
-    // Wenn kein MultiSelect aktiv ist, exklusive Zuordnung bei anderen bereinigen
+    // 2. Wenn kein MultiSelect aktiv ist, exklusive Zuordnung bei anderen Hardware-Knoten bereinigen
     if (type === 'switch' && isChecked && !isMultiSelect) {
         projectData.details.forEach(pd => {
             if (pd.hardware) {
@@ -1752,6 +1741,7 @@
         });
     }
 
+    // 3. Ziel-Hardware-Objekt für den gewählten IO-Kanal finden/initialisieren
     let targetObj = null;
     let targetProp = '';
 
@@ -1794,12 +1784,10 @@
 
     if (isChecked) {
         if (isMultiSelect) {
-            // Multi-Select: Eintrag hinzufügen, falls noch nicht vorhanden
             if (!list.includes(sourceName)) {
                 list.push(sourceName);
             }
         } else {
-            // Single-Select: Exklusiv nur diesen einen Wert setzen (überschreiben)
             list = [sourceName];
         }
     } else {
@@ -1808,7 +1796,7 @@
     
     targetObj[propKey] = list.join(', ');
 
-    // Optionale Verknüpfung im Frame aktualisieren
+    // 4. Optionale Verknüpfung im Frame / Slot aktualisieren
     if (type === 'switch' && switchRef && switchRef.fId) {
         let hwNameStr = '';
         projectData.details.forEach(pd => {
@@ -1844,11 +1832,16 @@
                         let eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x => x.trim()).filter(x => x);
                         eingabeList = [...new Set(eingabeList)];
                         
-                        if(isChecked && !eingabeList.includes(hwNameStr)) {
-                            eingabeList.push(hwNameStr);
-                        }
-                        if(!isChecked) {
-                            eingabeList = eingabeList.filter(x => x !== hwNameStr);
+                        if (isMultiSelect) {
+                            if(isChecked && !eingabeList.includes(hwNameStr)) {
+                                eingabeList.push(hwNameStr);
+                            }
+                            if(!isChecked) {
+                                eingabeList = eingabeList.filter(x => x !== hwNameStr);
+                            }
+                        } else {
+                            // Single-Select: Alten Text beim Wechsel komplett ersetzen statt anzuhängen
+                            eingabeList = isChecked ? [hwNameStr] : [];
                         }
                         
                         slot.ioData[switchRef.ioId].eingabegerat = eingabeList.join(', ');
