@@ -41,6 +41,22 @@ const iconConfigList = [
         ] 
     },
     { 
+        file: "Touch-Tree.png", 
+        label: "Touch-Tree-CO2",
+        fields: ["Bemerkung", "Tree Ast"],
+        group: "Schalter & Taster", 
+        io: [
+            { id: "TA_1", label: "Punkt 1 (Oben Links)", type: "in" },
+            { id: "TA_2", label: "Punkt 2 (Oben Rechts)", type: "in" },
+            { id: "TA_3", label: "Punkt 3 (Unten Links)", type: "in" },
+            { id: "TA_4", label: "Punkt 4 (Unten Rechts)", type: "in" },
+            { id: "TA_CLICK", label: "Fläche (Zentraler Klick)", type: "in" },
+            { id: "TEMP", label: "Temperatur", type: "out" },
+            { id: "LUFTFEUCHTIGKEIT", label: "Luftfeuchtigkeit", type: "out" },
+            { id: "CO_2", label: "CO 2", type: "out" }
+        ] 
+    },
+    { 
         file: "Drehschalter-Hand-Auto.png", 
         label: "Drehschalter Hand-Auto",
         fields: ["Bemerkung"],
