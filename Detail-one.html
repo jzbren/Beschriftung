@@ -19,7 +19,7 @@
         });
     </script>
     
-    <title>ServiceProDetail Konfigurator V7.8</title>
+    <title>ServiceProDetail Konfigurator V7.9</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1686,119 +1686,172 @@
             };
         
             window.toggleHwAssignment = function(type, sourceName, hwId, ioId, subId, isChecked) {
-    let switchRef = _activeSwitchRef;
-    if (subId === 'null' || !subId) subId = null;
+        let switchRef = _activeSwitchRef;
+        if (subId === 'null' || !subId) subId = null;
 
-    let targetHw = null;
-    projectData.details.forEach(pd => {
-        if(pd.hardware) {
-            pd.hardware.forEach(hw => {
+        // 1. Prüfen, ob MultiSelect für dieses Gerät / diesen IO aktiv ist
+        let targetCfg = null;
+        let activeProfileId = null;
+        let targetHwInstance = null;
+
+        projectData.details.forEach(pd => {
+            if(pd.hardware) pd.hardware.forEach(hw => {
                 if(hw.instanceId === hwId) {
-                    targetHw = hw;
+                    targetHwInstance = hw;
+                    targetCfg = hardwareConfigList.find(x => x.id === hw.configId);
+                    activeProfileId = hw.activeProfile;
                 }
             });
-        }
-    });
+        });
 
-    if (!targetHw) return;
+        let isMultiSelect = false;
 
-    // 1. MultiSelect / multiSelect aus Hardware-Konfiguration ermitteln
-    let targetCfg = hardwareConfigList.find(x => x.id === targetHw.configId);
-    let activeProfileId = targetHw.activeProfile;
-    let isMultiSelect = false;
-
-    if (targetCfg) {
-        if (targetCfg.MultiSelect || targetCfg.multiSelect) {
-            isMultiSelect = true;
-        } else {
-            let activeIoList = targetCfg.profiles ? 
-                (targetCfg.profiles.find(p => p.id === activeProfileId)?.io || targetCfg.profiles[0].io) : 
-                targetCfg.io;
-            let ioDef = activeIoList?.find(x => x.id === ioId);
-            if (ioDef && (ioDef.MultiSelect || ioDef.multiSelect)) {
+        // Prüfen in Hardware-Konfiguration (Global oder am IO)
+        if (targetCfg) {
+            if (targetCfg.MultiSelect || targetCfg.multiSelect) {
                 isMultiSelect = true;
+            } else {
+                let activeIoList = targetCfg.profiles ? 
+                    (targetCfg.profiles.find(p => p.id === activeProfileId)?.io || targetCfg.profiles[0].io) : 
+                    targetCfg.io;
+                let ioDef = activeIoList?.find(x => x.id === ioId);
+                if (ioDef && (ioDef.MultiSelect || ioDef.multiSelect)) {
+                    isMultiSelect = true;
+                }
             }
         }
-    }
 
-    // 2. Wenn kein MultiSelect aktiv ist, exklusive Zuordnung bei anderen bereinigen
-    if (type === 'switch' && isChecked && !isMultiSelect) {
-        projectData.details.forEach(pd => {
-            if (pd.hardware) {
-                pd.hardware.forEach(hw => {
-                    ['mappings', 'mapping'].forEach(prop => {
-                        if (hw[prop] && typeof hw[prop] === 'object') {
-                            for (let k in hw[prop]) {
-                                let list = (hw[prop][k] || '').split(',').map(x => x.trim()).filter(x => x);
+        // Prüfen in Icon-Konfiguration (falls es z.B. ein Touch-Display oder Sensor aus iconConfigList ist)
+        if (!isMultiSelect && targetHwInstance) {
+            let iconCfg = iconConfigList.find(x => x.file === targetHwInstance.configId || x.label === targetHwInstance.configId);
+            if (iconCfg) {
+                if (iconCfg.MultiSelect || iconCfg.multiSelect) {
+                    isMultiSelect = true;
+                } else {
+                    let ioDef = iconCfg.io?.find(x => x.id === ioId);
+                    if (ioDef && (ioDef.MultiSelect || ioDef.multiSelect)) {
+                        isMultiSelect = true;
+                    }
+                }
+            }
+        }
+
+        // 2. Exklusive Zuordnung nur bereinigen, wenn KEIN MultiSelect aktiv ist
+        if (type === 'switch' && isChecked && !isMultiSelect) {
+            projectData.details.forEach(pd => {
+                if (pd.hardware) {
+                    pd.hardware.forEach(hw => {
+                        if (hw.mappings) {
+                            for (let k in hw.mappings) {
+                                let list = (hw.mappings[k] || '').split(',').map(x => x.trim()).filter(x => x);
                                 list = list.filter(x => x !== sourceName);
-                                hw[prop][k] = list.join(', ');
+                                hw.mappings[k] = list.join(', ');
+                            }
+                        }
+                        if (hw.subNodes) {
+                            for (let sKey in hw.subNodes) {
+                                hw.subNodes[sKey].forEach(sub => {
+                                    if (sub.mapping) {
+                                        let list = (sub.mapping || '').split(',').map(x => x.trim()).filter(x => x);
+                                        list = list.filter(x => x !== sourceName);
+                                        sub.mapping = list.join(', ');
+                                    }
+                                });
                             }
                         }
                     });
-                    if (hw.subNodes) {
-                        for (let sKey in hw.subNodes) {
-                            hw.subNodes[sKey].forEach(sub => {
-                                if (sub.mapping) {
-                                    let list = (sub.mapping || '').split(',').map(x => x.trim()).filter(x => x);
-                                    list = list.filter(x => x !== sourceName);
-                                    sub.mapping = list.join(', ');
-                                }
-                            });
+                }
+            });
+        }
+
+        let targetObj = null;
+        let targetProp = '';
+
+        projectData.details.forEach(d => {
+            if(d.hardware) d.hardware.forEach(hw => {
+                if(hw.instanceId === hwId) {
+                    if(subId && hw.subNodes && hw.subNodes[ioId]) {
+                        targetObj = hw.subNodes[ioId].find(x => x.id === subId);
+                        if(type === 'appFunction') targetProp = 'appFunctions';
+                        if(type === 'globalGroup') targetProp = 'globalGroup';
+                        if(type === 'switch') targetProp = 'mapping';
+                    } else {
+                        targetObj = hw;
+                        if(type === 'appFunction') {
+                            if(!targetObj.appFunctions) targetObj.appFunctions = {};
+                            targetObj = targetObj.appFunctions;
+                        }
+                        if(type === 'globalGroup') {
+                            if(!targetObj.globalGroup) targetObj.globalGroup = {};
+                            targetObj = targetObj.globalGroup;
+                        }
+                        if(type === 'switch') {
+                            if(!targetObj.mappings) targetObj.mappings = {};
+                            targetObj = targetObj.mappings;
+                        }
+                    }
+                }
+            });
+        });
+
+        if(!targetObj) return;
+
+        const propKey = subId ? targetProp : ioId;
+
+        let list = (targetObj[propKey] || '').split(',').map(x => x.trim()).filter(x => x);
+        if (isChecked && !list.includes(sourceName)) {
+            list.push(sourceName);
+        }
+        if (!isChecked) {
+            list = list.filter(x => x !== sourceName);
+        }
+        targetObj[propKey] = list.join(', ');
+
+        if (type === 'switch' && switchRef && switchRef.fId) {
+            let hwNameStr = '';
+            projectData.details.forEach(pd => {
+                if(pd.hardware) pd.hardware.forEach(hw => {
+                    if(hw.instanceId === hwId) {
+                        const hc = hardwareConfigList.find(x => x.id === hw.configId);
+                        const baseName = `${pd.name} ${hw.fields['Geräte-Bez.'] || (hc ? hc.name : '')}`;
+                        if(subId) {
+                            const sub = hw.subNodes[ioId].find(x=>x.id===subId);
+                            hwNameStr = `${baseName} ${sub.name}`;
+                        } else {
+                            const activeIo = hc && hc.profiles ? (hc.profiles.find(p=>p.id===hw.activeProfile)?.io || hc.profiles[0].io) : (hc ? hc.io : []);
+                            const ioDef = activeIo ? activeIo.find(x=>x.id===ioId) : null;
+                            hwNameStr = `${baseName} ${ioDef ? ioDef.label : ioId}`;
                         }
                     }
                 });
-            }
-        });
-    }
+            });
 
-    // 3. Zuweisung eintragen
-    if (subId && targetHw.subNodes && targetHw.subNodes[ioId]) {
-        let subObj = targetHw.subNodes[ioId].find(x => x.id === subId);
-        if (subObj) {
-            let prop = (type === 'appFunction') ? 'appFunctions' : (type === 'globalGroup' ? 'globalGroup' : 'mapping');
-            let list = (subObj[prop] || '').split(',').map(x => x.trim()).filter(x => x);
-            if (isChecked && !list.includes(sourceName)) list.push(sourceName);
-            if (!isChecked) list = list.filter(x => x !== sourceName);
-            subObj[prop] = list.join(', ');
+            if(hwNameStr) {
+                const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
+                if(d) {
+                    const f = d.frames.find(x=>x.id===switchRef.fId);
+                    if(f) {
+                        const slot = f.slots[`slot-${switchRef.slotN}`];
+                        if(slot) {
+                            if(!slot.ioData) slot.ioData = {};
+                            if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
+                            
+                            if(isChecked) {
+                                slot.ioData[switchRef.ioId].eingabegerat = hwNameStr;
+                            } else {
+                                if(slot.ioData[switchRef.ioId].eingabegerat === hwNameStr) {
+                                    slot.ioData[switchRef.ioId].eingabegerat = '';
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
-    } else {
-        if (type === 'appFunction') {
-            if (!targetHw.appFunctions) targetHw.appFunctions = {};
-            let list = (targetHw.appFunctions[ioId] || '').split(',').map(x => x.trim()).filter(x => x);
-            if (isChecked && !list.includes(sourceName)) list.push(sourceName);
-            if (!isChecked) list = list.filter(x => x !== sourceName);
-            targetHw.appFunctions[ioId] = list.join(', ');
-        } else if (type === 'globalGroup') {
-            if (!targetHw.globalGroup) targetHw.globalGroup = {};
-            let list = (targetHw.globalGroup[ioId] || '').split(',').map(x => x.trim()).filter(x => x);
-            if (isChecked && !list.includes(sourceName)) list.push(sourceName);
-            if (!isChecked) list = list.filter(x => x !== sourceName);
-            targetHw.globalGroup[ioId] = list.join(', ');
-        } else if (type === 'switch') {
-            // WICHTIG: In BEIDEN Properties (mappings & mapping) speichern, 
-            // damit egal ist, welche davon dein Anzeigecode abfragt!
-            if (!targetHw.mappings) targetHw.mappings = {};
-            if (!targetHw.mapping) targetHw.mapping = {};
 
-            let currentStr = targetHw.mappings[ioId] || targetHw.mapping[ioId] || '';
-            let list = currentStr.split(',').map(x => x.trim()).filter(x => x);
-
-            if (isChecked && !list.includes(sourceName)) {
-                list.push(sourceName);
-            }
-            if (!isChecked) {
-                list = list.filter(x => x !== sourceName);
-            }
-
-            let resultStr = list.join(', ');
-            targetHw.mappings[ioId] = resultStr;
-            targetHw.mapping[ioId] = resultStr;
-        }
-    }
-
-    saveToLocal();
-    renderApp();
-};
+        saveToLocal();
+        renderApp();
+    };
 
     window.toggleSwitchExtraTarget = function(fId, slotN, ioId, targetName, isChecked) {
         const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===fId));
