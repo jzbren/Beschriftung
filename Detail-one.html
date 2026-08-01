@@ -19,7 +19,7 @@
         });
     </script>
     
-    <title>ServiceProDetail Konfigurator V7.8</title>
+    <title>ServiceProDetail Konfigurator V7.9</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -370,7 +370,7 @@
     const LOCAL_STORAGE_KEY = 'serviceProDetailData';
     
     const DEFAULT_PROJECT_DATA = { 
-        version: "7.2", 
+        version: "7.3", 
         projectName: "Projekt", 
         location: "", 
         details: [],
@@ -448,6 +448,9 @@
                             for (let ioKey in slot.ioData) {
                                 if (slot.ioData[ioKey].eingabegerat) {
                                     slot.ioData[ioKey].eingabegerat = cleanStr(slot.ioData[ioKey].eingabegerat);
+                                }
+                                if (slot.ioData[ioKey].printCustomerDoc === undefined) {
+                                    slot.ioData[ioKey].printCustomerDoc = true;
                                 }
                             }
                         }
@@ -2005,7 +2008,7 @@
             <div class="pane">
                 <div class="frame-header-row">
                     <input type="text" value="${f.name}" placeholder="Name der Schaltstelle..." onchange="updateFrameField('${f.id}', 'name', this.value)">
-                    <select onchange="updateFrameField('${f.id}', 'layout', this.value)">
+                    <select onchange="updateFrameField('${f.id}', 'layout', this.value)" ${frameBorderless ? 'disabled title="Gesperrt durch rahmenloses Icon"' : ''}>
                         <option value="1x1" ${f.layout==='1x1'?'selected':''}>1 x 1</option>
                         <option value="2x1" ${f.layout==='2x1'?'selected':''}>2 x 1 (Vertikal)</option>
                         <option value="1x2" ${f.layout==='1x2'?'selected':''}>1 x 2 (Horizontal)</option>
@@ -2338,21 +2341,26 @@
             }).join('') + `</div>`;
         }
 
-        const activeIos = (ic && ic.io && ic.io.length > 0) ? ic.io : (slot.iconFile ? [{id: 'virtual', label: 'Gerät / Modul', type: 'in'}] : null);
+        const isVirtual = !ic || !ic.io || ic.io.length === 0;
+        const activeIos = isVirtual && slot.iconFile ? [{id: 'virtual', label: 'Gerät / Modul', type: 'in'}] : ic?.io;
 
         if(activeIos) {
             if(!f.activeIo) f.activeIo = {};
             let activeIoKey = f.activeIo[`slot-${i}`] || activeIos[0].id;
             if(!activeIos.some(x => x.id === activeIoKey)) activeIoKey = activeIos[0].id;
 
-            let ioTabsHtml = `<div class="slot-tabs" style="margin-top: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">` + 
-                activeIos.map(io => `<button class="slot-tab-btn ${activeIoKey === io.id ? 'active' : ''}" style="font-size:0.8rem; padding:6px 12px;" onclick="selectSlotIo('${f.id}', ${i}, '${io.id}')">${io.label} (${io.type === 'in' ? 'Eingang' : 'Ausgang'})</button>`).join('') + 
-            `</div>`;
+            let ioTabsHtml = '';
+            if (!isVirtual) {
+                ioTabsHtml = `<div class="slot-tabs" style="margin-top: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">` + 
+                    activeIos.map(io => `<button class="slot-tab-btn ${activeIoKey === io.id ? 'active' : ''}" style="font-size:0.8rem; padding:6px 12px;" onclick="selectSlotIo('${f.id}', ${i}, '${io.id}')">${io.label} (${io.type === 'in' ? 'Eingang' : 'Ausgang'})</button>`).join('') + 
+                `</div>`;
+            }
 
             const activeIo = activeIos.find(x => x.id === activeIoKey) || activeIos[0];
-            let data = slot.ioData?.[activeIo.id] || {bezeichnung:'', art:'TA', funktion:'', gruppe:'', eingabegerat:''};
-            if(typeof data === 'string') data = {bezeichnung: data, art:'TA', funktion:'', gruppe:'', eingabegerat:''};
+            let data = slot.ioData?.[activeIo.id] || {bezeichnung:'', art:'TA', funktion:'', gruppe:'', eingabegerat:'', printCustomerDoc: true};
+            if(typeof data === 'string') data = {bezeichnung: data, art:'TA', funktion:'', gruppe:'', eingabegerat:'', printCustomerDoc: true};
             if(!data.art) data.art = 'TA';
+            if(data.printCustomerDoc === undefined) data.printCustomerDoc = true;
             
             const slotLabel = ic ? ic.label : 'Platz';
             const customBez = data.bezeichnung ? data.bezeichnung : `${slotLabel} (Platz ${i})`;
@@ -2373,34 +2381,73 @@
             };
 
             const fnDropdown = renderStandardDropdown(`fn-${f.id}-${i}-${activeIo.id}`, data.funktion || '', fnOptions, `setSlotFn_${f.id}_${i}_${activeIo.id}`, 'Funktion wählen...');
+            const printChecked = data.printCustomerDoc !== false;
 
-            ioHtml = ioTabsHtml + `<div class="io-complex-row" style="margin-top: 10px;">
-                <div class="io-header"><span class="io-type ${activeIo.type}">${activeIo.type==='in'?'Eingang':'Ausgang'}</span> ${activeIo.label} ${warnHtml}</div>
-                <div class="io-fields-grid" style="grid-template-columns: 2fr 1fr; margin-bottom: 8px;">
-                    <input type="text" placeholder="Taster Bezeichnung" value="${data.bezeichnung||''}" onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','bezeichnung',this.value)">
-                    <select onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','art',this.value)">
-                        <option value="TA" ${data.art==='TA'?'selected':''}>TA (Taster)</option>
-                        <option value="SA" ${data.art==='SA'?'selected':''}>SA (Schalter)</option>
-                        <option value="Imp." ${data.art==='Imp.'?'selected':''}>Imp. (Impuls)</option>
-                    </select>
-                </div>
-                <div class="io-fields-grid" style="grid-template-columns: 2fr 1fr; margin-bottom: 10px;">
-                    <div>${fnDropdown}</div>
-                    <input type="text" placeholder="Gruppe..." value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','gruppe',this.value)">
-                </div>
-                <div>
-                    <button class="btn info" style="width: 100%; justify-content: center; margin-bottom: 6px; padding: 7px 12px;" onclick="openAssignModal('switch', '${switchIdent.replace(/'/g, "\\'")}', {fId:'${f.id}', slotN:${i}, ioId:'${activeIo.id}'})">🔗 Verknüpfungen / Zuweisen</button>
-                    <div style="font-size: 0.8rem; background: #ffffff; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; color: #475569;">
-                        <span style="font-weight:600; color:#334155;">Verknüpft:</span> <span style="color:#0f766e; font-weight:500;">${data.eingabegerat || 'Keine Verknüpfung'}</span>
+            if (isVirtual || activeIo.id === 'virtual') {
+                ioHtml = ioTabsHtml + `<div class="io-complex-row" style="margin-top: 10px;">
+                    <div class="io-header"><span class="io-type in">Modul / Gerät</span> ${activeIo.label} ${warnHtml}</div>
+                    <div>
+                        <button class="btn info" style="width: 100%; justify-content: center; margin-bottom: 6px; padding: 7px 12px;" onclick="openAssignModal('switch', '${switchIdent.replace(/'/g, "\\'")}', {fId:'${f.id}', slotN:${i}, ioId:'${activeIo.id}'})">🔗 Verknüpfungen / Zuweisen</button>
+                        <div style="font-size: 0.8rem; background: #ffffff; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; color: #475569;">
+                            <span style="font-weight:600; color:#334155;">Verknüpft:</span> <span style="color:#0f766e; font-weight:500;">${data.eingabegerat || 'Keine Verknüpfung'}</span>
+                        </div>
                     </div>
-                </div>
-            </div>`;
+                    <label style="display:flex; align-items:center; gap:5px; margin-top:10px; cursor:pointer; font-size: 0.85rem;">
+                        <input type="checkbox" onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','printCustomerDoc',this.checked)" ${printChecked ? 'checked' : ''}>
+                        In Kunden-Doku drucken
+                    </label>
+                </div>`;
+            } else {
+                ioHtml = ioTabsHtml + `<div class="io-complex-row" style="margin-top: 10px;">
+                    <div class="io-header"><span class="io-type ${activeIo.type}">${activeIo.type==='in'?'Eingang':'Ausgang'}</span> ${activeIo.label} ${warnHtml}</div>
+                    <div class="io-fields-grid" style="grid-template-columns: 2fr 1fr; margin-bottom: 8px;">
+                        <input type="text" placeholder="Taster Bezeichnung" value="${data.bezeichnung||''}" onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','bezeichnung',this.value)">
+                        <select onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','art',this.value)">
+                            <option value="TA" ${data.art==='TA'?'selected':''}>TA (Taster)</option>
+                            <option value="SA" ${data.art==='SA'?'selected':''}>SA (Schalter)</option>
+                            <option value="Imp." ${data.art==='Imp.'?'selected':''}>Imp. (Impuls)</option>
+                        </select>
+                    </div>
+                    <div class="io-fields-grid" style="grid-template-columns: 2fr 1fr; margin-bottom: 10px;">
+                        <div>${fnDropdown}</div>
+                        <input type="text" placeholder="Gruppe..." value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','gruppe',this.value)">
+                    </div>
+                    <div>
+                        <button class="btn info" style="width: 100%; justify-content: center; margin-bottom: 6px; padding: 7px 12px;" onclick="openAssignModal('switch', '${switchIdent.replace(/'/g, "\\'")}', {fId:'${f.id}', slotN:${i}, ioId:'${activeIo.id}'})">🔗 Verknüpfungen / Zuweisen</button>
+                        <div style="font-size: 0.8rem; background: #ffffff; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; color: #475569;">
+                            <span style="font-weight:600; color:#334155;">Verknüpft:</span> <span style="color:#0f766e; font-weight:500;">${data.eingabegerat || 'Keine Verknüpfung'}</span>
+                        </div>
+                    </div>
+                    <label style="display:flex; align-items:center; gap:5px; margin-top:10px; cursor:pointer; font-size: 0.85rem;">
+                        <input type="checkbox" onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','printCustomerDoc',this.checked)" ${printChecked ? 'checked' : ''}>
+                        In Kunden-Doku drucken
+                    </label>
+                </div>`;
+            }
         }
 
         window[`setIcon_${f.id}_${i}`] = (v, ev) => { 
             if(ev){ev.preventDefault();ev.stopPropagation();} 
             document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
-            setTimeout(() => { f.slots[`slot-${i}`].iconFile = v; renderApp(); }, 10); 
+            setTimeout(() => { 
+                const ic = iconConfigList.find(x => x.file === v);
+                if (ic && ic.noFrame) {
+                    f.layout = '1x1';
+                    f.activeSlot = 1;
+                    if (i !== 1) {
+                        const temp = f.slots[`slot-${i}`];
+                        if (temp) {
+                            if (!f.slots['slot-1']) f.slots['slot-1'] = { iconFile: '', ioData: {} };
+                            f.slots['slot-1'] = JSON.parse(JSON.stringify(temp));
+                            f.slots[`slot-${i}`] = { iconFile: '', ioData: {} };
+                        }
+                    }
+                    f.slots['slot-1'].iconFile = v;
+                } else {
+                    f.slots[`slot-${i}`].iconFile = v; 
+                }
+                renderApp(); 
+            }, 10); 
         };
         
         let iconDropdown = renderStandardDropdown(`icon-${f.id}-${i}`, slot.iconFile, [{value:'', label:'--- Kein Icon ---'}, ...iconConfigList.map(x=>({value:x.file, label:x.label}))], `setIcon_${f.id}_${i}`, 'Icon wählen...');
@@ -2968,6 +3015,7 @@
                     let ioRows = '';
                     let hasContent = false;
                     
+                    const isVirtual = !ic || !ic.io || ic.io.length === 0;
                     const activeIos = (ic && ic.io && ic.io.length > 0) ? ic.io : (s.iconFile ? [{id: 'virtual', label: 'Gerät / Modul', type: 'in'}] : []);
 
                     if(activeIos.length > 0) {
@@ -2985,15 +3033,24 @@
                                 hasContent = true;
                             }
 
-                            return `<div style="margin-bottom:6px; font-size:0.85rem; border-top:1px dashed #e2e8f0; padding-top:4px;">
-                                <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
-                                ${dat.bezeichnung ? `Bezeichnung: ${dat.bezeichnung}<br>` : ''}
-                                ${dat.art ? `Art: ${dat.art}<br>` : ''}
-                                ${parsed.uniqueGrp ? `Gruppen: ${parsed.uniqueGrp}<br>` : ''}
-                                <span style="color:#0f766e; font-weight: 500;">Ziel (Hardware): ${parsed.targetHw || '-'}</span><br>
-                                ${dat.funktion ? `Funktion: ${dat.funktion}<br>` : ''}
-                                ${parsed.uniqueApp ? `App-Funktionen: ${parsed.uniqueApp}<br>` : ''}
-                            </div>`;
+                            if (isVirtual) {
+                                return `<div style="margin-bottom:6px; font-size:0.85rem; border-top:1px dashed #e2e8f0; padding-top:4px;">
+                                    <b>Modul / Gerät: ${io.label}</b><br>
+                                    <span style="color:#0f766e; font-weight: 500;">Ziel (Hardware): ${parsed.targetHw || '-'}</span><br>
+                                    ${parsed.uniqueApp ? `App-Funktionen: ${parsed.uniqueApp}<br>` : ''}
+                                    ${parsed.uniqueGrp ? `Gruppen: ${parsed.uniqueGrp}<br>` : ''}
+                                </div>`;
+                            } else {
+                                return `<div style="margin-bottom:6px; font-size:0.85rem; border-top:1px dashed #e2e8f0; padding-top:4px;">
+                                    <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
+                                    ${dat.bezeichnung ? `Bezeichnung: ${dat.bezeichnung}<br>` : ''}
+                                    ${dat.art ? `Art: ${dat.art}<br>` : ''}
+                                    ${parsed.uniqueGrp ? `Gruppen: ${parsed.uniqueGrp}<br>` : ''}
+                                    <span style="color:#0f766e; font-weight: 500;">Ziel (Hardware): ${parsed.targetHw || '-'}</span><br>
+                                    ${dat.funktion ? `Funktion: ${dat.funktion}<br>` : ''}
+                                    ${parsed.uniqueApp ? `App-Funktionen: ${parsed.uniqueApp}<br>` : ''}
+                                </div>`;
+                            }
                         }).join('');
                     }
                     
@@ -3165,11 +3222,15 @@
 
                         let slotText = '';
                         
+                        const isVirtual = !ic || !ic.io || ic.io.length === 0;
                         const activeIos = (ic && ic.io && ic.io.length > 0) ? ic.io : (s.iconFile ? [{id: 'virtual', label: 'Gerät / Modul', type: 'in'}] : []);
 
                         if(activeIos.length > 0) {
                             activeIos.forEach(io => {
                                 const dat = s.ioData?.[io.id] || {};
+                                
+                                // HIER ERFOLGT DIE FILTERUNG FÜR DEN KUNDENDRUCK
+                                if (dat.printCustomerDoc === false) return; 
                                 
                                 const slotLabel = ic ? ic.label : 'Platz';
                                 const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
@@ -3182,9 +3243,9 @@
                                     slotText += `<div style="margin-bottom: 4px;">`;
                                     
                                     if(dat.bezeichnung) slotText += `<b>Platz ${i} - ${dat.bezeichnung}</b>`;
-                                    else slotText += `<b>Platz ${i} - ${io.label || 'Taster'}</b>`;
+                                    else slotText += `<b>Platz ${i} - ${isVirtual ? 'Modul / Gerät' : (io.label || 'Taster')}</b>`;
                                     
-                                    if(dat.funktion) slotText += `<div style="color:#475569;">Funktion: ${dat.funktion}</div>`;
+                                    if(dat.funktion && !isVirtual) slotText += `<div style="color:#475569;">Funktion: ${dat.funktion}</div>`;
                                     if(parsed.uniqueApp) slotText += `<div style="color:#475569;">App-Funktionen: ${parsed.uniqueApp}</div>`;
                                     if(parsed.uniqueGrp) slotText += `<div style="color:#475569;">Gruppen: ${parsed.uniqueGrp}</div>`;
                                     slotText += `</div>`;
@@ -3195,7 +3256,7 @@
                         if(slotText) {
                             slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid var(--primary);">${slotText}</div>`;
                         } else {
-                            slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #cbd5e1; color:#94a3b8;"><b>Platz ${i}</b> - Nicht belegt</div>`;
+                            slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #cbd5e1; color:#94a3b8;"><b>Platz ${i}</b> - Nicht belegt oder für Kunden-Doku ausgeblendet</div>`;
                         }
                     }
 
