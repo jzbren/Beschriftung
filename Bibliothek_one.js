@@ -57,6 +57,12 @@ const iconConfigList = [
         ] 
     },
     { 
+        file: "Loxone-Display.jpg", 
+        label: "Touch-Display",
+        fields: ["Bemerkung", "Tree Ast"],
+        group: "Schalter & Taster"
+    },
+    { 
         file: "Drehschalter-Hand-Auto.png", 
         label: "Drehschalter Hand-Auto",
         fields: ["Bemerkung"],
