@@ -19,7 +19,7 @@
         });
     </script>
     
-    <title>ServiceProDetail Konfigurator V7.9</title>
+    <title>ServiceProDetail Konfigurator V7.8</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1689,7 +1689,35 @@
         let switchRef = _activeSwitchRef;
         if (subId === 'null' || !subId) subId = null;
 
-        if (type === 'switch' && isChecked) {
+        // Prüfen, ob MultiSelect für diese Komponente / diesen IO aktiv ist
+        let targetCfg = null;
+        let activeProfileId = null;
+        projectData.details.forEach(pd => {
+            if(pd.hardware) pd.hardware.forEach(hw => {
+                if(hw.instanceId === hwId) {
+                    targetCfg = hardwareConfigList.find(x => x.id === hw.configId);
+                    activeProfileId = hw.activeProfile;
+                }
+            });
+        });
+
+        let isMultiSelect = false;
+        if (targetCfg) {
+            if (targetCfg.MultiSelect) {
+                isMultiSelect = true;
+            } else {
+                let activeIoList = targetCfg.profiles ? 
+                    (targetCfg.profiles.find(p => p.id === activeProfileId)?.io || targetCfg.profiles[0].io) : 
+                    targetCfg.io;
+                let ioDef = activeIoList?.find(x => x.id === ioId);
+                if (ioDef && ioDef.MultiSelect) {
+                    isMultiSelect = true;
+                }
+            }
+        }
+
+        // Wenn kein MultiSelect aktiv ist, exklusive Zuordnung bereinigen
+        if (type === 'switch' && isChecked && !isMultiSelect) {
             projectData.details.forEach(pd => {
                 if (pd.hardware) {
                     pd.hardware.forEach(hw => {
@@ -1758,48 +1786,6 @@
             list = list.filter(x => x !== sourceName);
         }
         targetObj[propKey] = list.join(', ');
-
-        if (type === 'switch' && switchRef && switchRef.fId) {
-            let hwNameStr = '';
-            projectData.details.forEach(pd => {
-                if(pd.hardware) pd.hardware.forEach(hw => {
-                    if(hw.instanceId === hwId) {
-                        const hc = hardwareConfigList.find(x => x.id === hw.configId);
-                        const baseName = `${pd.name} ${hw.fields['Geräte-Bez.'] || hc.name}`;
-                        if(subId) {
-                            const sub = hw.subNodes[ioId].find(x=>x.id===subId);
-                            hwNameStr = `${baseName} ${sub.name}`;
-                        } else {
-                            const activeIo = hc.profiles ? (hc.profiles.find(p=>p.id===hw.activeProfile)?.io || hc.profiles[0].io) : hc.io;
-                            const ioDef = activeIo.find(x=>x.id===ioId);
-                            hwNameStr = `${baseName} ${ioDef.label}`;
-                        }
-                    }
-                });
-            });
-
-            if(hwNameStr) {
-                const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
-                if(d) {
-                    const f = d.frames.find(x=>x.id===switchRef.fId);
-                    if(f) {
-                        const slot = f.slots[`slot-${switchRef.slotN}`];
-                        if(slot) {
-                            if(!slot.ioData) slot.ioData = {};
-                            if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
-                            
-                            if(isChecked) {
-                                slot.ioData[switchRef.ioId].eingabegerat = hwNameStr;
-                            } else {
-                                if(slot.ioData[switchRef.ioId].eingabegerat === hwNameStr) {
-                                    slot.ioData[switchRef.ioId].eingabegerat = '';
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
 
         saveToLocal();
         renderApp();
@@ -3230,36 +3216,79 @@
                     <h4 style="margin-bottom:12px; color:#1e293b; font-size: 1.05rem;">Zugehörige Hardware</h4>
                     <div style="display:flex; flex-direction:column; gap:12px;">`;
                 
-                selectedHw.forEach(hw => {
-                    const cfg = hardwareConfigList.find(x => x.id === hw.configId);
-                    if(!cfg) return;
-
-                    let fieldsHtml = '';
-                    if(cfg.fields) {
-                        cfg.fields.forEach(f => {
-                            if (hw.fields[f] && !/ast|bus|bridge|dali|link|bemerkung|s\.-?nr|seriennummer/i.test(f)) {
-                                fieldsHtml += `<div style="margin-bottom:2px;"><b>${f}:</b> ${hw.fields[f]}</div>`;
+                // Innerhalb der Hardware-Schleife in printCustomerDoc() / buildDetailPrintHtml()
+            selectedHw.forEach(hw => {
+                const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+                if(!cfg) return;
+        
+                let fieldsHtml = '';
+                if(cfg.fields) {
+                    cfg.fields.forEach(f => {
+                        if (hw.fields[f] && !/ast|bus|bridge|dali|link|bemerkung|s\.-?nr|seriennummer/i.test(f)) {
+                            fieldsHtml += `<div style="margin-bottom:2px;"><b>${f}:</b> ${hw.fields[f]}</div>`;
+                        }
+                    });
+                }
+        
+                let ioh = ''; 
+                const activeIoList = cfg.profiles ? (cfg.profiles.find(p => p.id === hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
+                
+                if(activeIoList) {
+                    activeIoList.forEach(io => { 
+                        // Prüfen ob printHardwareConnect global oder auf dem IO definiert ist
+                        const shouldPrintConnect = cfg.printHardwareConnect || io.printHardwareConnect;
+        
+                        if(io.type === 'bus' && hw.subNodes && hw.subNodes[io.id]) {
+                            hw.subNodes[io.id].forEach(sub => {
+                                if (sub.printInCustomerDoc || shouldPrintConnect) {
+                                    ioh += `<div style="margin-bottom: 6px; padding-left: 8px; border-left: 3px solid var(--primary); font-size: 0.8rem; color: #475569;">
+                                        <b style="color:#1e293b;">${sub.name || 'Gerät'}</b>${sub.location ? ` <span style="color:#64748b;">(Ort: ${sub.location})</span>` : ''}
+                                        ${sub.gruppe ? `<div><b>Gruppe:</b> ${sub.gruppe}</div>` : ''}
+                                        ${sub.funktion ? `<div><b>Funktion:</b> ${sub.funktion}</div>` : ''}
+                                        ${sub.mapping ? `<div><b>Taster / Verknüpfung:</b> ${sub.mapping}</div>` : ''}
+                                        ${sub.appFunctions ? `<div><b>App-Funktionen:</b> ${sub.appFunctions}</div>` : ''}
+                                        ${sub.globalGroup ? `<div><b>Globale Gruppe:</b> ${sub.globalGroup}</div>` : ''}
+                                    </div>`;
+                                }
+                            });
+                        } else {
+                            if ((hw.ioPrint && hw.ioPrint[io.id]) || shouldPrintConnect) {
+                                const app = hw.appFunctions?.[io.id];
+                                const grp = hw.globalGroup?.[io.id];
+                                const map = hw.mappings?.[io.id];
+                                const bez = hw.bezeichnung?.[io.id];
+                                const func = hw.funktion?.[io.id];
+                                const localGrp = hw.gruppe?.[io.id];
+                                
+                                ioh += `<div style="margin-bottom: 6px; padding-left: 8px; border-left: 3px solid var(--primary); font-size: 0.8rem; color: #475569;">
+                                    <b style="color:#1e293b;">${io.label}${bez ? ` - ${bez}` : ''}</b>
+                                    ${localGrp ? `<div><b>Gruppe:</b> ${localGrp}</div>` : ''}
+                                    ${func ? `<div><b>Funktion:</b> ${func}</div>` : ''}
+                                    ${map ? `<div><b>Taster / Verknüpfung:</b> ${map}</div>` : ''}
+                                    ${app ? `<div><b>App-Funktionen:</b> ${app}</div>` : ''}
+                                    ${grp ? `<div><b>Globale Gruppe:</b> ${grp}</div>` : ''}
+                                </div>`;
                             }
-                        });
-                    }
-
-                    let ioh = ''; 
-                    const activeIoList = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
-                    if(activeIoList) {
-                        activeIoList.forEach(io => { 
-                            if(io.type === 'bus' && hw.subNodes && hw.subNodes[io.id]) {
-                                hw.subNodes[io.id].forEach(sub => {
-                                    if (sub.printInCustomerDoc) {
-                                        ioh += `<div style="margin-bottom: 6px; padding-left: 8px; border-left: 3px solid var(--primary); font-size: 0.8rem; color: #475569;">
-                                            <b style="color:#1e293b;">${sub.name || 'Gerät'}</b>${sub.location ? ` <span style="color:#64748b;">(Ort: ${sub.location})</span>` : ''}
-                                            ${sub.gruppe ? `<div><b>Gruppe:</b> ${sub.gruppe}</div>` : ''}
-                                            ${sub.funktion ? `<div><b>Funktion:</b> ${sub.funktion}</div>` : ''}
-                                            ${sub.mapping ? `<div><b>Taster / Verknüpfung:</b> ${sub.mapping}</div>` : ''}
-                                            ${sub.appFunctions ? `<div><b>App-Funktionen:</b> ${sub.appFunctions}</div>` : ''}
-                                            ${sub.globalGroup ? `<div><b>Globale Gruppe:</b> ${sub.globalGroup}</div>` : ''}
-                                        </div>`;
-                                    }
-                                });
+                        }
+                    });
+                }
+        
+                if (ioh || fieldsHtml) {
+                    html += `
+                        <div style="display:flex; gap:15px; border:1px solid #cbd5e1; padding:12px; border-radius:6px; background:#f8fafc; page-break-inside: avoid; border-left:4px solid var(--primary); margin-bottom:12px;">
+                            <div style="width:70px; flex-shrink:0; align-self: flex-start;">
+                                <img src="icons-schalter/${cfg.image}" style="width:100%; object-fit:contain; border-radius:4px; background:#fff; border:1px solid #e2e8f0; padding:4px;">
+                            </div>
+                            <div style="flex:1; font-size:0.85rem; color:#334155;">
+                                <div style="font-weight:bold; font-size:1rem; color:#0f766e; margin-bottom:6px; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">
+                                    ${cfg.name}
+                                </div>
+                                <div style="margin-bottom:8px; display:grid; grid-template-columns:1fr 1fr; gap:4px;">${fieldsHtml}</div>
+                                ${ioh ? `<div style="margin-top:8px; border-top:1px dashed #cbd5e1; padding-top:6px;"><b>Zugehörige Funktionen & Verknüpfungen:</b>${ioh}</div>` : ''}
+                            </div>
+                        </div>`;
+                }
+            });
                             } else {
                                 if (hw.ioPrint && hw.ioPrint[io.id]) {
                                     const app = hw.appFunctions?.[io.id];
