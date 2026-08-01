@@ -1799,6 +1799,7 @@
     targetObj[propKey] = list.join(', ');
 
     // Optionale Verknüpfung im Frame aktualisieren
+    // Optionale Verknüpfung im Frame aktualisieren
     if (type === 'switch' && switchRef && switchRef.fId) {
         let hwNameStr = '';
         projectData.details.forEach(pd => {
@@ -1831,18 +1832,23 @@
                         if(!slot.ioData) slot.ioData = {};
                         if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
                         
-                        if(isChecked) {
-                            slot.ioData[switchRef.ioId].eingabegerat = hwNameStr;
-                        } else {
-                            if(slot.ioData[switchRef.ioId].eingabegerat === hwNameStr) {
-                                slot.ioData[switchRef.ioId].eingabegerat = '';
-                            }
+                        // FIX: Als kommaseparierte Liste verwalten statt zu überschreiben
+                        let eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x => x.trim()).filter(x => x);
+                        
+                        if(isChecked && !eingabeList.includes(hwNameStr)) {
+                            eingabeList.push(hwNameStr);
                         }
+                        if(!isChecked) {
+                            eingabeList = eingabeList.filter(x => x !== hwNameStr);
+                        }
+                        
+                        slot.ioData[switchRef.ioId].eingabegerat = eingabeList.join(', ');
                     }
                 }
             }
         }
     }
+
 
     saveToLocal();
     renderApp();
