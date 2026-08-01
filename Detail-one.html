@@ -1344,19 +1344,19 @@
                                     <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="${onChangeAction}" style="width:15px;height:15px;cursor:pointer;margin-top:2px;">
                                     <div><b>${ioDisplayName}</b> ${dat.bezeichnung ? `— <span style="color:#0f766e;">"${dat.bezeichnung}"</span>` : ''}</div>
                                 </label>`;
-                        });
+                            });
 
-                        if (slotIoCheckboxes) {
-                            frameSlotsHtml += `<div style="margin: 8px 0; border-left: 2px solid #14b8a6; padding-left: 10px;">
-                                <div style="font-weight:600; font-size:0.9rem; color:#334155;">Platz ${i} — ${ic ? ic.label : 'Kein Icon'}</div>
-                                ${slotIoCheckboxes}
-                            </div>`;
+                            if (slotIoCheckboxes) {
+                                frameSlotsHtml += `<div style="margin: 8px 0; border-left: 2px solid #14b8a6; padding-left: 10px;">
+                                    <div style="font-weight:600; font-size:0.9rem; color:#334155;">Platz ${i} — ${ic ? ic.label : 'Kein Icon'}</div>
+                                    ${slotIoCheckboxes}
+                                </div>`;
+                            }
                         }
-                    }
-                    if (frameSlotsHtml) {
-                        detailFramesHtml += `<div style="margin-bottom: 10px;"><b style="color:#0f766e; font-size:0.9rem;">Schaltstelle: ${f.name}</b>${frameSlotsHtml}</div>`;
-                    }
-                });
+                        if (frameSlotsHtml) {
+                            detailFramesHtml += `<div style="margin-bottom: 10px;"><b style="color:#0f766e; font-size:0.9rem;">Schaltstelle: ${f.name}</b>${frameSlotsHtml}</div>`;
+                        }
+                    });
                 }
                 if (detailFramesHtml) {
                     switchSlotsHtml += `<div class="assign-detail-block" style="margin-bottom: 15px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;">
@@ -1427,135 +1427,135 @@
                                                 <div>🔌 <b>${subName}</b>${subLoc} <span style="font-size:0.75rem; color:#64748b;">(${sub.channels || 1} Kanäle)</span></div>
                                             </div>
                                         </label>`;
-                                });
+                                    });
+                                }
                             }
+                        });
+                        
+                        if(hwIoHtml) {
+                            detailHtml += `<div class="assign-hw-block" style="margin-bottom: 12px; border-left: 3px solid #0f766e; padding-left: 12px;"><b style="color:#1e293b; font-size:0.95rem;">${hw.fields['Geräte-Bez.'] || cfg.name}</b>${hwIoHtml}</div>`;
                         }
                     });
-                    
-                    if(hwIoHtml) {
-                        detailHtml += `<div class="assign-hw-block" style="margin-bottom: 12px; border-left: 3px solid #0f766e; padding-left: 12px;"><b style="color:#1e293b; font-size:0.95rem;">${hw.fields['Geräte-Bez.'] || cfg.name}</b>${hwIoHtml}</div>`;
-                    }
-                });
-            }
-            if(detailHtml) {
-                hwHtml += `<div class="assign-detail-block" style="margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;"><h3 style="margin-top:0; color:#0f766e; font-size:1.05rem; border-bottom:1px solid #cbd5e1; padding-bottom:5px;">${d.name} <span style="color:#64748b;font-size:0.85rem;font-weight:normal;">(${d.room || 'Kein Raum'})</span></h3>${detailHtml}</div>`;
-            }
-        });
-    }
-    
-    let finalHwListHtml = crossLinkHtml + switchSlotsHtml + (hwHtml ? `<h4 style="margin: 15px 0 10px 0; color:#0f766e; font-size:0.95rem;">⚡ Hardware Komponenten</h4>` + hwHtml : '');
-    document.getElementById('assign-hw-list').innerHTML = finalHwListHtml || '<p style="color:#64748b;">Keine Zuweisungsobjekte im Projekt gefunden.</p>';
-
-    const extrasDiv = document.getElementById('assign-extras');
-    if((type === 'switch' && switchRef) || (type === 'hardwareIo' && hwRef)) {
-        let extraHtml = `<div style="display:flex; gap: 20px;">`;
+                }
+                if(detailHtml) {
+                    hwHtml += `<div class="assign-detail-block" style="margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;"><h3 style="margin-top:0; color:#0f766e; font-size:1.05rem; border-bottom:1px solid #cbd5e1; padding-bottom:5px;">${d.name} <span style="color:#64748b;font-size:0.85rem;font-weight:normal;">(${d.room || 'Kein Raum'})</span></h3>${detailHtml}</div>`;
+                }
+            });
+        }
         
-        let currentAppFns = [];
-        let currentGrps = [];
-        if(type === 'hardwareIo' && hwRef) {
-            const hd = projectData.details.find(x => x.hardware && x.hardware.some(h => h.instanceId === hwRef.hwId));
-            if(hd) {
-                const tgtHw = hd.hardware.find(h => h.instanceId === hwRef.hwId);
-                if(hwRef.subId) {
-                    const tgtSub = tgtHw.subNodes[hwRef.ioId].find(s => s.id === hwRef.subId);
-                    if(tgtSub) {
-                        currentAppFns = (tgtSub.appFunctions || '').split(',').map(x=>x.trim());
-                        currentGrps = (tgtSub.globalGroup || '').split(',').map(x=>x.trim());
+        let finalHwListHtml = crossLinkHtml + switchSlotsHtml + (hwHtml ? `<h4 style="margin: 15px 0 10px 0; color:#0f766e; font-size:0.95rem;">⚡ Hardware Komponenten</h4>` + hwHtml : '');
+        document.getElementById('assign-hw-list').innerHTML = finalHwListHtml || '<p style="color:#64748b;">Keine Zuweisungsobjekte im Projekt gefunden.</p>';
+
+        const extrasDiv = document.getElementById('assign-extras');
+        if((type === 'switch' && switchRef) || (type === 'hardwareIo' && hwRef)) {
+            let extraHtml = `<div style="display:flex; gap: 20px;">`;
+            
+            let currentAppFns = [];
+            let currentGrps = [];
+            if(type === 'hardwareIo' && hwRef) {
+                const hd = projectData.details.find(x => x.hardware && x.hardware.some(h => h.instanceId === hwRef.hwId));
+                if(hd) {
+                    const tgtHw = hd.hardware.find(h => h.instanceId === hwRef.hwId);
+                    if(hwRef.subId) {
+                        const tgtSub = tgtHw.subNodes[hwRef.ioId].find(s => s.id === hwRef.subId);
+                        if(tgtSub) {
+                            currentAppFns = (tgtSub.appFunctions || '').split(',').map(x=>x.trim());
+                            currentGrps = (tgtSub.globalGroup || '').split(',').map(x=>x.trim());
+                        }
+                    } else {
+                        currentAppFns = (tgtHw.appFunctions?.[hwRef.ioId] || '').split(',').map(x=>x.trim());
+                        currentGrps = (tgtHw.globalGroup?.[hwRef.ioId] || '').split(',').map(x=>x.trim());
                     }
-                } else {
-                    currentAppFns = (tgtHw.appFunctions?.[hwRef.ioId] || '').split(',').map(x=>x.trim());
-                    currentGrps = (tgtHw.globalGroup?.[hwRef.ioId] || '').split(',').map(x=>x.trim());
                 }
             }
+
+            let appHtml = `<div style="flex:1; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:8px;">
+                <h4 style="margin-top:0; color:#166534; margin-bottom:10px;">📱 App-Funktionen</h4>
+                <div style="display:flex; gap:5px; margin-bottom:12px;">
+                    <input type="text" id="quick-new-appfn" placeholder="Neue App-Funktion..." onkeydown="if(event.key==='Enter') quickAddAppFunction()" style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:0.85rem;">
+                    <button class="btn primary" style="padding:6px 10px;" onclick="quickAddAppFunction()">+</button>
+                </div>
+                <div style="max-height: 180px; overflow-y: auto; padding-right: 5px;">`;
+                
+            projectData.appFunctions.forEach(afObj => {
+                const af = typeof afObj === 'object' ? afObj.name : afObj;
+                const afDesc = typeof afObj === 'object' ? afObj.description : '';
+                let isChecked = false;
+
+                if (type === 'switch' && switchRef) {
+                    const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
+                    if(d) {
+                        const f = d.frames.find(x=>x.id===switchRef.fId);
+                        const slot = f.slots[`slot-${switchRef.slotN}`];
+                        if(!slot.ioData) slot.ioData = {};
+                        if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
+                        const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
+                        isChecked = eingabeList.includes(af);
+                    }
+                } else if (type === 'hardwareIo' && hwRef) {
+                    isChecked = currentAppFns.includes(af);
+                }
+
+                const onChangeAction = (type === 'switch') 
+                    ? `toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${af.replace(/'/g, "\\'")}', this.checked)`
+                    : `toggleHwExtraTarget('${hwRef.hwId}', '${hwRef.ioId}', '${hwRef.subId || ''}', 'appFunction', '${af.replace(/'/g, "\\'")}', this.checked)`;
+
+                appHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;">
+                    <input type="checkbox" ${isChecked?'checked':''} onchange="${onChangeAction}" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> 
+                    <div><div style="font-weight:500;">${af}</div>${afDesc ? `<div style="font-size:0.75rem; color:#475569;">${afDesc}</div>` : ''}</div>
+                </label>`;
+            });
+            appHtml += `</div></div>`;
+
+            let grpHtml = `<div style="flex:1; background:#eff6ff; border:1px solid #bfdbfe; padding:15px; border-radius:8px;">
+                <h4 style="margin-top:0; color:#1e40af; margin-bottom:10px;">📂 Globale Gruppen</h4>
+                <div style="display:flex; gap:5px; margin-bottom:12px;">
+                    <input type="text" id="quick-new-grp" placeholder="Neue Gruppe..." onkeydown="if(event.key==='Enter') quickAddGroup()" style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:0.85rem;">
+                    <button class="btn primary" style="padding:6px 10px;" onclick="quickAddGroup()">+</button>
+                </div>
+                <div style="max-height: 180px; overflow-y: auto; padding-right: 5px;">`;
+                
+            projectData.globalGroups.forEach(ggObj => {
+                const gg = typeof ggObj === 'object' ? ggObj.name : ggObj;
+                const ggDesc = typeof ggObj === 'object' ? ggObj.description : '';
+                let isChecked = false;
+
+                if (type === 'switch' && switchRef) {
+                    const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
+                    if(d) {
+                        const f = d.frames.find(x=>x.id===switchRef.fId);
+                        const slot = f.slots[`slot-${switchRef.slotN}`];
+                        if(!slot.ioData) slot.ioData = {};
+                        if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
+                        const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
+                        isChecked = eingabeList.includes(gg);
+                    }
+                } else if (type === 'hardwareIo' && hwRef) {
+                    isChecked = currentGrps.includes(gg);
+                }
+
+                const onChangeAction = (type === 'switch') 
+                    ? `toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${gg.replace(/'/g, "\\'")}', this.checked)`
+                    : `toggleHwExtraTarget('${hwRef.hwId}', '${hwRef.ioId}', '${hwRef.subId || ''}', 'globalGroup', '${gg.replace(/'/g, "\\'")}', this.checked)`;
+
+                grpHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;">
+                    <input type="checkbox" ${isChecked?'checked':''} onchange="${onChangeAction}" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> 
+                    <div><div style="font-weight:500;">${gg}</div>${ggDesc ? `<div style="font-size:0.75rem; color:#475569;">${ggDesc}</div>` : ''}</div>
+                </label>`;
+            });
+            grpHtml += `</div></div>`;
+
+            extraHtml += appHtml + grpHtml + `</div><hr style="border:0; border-top:1px solid #cbd5e1; margin: 20px 0;">`;
+            extrasDiv.innerHTML = extraHtml;
+            extrasDiv.style.display = 'block';
+        } else {
+            extrasDiv.style.display = 'none';
+            extrasDiv.innerHTML = '';
         }
 
-        let appHtml = `<div style="flex:1; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:8px;">
-            <h4 style="margin-top:0; color:#166534; margin-bottom:10px;">📱 App-Funktionen</h4>
-            <div style="display:flex; gap:5px; margin-bottom:12px;">
-                <input type="text" id="quick-new-appfn" placeholder="Neue App-Funktion..." onkeydown="if(event.key==='Enter') quickAddAppFunction()" style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:0.85rem;">
-                <button class="btn primary" style="padding:6px 10px;" onclick="quickAddAppFunction()">+</button>
-            </div>
-            <div style="max-height: 180px; overflow-y: auto; padding-right: 5px;">`;
-            
-        projectData.appFunctions.forEach(afObj => {
-            const af = typeof afObj === 'object' ? afObj.name : afObj;
-            const afDesc = typeof afObj === 'object' ? afObj.description : '';
-            let isChecked = false;
-
-            if (type === 'switch' && switchRef) {
-                const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
-                if(d) {
-                    const f = d.frames.find(x=>x.id===switchRef.fId);
-                    const slot = f.slots[`slot-${switchRef.slotN}`];
-                    if(!slot.ioData) slot.ioData = {};
-                    if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
-                    const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
-                    isChecked = eingabeList.includes(af);
-                }
-            } else if (type === 'hardwareIo' && hwRef) {
-                isChecked = currentAppFns.includes(af);
-            }
-
-            const onChangeAction = (type === 'switch') 
-                ? `toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${af.replace(/'/g, "\\'")}', this.checked)`
-                : `toggleHwExtraTarget('${hwRef.hwId}', '${hwRef.ioId}', '${hwRef.subId || ''}', 'appFunction', '${af.replace(/'/g, "\\'")}', this.checked)`;
-
-            appHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;">
-                <input type="checkbox" ${isChecked?'checked':''} onchange="${onChangeAction}" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> 
-                <div><div style="font-weight:500;">${af}</div>${afDesc ? `<div style="font-size:0.75rem; color:#475569;">${afDesc}</div>` : ''}</div>
-            </label>`;
-        });
-        appHtml += `</div></div>`;
-
-        let grpHtml = `<div style="flex:1; background:#eff6ff; border:1px solid #bfdbfe; padding:15px; border-radius:8px;">
-            <h4 style="margin-top:0; color:#1e40af; margin-bottom:10px;">📂 Globale Gruppen</h4>
-            <div style="display:flex; gap:5px; margin-bottom:12px;">
-                <input type="text" id="quick-new-grp" placeholder="Neue Gruppe..." onkeydown="if(event.key==='Enter') quickAddGroup()" style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:0.85rem;">
-                <button class="btn primary" style="padding:6px 10px;" onclick="quickAddGroup()">+</button>
-            </div>
-            <div style="max-height: 180px; overflow-y: auto; padding-right: 5px;">`;
-            
-        projectData.globalGroups.forEach(ggObj => {
-            const gg = typeof ggObj === 'object' ? ggObj.name : ggObj;
-            const ggDesc = typeof ggObj === 'object' ? ggObj.description : '';
-            let isChecked = false;
-
-            if (type === 'switch' && switchRef) {
-                const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
-                if(d) {
-                    const f = d.frames.find(x=>x.id===switchRef.fId);
-                    const slot = f.slots[`slot-${switchRef.slotN}`];
-                    if(!slot.ioData) slot.ioData = {};
-                    if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
-                    const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
-                    isChecked = eingabeList.includes(gg);
-                }
-            } else if (type === 'hardwareIo' && hwRef) {
-                isChecked = currentGrps.includes(gg);
-            }
-
-            const onChangeAction = (type === 'switch') 
-                ? `toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${gg.replace(/'/g, "\\'")}', this.checked)`
-                : `toggleHwExtraTarget('${hwRef.hwId}', '${hwRef.ioId}', '${hwRef.subId || ''}', 'globalGroup', '${gg.replace(/'/g, "\\'")}', this.checked)`;
-
-            grpHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;">
-                <input type="checkbox" ${isChecked?'checked':''} onchange="${onChangeAction}" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> 
-                <div><div style="font-weight:500;">${gg}</div>${ggDesc ? `<div style="font-size:0.75rem; color:#475569;">${ggDesc}</div>` : ''}</div>
-            </label>`;
-        });
-        grpHtml += `</div></div>`;
-
-        extraHtml += appHtml + grpHtml + `</div><hr style="border:0; border-top:1px solid #cbd5e1; margin: 20px 0;">`;
-        extrasDiv.innerHTML = extraHtml;
-        extrasDiv.style.display = 'block';
-    } else {
-        extrasDiv.style.display = 'none';
-        extrasDiv.innerHTML = '';
-    }
-
-    document.getElementById('assign-modal').style.display = 'flex';
-    filterAssignModal(autoFilterText);
-  };
+        document.getElementById('assign-modal').style.display = 'flex';
+        filterAssignModal(autoFilterText);
+    };
 
     window.toggleHardwareSwitchLink = function(hwId, ioId, subId, dId, fId, slotN, slotIoId, switchIdent, hwNameStr, isChecked) {
         if (subId === 'null' || !subId) subId = null;
@@ -1851,95 +1851,1564 @@
 
     function renderStandardDropdown(dropdownId, currentValue, optionsList, callbackName, placeholder) {
         let optsHtml = optionsList.map(opt => `<div class="dropdown-option" data-label="${(opt.label || opt.value).toLowerCase()}" onclick="${callbackName}('${opt.value.replace(/'/g, "\\'")}', event)">${opt.label || opt.value}</div>`).join('');
-        
-        return `
-            <div class="custom-select-wrapper" id="${dropdownId}">
-                <div class="custom-select-trigger" onclick="toggleDropdown('${dropdownId}', event)">
-                    <span>${currentValue || placeholder || 'Bitte wählen...'}</span>
-                    <span class="arrow">▼</span>
-                </div>
-                <div class="select-items">
-                    <div class="dropdown-search-box" onclick="event.stopPropagation()">
-                        <input type="text" placeholder="Suchen..." onkeyup="filterDropdownOptions('${dropdownId}', this.value)">
-                    </div>
-                    <div class="dropdown-options-list">
-                        ${optsHtml}
-                    </div>
-                </div>
-            </div>
-        `;
+        const dLabel = optionsList.find(o => o.value === currentValue)?.label || currentValue || placeholder;
+        return `<div class="custom-select" onclick="toggleGenericDropdown('${dropdownId}', event)"><div class="select-selected">${dLabel} <span>▼</span></div><div class="select-items" id="dd-${dropdownId}" onclick="event.stopPropagation()"><input type="text" class="dropdown-search" placeholder="Suchen..." onkeyup="filterGenericDropdown('${dropdownId}', this.value)"><div id="dd-list-${dropdownId}">${optsHtml}</div></div></div>`;
     }
-
-    window.toggleDropdown = function(id, event) {
-        event.stopPropagation();
-        document.querySelectorAll('.select-items').forEach(el => {
-            if (el.parentElement.id !== id) el.classList.remove('show');
-        });
-        const wrapper = document.getElementById(id);
-        if (wrapper) {
-            const items = wrapper.querySelector('.select-items');
-            if (items) items.classList.toggle('show');
+    
+    window.toggleGenericDropdown = function(id, ev) { 
+        ev.stopPropagation(); 
+        const targetDropdown = document.getElementById(`dd-${id}`);
+        const willBeOpen = !targetDropdown.classList.contains('show');
+        document.querySelectorAll('.select-items').forEach(dd => dd.classList.remove('show'));
+        if(willBeOpen) {
+            targetDropdown.classList.add('show');
+            setTimeout(() => targetDropdown.querySelector('.dropdown-search')?.focus(), 50);
         }
     };
 
-    window.filterDropdownOptions = function(id, query) {
-        const wrapper = document.getElementById(id);
-        if (!wrapper) return;
-        const q = query.toLowerCase();
-        wrapper.querySelectorAll('.dropdown-option').forEach(opt => {
-            const label = opt.getAttribute('data-label') || '';
-            opt.style.display = label.includes(q) ? '' : 'none';
-        });
+    window.filterGenericDropdown = function(id, term) { 
+        const t = term.toLowerCase(); 
+        Array.from(document.getElementById(`dd-list-${id}`).children).forEach(c => {
+            if(c.classList.contains('dropdown-group-header')) {
+                c.style.display = term ? 'none' : 'block';
+                return;
+            }
+            c.style.display = c.getAttribute('data-label')?.includes(t) ? 'block' : 'none';
+        }); 
     };
 
-    window.exportProject = function() {
+    window.addFrameToDetail = function() {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        if (d) {
+            if (!d.frames) d.frames = [];
+            d.frames.push({
+                id: generateId(),
+                name: `Schaltstelle ${d.frames.length + 1}`,
+                layout: '1x1',
+                activeSlot: 1,
+                slots: {}
+            });
+            saveToLocal();
+            renderApp();
+        }
+    };
+
+    window.updateFrameField = function(fId, field, val) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        if (d && d.frames) {
+            const f = d.frames.find(x => x.id === fId);
+            if (f) {
+                if (field === 'name') {
+                    const oldFName = f.name;
+                    const newFName = val;
+                    
+                    for (let slotKey in f.slots) {
+                        const slotN = slotKey.replace('slot-', '');
+                        const slot = f.slots[slotKey];
+                        const ic = iconConfigList.find(x => x.file === slot.iconFile);
+                        const ioList = (ic && ic.io && ic.io.length > 0) ? ic.io : [{ id: 'default', label: 'Verknüpfungen', type: 'in' }];
+                        ioList.forEach(io => {
+                            let data = slot.ioData?.[io.id] || {};
+                            const customBez = data.bezeichnung ? data.bezeichnung : `${ic ? ic.label : 'Platz'} (Platz ${slotN})`;
+                            const oldIdent = `${d.name} | ${oldFName} | Platz ${slotN} | ${customBez}`;
+                            const newIdent = `${d.name} | ${newFName} | Platz ${slotN} | ${customBez}`;
+                            replaceStringInAllReferences(oldIdent, newIdent);
+                        });
+                    }
+                    f[field] = val;
+                } else {
+                    f[field] = val;
+                }
+                saveToLocal();
+                renderApp();
+            }
+        }
+    };
+
+    window.deleteFrame = function(fId) {
+        if(confirm("Schaltstelle wirklich löschen?")) {
+            const d = projectData.details.find(x => x.id === activeDetailId);
+            if (d && d.frames) {
+                d.frames = d.frames.filter(x => x.id !== fId);
+                saveToLocal();
+                renderApp();
+            }
+        }
+    };
+
+    function checkCollision(switchIdentifier) {
+        if (!switchIdentifier) return false;
+        let count = 0; projectData.details.forEach(d => { 
+            if(d.hardware) d.hardware.forEach(h => { 
+                for (const key in h.mappings) { 
+                    if (h.mappings[key]) {
+                        const items = h.mappings[key].split(',').map(x=>x.trim());
+                        if (items.includes(switchIdentifier)) count++;
+                    }
+                } 
+                if (h.subNodes) {
+                    for(const ioKey in h.subNodes) {
+                        h.subNodes[ioKey].forEach(sub => {
+                            if (sub.mapping) {
+                                const items = sub.mapping.split(',').map(x=>x.trim());
+                                if (items.includes(switchIdentifier)) count++;
+                            }
+                        });
+                    }
+                }
+            }); 
+        });
+        return count > 1;
+    }
+
+    function renderWorkspace() {
+        const c = document.getElementById('workspace-container'); const d = projectData.details.find(x => x.id === activeDetailId);
+        if (!d) {
+            c.innerHTML = `<div class="pane" style="text-align:center; color:#64748b; padding:40px;">Kein Detail vorhanden. Klicke links in der Seitenleiste auf <b>"+ Neues Detail / Raum"</b>, um zu beginnen.</div>`;
+            return;
+        }
+
+        window.selectNewHw = (val, ev) => { 
+            if(ev){ev.preventDefault();ev.stopPropagation();} 
+            document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+            if(val) { setTimeout(() => { addHardwareComponent(val); }, 10); } 
+        };
+        const hwPicker = renderStandardDropdown('new-hw', '', hardwareConfigList.map(h => ({value: h.id, label: h.name})), 'selectNewHw', '+ Hardware hinzufügen');
+
+        let framesHtml = d.frames.map(f => {
+            const [r, col] = f.layout.split('x').map(Number); const tot = r * col;
+            if(!f.activeSlot || f.activeSlot > tot) f.activeSlot = 1;
+            for(let i=1; i<=tot; i++) { 
+                if(!f.slots[`slot-${i}`]) f.slots[`slot-${i}`] = { iconFile: '', ioData: {}, printInCustomerDoc: true }; 
+            }
+
+            const hasNoFrame = Object.values(f.slots).some(s => {
+                const ic = iconConfigList.find(x => x.file === s.iconFile);
+                return ic && ic.noFrame;
+            });
+            
+            return `
+            <div class="pane">
+                <div class="frame-header-row">
+                    <input type="text" value="${f.name}" placeholder="Name der Schaltstelle..." onchange="updateFrameField('${f.id}', 'name', this.value)">
+                    <select onchange="updateFrameField('${f.id}', 'layout', this.value)" ${hasNoFrame ? 'disabled title="Bei rahmenlosen Icons nur 1x1 möglich"' : ''}>
+                        <option value="1x1" ${f.layout==='1x1'?'selected':''}>1 x 1</option>
+                        <option value="2x1" ${f.layout==='2x1'?'selected':''}>2 x 1 (Vertikal)</option>
+                        <option value="1x2" ${f.layout==='1x2'?'selected':''}>1 x 2 (Horizontal)</option>
+                        <option value="3x1" ${f.layout==='3x1'?'selected':''}>3 x 1 (Vertikal)</option>
+                        <option value="1x3" ${f.layout==='1x3'?'selected':''}>1 x 3 (Horizontal)</option>
+                        <option value="4x1" ${f.layout==='4x1'?'selected':''}>4 x 1 (Vertikal)</option>
+                        <option value="1x4" ${f.layout==='1x4'?'selected':''}>1 x 4 (Horizontal)</option>
+                        <option value="2x2" ${f.layout==='2x2'?'selected':''}>2 x 2</option>
+                        <option value="3x2" ${f.layout==='3x2'?'selected':''}>3 x 2</option>
+                        <option value="2x3" ${f.layout==='2x3'?'selected':''}>2 x 3</option>
+                        <option value="3x3" ${f.layout==='3x3'?'selected':''}>3 x 3</option>
+                    </select>
+                    <button class="delete-btn" onclick="deleteFrame('${f.id}')" title="Schaltstelle löschen">×</button>
+                </div>
+                <div class="visualizer-container">
+                    <div class="switch-frame" style="grid-template-columns: repeat(${col}, 75px); grid-template-rows: repeat(${r}, 75px);">${generateVisualizerHtml(d, f, r, col)}</div>
+                    <div class="slot-legend">
+                        <div class="slot-legend-title">📋 Belegungsübersicht</div>
+                        <div class="slot-legend-items">${generateSlotLegendHtml(d, f, r, col)}</div>
+                    </div>
+                </div>
+                <div>${generateSlotEditorHtml(d, f, tot)}</div>
+            </div>`;
+        }).join('');
+
+        let html = `
+        <div class="workspace">
+            <div class="pane" style="padding-bottom: 18px;">
+                <div class="form-group"><label>Raum / Zone:</label><input type="text" value="${d.room || ''}" placeholder="z.B. Wohnzimmer" onchange="updateActiveDetailField('room', this.value)"></div>
+                <div class="form-group" style="margin-bottom:0;"><label>Detail Name:</label><input type="text" value="${d.name}" onchange="updateActiveDetailField('name', this.value)"></div>
+                <button class="btn" style="width:100%; justify-content:center; margin-top:16px;" onclick="addFrameToDetail()">+ Neue Schaltstelle hinzufügen</button>
+            </div>
+            ${framesHtml}
+            <div class="pane">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>Hardware Komponenten</h3>
+                    <div class="no-print" style="width:240px;">${hwPicker}</div>
+                </div>
+                <div class="hardware-list">${generateHardwareHtml(d)}</div>
+            </div>
+        </div>`;
+        c.innerHTML = html; updatePrintContainers();
+    }
+
+    window.handleDragStart = function(e, fId, sNum) { draggedSlot = { fId, sNum }; e.dataTransfer.effectAllowed = 'move'; }
+    window.handleDragOver = function(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+    window.handleDragLeave = function(e) { e.currentTarget.classList.remove('drag-over'); }
+
+    window.handleDrop = function(e, targetFId, targetSNum) {
+        e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+        if(draggedSlot && (draggedSlot.fId !== targetFId || draggedSlot.sNum !== targetSNum)) {
+            const d = projectData.details.find(x => x.id === activeDetailId);
+            const sourceF = d.frames.find(x => x.id === draggedSlot.fId); 
+            const targetF = d.frames.find(x => x.id === targetFId);
+            
+            if(sourceF && targetF) {
+                const sourceSlotData = sourceF.slots[`slot-${draggedSlot.sNum}`];
+                const targetSlotData = targetF.slots[`slot-${targetSNum}`];
+                
+                let replacements = [];
+
+                const collectReplacements = (slotData, oldSlotN, newSlotN, frameName) => {
+                    if(!slotData || !slotData.iconFile) return;
+                    const ic = iconConfigList.find(x => x.file === slotData.iconFile);
+                    const ioList = (ic && ic.io && ic.io.length > 0) ? ic.io : [{ id: 'default', label: 'Verknüpfungen', type: 'in' }];
+                    
+                    ioList.forEach(io => {
+                        const dat = slotData.ioData?.[io.id] || {};
+                        const oldBez = dat.bezeichnung ? dat.bezeichnung : `${ic ? ic.label : 'Platz'} (Platz ${oldSlotN})`;
+                        const oldStr = `${d.name} | ${frameName} | Platz ${oldSlotN} | ${oldBez}`;
+                        
+                        const newBez = dat.bezeichnung ? dat.bezeichnung : `${ic ? ic.label : 'Platz'} (Platz ${newSlotN})`;
+                        const newStr = `${d.name} | ${frameName} | Platz ${newSlotN} | ${newBez}`;
+                        
+                        replacements.push({oldStr, newStr});
+                    });
+                };
+
+                collectReplacements(sourceSlotData, draggedSlot.sNum, targetSNum, sourceF.name);
+                collectReplacements(targetSlotData, targetSNum, draggedSlot.sNum, targetF.name);
+
+                const temp = JSON.parse(JSON.stringify(targetSlotData || {}));
+                targetF.slots[`slot-${targetSNum}`] = JSON.parse(JSON.stringify(sourceSlotData || {}));
+                sourceF.slots[`slot-${draggedSlot.sNum}`] = temp;
+
+                replacements.forEach(rep => {
+                    if(rep.oldStr !== rep.newStr) {
+                        replaceStringInAllReferences(rep.oldStr, rep.newStr);
+                    }
+                });
+
+                saveToLocal();
+                renderApp();
+            }
+        }
+        draggedSlot = null;
+    }
+
+    function addHardwareComponent(hwId) {
+        const c = hardwareConfigList.find(x => x.id === hwId); const d = projectData.details.find(x => x.id === activeDetailId);
+        const cnt = d.hardware.filter(x => x.configId === hwId).length + 1;
+        const fields = {}; 
+        if(c.fields) {
+            c.fields.forEach(f => {
+                if(f === 'Geräte-Bez.') fields[f] = `${c.name} ${cnt}`;
+                else if(f === 'Leistung (W)') fields[f] = c.defaultPower ? c.defaultPower.toString() : "0";
+                else fields[f] = "";
+            });
+        }
+        
+        const initialProfileId = c.profiles ? c.profiles[0].id : null;
+        d.hardware.push({ 
+            instanceId: generateId(), 
+            configId: hwId, 
+            activeProfile: initialProfileId,
+            fields: fields, 
+            bezeichnung: {},
+            funktion: {},
+            gruppe: {},
+            mappings: {}, 
+            appFunctions: {},
+            globalGroup: {},
+            subNodes: {},
+            ioPrint: {}
+        }); 
+        renderApp();
+    }
+
+    function deleteHardwareComponent(instanceId) {
+        if(confirm('Hardware Komponente wirklich löschen?')) {
+            const d = projectData.details.find(x => x.id === activeDetailId);
+            if(d) {
+                d.hardware = d.hardware.filter(x => x.instanceId !== instanceId);
+                renderApp();
+            }
+        }
+    }
+
+    window.changeHwProfile = function(hwInstanceId, profileId) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        const hw = d.hardware.find(x => x.instanceId === hwInstanceId);
+        if(hw && confirm("Profil ändern? Bestehende IO-Verknüpfungen dieser Komponente werden zurückgesetzt.")) {
+            hw.activeProfile = profileId;
+            hw.mappings = {}; hw.appFunctions = {}; hw.globalGroup = {}; hw.subNodes = {}; hw.gruppe = {}; hw.funktion = {}; hw.ioPrint = {};
+            renderApp();
+        }
+    }
+
+    window.updateHardwareField = function(hwInstanceId, field, val) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        const hw = d.hardware.find(x => x.instanceId === hwInstanceId);
+        if(!hw) return;
+
+        if (field === 'Geräte-Bez.') {
+            const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+            if(cfg) {
+                const activeIo = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
+                const oldName = hw.fields[field] || cfg.name;
+                const newName = val || cfg.name;
+                if(activeIo) activeIo.forEach(io => {
+                    if (io.type === 'bus') {
+                        const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
+                        if (busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
+                            hw.subNodes[io.id].forEach(sub => {
+                                replaceStringInAllReferences(`${d.name} ${oldName} ${sub.name || 'Neues Gerät'}`, `${d.name} ${newName} ${sub.name || 'Neues Gerät'}`);
+                            });
+                        }
+                    }
+                    replaceStringInAllReferences(`${d.name} ${oldName} ${io.label}`, `${d.name} ${newName} ${io.label}`);
+                });
+            }
+        }
+        hw.fields[field] = val;
+        saveToLocal();
+        renderApp();
+    };
+
+    window.addSubNode = function(hwInstanceId, ioId) {
+        projectData.details.forEach(d => {
+            if(d.hardware) {
+                d.hardware.forEach(hw => {
+                    if(hw.instanceId === hwInstanceId) {
+                        if(!hw.subNodes) hw.subNodes = {};
+                        if(!hw.subNodes[ioId]) hw.subNodes[ioId] = [];
+                        hw.subNodes[ioId].push({ id: generateId(), name: "Neues Gerät", location: d.room || "", gruppe: "", funktion: "", channels: 1, globalGroup: "", appFunctions: "", mapping: "", printInCustomerDoc: false });
+                    }
+                });
+            }
+        });
+        renderApp();
+    }
+
+    window.updateSubNode = function(hwInstanceId, ioId, subId, field, val) {
+        projectData.details.forEach(d => {
+            if(d.hardware) d.hardware.forEach(hw => {
+                if(hw.instanceId === hwInstanceId && hw.subNodes && hw.subNodes[ioId]) {
+                    const dev = hw.subNodes[ioId].find(x => x.id === subId);
+                    if(dev) {
+                        if (field === 'name') {
+                            const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+                            const hwName = hw.fields['Geräte-Bez.'] || (cfg ? cfg.name : '');
+                            const oldTarget = `${d.name} ${hwName} ${dev.name || 'Neues Gerät'}`;
+                            const newTarget = `${d.name} ${hwName} ${val || 'Neues Gerät'}`;
+                            replaceStringInAllReferences(oldTarget, newTarget);
+                        }
+                        dev[field] = val;
+                    }
+                }
+            });
+        });
+        saveToLocal();
+        renderApp(); 
+    }
+
+    window.deleteSubNode = function(hwInstanceId, ioId, subId) {
+        projectData.details.forEach(d => {
+            if(d.hardware) d.hardware.forEach(hw => {
+                if(hw.instanceId === hwInstanceId && hw.subNodes && hw.subNodes[ioId]) {
+                    hw.subNodes[ioId] = hw.subNodes[ioId].filter(x => x.id !== subId);
+                }
+            });
+        });
+        renderApp();
+    }
+
+    function generateVisualizerHtml(d, f, r, c) {
+        let h = ''; let cnt = 1;
+        const active = f.activeSlot || 1;
+        for(let i=0; i<r*c; i++) {
+            const isActive = (cnt === active);
+            const slot = f.slots[`slot-${cnt}`] || {};
+            const ic = iconConfigList.find(x => x.file === slot.iconFile);
+            const isNoFrame = ic && ic.noFrame;
+            const slotStyle = isNoFrame ? 'style="border:none; background:transparent; box-shadow:none;"' : '';
+
+            const path = slot.iconFile ? `${BASE_ICON_PATH}${slot.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
+            h += `<div class="switch-slot ${isActive ? 'active-slot' : ''}" ${slotStyle} onclick="selectSlot('${f.id}', ${cnt})" draggable="true" ondragstart="handleDragStart(event, '${f.id}', ${cnt})" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${f.id}', ${cnt})" title="Platz ${cnt} bearbeiten"><span class="slot-badge">${cnt}</span><img src="${path}"></div>`; 
+            cnt++;
+        }
+        return h;
+    }
+
+    function generateSlotLegendHtml(d, f, r, c) {
+        let h = '';
+        const total = r * c;
+        for(let i = 1; i <= total; i++) {
+            const slot = f.slots[`slot-${i}`] || { iconFile: '', ioData: {} };
+            const ic = iconConfigList.find(x => x.file === slot.iconFile);
+            const slotLabel = ic ? ic.label : 'Kein Icon';
+            
+            let descParts = [];
+            if (slot.ioData) {
+                for (let ioKey in slot.ioData) {
+                    const dat = slot.ioData[ioKey];
+                    if (dat && dat.bezeichnung) {
+                        descParts.push(dat.bezeichnung);
+                    }
+                }
+            }
+            if (slot.customFields) {
+                for (let cfKey in slot.customFields) {
+                    if (slot.customFields[cfKey] && /bemerkung|text|label/i.test(cfKey)) {
+                        descParts.push(slot.customFields[cfKey]);
+                    }
+                }
+            }
+            
+            const descText = descParts.length > 0 ? descParts.join(' / ') : '<span style="color:#94a3b8; font-style:italic;">Keine Bezeichnung</span>';
+            const isActive = (f.activeSlot === i);
+            
+            h += `<div class="slot-legend-row ${isActive ? 'active' : ''}" onclick="selectSlot('${f.id}', ${i})" title="Platz ${i} bearbeiten">
+                <div style="font-size: 0.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%;">
+                    <b style="color:#0f766e;">[Platz ${i}]</b> <span style="color:#334155;">${slotLabel}</span>: <span style="color:#475569;">${descText}</span>
+                </div>
+            </div>`;
+        }
+        return h || '<div style="color:#94a3b8; font-size:0.80rem; font-style:italic;">Keine Plätze vorhanden</div>';
+    }
+
+    window.selectSlotIo = function(fId, slotN, ioKey) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        if(!d || !d.frames) return;
+        const f = d.frames.find(x => x.id === fId);
+        if(!f) return;
+        if(!f.activeIo) f.activeIo = {};
+        f.activeIo[`slot-${slotN}`] = ioKey;
+        renderApp();
+    };
+
+    function generateSlotEditorHtml(d, f, total) {
+        const active = f.activeSlot || 1;
+        
+        let tabsHtml = `<div class="slot-tabs">` + Array.from({length: total}, (_, i) => i + 1).map(i => `
+            <button class="slot-tab-btn ${active === i ? 'active' : ''}" onclick="selectSlot('${f.id}', ${i})">Platz ${i}</button>
+        `).join('') + `</div>`;
+
+        let i = active;
+        const slot = f.slots[`slot-${i}`] || { iconFile: '', ioData: {}, printInCustomerDoc: true }; 
+        const ic = iconConfigList.find(x => x.file === slot.iconFile); 
+        let ioHtml = '';
+        
+        let customFieldsHtml = '';
+        if (ic && ic.fields && Array.isArray(ic.fields)) {
+            if (!slot.customFields) slot.customFields = {};
+            customFieldsHtml = `<div style="margin-bottom: 14px; display: grid; grid-template-columns: 1fr; gap: 8px;">` + 
+            ic.fields.map(fieldName => {
+                const fieldValue = slot.customFields[fieldName] || '';
+                
+                if (/ast|bus|bridge|dali|link/i.test(fieldName)) {
+                    const fn = `setSlotCustomF_${f.id}_${i}_${sanitizeFnName(fieldName)}`;
+                    window[fn] = (v, ev) => { 
+                        if(ev){ev.preventDefault();ev.stopPropagation();} 
+                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+                        setTimeout(() => { updateSlotCustomField(f.id, i, fieldName, v); }, 10); 
+                    };
+                    const expectedType = getFieldBusType(fieldName);
+                    const busNodes = getAllBusNodes(expectedType);
+                    return `<div class="form-group" style="margin-bottom:4px;">
+                        <label style="width: 110px; font-size:0.85rem;">${fieldName}:</label>
+                        <div style="flex:1;">${renderStandardDropdown(`slotcf-${f.id}-${i}-${sanitizeFnName(fieldName)}`, fieldValue, [{value:'', label:'--- Keine Zuordnung ---'}, ...busNodes], fn, 'Bus...')}</div>
+                    </div>`;
+                } else {
+                    return `<div class="form-group" style="margin-bottom:4px;">
+                        <label style="width: 110px; font-size:0.85rem;">${fieldName}:</label>
+                        <input type="text" value="${fieldValue}" placeholder="${fieldName} eingeben..." onchange="updateSlotCustomField('${f.id}', ${i}, '${fieldName.replace(/'/g, "\\ оригинала")}', this.value)" style="flex:1; padding:6px 10px; font-size:0.875rem;">
+                    </div>`;
+                }
+            }).join('') + `</div>`;
+        }
+
+        const ioList = (ic && ic.io && ic.io.length > 0) ? ic.io : [{ id: 'default', label: 'Verknüpfungen', type: 'in' }];
+        if(ioList.length > 0) {
+            if(!f.activeIo) f.activeIo = {};
+            let activeIoKey = f.activeIo[`slot-${i}`] || ioList[0].id;
+            if(!ioList.some(x => x.id === activeIoKey)) activeIoKey = ioList[0].id;
+
+            let ioTabsHtml = ioList.length > 1 ? (`<div class="slot-tabs" style="margin-top: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">` + 
+                ioList.map(io => `<button class="slot-tab-btn ${activeIoKey === io.id ? 'active' : ''}" style="font-size:0.8rem; padding:6px 12px;" onclick="selectSlotIo('${f.id}', ${i}, '${io.id}')">${io.label} (${io.type === 'in' ? 'Eingang' : 'Ausgang'})</button>`).join('') + 
+            `</div>`) : '';
+
+            const activeIo = ioList.find(x => x.id === activeIoKey) || ioList[0];
+            let data = slot.ioData?.[activeIo.id] || {bezeichnung:'', art:'TA', funktion:'', gruppe:'', eingabegerat:''};
+            if(typeof data === 'string') data = {bezeichnung: data, art:'TA', funktion:'', gruppe:'', eingabegerat:''};
+            if(!data.art) data.art = 'TA';
+            
+            const slotLabel = ic ? ic.label : 'Platz';
+            const customBez = data.bezeichnung ? data.bezeichnung : `${slotLabel} (Platz ${i})`;
+
+            const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
+            const hasWarn = checkCollision(switchIdent);
+            const warnHtml = hasWarn ? `<span class="collision-warn" title="Achtung: Dieser Taster ist mehrfach direkt zugewiesen!" style="margin-left:5px;">⚠️</span>` : '';
+
+            const fnOptions = [{value:'', label:'--- Funktion wählen ---'}, ...projectData.globalFunctions.map(fnObj => {
+                const fnName = typeof fnObj === 'object' ? fnObj.name : fnObj;
+                return {value: fnName, label: fnName};
+            })];
+
+            window[`setSlotFn_${f.id}_${i}_${activeIo.id}`] = (v, ev) => {
+                if(ev){ev.preventDefault();ev.stopPropagation();}
+                document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show'));
+                setTimeout(() => { updateSlotField(f.id, i, activeIo.id, 'funktion', v); }, 10);
+            };
+
+            let fnDropdown = renderStandardDropdown(`fn-${f.id}-${i}-${activeIo.id}`, data.funktion || '', fnOptions, `setSlotFn_${f.id}_${i}_${activeIo.id}`, 'Funktion wählen...');
+
+            const isVirtualDefault = (activeIo.id === 'default' && (!ic || !ic.io || ic.io.length === 0));
+
+            ioHtml = ioTabsHtml + `<div class="io-complex-row" style="margin-top: 10px;">
+                ${!isVirtualDefault ? `<div class="io-header"><span class="io-type ${activeIo.type}">${activeIo.type==='in'?'Eingang':'Ausgang'}</span> ${activeIo.label} ${warnHtml}</div>` : `<div class="io-header"><span class="io-type in">Verknüpfungen</span></div>`}
+                <div class="io-fields-grid" style="grid-template-columns: ${isVirtualDefault ? '1fr' : '2fr 1fr'}; margin-bottom: 8px;">
+                    <input type="text" placeholder="${isVirtualDefault ? 'Bezeichnung / Name' : 'Taster Bezeichnung'}" value="${data.bezeichnung||''}" onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','bezeichnung',this.value)">
+                    ${!isVirtualDefault ? `<select onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','art',this.value)">
+                        <option value="TA" ${data.art==='TA'?'selected':''}>TA (Taster)</option>
+                        <option value="SA" ${data.art==='SA'?'selected':''}>SA (Schalter)</option>
+                        <option value="Imp." ${data.art==='Imp.'?'selected':''}>Imp. (Impuls)</option>
+                    </select>` : ''}
+                </div>
+                ${!isVirtualDefault ? `<div class="io-fields-grid" style="grid-template-columns: 2fr 1fr; margin-bottom: 10px;">
+                    <div>${fnDropdown}</div>
+                    <input type="text" placeholder="Gruppe..." value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','gruppe',this.value)">
+                </div>` : ''}
+                <div>
+                    <button class="btn info" style="width: 100%; justify-content: center; margin-bottom: 6px; padding: 7px 12px;" onclick="openAssignModal('switch', '${switchIdent.replace(/'/g, "\\'")}', {fId:'${f.id}', slotN:${i}, ioId:'${activeIo.id}'})">🔗 Verknüpfungen / Zuweisen</button>
+                    <div style="font-size: 0.8rem; background: #ffffff; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; color: #475569;">
+                        <span style="font-weight:600; color:#334155;">Verknüpft:</span> <span style="color:#0f766e; font-weight:500;">${data.eingabegerat || 'Keine Verknüpfung'}</span>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        window[`setIcon_${f.id}_${i}`] = (v, ev) => { 
+            if(ev){ev.preventDefault();ev.stopPropagation();} 
+            document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+            setTimeout(() => { 
+                f.slots[`slot-${i}`].iconFile = v; 
+                const ic = iconConfigList.find(x => x.file === v);
+                if (ic && ic.noFrame) {
+                    f.layout = '1x1';
+                    f.slots = { 'slot-1': f.slots[`slot-${i}`] };
+                    f.activeSlot = 1;
+                }
+                renderApp(); 
+            }, 10); 
+        };
+        
+        let iconDropdown = renderStandardDropdown(`icon-${f.id}-${i}`, slot.iconFile, [{value:'', label:'--- Kein Icon ---'}, ...iconConfigList.map(x=>({value:x.file, label:x.label}))], `setIcon_${f.id}_${i}`, 'Icon wählen...');
+        
+        const printDocChecked = slot.printInCustomerDoc !== false ? 'checked' : '';
+        let customerDocCheckboxHtml = `<div class="form-group" style="margin-top: 12px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+            <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; cursor:pointer;">
+                <input type="checkbox" ${printDocChecked} onchange="updateSlotProperty('${f.id}', ${i}, 'printInCustomerDoc', this.checked)" style="width:16px; height:16px; cursor:pointer;">
+                <span>In Kunden-Doku drucken</span>
+            </label>
+        </div>`;
+
+        let slotFormHtml = `<div class="slot-form">
+            <h4><span>Platz ${i} bearbeiten</span></h4>
+            <div class="form-group no-print" style="margin-bottom: 12px;"><label>Icon:</label>${iconDropdown}</div>
+            ${customFieldsHtml}
+            ${ioHtml}
+            ${customerDocCheckboxHtml}
+        </div>`;
+
+        return tabsHtml + slotFormHtml;
+    }
+
+    window.updateSlotField = function(fId, slotN, ioId, field, val) {
+        const d = projectData.details.find(x => x.id === activeDetailId); 
+        const f = d.frames.find(x => x.id === fId);
+        if(!f.slots[`slot-${slotN}`].ioData) f.slots[`slot-${slotN}`].ioData = {};
+        
+        const slot = f.slots[`slot-${slotN}`]; 
+        const cData = slot.ioData[ioId] || {bezeichnung:'', art:'TA'};
+        
+        if (field === 'bezeichnung') {
+            const ic = iconConfigList.find(x => x.file === slot.iconFile);
+            const slotLabel = ic ? ic.label : 'Platz';
+            const oldBezeichnung = cData.bezeichnung || `${slotLabel} (Platz ${slotN})`;
+            const newBezeichnung = val || `${slotLabel} (Platz ${slotN})`;
+            
+            const oldIdent = `${d.name} | ${f.name} | Platz ${slotN} | ${oldBezeichnung}`;
+            const newIdent = `${d.name} | ${f.name} | Platz ${slotN} | ${newBezeichnung}`;
+            
+            replaceStringInAllReferences(oldIdent, newIdent);
+        }
+        
+        cData[field] = val; 
+        slot.ioData[ioId] = cData;
+        
+        saveToLocal();
+        renderApp();
+    };
+
+    window.updateSlotProperty = function(fId, slotN, field, val) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        if(!d) return;
+        const f = d.frames.find(x => x.id === fId);
+        if(!f) return;
+        const slot = f.slots[`slot-${slotN}`];
+        if(!slot) return;
+        slot[field] = val;
+        saveToLocal();
+        renderApp();
+    };
+
+    function updateSlotCustomField(fId, slotN, fieldName, val) {
+        const d = projectData.details.find(x => x.id === activeDetailId); 
+        if(!d) return;
+        const f = d.frames.find(x => x.id === fId);
+        if(!f) return;
+        const slot = f.slots[`slot-${slotN}`];
+        if(!slot) return;
+        
+        if(!slot.customFields) slot.customFields = {};
+        slot.customFields[fieldName] = val;
+        saveToLocal();
+        renderApp();
+    }
+
+    function getFieldBusType(fieldName) {
+        if (!fieldName) return null;
+        const name = fieldName.toLowerCase();
+        
+        for (const [busKey, config] of Object.entries(SYSTEM_CONFIG.busTypes)) {
+            const cleanKey = busKey.toLowerCase();
+            const cleanLabel = config.label.toLowerCase().replace(/[^a-z0-9]/g, '');
+            
+            if (name.includes(cleanKey) || name.includes(cleanLabel)) {
+                return busKey;
+            }
+        }
+        
+        if (name.includes('1-wire') || name.includes('wire')) return '1wire';
+        
+        return null;
+    }
+
+    function generateHardwareHtml(d) {
+        if(!d.hardware.length) return '<p class="no-print" style="color:#64748b; padding: 10px 0;">Noch keine Komponenten zugewiesen.</p>';
+        
+        const fnOptions = [{value:'', label:'--- Funktion wählen ---'}, ...projectData.globalFunctions.map(fnObj => {
+            const fnName = typeof fnObj === 'object' ? fnObj.name : fnObj;
+            return {value: fnName, label: fnName};
+        })];
+
+        return d.hardware.map(hw => {
+            const cfg = hardwareConfigList.find(x => x.id === hw.configId); if(!cfg) return '';
+            const hwBaseName = `${d.name} ${hw.fields['Geräte-Bez.'] || cfg.name}`;
+            
+            let profileHtml = '';
+            let activeIoList = cfg.io || [];
+            if(cfg.profiles) {
+                const selProfile = cfg.profiles.find(p => p.id === hw.activeProfile) || cfg.profiles[0];
+                activeIoList = selProfile.io;
+                profileHtml = `<div class="form-group" style="background:#fef3c7; padding:10px; border-radius:6px; margin-bottom:12px;"><label>Geräte-Profil:</label>
+                    <select style="flex:1; padding:6px; font-weight:bold;" onchange="changeHwProfile('${hw.instanceId}', this.value)">
+                        ${cfg.profiles.map(p => `<option value="${p.id}" ${hw.activeProfile === p.id ? 'selected':''}>${p.label}</option>`).join('')}
+                    </select>
+                </div>`;
+            }
+
+            let fHtml = profileHtml; let inRows = ''; let outRows = ''; let busHtml = '';
+
+            if(cfg.fields) cfg.fields.forEach(f => {
+                if(/ast|bus|bridge|dali|link/i.test(f)) {
+                    const fn = `setHwF_${hw.instanceId}_${sanitizeFnName(f)}`;
+                    window[fn] = (v, ev) => { 
+                        if(ev){ev.preventDefault();ev.stopPropagation();} 
+                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
+                        setTimeout(() => { updateHardwareField(hw.instanceId, f, v); }, 10); 
+                    };
+                    const expectedType = getFieldBusType(f);
+                    const busNodes = getAllBusNodes(expectedType);
+                    fHtml += `<div class="form-group"><label>${f}</label><div>${renderStandardDropdown(`hf-${hw.instanceId}-${sanitizeFnName(f)}`, hw.fields[f]||'', [{value:'', label:'--- Keine Zuordnung ---'}, ...busNodes], fn, 'Bus...')}</div></div>`;
+                } else {
+                    fHtml += `<div class="form-group"><label>${f}</label><input type="text" value="${hw.fields[f]||''}" onchange="updateHardwareField('${hw.instanceId}', '${f}', this.value)"></div>`;
+                }
+            });
+
+           activeIoList.forEach(io => {
+                if(io.type === 'bus') {
+                    const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
+                    
+                    if(busCfg && busCfg.hasSubDevices) {
+                        if(!hw.subNodes) hw.subNodes = {};
+                        if(!hw.subNodes[io.id]) hw.subNodes[io.id] = [];
+                        const subs = hw.subNodes[io.id];
+
+                        let totalAddresses = 0;
+                        subs.forEach(s => { totalAddresses += parseInt(s.channels) || 1; });
+                        
+                        const busIdStr = getBusIdString(d, hw, io);
+                        projectData.details.forEach(det => {
+                            if(det.hardware) {
+                                det.hardware.forEach(childHw => {
+                                    if(getParentBusId(childHw) === busIdStr) {
+                                        const childCfg = hardwareConfigList.find(x => x.id === childHw.configId);
+                                        if (childCfg) {
+                                            totalAddresses += getDeviceChannelCount({d: det, hw: childHw, cfg: childCfg});
+                                        }
+                                    }
+                                });
+                            }
+                        });
+
+                        const maxLimit = io.limit || (busCfg ? busCfg.defaultLimit : null) || (io.busType === 'tree' ? 50 : io.busType === 'air' ? 50 : io.busType === 'link' ? 30 : 64);
+                        const isFull = totalAddresses >= maxLimit;
+
+                        let subsHtml = '';
+                        if (subs.length > 0) {
+                            subsHtml = `<table class="dali-table">
+                                <thead><tr>
+                                    <th>Bezeichnung (${busCfg.subDeviceLabel})</th>
+                                    <th>Montageort</th>
+                                    <th>Funktion</th>
+                                    <th>Gruppe</th>
+                                    <th>Kanäle</th>
+                                    <th>Verknüpfungen (Taster / App / Gruppe)</th>
+                                    <th style="width: 30px;" title="In Kunden-Doku drucken">📄</th>
+                                    <th style="width: 30px;"></th>
+                                </tr></thead><tbody>` + subs.map(sub => {
+                                    
+                                const subNameStr = `${hwBaseName} ${sub.name || 'Neues Gerät'}`;
+                                
+                                window[`setHwSubFn_${hw.instanceId}_${io.id}_${sub.id}`] = (v, ev) => {
+                                    if(ev){ev.preventDefault();ev.stopPropagation();}
+                                    document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show'));
+                                    setTimeout(() => { updateSubNode(hw.instanceId, io.id, sub.id, 'funktion', v); }, 10);
+                                };
+                                let fnDdSub = renderStandardDropdown(`hwsubfn-${hw.instanceId}-${io.id}-${sub.id}`, sub.funktion||'', fnOptions, `setHwSubFn_${hw.instanceId}_${io.id}_${sub.id}`, 'Funktion...');
+
+                                return `
+                                <tr>
+                                    <td><input type="text" value="${sub.name}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'name', this.value)"></td>
+                                    <td><input type="text" value="${sub.location}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'location', this.value)"></td>
+                                    <td style="min-width:140px;">${fnDdSub}</td>
+                                    <td><input type="text" value="${sub.gruppe || ''}" placeholder="Gruppe..." onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'gruppe', this.value)"></td>
+                                    <td><input type="number" min="1" max="16" value="${sub.channels}" onchange="updateSubNode('${hw.instanceId}', '${io.id}', '${sub.id}', 'channels', this.value)" style="width:50px; border:1px solid transparent; background:transparent;"></td>
+                                    <td style="font-size: 0.75rem; color: #475569; line-height: 1.3;">
+                                        <div style="display:flex; justify-content:space-between;">
+                                            <div>
+                                                <b>Taster:</b> ${sub.mapping || '-'}<br>
+                                                <b>App:</b> ${sub.appFunctions || '-'}<br>
+                                                <b>Gruppe:</b> ${sub.globalGroup || '-'}
+                                            </div>
+                                            <button class="btn info" title="Zuweisen / Verknüpfen" style="padding: 2px 6px; font-size: 0.75rem; height: 24px; margin-left: 5px;" onclick="openAssignModal('hardwareIo', '${subNameStr.replace(/'/g, "\\'")}', null, {hwId:'${hw.instanceId}', ioId:'${io.id}', subId:'${sub.id}'})">🔗</button>
+                                        </div>
+                                    </td>
+                                    <td style="text-align:center;"><input type="checkbox" onchange="toggleSubNodePrintCustomerDoc('${hw.instanceId}', '${io.id}', '${sub.id}', this.checked)" ${sub.printInCustomerDoc ? 'checked' : ''} style="cursor:pointer; width:16px; height:16px;"></td>
+                                    <td style="text-align: right;"><button class="delete-btn" style="padding: 2px 4px;" title="Löschen" onclick="deleteSubNode('${hw.instanceId}', '${io.id}', '${sub.id}')">✕</button></td>
+                                </tr>`;
+                            }).join('') + `</tbody></table>`;
+                        } else {
+                            subsHtml = `<div style="font-size:0.85rem; color:#94a3b8; margin:10px 0;">Keine ${busCfg.subDeviceLabel} angelegt.</div>`;
+                        }
+                        busHtml += `<div class="bus-container"><div class="bus-header"><h5>${busCfg.icon} ${io.label}</h5><span class="bus-limit-badge ${isFull?'full':'ok'}">${totalAddresses}/${maxLimit} Adr. belegt</span></div>${subsHtml}<button class="btn" style="margin-top:10px; padding:6px 12px; font-size:0.85rem;" onclick="addSubNode('${hw.instanceId}', '${io.id}')">+ ${busCfg.subDeviceLabel} hinzufügen</button></div>`;
+                    }
+                } else {
+                    const currentMap = hw.mappings?.[io.id] || '-';
+                    const currentApp = hw.appFunctions?.[io.id] || '-';
+                    const currentGrp = hw.globalGroup?.[io.id] || '-';
+                    const currentBez = hw.bezeichnung?.[io.id] || '';
+                    const currentGruppe = hw.gruppe?.[io.id] || '';
+                    const currentFn = hw.funktion?.[io.id] || '';
+                    
+                    const ioNameStr = `${hwBaseName} ${io.label}`;
+                    
+                    window[`setHwIoFn_${hw.instanceId}_${io.id}`] = (v, ev) => {
+                        if(ev){ev.preventDefault();ev.stopPropagation();}
+                        document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show'));
+                        setTimeout(() => { updateHwFieldEx(hw.instanceId, 'funktion', io.id, v); }, 10);
+                    };
+                    let fnDdIo = renderStandardDropdown(`hwiofn-${hw.instanceId}-${io.id}`, currentFn, fnOptions, `setHwIoFn_${hw.instanceId}_${io.id}`, 'Funktion...');
+
+                    const row = `<tr>
+                        <td style="font-weight:600; color:#334155; width:90px;">${io.label}</td>
+                        <td style="width:160px;"><input type="text" placeholder="Bezeichnung..." value="${currentBez}" onchange="updateHwFieldEx('${hw.instanceId}', 'bezeichnung', '${io.id}', this.value)"></td>
+                        <td style="width:160px;">${fnDdIo}</td>
+                        <td style="width:120px;"><input type="text" placeholder="Gruppe..." value="${currentGruppe}" onchange="updateHwFieldEx('${hw.instanceId}', 'gruppe', '${io.id}', this.value)"></td>
+                        <td style="font-size: 0.75rem; color: #475569; line-height: 1.3;">
+                            <div style="display:flex; justify-content:space-between;">
+                                <div>
+                                    <div><b>Taster:</b> ${currentMap}</div>
+                                    <div><b>App:</b> ${currentApp}</div>
+                                    <div><b>Globale Gruppe:</b> ${currentGrp}</div>
+                                </div>
+                                <button class="btn info" title="Zuweisen / Verknüpfen" style="padding: 2px 6px; font-size: 0.75rem; height: 24px;" onclick="openAssignModal('hardwareIo', '${ioNameStr.replace(/'/g, "\\'")}', null, {hwId:'${hw.instanceId}', ioId:'${io.id}', subId:null})">🔗</button>
+                            </div>
+                        </td>
+                        <td style="text-align:center;"><input type="checkbox" onchange="toggleHwIoPrintCustomerDoc('${hw.instanceId}', '${io.id}', this.checked)" ${hw.ioPrint && hw.ioPrint[io.id] ? 'checked' : ''} style="cursor:pointer; width:16px; height:16px;"></td>
+                    </tr>`;
+
+                    if(io.type === 'in') inRows += row; else outRows += row;
+                }
+            });
+
+            let tablesHtml = '';
+            if(inRows) {
+                tablesHtml += `<div style="margin-top:10px;"><h5 style="margin:0 0 4px 0; color:#475569; font-size:0.85rem;">Eingänge</h5><table class="dali-table"><thead><tr><th>Kanal</th><th>Bezeichnung</th><th>Funktion</th><th>Gruppe</th><th>Verknüpfungen</th><th style="width: 30px;" title="Kunden-Doku">📄</th></tr></thead><tbody>${inRows}</tbody></table></div>`;
+            }
+            if(outRows) {
+                tablesHtml += `<div style="margin-top:10px;"><h5 style="margin:0 0 4px 0; color:#475569; font-size:0.85rem;">Ausgänge</h5><table class="dali-table"><thead><tr><th>Kanal</th><th>Bezeichnung</th><th>Funktion</th><th>Gruppe</th><th>Verknüpfungen</th><th style="width: 30px;" title="Kunden-Doku">📄</th></tr></thead><tbody>${outRows}</tbody></table></div>`;
+            }
+
+            return `<div class="hw-card"><div class="hw-card-image"><img src="${BASE_ICON_PATH}${cfg.image}"></div><div class="hw-card-body"><div class="hw-card-header"><h4>${cfg.name}</h4><div style="display:flex; align-items:center; gap:15px;"><button class="delete-btn" onclick="deleteHardwareComponent('${hw.instanceId}')">Löschen</button></div></div>${fHtml}${tablesHtml}${busHtml}</div></div>`;
+        }).join('');
+    }
+
+    window.updateHwFieldEx = function(hwOrId, dataBlock, ioId, val) {
+        let hw = typeof hwOrId === 'string' ? projectData.details.find(x => x.id === activeDetailId).hardware.find(h => h.instanceId === hwOrId) : hwOrId;
+        if(!hw[dataBlock]) hw[dataBlock] = {};
+        hw[dataBlock][ioId] = val;
+        saveToLocal();
+        renderApp();
+    }
+
+    function getAllBusNodes(slaveType=null) {
+        let list = [];
+        projectData.details.forEach(d => d.hardware && d.hardware.forEach(hw => {
+            const c = hardwareConfigList.find(x => x.id === hw.configId);
+            if(c) {
+                const activeIo = c.profiles ? (c.profiles.find(p=>p.id===hw.activeProfile)?.io || c.profiles[0].io) : c.io;
+                if(activeIo) activeIo.forEach(io => {
+                    if(io.type === 'bus' || io.busType) {
+                        const bType = io.busType || (io.label && io.label.toLowerCase().includes('dali') ? 'dali' : null);
+                        if(!slaveType || slaveType === bType || slaveType === 'unknown' || bType === 'unknown') {
+                            list.push({value: getBusIdString(d, hw, io)});
+                        }
+                    }
+                });
+            }
+        }));
+        return list;
+    }
+
+    function getParentBusId(hw) {
+        for (let fieldName in hw.fields) {
+            if (/ast|bus|link|bridge|dali/i.test(fieldName) && hw.fields[fieldName]) {
+                return hw.fields[fieldName];
+            }
+        }
+        return null;
+    }
+
+    function getDeviceChannelCount(childItem) {
+        if (childItem.cfg.channels) return parseInt(childItem.cfg.channels);
+        let fieldChannels = parseInt(childItem.hw.fields['Kanäle'] || childItem.hw.fields['Channels'] || 0);
+        if (fieldChannels > 0) return fieldChannels;
+        
+        const activeIo = childItem.cfg.profiles ? 
+            (childItem.cfg.profiles.find(p => p.id === childItem.hw.activeProfile)?.io || childItem.cfg.profiles[0].io) : 
+            childItem.cfg.io;
+        
+        if (activeIo && childItem.hw.subNodes) {
+            let subSum = 0;
+            for (let ioKey in childItem.hw.subNodes) {
+                childItem.hw.subNodes[ioKey].forEach(sub => {
+                    subSum += parseInt(sub.channels) || 1;
+                });
+            }
+            if (subSum > 0) return subSum;
+        }
+        return 1;
+    }
+
+    function openBusOverviewModal() {
+        const c = document.getElementById('bus-tree-content'); c.innerHTML = ''; let h = '';
+        
+        const allHw = [];
+        
+        projectData.details.forEach(d => d.hardware && d.hardware.forEach(hw => {
+            const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+            if(cfg) allHw.push({d, hw, cfg});
+        }));
+
+        projectData.details.forEach(d => {
+            if (d.frames) {
+                d.frames.forEach(f => {
+                    for (let slotKey in f.slots) {
+                        const slot = f.slots[slotKey];
+                        if (slot && slot.iconFile) {
+                            const cfg = iconConfigList.find(x => x.file === slot.iconFile);
+                            if (cfg && slot.customFields) {
+                                const hasBusField = Object.keys(slot.customFields).some(k => /ast|bus|link|bridge|dali/i.test(k) && slot.customFields[k]);
+                                if (hasBusField) {
+                                    allHw.push({
+                                        d: d,
+                                        hw: { fields: slot.customFields, configId: slot.iconFile },
+                                        cfg: { name: cfg.label, channels: cfg.channels || 1, io: [] }
+                                    });
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+        const totalPower = getProjectTotalPower();
+        h += `<div style="margin-bottom:25px; font-weight:700; color:#0f766e; font-size:1.1rem; padding-bottom:10px; border-bottom:1px solid #cbd5e1;">⚡ Gesamtstromaufnahme Projekt: ${totalPower.toFixed(1)} W</div>`;
+
+        function renderTopoNode(item, level) {
+            const isRoot = level === 0;
+            const activeIo = item.cfg.profiles ? (item.cfg.profiles.find(p=>p.id===item.hw.activeProfile)?.io || item.cfg.profiles[0].io) : item.cfg.io;
+
+            let html = `<div class="topo-master" style="${isRoot ? '' : 'margin-top: 10px; margin-bottom: 5px; border-color:#e2e8f0; box-shadow:none;'}">
+                <div class="topo-master-title" style="${isRoot ? '' : 'font-size:1rem; color:#1e293b;'}">
+                    ${isRoot ? '🖥️' : '🔌'} ${item.hw.fields['Geräte-Bez.'] || item.cfg.name} 
+                    <span style="color:#64748b; font-size:0.85rem; font-weight:normal;">(${item.d.room ? item.d.room + ' - ' : ''}${item.d.name})</span>
+                </div>`;
+            
+            if (activeIo) {
+                activeIo.filter(i => i.type === 'bus').forEach(io => {
+                    const busIdStr = getBusIdString(item.d, item.hw, io);
+                    const children = allHw.filter(c => getParentBusId(c.hw) === busIdStr);
+                    const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
+                    
+                    const maxLimit = io.limit || (busCfg ? busCfg.defaultLimit : null) || (io.busType === 'tree' ? 50 : io.busType === 'air' ? 50 : io.busType === 'link' ? 30 : 64);
+                    
+                    if (busCfg && busCfg.hasSubDevices) {
+                        const subs = (item.hw.subNodes && item.hw.subNodes[io.id]) || [];
+                        let totalAddrs = 0;
+                        subs.forEach(s => { totalAddrs += parseInt(s.channels) || 1; });
+                        children.forEach(child => { totalAddrs += getDeviceChannelCount(child); });
+
+                        const isFull = totalAddrs >= maxLimit;
+                        
+                        html += `<div class="topo-bus">
+                            <div class="topo-bus-title">
+                                <span>${busCfg.icon} ${io.label}</span>
+                                <span class="topo-badge ${isFull ? 'full' : 'ok'}">${totalAddrs}/${maxLimit} Belegt</span>
+                            </div>`;
+                
+                        if(subs.length === 0 && children.length === 0) {
+                            html += `<div class="topo-device" style="color:#94a3b8; font-style:italic; justify-content:center;">Keine Geräte angelegt</div>`;
+                        } else {
+                            subs.forEach(sub => {
+                                let ch = parseInt(sub.channels) || 1;
+                                html += `<div class="topo-device">
+                                        <div style="font-weight:600; color:#1e293b;">${sub.name || 'Ohne Bezeichnung'}</div>
+                                        <div class="topo-device-info">
+                                            <span>📍 ${sub.location || '-'}</span>
+                                            ${sub.gruppe ? `<span style="margin-left:8px;">🏷️ ${sub.gruppe}</span>` : ''}
+                                            <span style="color:#0f766e; font-weight:bold; margin-left:8px;">💡 ${ch} Adr.</span>
+                                        </div>
+                                       </div>`;
+                            });
+                            children.forEach(child => {
+                                let childCh = getDeviceChannelCount(child);
+                                html += `<div class="topo-device">
+                                        <div style="font-weight:600; color:#1e293b;">🔌 ${child.hw.fields['Geräte-Bez.'] || child.cfg.name}</div>
+                                        <div class="topo-device-info">
+                                            <span>📍 ${child.d.name}</span>
+                                            <span style="color:#0f766e; font-weight:bold;">💡 ${childCh} Adr.</span>
+                                        </div>
+                                       </div>`;
+                            });
+                        }
+                        html += `</div>`;
+                    } else {
+                        let usedCount = 0;
+                        children.forEach(child => { usedCount += getDeviceChannelCount(child); });
+                        const isFull = usedCount >= maxLimit;
+
+                        html += `<div class="topo-bus">
+                            <div class="topo-bus-title">
+                                <span>📶 ${io.label}</span>
+                                <span class="topo-badge ${isFull ? 'full' : 'ok'}">${usedCount}/${maxLimit} Belegt</span>
+                            </div>`;
+                
+                        if (children.length > 0) {
+                            children.forEach(child => { html += renderTopoNode(child, level + 1); });
+                        } else {
+                            html += `<div class="topo-device" style="color:#94a3b8; font-style:italic; justify-content:center; background:transparent; border:none; box-shadow:none;">Keine Geräte angehängt</div>`;
+                        }
+                        html += `</div>`;
+                    }
+                });
+            }
+            html += `</div>`;
+            return html;
+        }
+
+        const roots = allHw.filter(item => !getParentBusId(item.hw));
+        roots.forEach(root => { h += renderTopoNode(root, 0); });
+        
+        c.innerHTML = h; 
+        document.getElementById('bus-modal').style.display = 'flex';
+    }
+
+    function getHardwareLinksForSwitch(switchIdent) {
+        let linkedAppFns = new Set();
+        let linkedGroups = new Set();
+
+        projectData.details.forEach(det => {
+            if(det.hardware) {
+                det.hardware.forEach(hw => {
+                    if(hw.mappings) {
+                        for(let ioId in hw.mappings) {
+                            let mapList = (hw.mappings[ioId] || '').split(',').map(x=>x.trim());
+                            if(mapList.includes(switchIdent)) {
+                                if(hw.appFunctions && hw.appFunctions[ioId]) {
+                                    hw.appFunctions[ioId].split(',').map(x=>x.trim()).filter(x=>x).forEach(x => linkedAppFns.add(x));
+                                }
+                                if(hw.globalGroup && hw.globalGroup[ioId]) {
+                                    hw.globalGroup[ioId].split(',').map(x=>x.trim()).filter(x=>x).forEach(x => linkedGroups.add(x));
+                                }
+                            }
+                        }
+                    }
+                    if(hw.subNodes) {
+                        for(let ioId in hw.subNodes) {
+                            hw.subNodes[ioId].forEach(sub => {
+                                if(sub.mapping) {
+                                    let mapList = sub.mapping.split(',').map(x=>x.trim());
+                                    if(mapList.includes(switchIdent)) {
+                                        if(sub.appFunctions) {
+                                            sub.appFunctions.split(',').map(x=>x.trim()).filter(x=>x).forEach(x => linkedAppFns.add(x));
+                                        }
+                                        if(sub.globalGroup) {
+                                            sub.globalGroup.split(',').map(x=>x.trim()).filter(x=>x).forEach(x => linkedGroups.add(x));
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+
+        return {
+            appFns: Array.from(linkedAppFns).join(', '),
+            groups: Array.from(linkedGroups).join(', ')
+        };
+    }
+
+    function parseSlotLinks(dat, hwLinks) {
+        let rawEingabe = (dat.eingabegerat || '').split(',').map(x=>x.trim()).filter(x=>x);
+        let targetHw = [];
+        let directApp = [];
+        let directGrp = [];
+        
+        let appFnNames = projectData.appFunctions.map(a => typeof a === 'object' ? a.name : a);
+        let grpNames = projectData.globalGroups.map(g => typeof g === 'object' ? g.name : g);
+
+        rawEingabe.forEach(item => {
+            if(appFnNames.includes(item)) directApp.push(item);
+            else if(grpNames.includes(item)) directGrp.push(item);
+            else targetHw.push(item);
+        });
+
+        let combinedApp = [...directApp, ...(hwLinks.appFns ? hwLinks.appFns.split(',') : [])].map(x=>x.trim()).filter(x=>x);
+        let uniqueApp = [...new Set(combinedApp)].join(', ');
+
+        let combinedGrp = [dat.gruppe, ...directGrp, ...(hwLinks.groups ? hwLinks.groups.split(',') : [])].map(x=>typeof x === 'string' ? x.trim() : '').filter(x=>x);
+        let uniqueGrp = [...new Set(combinedGrp)].join(', ');
+
+        return { targetHw: targetHw.join(', '), uniqueApp, uniqueGrp };
+    }
+
+    function buildGlobalsPrintHtml() {
+        let globalsPrintHtml = '';
+        let hasGlobals = (projectData.appFunctions && projectData.appFunctions.length > 0) ||
+                         (projectData.globalGroups && projectData.globalGroups.length > 0) ||
+                         (projectData.globalFunctions && projectData.globalFunctions.length > 0);
+        if (hasGlobals) {
+            let renderItemsList = (list) => {
+                if (!list || list.length === 0) return '<div style="font-size:0.8rem; color:#94a3b8; font-style:italic;">Keine Einträge</div>';
+                return list.map(item => {
+                    const name = typeof item === 'object' ? item.name : item;
+                    const desc = typeof item === 'object' ? item.description : '';
+                    return `<div style="margin-bottom:8px; page-break-inside: avoid;">
+                        <div style="font-size:0.85rem; font-weight:600; color:#1e293b;">${name}</div>
+                        ${desc ? `<div style="font-size:0.75rem; color:#475569; margin-top:2px; line-height:1.3;">${desc}</div>` : ''}
+                    </div>`;
+                }).join('');
+            };
+
+            let appFnHtml = renderItemsList(projectData.appFunctions);
+            let grpHtml = renderItemsList(projectData.globalGroups);
+            let fnHtml = renderItemsList(projectData.globalFunctions);
+
+            globalsPrintHtml = `<div class="print-detail-page" style="page-break-before: always;">
+                <div class="print-section-title">Zentrale Einstellungen & Definitionen</div>
+                <div style="display:flex; flex-direction:column; gap:14px; background:#f8fafc; border:1px solid #e2e8f0; padding:15px; border-radius:6px; page-break-inside: avoid;">
+                <div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">App-Funktionen</div>${appFnHtml}</div>
+                <div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">Globale Gruppen</div>${grpHtml}</div>
+                <div><div style="font-size:0.9rem; font-weight:bold; color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px; margin-bottom:8px;">Globale Funktionen</div>${fnHtml}</div>
+                </div></div>`;
+        }
+        return globalsPrintHtml;
+    }
+
+    function buildDetailPrintHtml(d) {
+        let framesHtml = '';
+        if(d.frames && d.frames.length > 0) {
+            framesHtml = d.frames.map(f => {
+                const [r, c] = f.layout.split('x').map(Number); 
+                let vSlots = ''; 
+                let slotListHtml = '';
+                const total = r * c;
+
+                for(let i=1; i<=total; i++) {
+                    const s = f.slots[`slot-${i}`] || { iconFile: '', ioData: {}, customFields: {}, printInCustomerDoc: true };
+                    const ic = iconConfigList.find(x => x.file === s.iconFile);
+                    
+                    const imgPath = ic ? `icons-schalter/${ic.file}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
+                    vSlots += `<div class="print-switch-slot"><span style="position:absolute; top:2px; left:4px; font-size:9px; font-weight:700; color:#64748b;">${i}</span><img src="${imgPath}"></div>`;
+                    
+                    if (s.printInCustomerDoc === false) continue;
+
+                    let cfRows = '';
+                    if (s.customFields) {
+                        for (let cf in s.customFields) {
+                            if (s.customFields[cf]) {
+                                cfRows += `<div style="font-size:0.85rem; color:#475569; margin-bottom:2px;"><b>${cf}:</b> ${s.customFields[cf]}</div>`;
+                            }
+                        }
+                    }
+
+                    let slotText = '';
+                    const hasIoDefinitions = ic && ic.io && ic.io.length > 0;
+
+                    if (hasIoDefinitions) {
+                        ic.io.forEach(io => {
+                            const dat = s.ioData?.[io.id] || {};
+                            if (dat.bezeichnung || dat.funktion || dat.gruppe) {
+                                slotText += `<div style="margin-bottom: 4px; font-size:0.85rem;">
+                                    <b>${io.label}: ${dat.bezeichnung || 'Taster'}</b>
+                                    ${dat.funktion ? `<div style="color:#475569;">Funktion: ${dat.funktion}</div>` : ''}
+                                    ${dat.gruppe ? `<div style="color:#475569;">Gruppe: ${dat.gruppe}</div>` : ''}
+                                </div>`;
+                            }
+                        });
+                    } else {
+                        const dat = s.ioData?.['default'] || {};
+                        const slotLabel = ic ? ic.label : 'Platz';
+                        const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
+                        const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
+                        const hwLinks = getHardwareLinksForSwitch(switchIdent);
+                        const parsed = parseSlotLinks(dat, hwLinks);
+
+                        if(dat.bezeichnung || dat.art || dat.funktion || parsed.targetHw || parsed.uniqueApp || parsed.uniqueGrp) {
+                            slotText += `<div style="margin-bottom: 4px; font-size:0.85rem;">`;
+                            if(dat.bezeichnung) slotText += `<b>Platz ${i} - ${dat.bezeichnung}</b>`;
+                            else slotText += `<b>Platz ${i} - ${slotLabel}</b>`;
+                            
+                            if(dat.art) slotText += `<div style="color:#475569;">Art: ${dat.art}</div>`;
+                            if(dat.funktion) slotText += `<div style="color:#475569;">Funktion: ${dat.funktion}</div>`;
+                            if(parsed.targetHw) slotText += `<div style="color:#0f766e;">Verknüpfung (Hardware): ${parsed.targetHw}</div>`;
+                            if(parsed.uniqueApp) slotText += `<div style="color:#475569;">App-Funktionen: ${parsed.uniqueApp}</div>`;
+                            if(parsed.uniqueGrp) slotText += `<div style="color:#475569;">Gruppen: ${parsed.uniqueGrp}</div>`;
+                            slotText += `</div>`;
+                        }
+                    }
+                    
+                    const slotLabel = ic ? ic.label : 'Kein Icon';
+                    
+                    if(cfRows || slotText) {
+                        slotListHtml += `<div style="margin-bottom: 12px; padding-left: 10px; border-left: 3px solid var(--primary);">
+                            <b style="font-size: 0.95rem; color:#1e293b;">Platz ${i} - ${slotLabel}</b>
+                            <div style="margin-top:5px;">${cfRows}${slotText}</div>
+                        </div>`;
+                    } else {
+                        slotListHtml += `<div style="margin-bottom: 12px; padding-left: 10px; border-left: 3px solid #cbd5e1; color:#94a3b8;">
+                            <b>Platz ${i} - ${slotLabel}</b> - Keine Details hinterlegt
+                        </div>`;
+                    }
+                }
+
+                return `<div style="margin-top: 20px;">
+                    <h4 style="margin-bottom:10px; color:#334155;">Schaltstelle: ${f.name}</h4>
+                    <div style="display:flex; gap: 30px; align-items: flex-start;">
+                        <div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px); flex-shrink:0;">${vSlots}</div>
+                        <div style="flex:1;">${slotListHtml}</div>
+                    </div>
+                </div>`;
+            }).join('');
+            
+            if(framesHtml) {
+                framesHtml = `<div style="margin-bottom: 30px; page-break-inside: avoid;">
+                    <h4 style="color:#1e293b; font-size: 1.1rem; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 15px;">Schalter Belegungen</h4>
+                    ${framesHtml}
+                </div>`;
+            }
+        }
+        
+        let hwHtml = '';
+        if(d.hardware.length) {
+            hwHtml = d.hardware.map(hw => {
+                const cfg = hardwareConfigList.find(x=>x.id===hw.configId); if(!cfg) return '';
+                
+                let fieldsHtml = ''; 
+                if(cfg.fields) {
+                    cfg.fields.forEach(f => {
+                        if(hw.fields[f]) {
+                            fieldsHtml += `<div style="margin-bottom:2px;"><b>${f}:</b> ${hw.fields[f]}</div>`;
+                        }
+                    });
+                }
+                
+                let ioh = ''; 
+                const activeIoList = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
+                
+                if(activeIoList) {
+                    activeIoList.forEach(io => { 
+                        if(io.type === 'bus') {
+                            if(hw.subNodes && hw.subNodes[io.id] && hw.subNodes[io.id].length > 0) {
+                                hw.subNodes[io.id].forEach(sub => {
+                                    ioh += `<div style="margin-bottom: 8px; padding-left: 8px; border-left: 3px solid var(--primary); font-size: 0.85rem; color: #475569;">
+                                        <b style="color:#1e293b;">${sub.name}</b>
+                                        <div style="color:#475569; margin-top:2px;"><b>Ort:</b> ${sub.location || 'k.A.'} | <b>Kanäle:</b> ${sub.channels || 1}</div>
+                                        ${sub.funktion ? `<div style="color:#1e293b; margin-top:2px;"><b>Funktion:</b> ${sub.funktion}</div>` : ''}
+                                        ${sub.gruppe ? `<div style="color:#475569; margin-top:2px;"><b>Gruppe:</b> ${sub.gruppe}</div>` : ''}
+                                        <div style="color:#64748b; margin-top:4px; display:flex; flex-direction:column; gap:2px;">
+                                            <div><b>Taster / Verknüpfung:</b> ${sub.mapping || '-'}</div>
+                                            <div><b>App-Funktionen:</b> ${sub.appFunctions || '-'}</div>
+                                            <div><b>Globale Gruppe:</b> ${sub.globalGroup || '-'}</div>
+                                        </div>
+                                    </div>`;
+                                });
+                            }
+                        } else {
+                            const map = hw.mappings?.[io.id] || '-';
+                            const app = hw.appFunctions?.[io.id] || '-';
+                            const grp = hw.globalGroup?.[io.id] || '-';
+                            const bez = hw.bezeichnung?.[io.id] || '';
+                            const grpText = hw.gruppe?.[io.id] || '';
+                            const fnText = hw.funktion?.[io.id] || '';
+                            
+                            ioh += `<div style="margin-bottom: 8px; padding-left: 8px; border-left: 3px solid var(--primary); font-size: 0.85rem; color: #475569;">
+                                <b style="color:#1e293b;">${io.label}${bez ? `: <span style="color:#1e293b;">${bez}</span>` : ''}</b>
+                                ${fnText ? `<div style="color:#1e293b; margin-top:2px;"><b>Funktion:</b> ${fnText}</div>` : ''}
+                                ${grpText ? `<div style="color:#475569; margin-top:2px;"><b>Gruppe:</b> ${grpText}</div>` : ''}
+                                <div style="color:#64748b; margin-top:4px; display:flex; flex-direction:column; gap:2px;">
+                                    <div><b>Taster / Verknüpfung:</b> ${map}</div>
+                                    <div><b>App-Funktionen:</b> ${app}</div>
+                                    <div><b>Globale Gruppe:</b> ${grp}</div>
+                                </div>
+                            </div>`;
+                        }
+                    });
+                }
+                
+                return `
+                <div style="display:flex; gap:15px; border:1px solid #cbd5e1; padding:12px; border-radius:6px; background:#f8fafc; page-break-inside: avoid; border-left:4px solid var(--primary); margin-bottom: 15px;">
+                    <div style="width:70px; flex-shrink:0; align-self: flex-start;">
+                        <img src="icons-schalter/${cfg.image}" style="width:100%; object-fit:contain; border-radius:4px; background:#fff; border:1px solid #e2e8f0; padding:4px;">
+                    </div>
+                    <div style="flex:1; font-size:0.85rem; color:#334155;">
+                        <div style="font-weight:bold; font-size:1rem; color:#0f766e; margin-bottom:6px; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">
+                            ${cfg.name}
+                        </div>
+                        <div style="margin-bottom:8px; display:grid; grid-template-columns:1fr 1fr; gap:4px;">${fieldsHtml}</div>
+                        ${ioh ? `<div style="margin-top:12px; border-top:1px dashed #cbd5e1; padding-top:8px;"><b>Detail-Schnittstellen & Verknüpfungen:</b><div style="margin-top: 8px;">${ioh}</div></div>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+            
+            hwHtml = `<div style="margin-top: 25px;">
+                <h4 style="color:#1e293b; font-size: 1.1rem; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 15px;">Hardware Details</h4>
+                <div style="display:flex; flex-direction:column;">${hwHtml}</div>
+            </div>`;
+        }
+    
+        return `<div class="print-detail-page">
+            <div class="print-header-block">
+                <h2>${projectData.projectName} - Detaillierte Dokumentation</h2>
+                <p>${projectData.location||''}</p>
+            </div>
+            <h3 style="color:#0f766e; border-bottom: 2px solid #0f766e; padding-bottom: 5px; margin-bottom: 20px;">
+                ${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(Raum: ${d.room})</span>` : ''}
+            </h3>
+            ${framesHtml}
+            ${hwHtml}
+        </div>`;
+    }
+
+    function updatePrintContainers() {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        let globalsHtml = buildGlobalsPrintHtml(); 
+        
+        if(d) {
+            document.getElementById('print-single-container').innerHTML = buildDetailPrintHtml(d) + globalsHtml;
+        }
+        let allHtml = '';
+        projectData.details.forEach(det => { allHtml += buildDetailPrintHtml(det); });
+        document.getElementById('print-all-container').innerHTML = allHtml + globalsHtml;
+    }
+
+    function printCustomerDoc() {
+        let html = `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName} - Kunden-Dokumentation</h2><p>${projectData.location||''}</p></div>`;
+
+        projectData.details.forEach(d => {
+            let hasFrames = d.frames && d.frames.length > 0;
+            let selectedHw = d.hardware || [];
+            let hasHardware = selectedHw.length > 0;
+
+            if(!hasFrames && !hasHardware) return;
+
+            html += `<div style="margin-bottom: 30px; page-break-inside: avoid;">`;
+            html += `<h3 style="color:#0f766e; border-bottom: 2px solid #0f766e; padding-bottom: 5px;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(${d.room})</span>` : ''}</h3>`;
+
+            if(hasFrames) {
+                d.frames.forEach(f => {
+                    const [r, c] = f.layout.split('x').map(Number);
+                    const total = r * c;
+                    let vSlots = '';
+                    let slotListHtml = '';
+
+                    for(let i=1; i<=total; i++) {
+                        const s = f.slots[`slot-${i}`] || { iconFile: '', ioData: {}, printInCustomerDoc: true };
+                        const ic = iconConfigList.find(x => x.file === s.iconFile);
+
+                        const imgPath = ic ? `icons-schalter/${ic.file}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
+                        vSlots += `<div class="print-switch-slot"><span style="position:absolute; top:2px; left:4px; font-size:9px; font-weight:700; color:#64748b;">${i}</span><img src="${imgPath}"></div>`;
+
+                        if (s.printInCustomerDoc === false) continue;
+
+                        let slotText = '';
+                        const hasIoDefinitions = ic && ic.io && ic.io.length > 0;
+
+                        if (hasIoDefinitions) {
+                            ic.io.forEach(io => {
+                                const dat = s.ioData?.[io.id] || {};
+                                if (dat.bezeichnung || dat.funktion || dat.gruppe) {
+                                    slotText += `<div style="margin-bottom: 4px;">
+                                        <b>${io.label}: ${dat.bezeichnung || 'Taster'}</b>
+                                        ${dat.funktion ? `<div style="color:#475569;">Funktion: ${dat.funktion}</div>` : ''}
+                                        ${dat.gruppe ? `<div style="color:#475569;">Gruppe: ${dat.gruppe}</div>` : ''}
+                                    </div>`;
+                                }
+                            });
+                        } else {
+                            const dat = s.ioData?.['default'] || {};
+                            const slotLabel = ic ? ic.label : 'Platz';
+                            const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
+                            const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
+                            
+                            const hwLinks = getHardwareLinksForSwitch(switchIdent);
+                            const parsed = parseSlotLinks(dat, hwLinks);
+
+                            if(dat.bezeichnung || dat.funktion || parsed.targetHw || parsed.uniqueApp || parsed.uniqueGrp) {
+                                slotText += `<div style="margin-bottom: 4px;">`;
+                                if(dat.bezeichnung) slotText += `<b>Platz ${i} - ${dat.bezeichnung}</b>`;
+                                else slotText += `<b>Platz ${i} - ${slotLabel}</b>`;
+                                
+                                if(dat.funktion) slotText += `<div style="color:#475569;">Funktion: ${dat.funktion}</div>`;
+                                if(parsed.targetHw) slotText += `<div style="color:#0f766e;">Verknüpfung (Hardware): ${parsed.targetHw}</div>`;
+                                if(parsed.uniqueApp) slotText += `<div style="color:#475569;">App-Funktionen: ${parsed.uniqueApp}</div>`;
+                                if(parsed.uniqueGrp) slotText += `<div style="color:#475569;">Gruppen: ${parsed.uniqueGrp}</div>`;
+                                slotText += `</div>`;
+                            }
+                        }
+                        
+                        if(slotText) {
+                            slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid var(--primary);">${slotText}</div>`;
+                        } else {
+                            slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #cbd5e1; color:#94a3b8;"><b>Platz ${i}</b> - Nicht belegt</div>`;
+                        }
+                    }
+
+                    html += `<div style="margin-top: 15px;">
+                        <h4 style="margin-bottom:10px;">${f.name}</h4>
+                        <div style="display:flex; gap: 30px; align-items: flex-start;">
+                            <div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px); flex-shrink:0;">${vSlots}</div>
+                            <div style="flex:1;">${slotListHtml}</div>
+                        </div>
+                    </div>`;
+                });
+            }
+
+            if(hasHardware) {
+                html += `<div style="margin-top: 25px;">
+                    <h4 style="margin-bottom:12px; color:#1e293b; font-size: 1.05rem;">Zugehörige Hardware</h4>
+                    <div style="display:flex; flex-direction:column; gap:12px;">`;
+                
+                selectedHw.forEach(hw => {
+                    const cfg = hardwareConfigList.find(x => x.id === hw.configId);
+                    if(!cfg) return;
+
+                    let fieldsHtml = '';
+                    if(cfg.fields) {
+                        cfg.fields.forEach(f => {
+                            if (hw.fields[f] && !/ast|bus|bridge|dali|link|bemerkung|s\.-?nr|seriennummer/i.test(f)) {
+                                fieldsHtml += `<div style="margin-bottom:2px;"><b>${f}:</b> ${hw.fields[f]}</div>`;
+                            }
+                        });
+                    }
+
+                    let ioh = ''; 
+                    const activeIoList = cfg.profiles ? (cfg.profiles.find(p=>p.id===hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
+                    if(activeIoList) {
+                        activeIoList.forEach(io => { 
+                            if(io.type === 'bus' && hw.subNodes && hw.subNodes[io.id]) {
+                                hw.subNodes[io.id].forEach(sub => {
+                                    if (sub.printInCustomerDoc) {
+                                        ioh += `<div style="margin-bottom: 6px; padding-left: 8px; border-left: 3px solid var(--primary); font-size: 0.8rem; color: #475569;">
+                                            <b style="color:#1e293b;">${sub.name || 'Gerät'}</b>${sub.location ? ` <span style="color:#64748b;">(Ort: ${sub.location})</span>` : ''}
+                                            ${sub.gruppe ? `<div><b>Gruppe:</b> ${sub.gruppe}</div>` : ''}
+                                            ${sub.funktion ? `<div><b>Funktion:</b> ${sub.funktion}</div>` : ''}
+                                            ${sub.mapping ? `<div><b>Taster / Verknüpfung:</b> ${sub.mapping}</div>` : ''}
+                                            ${sub.appFunctions ? `<div><b>App-Funktionen:</b> ${sub.appFunctions}</div>` : ''}
+                                            ${sub.globalGroup ? `<div><b>Globale Gruppe:</b> ${sub.globalGroup}</div>` : ''}
+                                        </div>`;
+                                    }
+                                });
+                            } else {
+                                if (hw.ioPrint && hw.ioPrint[io.id]) {
+                                    const app = hw.appFunctions?.[io.id];
+                                    const grp = hw.globalGroup?.[io.id];
+                                    const map = hw.mappings?.[io.id];
+                                    const bez = hw.bezeichnung?.[io.id];
+                                    const func = hw.funktion?.[io.id];
+                                    const localGrp = hw.gruppe?.[io.id];
+                                    
+                                    ioh += `<div style="margin-bottom: 6px; padding-left: 8px; border-left: 3px solid var(--primary); font-size: 0.8rem; color: #475569;">
+                                        <b style="color:#1e293b;">${io.label}${bez ? ` - ${bez}` : ''}</b>
+                                        ${localGrp ? `<div><b>Gruppe:</b> ${localGrp}</div>` : ''}
+                                        ${func ? `<div><b>Funktion:</b> ${func}</div>` : ''}
+                                        ${map ? `<div><b>Taster / Verknüpfung:</b> ${map}</div>` : ''}
+                                        ${app ? `<div><b>App-Funktionen:</b> ${app}</div>` : ''}
+                                        ${grp ? `<div><b>Globale Gruppe:</b> ${grp}</div>` : ''}
+                                    </div>`;
+                                }
+                            }
+                        });
+                    }
+
+                    ioh = ioh.replace(/&nbsp;\|&nbsp; \n/g, '\n').replace(/&nbsp;\|&nbsp; <\/div>/g, '</div>');
+
+                    if (ioh || fieldsHtml) {
+                        html += `
+                            <div style="display:flex; gap:15px; border:1px solid #cbd5e1; padding:12px; border-radius:6px; background:#f8fafc; page-break-inside: avoid; border-left:4px solid var(--primary);">
+                                <div style="width:70px; flex-shrink:0; align-self: flex-start;">
+                                    <img src="icons-schalter/${cfg.image}" style="width:100%; object-fit:contain; border-radius:4px; background:#fff; border:1px solid #e2e8f0; padding:4px;">
+                                </div>
+                                <div style="flex:1; font-size:0.85rem; color:#334155;">
+                                    <div style="font-weight:bold; font-size:1rem; color:#0f766e; margin-bottom:6px; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">
+                                        ${cfg.name}
+                                    </div>
+                                    <div style="margin-bottom:8px; display:grid; grid-template-columns:1fr 1fr; gap:4px;">${fieldsHtml}</div>
+                                    ${ioh ? `<div style="margin-top:8px; border-top:1px dashed #cbd5e1; padding-top:6px;"><b>Zugehörige Funktionen & Verknüpfungen:</b>${ioh}</div>` : ''}
+                                </div>
+                            </div>`;
+                    }
+                });
+                html += `</div></div>`;
+            }
+
+            html += `</div>`;
+        });
+        html += `</div>`;
+
+        let hasGlobals = (projectData.appFunctions && projectData.appFunctions.length > 0) ||
+                         (projectData.globalGroups && projectData.globalGroups.length > 0) ||
+                         (projectData.globalFunctions && projectData.globalFunctions.length > 0);
+        
+        if (hasGlobals) {
+            let renderItemsList = (list) => {
+                if (!list || list.length === 0) return '<div style="font-size:0.9rem; color:#94a3b8; font-style:italic;">Keine Einträge</div>';
+                return list.map(item => {
+                    const name = typeof item === 'object' ? item.name : item;
+                    const desc = typeof item === 'object' ? item.description : '';
+                    return `<div style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #e2e8f0; page-break-inside: avoid;">
+                        <div style="font-size:1rem; font-weight:600; color:#1e293b;">${name}</div>
+                        ${desc ? `<div style="font-size:0.85rem; color:#475569; margin-top:4px;">${desc}</div>` : ''}
+                    </div>`;
+                }).join('');
+            };
+
+            html += `<div class="print-detail-page" style="page-break-before: always;">
+                <div class="print-header-block"><h2>Zentrale Einstellungen & Erklärungen</h2></div>`;
+            
+            if (projectData.globalFunctions && projectData.globalFunctions.length > 0) {
+                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">Globale Funktionen</h3>
+                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Erklärung der verwendeten Taster-Funktionen im Projekt.</p>
+                         ${renderItemsList(projectData.globalFunctions)}</div><br>`;
+            }
+            if (projectData.globalGroups && projectData.globalGroups.length > 0) {
+                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">Globale Gruppen</h3>
+                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Gruppenfunktionen, die über mehrere Räume hinweg wirken.</p>
+                         ${renderItemsList(projectData.globalGroups)}</div><br>`;
+            }
+            if (projectData.appFunctions && projectData.appFunctions.length > 0) {
+                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">App-Funktionen</h3>
+                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Funktionen, die in der Smart Home App verfügbar sind.</p>
+                         ${renderItemsList(projectData.appFunctions)}</div>`;
+            }
+            html += `</div>`;
+        }
+
+        document.getElementById('print-customer-container').innerHTML = html;
+        
+        document.getElementById('print-single-container').style.display = 'none';
+        document.getElementById('print-all-container').style.display = 'none';
+        document.getElementById('print-customer-container').style.display = 'block';
+        
+        window.print();
+        
+        setTimeout(() => { document.getElementById('print-customer-container').style.display = 'none'; }, 500);
+    }
+
+    function printCurrentDetail() {
+        document.getElementById('print-single-container').style.display = 'block';
+        document.getElementById('print-all-container').style.display = 'none';
+        window.print();
+        setTimeout(() => { document.getElementById('print-single-container').style.display = 'none'; }, 500);
+    }
+
+    function printAllDetails() {
+        document.getElementById('print-single-container').style.display = 'none';
+        document.getElementById('print-all-container').style.display = 'block';
+        window.print();
+        setTimeout(() => { document.getElementById('print-all-container').style.display = 'none'; }, 500);
+    }
+
+    function exportProject() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const timestamp = `${year}-${month}-${day}_${hours}-${minutes}`;
+
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projectData, null, 2));
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", `${(projectData.projectName || 'Projekt').replace(/[^a-zA-Z0-9_-]/g, '_')}.ServiceProDetail`);
+        downloadAnchor.setAttribute("download", `${projectData.projectName || 'Projekt'}_${timestamp}.ServiceProDetail`);
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         downloadAnchor.remove();
-    };
+    }
 
-    window.importProject = function(event) {
+    function importProject(event) {
         const file = event.target.files[0];
         if (!file) return;
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
                 const parsed = JSON.parse(e.target.result);
-                projectData = migrateProjectData(parsed);
-                activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null;
-                renderApp();
-                alert("Projekt erfolgreich geladen!");
-            } catch (err) {
-                alert("Fehler beim Laden der Datei: " + err.message);
+                if(parsed && parsed.details) {
+                    projectData = migrateProjectData(parsed);
+                    activeDetailId = projectData.details.length > 0 ? projectData.details[0].id : null;
+                    renderApp();
+                    alert("Projekt erfolgreich geladen!");
+                } else {
+                    alert("Ungültiges Dateiformat.");
+                }
+            } catch(err) {
+                alert("Fehler beim Lesen der Datei: " + err.message);
             }
         };
         reader.readAsText(file);
-    };
-
-    function renderWorkspace() {
-        const container = document.getElementById('workspace-container');
-        if (!container) return;
-        const detail = projectData.details.find(x => x.id === activeDetailId);
-        if (!detail) {
-            container.innerHTML = '<div style="padding:40px; text-align:center; color:#64748b;">Kein Detail ausgewählt.</div>';
-            return;
-        }
-        container.innerHTML = `
-            <div style="padding: 20px;">
-                <h2>${detail.name}</h2>
-                <p>Raum: <input type="text" value="${detail.room || ''}" onchange="updateActiveDetailField('room', this.value)"></p>
-            </div>
-        `;
     }
-
-    window.printCustomerDoc = function() { window.print(); };
-    window.printAllDetails = function() { window.print(); };
-    window.printCurrentDetail = function() { window.print(); };
-    
 </script>
 </body>
 </html>
