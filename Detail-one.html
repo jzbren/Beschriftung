@@ -1689,7 +1689,6 @@
     let switchRef = _activeSwitchRef;
     if (subId === 'null' || !subId) subId = null;
 
-    // 1. Ziel-Hardware-Instance in den Projektdaten finden
     let targetHwInstance = null;
     projectData.details.forEach(pd => {
         if(pd.hardware) pd.hardware.forEach(hw => {
@@ -1699,10 +1698,10 @@
         });
     });
 
-    // 2. Umfassende MultiSelect-Erkennung (Prüft Hardware, IO-Definitionen, Profil und Frame-Slot)
+    // 1. MultiSelect absolut zuverlässig ermitteln
     let isMultiSelect = false;
 
-    // A) Prüfen über Hardware-Konfiguration & IOs
+    // A) Prüfen über Ziel-Hardware / IO-Definition
     if (targetHwInstance) {
         const hwList = typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : [];
         const icoList = typeof iconConfigList !== 'undefined' ? iconConfigList : [];
@@ -1725,7 +1724,7 @@
         }
     }
 
-    // B) Prüfen über den Frame-Slot (falls von der UI-Seite aufgerufen)
+    // B) Prüfen über den aktiven Frame-Slot (switchRef)
     if (!isMultiSelect && switchRef && switchRef.fId) {
         projectData.details.forEach(pd => {
             if (pd.frames) {
@@ -1735,8 +1734,8 @@
                         if (slot) {
                             const icoList = typeof iconConfigList !== 'undefined' ? iconConfigList : [];
                             const hwList = typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : [];
-                            const slotType = slot.icon || slot.type;
-                            const slotCfg = icoList.find(x => x.file === slotType || x.label === slotType || x.id === slotType) ||
+                            let slotType = slot.icon || slot.type;
+                            let slotCfg = icoList.find(x => x.file === slotType || x.label === slotType || x.id === slotType) ||
                                             hwList.find(x => x.id === slotType || x.label === slotType);
                             if (slotCfg && (slotCfg.MultiSelect || slotCfg.multiSelect)) {
                                 isMultiSelect = true;
@@ -1748,7 +1747,17 @@
         });
     }
 
-    // 3. Wenn kein MultiSelect aktiv ist, exklusive Zuordnung bei anderen Hardware-Knoten bereinigen
+    // C) Fallback-Abgleich über den sourceName (erkennt MultiSelect-Geräte wie Touch-Display direkt am Namen)
+    if (!isMultiSelect && sourceName) {
+        const icoList = typeof iconConfigList !== 'undefined' ? iconConfigList : [];
+        icoList.forEach(ico => {
+            if ((ico.MultiSelect || ico.multiSelect) && ico.label && sourceName.includes(ico.label)) {
+                isMultiSelect = true;
+            }
+        });
+    }
+
+    // 2. Wenn kein MultiSelect aktiv ist, exklusive Zuordnung bei anderen Hardware-Knoten bereinigen
     if (type === 'switch' && isChecked && !isMultiSelect) {
         projectData.details.forEach(pd => {
             if (pd.hardware) {
@@ -1778,7 +1787,7 @@
         });
     }
 
-    // 4. Ziel-Hardware-Objekt für den gewählten IO-Kanal finden/initialisieren
+    // 3. Ziel-Hardware-Objekt für den gewählten IO-Kanal finden/initialisieren
     let targetObj = null;
     let targetProp = '';
 
@@ -1833,7 +1842,7 @@
     
     targetObj[propKey] = list.join(', ');
 
-    // 5. Optionale Verknüpfung im Frame / Slot aktualisieren
+    // 4. Optionale Verknüpfung im Frame / Slot aktualisieren
     if (type === 'switch' && switchRef && switchRef.fId) {
         let hwNameStr = '';
         projectData.details.forEach(pd => {
