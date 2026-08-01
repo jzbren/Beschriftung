@@ -61,9 +61,7 @@ const iconConfigList = [
         label: "Touch-Display",
         fields: ["Bemerkung", "Tree Ast"],
         group: "Schalter & Taster",
-        io: [
-            { id: "DISPLAY", label: "Display", type: "in" },
-        ] 
+        noFrame: true 
     },
     { 
         file: "Drehschalter-Hand-Auto.png", 
