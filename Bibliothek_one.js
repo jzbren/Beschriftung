@@ -52,7 +52,7 @@ const iconConfigList = [
             { id: "TA_4", label: "Punkt 4 (Unten Rechts)", type: "in" },
             { id: "TA_CLICK", label: "Fläche (Zentraler Klick)", type: "in" },
             { id: "TEMP", label: "Temperatur", type: "out" },
-            { id: "LUFTFEUCHTIGKEIT", label: "Luftfeuchtigkeit", type: "out" },
+            { id: "LUFTFEUCHTIGKEIT", label: "Luftfeuchtigkeit", type: "out", MultiSelect: true },
             { id: "CO_2", label: "CO 2", type: "out" }
         ] 
     },
@@ -61,7 +61,9 @@ const iconConfigList = [
         label: "Touch-Display",
         fields: ["Bemerkung", "Tree Ast"],
         group: "Schalter & Taster",
-        noFrame: true 
+        noFrame: true,
+        printHardwareConnect: true,
+        MultiSelect: true
     },
     { 
         file: "Drehschalter-Hand-Auto.png", 
