@@ -3130,97 +3130,96 @@
     }
 
     function printCustomerDoc() {
-        let html = `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName} - Kunden-Dokumentation</h2><p>${projectData.location||''}</p></div>`;
+    let html = `<div class="print-detail-page"><div class="print-header-block"><h2>${projectData.projectName} - Kunden-Dokumentation</h2><p>${projectData.location||''}</p></div>`;
 
-        projectData.details.forEach(d => {
-            let hasFrames = d.frames && d.frames.length > 0;
-            let selectedHw = d.hardware || [];
-            let hasHardware = selectedHw.length > 0;
+    projectData.details.forEach(d => {
+        let hasFrames = d.frames && d.frames.length > 0;
+        let selectedHw = d.hardware || [];
+        let hasHardware = selectedHw.length > 0;
 
-            if(!hasFrames && !hasHardware) return;
+        if(!hasFrames && !hasHardware) return;
 
-            html += `<div style="margin-bottom: 30px; page-break-inside: avoid;">`;
-            html += `<h3 style="color:#0f766e; border-bottom: 2px solid #0f766e; padding-bottom: 5px;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(${d.room})</span>` : ''}</h3>`;
+        html += `<div style="margin-bottom: 30px; page-break-inside: avoid;">`;
+        html += `<h3 style="color:#0f766e; border-bottom: 2px solid #0f766e; padding-bottom: 5px;">${d.name} ${d.room ? ` <span style="color:#64748b; font-size:0.9rem;">(${d.room})</span>` : ''}</h3>`;
 
-            if(hasFrames) {
-                d.frames.forEach(f => {
-                    const [r, c] = f.layout.split('x').map(Number);
-                    const total = r * c;
-                    let vSlots = '';
-                    let slotListHtml = '';
+        if(hasFrames) {
+            d.frames.forEach(f => {
+                const [r, c] = f.layout.split('x').map(Number);
+                const total = r * c;
+                let vSlots = '';
+                let slotListHtml = '';
 
-                    for(let i=1; i<=total; i++) {
-                        const s = f.slots[`slot-${i}`] || { iconFile: '', ioData: {}, printInCustomerDoc: true };
-                        const ic = iconConfigList.find(x => x.file === s.iconFile);
+                for(let i=1; i<=total; i++) {
+                    const s = f.slots[`slot-${i}`] || { iconFile: '', ioData: {}, printInCustomerDoc: true };
+                    const ic = iconConfigList.find(x => x.file === s.iconFile);
 
-                        const imgPath = ic ? `icons-schalter/${ic.file}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
-                        vSlots += `<div class="print-switch-slot"><span style="position:absolute; top:2px; left:4px; font-size:9px; font-weight:700; color:#64748b;">${i}</span><img src="${imgPath}"></div>`;
+                    const imgPath = ic ? `icons-schalter/${ic.file}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
+                    vSlots += `<div class="print-switch-slot"><span style="position:absolute; top:2px; left:4px; font-size:9px; font-weight:700; color:#64748b;">${i}</span><img src="${imgPath}"></div>`;
 
-                        if (s.printInCustomerDoc === false) continue;
+                    if (s.printInCustomerDoc === false) continue;
 
-                        let slotText = '';
-                        const hasIoDefinitions = ic && ic.io && ic.io.length > 0;
+                    let slotText = '';
+                    const hasIoDefinitions = ic && ic.io && ic.io.length > 0;
 
-                        if (hasIoDefinitions) {
-                            ic.io.forEach(io => {
-                                const dat = s.ioData?.[io.id] || {};
-                                if (dat.bezeichnung || dat.funktion || dat.gruppe) {
-                                    slotText += `<div style="margin-bottom: 4px;">
-                                        <b>${io.label}: ${dat.bezeichnung || 'Taster'}</b>
-                                        ${dat.funktion ? `<div style="color:#475569;">Funktion: ${dat.funktion}</div>` : ''}
-                                        ${dat.gruppe ? `<div style="color:#475569;">Gruppe: ${dat.gruppe}</div>` : ''}
-                                    </div>`;
-                                }
-                            });
-                        } else {
-                            const dat = s.ioData?.['default'] || {};
-                            const slotLabel = ic ? ic.label : 'Platz';
-                            const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
-                            const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
-                            
-                            const hwLinks = getHardwareLinksForSwitch(switchIdent);
-                            const parsed = parseSlotLinks(dat, hwLinks);
-
-                            if(dat.bezeichnung || dat.funktion || parsed.targetHw || parsed.uniqueApp || parsed.uniqueGrp) {
-                                slotText += `<div style="margin-bottom: 4px;">`;
-                                if(dat.bezeichnung) slotText += `<b>Platz ${i} - ${dat.bezeichnung}</b>`;
-                                else slotText += `<b>Platz ${i} - ${slotLabel}</b>`;
-                                
-                                if(dat.funktion) slotText += `<div style="color:#475569;">Funktion: ${dat.funktion}</div>`;
-                                if(parsed.targetHw) slotText += `<div style="color:#0f766e;">Verknüpfung (Hardware): ${parsed.targetHw}</div>`;
-                                if(parsed.uniqueApp) slotText += `<div style="color:#475569;">App-Funktionen: ${parsed.uniqueApp}</div>`;
-                                if(parsed.uniqueGrp) slotText += `<div style="color:#475569;">Gruppen: ${parsed.uniqueGrp}</div>`;
-                                slotText += `</div>`;
+                    if (hasIoDefinitions) {
+                        ic.io.forEach(io => {
+                            const dat = s.ioData?.[io.id] || {};
+                            if (dat.bezeichnung || dat.funktion || dat.gruppe) {
+                                slotText += `<div style="margin-bottom: 4px;">
+                                    <b>${io.label}: ${dat.bezeichnung || 'Taster'}</b>
+                                    ${dat.funktion ? `<div style="color:#475569;">Funktion: ${dat.funktion}</div>` : ''}
+                                    ${dat.gruppe ? `<div style="color:#475569;">Gruppe: ${dat.gruppe}</div>` : ''}
+                                </div>`;
                             }
-                        }
+                        });
+                    } else {
+                        const dat = s.ioData?.['default'] || {};
+                        const slotLabel = ic ? ic.label : 'Platz';
+                        const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
+                        const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
                         
-                        if(slotText) {
-                            slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid var(--primary);">${slotText}</div>`;
-                        } else {
-                            slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #cbd5e1; color:#94a3b8;"><b>Platz ${i}</b> - Nicht belegt</div>`;
+                        const hwLinks = getHardwareLinksForSwitch(switchIdent);
+                        const parsed = parseSlotLinks(dat, hwLinks);
+
+                        if(dat.bezeichnung || dat.funktion || parsed.targetHw || parsed.uniqueApp || parsed.uniqueGrp) {
+                            slotText += `<div style="margin-bottom: 4px;">`;
+                            if(dat.bezeichnung) slotText += `<b>Platz ${i} - ${dat.bezeichnung}</b>`;
+                            else slotText += `<b>Platz ${i} - ${slotLabel}</b>`;
+                            
+                            if(dat.funktion) slotText += `<div style="color:#475569;">Funktion: ${dat.funktion}</div>`;
+                            if(parsed.targetHw) slotText += `<div style="color:#0f766e;">Verknüpfung (Hardware): ${parsed.targetHw}</div>`;
+                            if(parsed.uniqueApp) slotText += `<div style="color:#475569;">App-Funktionen: ${parsed.uniqueApp}</div>`;
+                            if(parsed.uniqueGrp) slotText += `<div style="color:#475569;">Gruppen: ${parsed.uniqueGrp}</div>`;
+                            slotText += `</div>`;
                         }
                     }
+                    
+                    if(slotText) {
+                        slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid var(--primary);">${slotText}</div>`;
+                    } else {
+                        slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #cbd5e1; color:#94a3b8;"><b>Platz ${i}</b> - Nicht belegt</div>`;
+                    }
+                }
 
-                    html += `<div style="margin-top: 15px;">
-                        <h4 style="margin-bottom:10px;">${f.name}</h4>
-                        <div style="display:flex; gap: 30px; align-items: flex-start;">
-                            <div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px); flex-shrink:0;">${vSlots}</div>
-                            <div style="flex:1;">${slotListHtml}</div>
-                        </div>
-                    </div>`;
-                });
-            }
+                html += `<div style="margin-top: 15px;">
+                    <h4 style="margin-bottom:10px;">${f.name}</h4>
+                    <div style="display:flex; gap: 30px; align-items: flex-start;">
+                        <div class="print-switch-frame" style="grid-template-columns: repeat(${c}, 60px); flex-shrink:0;">${vSlots}</div>
+                        <div style="flex:1;">${slotListHtml}</div>
+                    </div>
+                </div>`;
+            });
+        }
 
-            if(hasHardware) {
-                html += `<div style="margin-top: 25px;">
-                    <h4 style="margin-bottom:12px; color:#1e293b; font-size: 1.05rem;">Zugehörige Hardware</h4>
-                    <div style="display:flex; flex-direction:column; gap:12px;">`;
-                
-                // Innerhalb der Hardware-Schleife in printCustomerDoc() / buildDetailPrintHtml()
+        if(hasHardware) {
+            html += `<div style="margin-top: 25px;">
+                <h4 style="margin-bottom:12px; color:#1e293b; font-size: 1.05rem;">Zugehörige Hardware</h4>
+                <div style="display:flex; flex-direction:column; gap:12px;">`;
+            
             selectedHw.forEach(hw => {
                 const cfg = hardwareConfigList.find(x => x.id === hw.configId);
                 if(!cfg) return;
-        
+
                 let fieldsHtml = '';
                 if(cfg.fields) {
                     cfg.fields.forEach(f => {
@@ -3229,15 +3228,14 @@
                         }
                     });
                 }
-        
+
                 let ioh = ''; 
                 const activeIoList = cfg.profiles ? (cfg.profiles.find(p => p.id === hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
                 
                 if(activeIoList) {
                     activeIoList.forEach(io => { 
-                        // Prüfen ob printHardwareConnect global oder auf dem IO definiert ist
                         const shouldPrintConnect = cfg.printHardwareConnect || io.printHardwareConnect;
-        
+
                         if(io.type === 'bus' && hw.subNodes && hw.subNodes[io.id]) {
                             hw.subNodes[io.id].forEach(sub => {
                                 if (sub.printInCustomerDoc || shouldPrintConnect) {
@@ -3272,7 +3270,7 @@
                         }
                     });
                 }
-        
+
                 if (ioh || fieldsHtml) {
                     html += `
                         <div style="display:flex; gap:15px; border:1px solid #cbd5e1; padding:12px; border-radius:6px; background:#f8fafc; page-break-inside: avoid; border-left:4px solid var(--primary); margin-bottom:12px;">
@@ -3289,101 +3287,61 @@
                         </div>`;
                 }
             });
-                            } else {
-                                if (hw.ioPrint && hw.ioPrint[io.id]) {
-                                    const app = hw.appFunctions?.[io.id];
-                                    const grp = hw.globalGroup?.[io.id];
-                                    const map = hw.mappings?.[io.id];
-                                    const bez = hw.bezeichnung?.[io.id];
-                                    const func = hw.funktion?.[io.id];
-                                    const localGrp = hw.gruppe?.[io.id];
-                                    
-                                    ioh += `<div style="margin-bottom: 6px; padding-left: 8px; border-left: 3px solid var(--primary); font-size: 0.8rem; color: #475569;">
-                                        <b style="color:#1e293b;">${io.label}${bez ? ` - ${bez}` : ''}</b>
-                                        ${localGrp ? `<div><b>Gruppe:</b> ${localGrp}</div>` : ''}
-                                        ${func ? `<div><b>Funktion:</b> ${func}</div>` : ''}
-                                        ${map ? `<div><b>Taster / Verknüpfung:</b> ${map}</div>` : ''}
-                                        ${app ? `<div><b>App-Funktionen:</b> ${app}</div>` : ''}
-                                        ${grp ? `<div><b>Globale Gruppe:</b> ${grp}</div>` : ''}
-                                    </div>`;
-                                }
-                            }
-                        });
-                    }
-
-                    ioh = ioh.replace(/&nbsp;\|&nbsp; \n/g, '\n').replace(/&nbsp;\|&nbsp; <\/div>/g, '</div>');
-
-                    if (ioh || fieldsHtml) {
-                        html += `
-                            <div style="display:flex; gap:15px; border:1px solid #cbd5e1; padding:12px; border-radius:6px; background:#f8fafc; page-break-inside: avoid; border-left:4px solid var(--primary);">
-                                <div style="width:70px; flex-shrink:0; align-self: flex-start;">
-                                    <img src="icons-schalter/${cfg.image}" style="width:100%; object-fit:contain; border-radius:4px; background:#fff; border:1px solid #e2e8f0; padding:4px;">
-                                </div>
-                                <div style="flex:1; font-size:0.85rem; color:#334155;">
-                                    <div style="font-weight:bold; font-size:1rem; color:#0f766e; margin-bottom:6px; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">
-                                        ${cfg.name}
-                                    </div>
-                                    <div style="margin-bottom:8px; display:grid; grid-template-columns:1fr 1fr; gap:4px;">${fieldsHtml}</div>
-                                    ${ioh ? `<div style="margin-top:8px; border-top:1px dashed #cbd5e1; padding-top:6px;"><b>Zugehörige Funktionen & Verknüpfungen:</b>${ioh}</div>` : ''}
-                                </div>
-                            </div>`;
-                    }
-                });
-                html += `</div></div>`;
-            }
-
-            html += `</div>`;
-        });
-        html += `</div>`;
-
-        let hasGlobals = (projectData.appFunctions && projectData.appFunctions.length > 0) ||
-                         (projectData.globalGroups && projectData.globalGroups.length > 0) ||
-                         (projectData.globalFunctions && projectData.globalFunctions.length > 0);
-        
-        if (hasGlobals) {
-            let renderItemsList = (list) => {
-                if (!list || list.length === 0) return '<div style="font-size:0.9rem; color:#94a3b8; font-style:italic;">Keine Einträge</div>';
-                return list.map(item => {
-                    const name = typeof item === 'object' ? item.name : item;
-                    const desc = typeof item === 'object' ? item.description : '';
-                    return `<div style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #e2e8f0; page-break-inside: avoid;">
-                        <div style="font-size:1rem; font-weight:600; color:#1e293b;">${name}</div>
-                        ${desc ? `<div style="font-size:0.85rem; color:#475569; margin-top:4px;">${desc}</div>` : ''}
-                    </div>`;
-                }).join('');
-            };
-
-            html += `<div class="print-detail-page" style="page-break-before: always;">
-                <div class="print-header-block"><h2>Zentrale Einstellungen & Erklärungen</h2></div>`;
-            
-            if (projectData.globalFunctions && projectData.globalFunctions.length > 0) {
-                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">Globale Funktionen</h3>
-                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Erklärung der verwendeten Taster-Funktionen im Projekt.</p>
-                         ${renderItemsList(projectData.globalFunctions)}</div><br>`;
-            }
-            if (projectData.globalGroups && projectData.globalGroups.length > 0) {
-                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">Globale Gruppen</h3>
-                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Gruppenfunktionen, die über mehrere Räume hinweg wirken.</p>
-                         ${renderItemsList(projectData.globalGroups)}</div><br>`;
-            }
-            if (projectData.appFunctions && projectData.appFunctions.length > 0) {
-                html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">App-Funktionen</h3>
-                         <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Funktionen, die in der Smart Home App verfügbar sind.</p>
-                         ${renderItemsList(projectData.appFunctions)}</div>`;
-            }
-            html += `</div>`;
+            html += `</div></div>`;
         }
 
-        document.getElementById('print-customer-container').innerHTML = html;
+        html += `</div>`;
+    });
+    html += `</div>`;
+
+    let hasGlobals = (projectData.appFunctions && projectData.appFunctions.length > 0) ||
+                     (projectData.globalGroups && projectData.globalGroups.length > 0) ||
+                     (projectData.globalFunctions && projectData.globalFunctions.length > 0);
+    
+    if (hasGlobals) {
+        let renderItemsList = (list) => {
+            if (!list || list.length === 0) return '<div style="font-size:0.9rem; color:#94a3b8; font-style:italic;">Keine Einträge</div>';
+            return list.map(item => {
+                const name = typeof item === 'object' ? item.name : item;
+                const desc = typeof item === 'object' ? item.description : '';
+                return `<div style="margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #e2e8f0; page-break-inside: avoid;">
+                    <div style="font-size:1rem; font-weight:600; color:#1e293b;">${name}</div>
+                    ${desc ? `<div style="font-size:0.85rem; color:#475569; margin-top:4px;">${desc}</div>` : ''}
+                </div>`;
+            }).join('');
+        };
+
+        html += `<div class="print-detail-page" style="page-break-before: always;">
+            <div class="print-header-block"><h2>Zentrale Einstellungen & Erklärungen</h2></div>`;
         
-        document.getElementById('print-single-container').style.display = 'none';
-        document.getElementById('print-all-container').style.display = 'none';
-        document.getElementById('print-customer-container').style.display = 'block';
-        
-        window.print();
-        
-        setTimeout(() => { document.getElementById('print-customer-container').style.display = 'none'; }, 500);
+        if (projectData.globalFunctions && projectData.globalFunctions.length > 0) {
+            html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">Globale Funktionen</h3>
+                     <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Erklärung der verwendeten Taster-Funktionen im Projekt.</p>
+                     ${renderItemsList(projectData.globalFunctions)}</div><br>`;
+        }
+        if (projectData.globalGroups && projectData.globalGroups.length > 0) {
+            html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">Globale Gruppen</h3>
+                     <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Gruppenfunktionen, die über mehrere Räume hinweg wirken.</p>
+                     ${renderItemsList(projectData.globalGroups)}</div><br>`;
+        }
+        if (projectData.appFunctions && projectData.appFunctions.length > 0) {
+            html += `<div><h3 style="color:#0f766e; border-bottom:1px solid #cbd5e1; padding-bottom:4px;">App-Funktionen</h3>
+                     <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Funktionen, die in der Smart Home App verfügbar sind.</p>
+                     ${renderItemsList(projectData.appFunctions)}</div>`;
+        }
+        html += `</div>`;
     }
+
+    document.getElementById('print-customer-container').innerHTML = html;
+    
+    document.getElementById('print-single-container').style.display = 'none';
+    document.getElementById('print-all-container').style.display = 'none';
+    document.getElementById('print-customer-container').style.display = 'block';
+    
+    window.print();
+    
+    setTimeout(() => { document.getElementById('print-customer-container').style.display = 'none'; }, 500);
+}
 
     function printCurrentDetail() {
         document.getElementById('print-single-container').style.display = 'block';
