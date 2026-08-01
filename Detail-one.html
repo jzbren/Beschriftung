@@ -19,7 +19,7 @@
         });
     </script>
     
-    <title>ServiceProDetail Konfigurator V7.8</title>
+    <title>ServiceProDetail Konfigurator V7.9</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -425,10 +425,13 @@
                     if(!f.activeSlot) f.activeSlot = 1;
                     for (let slotKey in f.slots) {
                         const slot = f.slots[slotKey];
-                        if (slot && slot.ioData) {
-                            for (let ioKey in slot.ioData) {
-                                if (slot.ioData[ioKey].eingabegerat) {
-                                    slot.ioData[ioKey].eingabegerat = cleanStr(slot.ioData[ioKey].eingabegerat);
+                        if (slot) {
+                            if (slot.printInCustomerDoc === undefined) slot.printInCustomerDoc = true;
+                            if (slot.ioData) {
+                                for (let ioKey in slot.ioData) {
+                                    if (slot.ioData[ioKey].eingabegerat) {
+                                        slot.ioData[ioKey].eingabegerat = cleanStr(slot.ioData[ioKey].eingabegerat);
+                                    }
                                 }
                             }
                         }
@@ -587,15 +590,14 @@
                             const slotN = slotKey.replace('slot-', '');
                             const slot = f.slots[slotKey];
                             const ic = iconConfigList.find(x => x.file === slot.iconFile);
-                            if (ic && ic.io) {
-                                ic.io.forEach(io => {
-                                    let data = slot.ioData?.[io.id] || {};
-                                    const customBez = data.bezeichnung ? data.bezeichnung : `${ic.label} (Platz ${slotN})`;
-                                    const oldIdent = `${oldName} | ${f.name} | Platz ${slotN} | ${customBez}`;
-                                    const newIdent = `${newName} | ${f.name} | Platz ${slotN} | ${customBez}`;
-                                    replaceStringInAllReferences(oldIdent, newIdent);
-                                });
-                            }
+                            const ioList = (ic && ic.io && ic.io.length > 0) ? ic.io : [{ id: 'default', label: 'Verknüpfungen', type: 'in' }];
+                            ioList.forEach(io => {
+                                let data = slot.ioData?.[io.id] || {};
+                                const customBez = data.bezeichnung ? data.bezeichnung : `${ic ? ic.label : 'Platz'} (Platz ${slotN})`;
+                                const oldIdent = `${oldName} | ${f.name} | Platz ${slotN} | ${customBez}`;
+                                const newIdent = `${newName} | ${f.name} | Platz ${slotN} | ${customBez}`;
+                                replaceStringInAllReferences(oldIdent, newIdent);
+                            });
                         }
                     });
                 }
@@ -1124,7 +1126,6 @@
             let counter = projectData.details.length + 1;
             let newName = `Detail ${counter}`;
             
-            // Prüfen, ob der Name bereits existiert, und ggf. hochzählen
             while (projectData.details.some(d => d.name === newName)) {
                 counter++;
                 newName = `Detail ${counter}`;
@@ -1158,7 +1159,6 @@
                     h.globalGroup = {};
                     h.funktion = {};
                     h.ioPrint = {};
-                    // h.gruppe bleibt als Eigenschaft erhalten
                     if(h.subNodes) {
                         for(let sKey in h.subNodes) {
                             h.subNodes[sKey].forEach(sub => {
@@ -1167,7 +1167,6 @@
                                 sub.globalGroup = "";
                                 sub.funktion = "";
                                 sub.printInCustomerDoc = false;
-                                // sub.gruppe bleibt erhalten
                             });
                         }
                     }
@@ -1185,6 +1184,7 @@
                         for(let sKey in f.slots) {
                             const slot = f.slots[sKey];
                             if(slot) {
+                                if (slot.printInCustomerDoc === undefined) slot.printInCustomerDoc = true;
                                 if(slot.customFields) {
                                     for(let cfKey in slot.customFields) {
                                         if(/ast|bus|bridge|dali|link/i.test(cfKey)) slot.customFields[cfKey] = "";
@@ -1316,12 +1316,13 @@
                             const slot = f.slots[`slot-${i}`];
                             if (!slot) continue;
                             const ic = iconConfigList.find(x => x.file === slot.iconFile);
-                            if (!ic || !ic.io) continue;
+                            const ioList = (ic && ic.io && ic.io.length > 0) ? ic.io : [{ id: 'default', label: 'Verknüpfungen', type: 'in' }];
 
                             let slotIoCheckboxes = '';
-                            ic.io.forEach(io => {
+                            ioList.forEach(io => {
                                 const dat = slot.ioData?.[io.id] || {};
-                                const customBez = dat.bezeichnung ? dat.bezeichnung : `${ic.label} (Platz ${i})`;
+                                const slotLabel = ic ? ic.label : 'Platz';
+                                const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
                                 const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
 
                                 let isChecked = false;
@@ -1336,15 +1337,18 @@
                                     ? `toggleHardwareSwitchLink('${hwRef.hwId}', '${hwRef.ioId}', '${hwRef.subId || ''}', '${d.id}', '${f.id}', ${i}, '${io.id}', '${switchIdent.replace(/'/g, "\\'")}', '${sourceName.replace(/'/g, "\\'")}', this.checked)`
                                     : `toggleSwitchSlotAssignmentFromModal('${f.id}', ${i}, '${io.id}', '${sourceName.replace(/'/g, "\\'")}', this.checked)`;
 
+                                const isVirtualDefault = (io.id === 'default' && (!ic || !ic.io || ic.io.length === 0));
+                                const ioDisplayName = isVirtualDefault ? 'Verknüpfungen' : `${io.label} (${io.type === 'in' ? 'Eingang' : 'Ausgang'})`;
+
                                 slotIoCheckboxes += `<label style="display:flex; align-items:flex-start; gap:8px; margin:6px 0 6px 20px; font-size:0.85rem; cursor:pointer;">
                                     <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="${onChangeAction}" style="width:15px;height:15px;cursor:pointer;margin-top:2px;">
-                                    <div><b>${io.label}</b> (${io.type === 'in' ? 'Eingang' : 'Ausgang'}) ${dat.bezeichnung ? `— <span style="color:#0f766e;">"${dat.bezeichnung}"</span>` : ''}</div>
+                                    <div><b>${ioDisplayName}</b> ${dat.bezeichnung ? `— <span style="color:#0f766e;">"${dat.bezeichnung}"</span>` : ''}</div>
                                 </label>`;
                             });
 
                             if (slotIoCheckboxes) {
                                 frameSlotsHtml += `<div style="margin: 8px 0; border-left: 2px solid #14b8a6; padding-left: 10px;">
-                                    <div style="font-weight:600; font-size:0.9rem; color:#334155;">Platz ${i} — ${ic.label}</div>
+                                    <div style="font-weight:600; font-size:0.9rem; color:#334155;">Platz ${i} — ${ic ? ic.label : 'Kein Icon'}</div>
                                     ${slotIoCheckboxes}
                                 </div>`;
                             }
@@ -1446,7 +1450,6 @@
         if((type === 'switch' && switchRef) || (type === 'hardwareIo' && hwRef)) {
             let extraHtml = `<div style="display:flex; gap: 20px;">`;
             
-            // Current bindings fetching for HardwareIo
             let currentAppFns = [];
             let currentGrps = [];
             if(type === 'hardwareIo' && hwRef) {
@@ -1820,7 +1823,6 @@
         renderApp();
     };
 
-    // NEU: Funktionen für Doku-Druck Checkboxen pro IO / SubNode
     window.toggleHwIoPrintCustomerDoc = function(hwInstanceId, ioId, checked) {
         projectData.details.forEach(d => {
             if(d.hardware) {
@@ -1904,15 +1906,14 @@
                         const slotN = slotKey.replace('slot-', '');
                         const slot = f.slots[slotKey];
                         const ic = iconConfigList.find(x => x.file === slot.iconFile);
-                        if (ic && ic.io) {
-                            ic.io.forEach(io => {
-                                let data = slot.ioData?.[io.id] || {};
-                                const customBez = data.bezeichnung ? data.bezeichnung : `${ic.label} (Platz ${slotN})`;
-                                const oldIdent = `${d.name} | ${oldFName} | Platz ${slotN} | ${customBez}`;
-                                const newIdent = `${d.name} | ${newFName} | Platz ${slotN} | ${customBez}`;
-                                replaceStringInAllReferences(oldIdent, newIdent);
-                            });
-                        }
+                        const ioList = (ic && ic.io && ic.io.length > 0) ? ic.io : [{ id: 'default', label: 'Verknüpfungen', type: 'in' }];
+                        ioList.forEach(io => {
+                            let data = slot.ioData?.[io.id] || {};
+                            const customBez = data.bezeichnung ? data.bezeichnung : `${ic ? ic.label : 'Platz'} (Platz ${slotN})`;
+                            const oldIdent = `${d.name} | ${oldFName} | Platz ${slotN} | ${customBez}`;
+                            const newIdent = `${d.name} | ${newFName} | Platz ${slotN} | ${customBez}`;
+                            replaceStringInAllReferences(oldIdent, newIdent);
+                        });
                     }
                     f[field] = val;
                 } else {
@@ -1977,13 +1978,20 @@
         let framesHtml = d.frames.map(f => {
             const [r, col] = f.layout.split('x').map(Number); const tot = r * col;
             if(!f.activeSlot || f.activeSlot > tot) f.activeSlot = 1;
-            for(let i=1; i<=tot; i++) { if(!f.slots[`slot-${i}`]) f.slots[`slot-${i}`] = { iconFile: '', ioData: {} }; }
+            for(let i=1; i<=tot; i++) { 
+                if(!f.slots[`slot-${i}`]) f.slots[`slot-${i}`] = { iconFile: '', ioData: {}, printInCustomerDoc: true }; 
+            }
+
+            const hasNoFrame = Object.values(f.slots).some(s => {
+                const ic = iconConfigList.find(x => x.file === s.iconFile);
+                return ic && ic.noFrame;
+            });
             
             return `
             <div class="pane">
                 <div class="frame-header-row">
                     <input type="text" value="${f.name}" placeholder="Name der Schaltstelle..." onchange="updateFrameField('${f.id}', 'name', this.value)">
-                    <select onchange="updateFrameField('${f.id}', 'layout', this.value)">
+                    <select onchange="updateFrameField('${f.id}', 'layout', this.value)" ${hasNoFrame ? 'disabled title="Bei rahmenlosen Icons nur 1x1 möglich"' : ''}>
                         <option value="1x1" ${f.layout==='1x1'?'selected':''}>1 x 1</option>
                         <option value="2x1" ${f.layout==='2x1'?'selected':''}>2 x 1 (Vertikal)</option>
                         <option value="1x2" ${f.layout==='1x2'?'selected':''}>1 x 2 (Horizontal)</option>
@@ -2048,14 +2056,14 @@
                 const collectReplacements = (slotData, oldSlotN, newSlotN, frameName) => {
                     if(!slotData || !slotData.iconFile) return;
                     const ic = iconConfigList.find(x => x.file === slotData.iconFile);
-                    if(!ic || !ic.io) return;
+                    const ioList = (ic && ic.io && ic.io.length > 0) ? ic.io : [{ id: 'default', label: 'Verknüpfungen', type: 'in' }];
                     
-                    ic.io.forEach(io => {
+                    ioList.forEach(io => {
                         const dat = slotData.ioData?.[io.id] || {};
-                        const oldBez = dat.bezeichnung ? dat.bezeichnung : `${ic.label} (Platz ${oldSlotN})`;
+                        const oldBez = dat.bezeichnung ? dat.bezeichnung : `${ic ? ic.label : 'Platz'} (Platz ${oldSlotN})`;
                         const oldStr = `${d.name} | ${frameName} | Platz ${oldSlotN} | ${oldBez}`;
                         
-                        const newBez = dat.bezeichnung ? dat.bezeichnung : `${ic.label} (Platz ${newSlotN})`;
+                        const newBez = dat.bezeichnung ? dat.bezeichnung : `${ic ? ic.label : 'Platz'} (Platz ${newSlotN})`;
                         const newStr = `${d.name} | ${frameName} | Platz ${newSlotN} | ${newBez}`;
                         
                         replacements.push({oldStr, newStr});
@@ -2214,8 +2222,13 @@
         const active = f.activeSlot || 1;
         for(let i=0; i<r*c; i++) {
             const isActive = (cnt === active);
-            const path = f.slots[`slot-${cnt}`].iconFile ? `${BASE_ICON_PATH}${f.slots[`slot-${cnt}`].iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
-            h += `<div class="switch-slot ${isActive ? 'active-slot' : ''}" onclick="selectSlot('${f.id}', ${cnt})" draggable="true" ondragstart="handleDragStart(event, '${f.id}', ${cnt})" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${f.id}', ${cnt})" title="Platz ${cnt} bearbeiten"><span class="slot-badge">${cnt}</span><img src="${path}"></div>`; 
+            const slot = f.slots[`slot-${cnt}`] || {};
+            const ic = iconConfigList.find(x => x.file === slot.iconFile);
+            const isNoFrame = ic && ic.noFrame;
+            const slotStyle = isNoFrame ? 'style="border:none; background:transparent; box-shadow:none;"' : '';
+
+            const path = slot.iconFile ? `${BASE_ICON_PATH}${slot.iconFile}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
+            h += `<div class="switch-slot ${isActive ? 'active-slot' : ''}" ${slotStyle} onclick="selectSlot('${f.id}', ${cnt})" draggable="true" ondragstart="handleDragStart(event, '${f.id}', ${cnt})" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${f.id}', ${cnt})" title="Platz ${cnt} bearbeiten"><span class="slot-badge">${cnt}</span><img src="${path}"></div>`; 
             cnt++;
         }
         return h;
@@ -2255,7 +2268,7 @@
                 </div>
             </div>`;
         }
-        return h || '<div style="color:#94a3b8; font-size:0.8rem; font-style:italic;">Keine Plätze vorhanden</div>';
+        return h || '<div style="color:#94a3b8; font-size:0.80rem; font-style:italic;">Keine Plätze vorhanden</div>';
     }
 
     window.selectSlotIo = function(fId, slotN, ioKey) {
@@ -2276,7 +2289,7 @@
         `).join('') + `</div>`;
 
         let i = active;
-        const slot = f.slots[`slot-${i}`] || { iconFile: '', ioData: {} }; 
+        const slot = f.slots[`slot-${i}`] || { iconFile: '', ioData: {}, printInCustomerDoc: true }; 
         const ic = iconConfigList.find(x => x.file === slot.iconFile); 
         let ioHtml = '';
         
@@ -2309,16 +2322,17 @@
             }).join('') + `</div>`;
         }
 
-        if(ic && ic.io && ic.io.length > 0) {
+        const ioList = (ic && ic.io && ic.io.length > 0) ? ic.io : [{ id: 'default', label: 'Verknüpfungen', type: 'in' }];
+        if(ioList.length > 0) {
             if(!f.activeIo) f.activeIo = {};
-            let activeIoKey = f.activeIo[`slot-${i}`] || ic.io[0].id;
-            if(!ic.io.some(x => x.id === activeIoKey)) activeIoKey = ic.io[0].id;
+            let activeIoKey = f.activeIo[`slot-${i}`] || ioList[0].id;
+            if(!ioList.some(x => x.id === activeIoKey)) activeIoKey = ioList[0].id;
 
-            let ioTabsHtml = `<div class="slot-tabs" style="margin-top: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">` + 
-                ic.io.map(io => `<button class="slot-tab-btn ${activeIoKey === io.id ? 'active' : ''}" style="font-size:0.8rem; padding:6px 12px;" onclick="selectSlotIo('${f.id}', ${i}, '${io.id}')">${io.label} (${io.type === 'in' ? 'Eingang' : 'Ausgang'})</button>`).join('') + 
-            `</div>`;
+            let ioTabsHtml = ioList.length > 1 ? (`<div class="slot-tabs" style="margin-top: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">` + 
+                ioList.map(io => `<button class="slot-tab-btn ${activeIoKey === io.id ? 'active' : ''}" style="font-size:0.8rem; padding:6px 12px;" onclick="selectSlotIo('${f.id}', ${i}, '${io.id}')">${io.label} (${io.type === 'in' ? 'Eingang' : 'Ausgang'})</button>`).join('') + 
+            `</div>`) : '';
 
-            const activeIo = ic.io.find(x => x.id === activeIoKey) || ic.io[0];
+            const activeIo = ioList.find(x => x.id === activeIoKey) || ioList[0];
             let data = slot.ioData?.[activeIo.id] || {bezeichnung:'', art:'TA', funktion:'', gruppe:'', eingabegerat:''};
             if(typeof data === 'string') data = {bezeichnung: data, art:'TA', funktion:'', gruppe:'', eingabegerat:''};
             if(!data.art) data.art = 'TA';
@@ -2341,22 +2355,24 @@
                 setTimeout(() => { updateSlotField(f.id, i, activeIo.id, 'funktion', v); }, 10);
             };
 
-            const fnDropdown = renderStandardDropdown(`fn-${f.id}-${i}-${activeIo.id}`, data.funktion || '', fnOptions, `setSlotFn_${f.id}_${i}_${activeIo.id}`, 'Funktion wählen...');
+            let fnDropdown = renderStandardDropdown(`fn-${f.id}-${i}-${activeIo.id}`, data.funktion || '', fnOptions, `setSlotFn_${f.id}_${i}_${activeIo.id}`, 'Funktion wählen...');
+
+            const isVirtualDefault = (activeIo.id === 'default' && (!ic || !ic.io || ic.io.length === 0));
 
             ioHtml = ioTabsHtml + `<div class="io-complex-row" style="margin-top: 10px;">
-                <div class="io-header"><span class="io-type ${activeIo.type}">${activeIo.type==='in'?'Eingang':'Ausgang'}</span> ${activeIo.label} ${warnHtml}</div>
-                <div class="io-fields-grid" style="grid-template-columns: 2fr 1fr; margin-bottom: 8px;">
-                    <input type="text" placeholder="Taster Bezeichnung" value="${data.bezeichnung||''}" onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','bezeichnung',this.value)">
-                    <select onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','art',this.value)">
+                ${!isVirtualDefault ? `<div class="io-header"><span class="io-type ${activeIo.type}">${activeIo.type==='in'?'Eingang':'Ausgang'}</span> ${activeIo.label} ${warnHtml}</div>` : `<div class="io-header"><span class="io-type in">Verknüpfungen</span></div>`}
+                <div class="io-fields-grid" style="grid-template-columns: ${isVirtualDefault ? '1fr' : '2fr 1fr'}; margin-bottom: 8px;">
+                    <input type="text" placeholder="${isVirtualDefault ? 'Bezeichnung / Name' : 'Taster Bezeichnung'}" value="${data.bezeichnung||''}" onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','bezeichnung',this.value)">
+                    ${!isVirtualDefault ? `<select onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','art',this.value)">
                         <option value="TA" ${data.art==='TA'?'selected':''}>TA (Taster)</option>
                         <option value="SA" ${data.art==='SA'?'selected':''}>SA (Schalter)</option>
                         <option value="Imp." ${data.art==='Imp.'?'selected':''}>Imp. (Impuls)</option>
-                    </select>
+                    </select>` : ''}
                 </div>
-                <div class="io-fields-grid" style="grid-template-columns: 2fr 1fr; margin-bottom: 10px;">
+                ${!isVirtualDefault ? `<div class="io-fields-grid" style="grid-template-columns: 2fr 1fr; margin-bottom: 10px;">
                     <div>${fnDropdown}</div>
                     <input type="text" placeholder="Gruppe..." value="${data.gruppe||''}" onchange="updateSlotField('${f.id}', '${i}','${activeIo.id}','gruppe',this.value)">
-                </div>
+                </div>` : ''}
                 <div>
                     <button class="btn info" style="width: 100%; justify-content: center; margin-bottom: 6px; padding: 7px 12px;" onclick="openAssignModal('switch', '${switchIdent.replace(/'/g, "\\'")}', {fId:'${f.id}', slotN:${i}, ioId:'${activeIo.id}'})">🔗 Verknüpfungen / Zuweisen</button>
                     <div style="font-size: 0.8rem; background: #ffffff; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; color: #475569;">
@@ -2369,16 +2385,34 @@
         window[`setIcon_${f.id}_${i}`] = (v, ev) => { 
             if(ev){ev.preventDefault();ev.stopPropagation();} 
             document.querySelectorAll('.select-items').forEach(x=>x.classList.remove('show')); 
-            setTimeout(() => { f.slots[`slot-${i}`].iconFile = v; renderApp(); }, 10); 
+            setTimeout(() => { 
+                f.slots[`slot-${i}`].iconFile = v; 
+                const ic = iconConfigList.find(x => x.file === v);
+                if (ic && ic.noFrame) {
+                    f.layout = '1x1';
+                    f.slots = { 'slot-1': f.slots[`slot-${i}`] };
+                    f.activeSlot = 1;
+                }
+                renderApp(); 
+            }, 10); 
         };
         
         let iconDropdown = renderStandardDropdown(`icon-${f.id}-${i}`, slot.iconFile, [{value:'', label:'--- Kein Icon ---'}, ...iconConfigList.map(x=>({value:x.file, label:x.label}))], `setIcon_${f.id}_${i}`, 'Icon wählen...');
         
+        const printDocChecked = slot.printInCustomerDoc !== false ? 'checked' : '';
+        let customerDocCheckboxHtml = `<div class="form-group" style="margin-top: 12px; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+            <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; cursor:pointer;">
+                <input type="checkbox" ${printDocChecked} onchange="updateSlotProperty('${f.id}', ${i}, 'printInCustomerDoc', this.checked)" style="width:16px; height:16px; cursor:pointer;">
+                <span>In Kunden-Doku drucken</span>
+            </label>
+        </div>`;
+
         let slotFormHtml = `<div class="slot-form">
             <h4><span>Platz ${i} bearbeiten</span></h4>
             <div class="form-group no-print" style="margin-bottom: 12px;"><label>Icon:</label>${iconDropdown}</div>
             ${customFieldsHtml}
             ${ioHtml}
+            ${customerDocCheckboxHtml}
         </div>`;
 
         return tabsHtml + slotFormHtml;
@@ -2394,20 +2428,31 @@
         
         if (field === 'bezeichnung') {
             const ic = iconConfigList.find(x => x.file === slot.iconFile);
-            if(ic) {
-                const oldBezeichnung = cData.bezeichnung || `${ic.label} (Platz ${slotN})`;
-                const newBezeichnung = val || `${ic.label} (Platz ${slotN})`;
-                
-                const oldIdent = `${d.name} | ${f.name} | Platz ${slotN} | ${oldBezeichnung}`;
-                const newIdent = `${d.name} | ${f.name} | Platz ${slotN} | ${newBezeichnung}`;
-                
-                replaceStringInAllReferences(oldIdent, newIdent);
-            }
+            const slotLabel = ic ? ic.label : 'Platz';
+            const oldBezeichnung = cData.bezeichnung || `${slotLabel} (Platz ${slotN})`;
+            const newBezeichnung = val || `${slotLabel} (Platz ${slotN})`;
+            
+            const oldIdent = `${d.name} | ${f.name} | Platz ${slotN} | ${oldBezeichnung}`;
+            const newIdent = `${d.name} | ${f.name} | Platz ${slotN} | ${newBezeichnung}`;
+            
+            replaceStringInAllReferences(oldIdent, newIdent);
         }
         
         cData[field] = val; 
         slot.ioData[ioId] = cData;
         
+        saveToLocal();
+        renderApp();
+    };
+
+    window.updateSlotProperty = function(fId, slotN, field, val) {
+        const d = projectData.details.find(x => x.id === activeDetailId);
+        if(!d) return;
+        const f = d.frames.find(x => x.id === fId);
+        if(!f) return;
+        const slot = f.slots[`slot-${slotN}`];
+        if(!slot) return;
+        slot[field] = val;
         saveToLocal();
         renderApp();
     };
@@ -2495,13 +2540,9 @@
                         if(!hw.subNodes[io.id]) hw.subNodes[io.id] = [];
                         const subs = hw.subNodes[io.id];
 
-                        // --- BEGINN DER ÄNDERUNG ---
                         let totalAddresses = 0;
-                        
-                        // 1. Lokale Subnodes zählen (bisherige Logik)
                         subs.forEach(s => { totalAddresses += parseInt(s.channels) || 1; });
                         
-                        // 2. Externe, zugewiesene Geräte zählen (Topologie-Logik)
                         const busIdStr = getBusIdString(d, hw, io);
                         projectData.details.forEach(det => {
                             if(det.hardware) {
@@ -2516,7 +2557,6 @@
                             }
                         });
 
-                        // 3. Fallbacks für Limit identisch zur Topologie anwenden
                         const maxLimit = io.limit || (busCfg ? busCfg.defaultLimit : null) || (io.busType === 'tree' ? 50 : io.busType === 'air' ? 50 : io.busType === 'link' ? 30 : 64);
                         const isFull = totalAddresses >= maxLimit;
 
@@ -2657,25 +2697,25 @@
     }
 
     function getDeviceChannelCount(childItem) {
-    if (childItem.cfg.channels) return parseInt(childItem.cfg.channels);
-    let fieldChannels = parseInt(childItem.hw.fields['Kanäle'] || childItem.hw.fields['Channels'] || 0);
-    if (fieldChannels > 0) return fieldChannels;
-    
-    const activeIo = childItem.cfg.profiles ? 
-        (childItem.cfg.profiles.find(p => p.id === childItem.hw.activeProfile)?.io || childItem.cfg.profiles[0].io) : 
-        childItem.cfg.io;
-    
-    if (activeIo && childItem.hw.subNodes) {
-        let subSum = 0;
-        for (let ioKey in childItem.hw.subNodes) {
-            childItem.hw.subNodes[ioKey].forEach(sub => {
-                subSum += parseInt(sub.channels) || 1;
-            });
+        if (childItem.cfg.channels) return parseInt(childItem.cfg.channels);
+        let fieldChannels = parseInt(childItem.hw.fields['Kanäle'] || childItem.hw.fields['Channels'] || 0);
+        if (fieldChannels > 0) return fieldChannels;
+        
+        const activeIo = childItem.cfg.profiles ? 
+            (childItem.cfg.profiles.find(p => p.id === childItem.hw.activeProfile)?.io || childItem.cfg.profiles[0].io) : 
+            childItem.cfg.io;
+        
+        if (activeIo && childItem.hw.subNodes) {
+            let subSum = 0;
+            for (let ioKey in childItem.hw.subNodes) {
+                childItem.hw.subNodes[ioKey].forEach(sub => {
+                    subSum += parseInt(sub.channels) || 1;
+                });
+            }
+            if (subSum > 0) return subSum;
         }
-        if (subSum > 0) return subSum;
+        return 1;
     }
-    return 1;
-}
 
     function openBusOverviewModal() {
         const c = document.getElementById('bus-tree-content'); c.innerHTML = ''; let h = '';
@@ -2713,7 +2753,6 @@
         const totalPower = getProjectTotalPower();
         h += `<div style="margin-bottom:25px; font-weight:700; color:#0f766e; font-size:1.1rem; padding-bottom:10px; border-bottom:1px solid #cbd5e1;">⚡ Gesamtstromaufnahme Projekt: ${totalPower.toFixed(1)} W</div>`;
 
-        
         function renderTopoNode(item, level) {
             const isRoot = level === 0;
             const activeIo = item.cfg.profiles ? (item.cfg.profiles.find(p=>p.id===item.hw.activeProfile)?.io || item.cfg.profiles[0].io) : item.cfg.io;
@@ -2803,8 +2842,6 @@
         document.getElementById('bus-modal').style.display = 'flex';
     }
 
-    
-
     function getHardwareLinksForSwitch(switchIdent) {
         let linkedAppFns = new Set();
         let linkedGroups = new Set();
@@ -2812,7 +2849,6 @@
         projectData.details.forEach(det => {
             if(det.hardware) {
                 det.hardware.forEach(hw => {
-                    // Standard IO Mappings prüfen
                     if(hw.mappings) {
                         for(let ioId in hw.mappings) {
                             let mapList = (hw.mappings[ioId] || '').split(',').map(x=>x.trim());
@@ -2826,7 +2862,6 @@
                             }
                         }
                     }
-                    // Bus / SubNode Mappings prüfen
                     if(hw.subNodes) {
                         for(let ioId in hw.subNodes) {
                             hw.subNodes[ioId].forEach(sub => {
@@ -2921,7 +2956,7 @@
                 const total = r * c;
 
                 for(let i=1; i<=total; i++) {
-                    const s = f.slots[`slot-${i}`] || { iconFile: '', ioData: {}, customFields: {} };
+                    const s = f.slots[`slot-${i}`] || { iconFile: '', ioData: {}, customFields: {}, printInCustomerDoc: true };
                     const ic = iconConfigList.find(x => x.file === s.iconFile);
                     
                     const imgPath = ic ? `icons-schalter/${ic.file}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
@@ -2938,32 +2973,34 @@
 
                     let ioRows = '';
                     let hasContent = false;
-                    if(ic && ic.io) {
-                        ioRows = ic.io.map(io => {
-                            const dat = s.ioData?.[io.id] || {};
-                            
-                            const slotLabel = ic ? ic.label : 'Platz';
-                            const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
-                            const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
-                            const hwLinks = getHardwareLinksForSwitch(switchIdent);
+                    const ioList = (ic && ic.io && ic.io.length > 0) ? ic.io : [{ id: 'default', label: 'Verknüpfungen', type: 'in' }];
+                    
+                    ioRows = ioList.map(io => {
+                        const dat = s.ioData?.[io.id] || {};
+                        
+                        const slotLabel = ic ? ic.label : 'Platz';
+                        const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
+                        const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
+                        const hwLinks = getHardwareLinksForSwitch(switchIdent);
 
-                            const parsed = parseSlotLinks(dat, hwLinks);
-                            
-                            if(dat.bezeichnung || dat.art || dat.funktion || parsed.targetHw || parsed.uniqueApp || parsed.uniqueGrp) {
-                                hasContent = true;
-                            }
+                        const parsed = parseSlotLinks(dat, hwLinks);
+                        
+                        if(dat.bezeichnung || dat.art || dat.funktion || parsed.targetHw || parsed.uniqueApp || parsed.uniqueGrp) {
+                            hasContent = true;
+                        }
 
-                            return `<div style="margin-bottom:6px; font-size:0.85rem; border-top:1px dashed #e2e8f0; padding-top:4px;">
-                                <b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>
-                                ${dat.bezeichnung ? `Bezeichnung: ${dat.bezeichnung}<br>` : ''}
-                                ${dat.art ? `Art: ${dat.art}<br>` : ''}
-                                ${parsed.uniqueGrp ? `Gruppen: ${parsed.uniqueGrp}<br>` : ''}
-                                <span style="color:#0f766e; font-weight: 500;">Ziel (Hardware): ${parsed.targetHw || '-'}</span><br>
-                                ${dat.funktion ? `Funktion: ${dat.funktion}<br>` : ''}
-                                ${parsed.uniqueApp ? `App-Funktionen: ${parsed.uniqueApp}<br>` : ''}
-                            </div>`;
-                        }).join('');
-                    }
+                        const isVirtualDefault = (io.id === 'default' && (!ic || !ic.io || ic.io.length === 0));
+
+                        return `<div style="margin-bottom:6px; font-size:0.85rem; border-top:1px dashed #e2e8f0; padding-top:4px;">
+                            ${!isVirtualDefault ? `<b>${io.type==='in'?'Eingang':'Ausgang'}: ${io.label}</b><br>` : ''}
+                            ${dat.bezeichnung ? `Bezeichnung: ${dat.bezeichnung}<br>` : ''}
+                            ${dat.art ? `Art: ${dat.art}<br>` : ''}
+                            ${parsed.uniqueGrp ? `Gruppen: ${parsed.uniqueGrp}<br>` : ''}
+                            <span style="color:#0f766e; font-weight: 500;">Ziel (Hardware): ${parsed.targetHw || '-'}</span><br>
+                            ${dat.funktion ? `Funktion: ${dat.funktion}<br>` : ''}
+                            ${parsed.uniqueApp ? `App-Funktionen: ${parsed.uniqueApp}<br>` : ''}
+                        </div>`;
+                    }).join('');
                     
                     const slotLabel = ic ? ic.label : 'Kein Icon';
                     
@@ -3004,7 +3041,6 @@
                 let fieldsHtml = ''; 
                 if(cfg.fields) {
                     cfg.fields.forEach(f => {
-                        // Im Gegensatz zur Kunden-Doku werden hier ALLE Felder angezeigt, keine Ausnahmen
                         if(hw.fields[f]) {
                             fieldsHtml += `<div style="margin-bottom:2px;"><b>${f}:</b> ${hw.fields[f]}</div>`;
                         }
@@ -3019,7 +3055,6 @@
                         if(io.type === 'bus') {
                             if(hw.subNodes && hw.subNodes[io.id] && hw.subNodes[io.id].length > 0) {
                                 hw.subNodes[io.id].forEach(sub => {
-                                    // Alle SubNode Details (wie in der originalen DetailPrint) übernehmen, aber neues Design anwenden
                                     ioh += `<div style="margin-bottom: 8px; padding-left: 8px; border-left: 3px solid var(--primary); font-size: 0.85rem; color: #475569;">
                                         <b style="color:#1e293b;">${sub.name}</b>
                                         <div style="color:#475569; margin-top:2px;"><b>Ort:</b> ${sub.location || 'k.A.'} | <b>Kanäle:</b> ${sub.channels || 1}</div>
@@ -3041,7 +3076,6 @@
                             const grpText = hw.gruppe?.[io.id] || '';
                             const fnText = hw.funktion?.[io.id] || '';
                             
-                            // Alle Standard IO Details übernehmen, im neuen Design
                             ioh += `<div style="margin-bottom: 8px; padding-left: 8px; border-left: 3px solid var(--primary); font-size: 0.85rem; color: #475569;">
                                 <b style="color:#1e293b;">${io.label}${bez ? `: <span style="color:#1e293b;">${bez}</span>` : ''}</b>
                                 ${fnText ? `<div style="color:#1e293b; margin-top:2px;"><b>Funktion:</b> ${fnText}</div>` : ''}
@@ -3123,37 +3157,39 @@
                     let slotListHtml = '';
 
                     for(let i=1; i<=total; i++) {
-                        const s = f.slots[`slot-${i}`] || { iconFile: '', ioData: {} };
+                        const s = f.slots[`slot-${i}`] || { iconFile: '', ioData: {}, printInCustomerDoc: true };
+                        if (s.printInCustomerDoc === false) continue;
+
                         const ic = iconConfigList.find(x => x.file === s.iconFile);
                         const imgPath = ic ? `icons-schalter/${ic.file}` : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23cbd5e1"><circle cx="12" cy="12" r="8"></circle></svg>';
 
                         vSlots += `<div class="print-switch-slot"><span style="position:absolute; top:2px; left:4px; font-size:9px; font-weight:700; color:#64748b;">${i}</span><img src="${imgPath}"></div>`;
 
                         let slotText = '';
-                        if(ic && ic.io) {
-                            ic.io.forEach(io => {
-                                const dat = s.ioData?.[io.id] || {};
-                                
-                                const slotLabel = ic ? ic.label : 'Platz';
-                                const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
-                                const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
-                                
-                                const hwLinks = getHardwareLinksForSwitch(switchIdent);
-                                const parsed = parseSlotLinks(dat, hwLinks);
+                        const ioList = (ic && ic.io && ic.io.length > 0) ? ic.io : [{ id: 'default', label: 'Verknüpfungen', type: 'in' }];
+                        
+                        ioList.forEach(io => {
+                            const dat = s.ioData?.[io.id] || {};
+                            
+                            const slotLabel = ic ? ic.label : 'Platz';
+                            const customBez = dat.bezeichnung ? dat.bezeichnung : `${slotLabel} (Platz ${i})`;
+                            const switchIdent = `${d.name} | ${f.name} | Platz ${i} | ${customBez}`;
+                            
+                            const hwLinks = getHardwareLinksForSwitch(switchIdent);
+                            const parsed = parseSlotLinks(dat, hwLinks);
 
-                                if(dat.bezeichnung || dat.funktion || parsed.targetHw || parsed.uniqueApp || parsed.uniqueGrp) {
-                                    slotText += `<div style="margin-bottom: 4px;">`;
-                                    
-                                    if(dat.bezeichnung) slotText += `<b>Platz ${i} - ${dat.bezeichnung}</b>`;
-                                    else slotText += `<b>Platz ${i} - ${io.label || 'Taster'}</b>`;
-                                    
-                                    if(dat.funktion) slotText += `<div style="color:#475569;">Funktion: ${dat.funktion}</div>`;
-                                    if(parsed.uniqueApp) slotText += `<div style="color:#475569;">App-Funktionen: ${parsed.uniqueApp}</div>`;
-                                    if(parsed.uniqueGrp) slotText += `<div style="color:#475569;">Gruppen: ${parsed.uniqueGrp}</div>`;
-                                    slotText += `</div>`;
-                                }
-                            });
-                        }
+                            if(dat.bezeichnung || dat.funktion || parsed.targetHw || parsed.uniqueApp || parsed.uniqueGrp) {
+                                slotText += `<div style="margin-bottom: 4px;">`;
+                                
+                                if(dat.bezeichnung) slotText += `<b>Platz ${i} - ${dat.bezeichnung}</b>`;
+                                else slotText += `<b>Platz ${i} - ${io.label || 'Taster'}</b>`;
+                                
+                                if(dat.funktion) slotText += `<div style="color:#475569;">Funktion: ${dat.funktion}</div>`;
+                                if(parsed.uniqueApp) slotText += `<div style="color:#475569;">App-Funktionen: ${parsed.uniqueApp}</div>`;
+                                if(parsed.uniqueGrp) slotText += `<div style="color:#475569;">Gruppen: ${parsed.uniqueGrp}</div>`;
+                                slotText += `</div>`;
+                            }
+                        });
                         
                         if(slotText) {
                             slotListHtml += `<div style="margin-bottom: 8px; padding-left: 10px; border-left: 3px solid var(--primary);">${slotText}</div>`;
@@ -3184,7 +3220,6 @@
                     let fieldsHtml = '';
                     if(cfg.fields) {
                         cfg.fields.forEach(f => {
-                            // Ausschliessen was angezeigt wird bei der Hardware
                             if (hw.fields[f] && !/ast|bus|bridge|dali|link|bemerkung|s\.-?nr|seriennummer/i.test(f)) {
                                 fieldsHtml += `<div style="margin-bottom:2px;"><b>${f}:</b> ${hw.fields[f]}</div>`;
                             }
@@ -3227,11 +3262,8 @@
                         });
                     }
 
-                    // Bereinigung von leeren Trennern
                     ioh = ioh.replace(/&nbsp;\|&nbsp; \n/g, '\n').replace(/&nbsp;\|&nbsp; <\/div>/g, '</div>');
 
-                    // Hardware Karte nur drucken, wenn es ioh gibt ODER wir Felder haben.
-                    // Meistens wollen wir es drucken, weil sonst der Rahmen fehlt.
                     if (ioh || fieldsHtml) {
                         html += `
                             <div style="display:flex; gap:15px; border:1px solid #cbd5e1; padding:12px; border-radius:6px; background:#f8fafc; page-break-inside: avoid; border-left:4px solid var(--primary);">
