@@ -1689,7 +1689,30 @@
         let switchRef = _activeSwitchRef;
         if (subId === 'null' || !subId) subId = null;
 
-        if (type === 'switch' && isChecked) {
+        // Prüfen, ob MultiSelect für dieses Element oder diesen spezifischen IO aktiviert ist
+        let isMultiSelect = false;
+        projectData.details.forEach(d => {
+            if(d.hardware) {
+                const hw = d.hardware.find(h => h.instanceId === hwId);
+                if(hw) {
+                    const cfg = hardwareConfigList.find(c => c.id === hw.configId);
+                    if(cfg) {
+                        if(cfg.MultiSelect) {
+                            isMultiSelect = true;
+                        } else {
+                            const activeIo = cfg.profiles ? (cfg.profiles.find(p => p.id === hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
+                            const ioDef = activeIo ? activeIo.find(i => i.id === ioId) : null;
+                            if(ioDef && ioDef.MultiSelect) {
+                                isMultiSelect = true;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Wenn kein MultiSelect aktiv ist, beim Verknüpfen eines Schalters bestehende Bindungen bereinigen
+        if (type === 'switch' && isChecked && !isMultiSelect) {
             projectData.details.forEach(pd => {
                 if (pd.hardware) {
                     pd.hardware.forEach(hw => {
@@ -1758,48 +1781,6 @@
             list = list.filter(x => x !== sourceName);
         }
         targetObj[propKey] = list.join(', ');
-
-        if (type === 'switch' && switchRef && switchRef.fId) {
-            let hwNameStr = '';
-            projectData.details.forEach(pd => {
-                if(pd.hardware) pd.hardware.forEach(hw => {
-                    if(hw.instanceId === hwId) {
-                        const hc = hardwareConfigList.find(x => x.id === hw.configId);
-                        const baseName = `${pd.name} ${hw.fields['Geräte-Bez.'] || hc.name}`;
-                        if(subId) {
-                            const sub = hw.subNodes[ioId].find(x=>x.id===subId);
-                            hwNameStr = `${baseName} ${sub.name}`;
-                        } else {
-                            const activeIo = hc.profiles ? (hc.profiles.find(p=>p.id===hw.activeProfile)?.io || hc.profiles[0].io) : hc.io;
-                            const ioDef = activeIo.find(x=>x.id===ioId);
-                            hwNameStr = `${baseName} ${ioDef.label}`;
-                        }
-                    }
-                });
-            });
-
-            if(hwNameStr) {
-                const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
-                if(d) {
-                    const f = d.frames.find(x=>x.id===switchRef.fId);
-                    if(f) {
-                        const slot = f.slots[`slot-${switchRef.slotN}`];
-                        if(slot) {
-                            if(!slot.ioData) slot.ioData = {};
-                            if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
-                            
-                            if(isChecked) {
-                                slot.ioData[switchRef.ioId].eingabegerat = hwNameStr;
-                            } else {
-                                if(slot.ioData[switchRef.ioId].eingabegerat === hwNameStr) {
-                                    slot.ioData[switchRef.ioId].eingabegerat = '';
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
 
         saveToLocal();
         renderApp();
@@ -1936,7 +1917,98 @@
         `;
     }
 
-    window.printCustomerDoc = function() { window.print(); };
+    window.printCustomerDoc = function() {
+        const container = document.getElementById('print-customer-container');
+        if (!container) {
+            window.print();
+            return;
+        }
+
+        let html = `
+            <div style="font-family: Arial, sans-serif; padding: 20px; color: #000; background: #fff;">
+                <h1 style="border-bottom: 2px solid #333; padding-bottom: 10px; font-size: 1.5rem;">Kunden-Dokumentation: ${projectData.projectName || 'Projekt'}</h1>
+                <p style="margin-bottom: 20px;"><strong>Standort:</strong> ${projectData.location || '-'}</p>
+                <hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">
+        `;
+
+        projectData.details.forEach(d => {
+            let detailContent = '';
+            if (d.hardware && d.hardware.length > 0) {
+                let hwListHtml = '';
+                d.hardware.forEach(hw => {
+                    const cfg = hardwareConfigList.find(c => c.id === hw.configId);
+                    if (!cfg) return;
+
+                    const printConnect = cfg.printHardwareConnect === true;
+                    const activeIo = cfg.profiles ? (cfg.profiles.find(p => p.id === hw.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
+
+                    let ioPrintHtml = '';
+                    if (activeIo) {
+                        activeIo.forEach(io => {
+                            if (io.type !== 'bus') {
+                                const appFns = hw.appFunctions?.[io.id] || '';
+                                const grps = hw.globalGroup?.[io.id] || '';
+                                const mapping = hw.mappings?.[io.id] || '';
+                                const manualBez = hw.bezeichnung?.[io.id] || io.label;
+
+                                if (appFns || grps || (printConnect && mapping)) {
+                                    ioPrintHtml += `<li style="margin: 6px 0;"><strong>${manualBez}:</strong>`;
+                                    let detailsArr = [];
+                                    if (appFns) detailsArr.push(`App-Funktion: ${appFns}`);
+                                    if (grps) detailsArr.push(`Gruppe: ${grps}`);
+                                    if (printConnect && mapping) detailsArr.push(`Ziel: ${mapping}`);
+                                    ioPrintHtml += ` ${detailsArr.join(' | ')}</li>`;
+                                }
+                            } else {
+                                const busCfg = SYSTEM_CONFIG.busTypes[io.busType];
+                                if (busCfg && busCfg.hasSubDevices && hw.subNodes && hw.subNodes[io.id]) {
+                                    hw.subNodes[io.id].forEach(sub => {
+                                        const appFns = sub.appFunctions || '';
+                                        const grps = sub.globalGroup || '';
+                                        const mapping = sub.mapping || '';
+                                        const subName = sub.name || 'Gerät';
+
+                                        if (sub.printInCustomerDoc && (appFns || grps || (printConnect && mapping))) {
+                                            ioPrintHtml += `<li style="margin: 6px 0;"><strong>${subName}:</strong>`;
+                                            let subDetailsArr = [];
+                                            if (appFns) subDetailsArr.push(`App-Funktion: ${appFns}`);
+                                            if (grps) subDetailsArr.push(`Gruppe: ${grps}`);
+                                            if (printConnect && mapping) subDetailsArr.push(`Ziel: ${mapping}`);
+                                            ioPrintHtml += ` ${subDetailsArr.join(' | ')}</li>`;
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
+
+                    if (ioPrintHtml) {
+                        hwListHtml += `
+                            <div style="margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 4px; border: 1px solid #eee;">
+                                <h3 style="margin: 0 0 8px 0; font-size: 1.1rem; color: #111;">${hw.fields['Geräte-Bez.'] || cfg.name}</h3>
+                                <ul style="margin: 0; padding-left: 20px;">${ioPrintHtml}</ul>
+                            </div>
+                        `;
+                    }
+                });
+
+                if (hwListHtml) {
+                    detailContent += `<div style="margin-bottom: 25px;"><h2 style="font-size: 1.25rem; color: #0f766e; border-bottom: 1px solid #ddd; padding-bottom: 5px;">${d.name} ${d.room ? `(${d.room})` : ''}</h2>${hwListHtml}</div>`;
+                }
+            }
+
+            if (detailContent) {
+                html += detailContent;
+            }
+        });
+
+        html += `</div>`;
+        container.innerHTML = html;
+        container.style.display = 'block';
+
+        window.print();
+        container.style.display = 'none';
+    };
     window.printAllDetails = function() { window.print(); };
     window.printCurrentDetail = function() { window.print(); };
     
