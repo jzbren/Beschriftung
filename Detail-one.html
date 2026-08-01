@@ -1344,19 +1344,19 @@
                                     <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="${onChangeAction}" style="width:15px;height:15px;cursor:pointer;margin-top:2px;">
                                     <div><b>${ioDisplayName}</b> ${dat.bezeichnung ? `— <span style="color:#0f766e;">"${dat.bezeichnung}"</span>` : ''}</div>
                                 </label>`;
-                        });
+                            });
 
-                        if (slotIoCheckboxes) {
-                            frameSlotsHtml += `<div style="margin: 8px 0; border-left: 2px solid #14b8a6; padding-left: 10px;">
-                                <div style="font-weight:600; font-size:0.9rem; color:#334155;">Platz ${i} — ${ic ? ic.label : 'Kein Icon'}</div>
-                                ${slotIoCheckboxes}
-                            </div>`;
+                            if (slotIoCheckboxes) {
+                                frameSlotsHtml += `<div style="margin: 8px 0; border-left: 2px solid #14b8a6; padding-left: 10px;">
+                                    <div style="font-weight:600; font-size:0.9rem; color:#334155;">Platz ${i} — ${ic ? ic.label : 'Kein Icon'}</div>
+                                    ${slotIoCheckboxes}
+                                </div>`;
+                            }
                         }
-                    }
-                    if (frameSlotsHtml) {
-                        detailFramesHtml += `<div style="margin-bottom: 10px;"><b style="color:#0f766e; font-size:0.9rem;">Schaltstelle: ${f.name}</b>${frameSlotsHtml}</div>`;
-                    }
-                });
+                        if (frameSlotsHtml) {
+                            detailFramesHtml += `<div style="margin-bottom: 10px;"><b style="color:#0f766e; font-size:0.9rem;">Schaltstelle: ${f.name}</b>${frameSlotsHtml}</div>`;
+                        }
+                    });
                 }
                 if (detailFramesHtml) {
                     switchSlotsHtml += `<div class="assign-detail-block" style="margin-bottom: 15px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;">
@@ -1427,135 +1427,135 @@
                                                 <div>🔌 <b>${subName}</b>${subLoc} <span style="font-size:0.75rem; color:#64748b;">(${sub.channels || 1} Kanäle)</span></div>
                                             </div>
                                         </label>`;
-                                });
+                                    });
+                                }
                             }
+                        });
+                        
+                        if(hwIoHtml) {
+                            detailHtml += `<div class="assign-hw-block" style="margin-bottom: 12px; border-left: 3px solid #0f766e; padding-left: 12px;"><b style="color:#1e293b; font-size:0.95rem;">${hw.fields['Geräte-Bez.'] || cfg.name}</b>${hwIoHtml}</div>`;
                         }
                     });
-                    
-                    if(hwIoHtml) {
-                        detailHtml += `<div class="assign-hw-block" style="margin-bottom: 12px; border-left: 3px solid #0f766e; padding-left: 12px;"><b style="color:#1e293b; font-size:0.95rem;">${hw.fields['Geräte-Bez.'] || cfg.name}</b>${hwIoHtml}</div>`;
-                    }
-                });
-            }
-            if(detailHtml) {
-                hwHtml += `<div class="assign-detail-block" style="margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;"><h3 style="margin-top:0; color:#0f766e; font-size:1.05rem; border-bottom:1px solid #cbd5e1; padding-bottom:5px;">${d.name} <span style="color:#64748b;font-size:0.85rem;font-weight:normal;">(${d.room || 'Kein Raum'})</span></h3>${detailHtml}</div>`;
-            }
-        });
-    }
-    
-    let finalHwListHtml = crossLinkHtml + switchSlotsHtml + (hwHtml ? `<h4 style="margin: 15px 0 10px 0; color:#0f766e; font-size:0.95rem;">⚡ Hardware Komponenten</h4>` + hwHtml : '');
-    document.getElementById('assign-hw-list').innerHTML = finalHwListHtml || '<p style="color:#64748b;">Keine Zuweisungsobjekte im Projekt gefunden.</p>';
-
-    const extrasDiv = document.getElementById('assign-extras');
-    if((type === 'switch' && switchRef) || (type === 'hardwareIo' && hwRef)) {
-        let extraHtml = `<div style="display:flex; gap: 20px;">`;
+                }
+                if(detailHtml) {
+                    hwHtml += `<div class="assign-detail-block" style="margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;"><h3 style="margin-top:0; color:#0f766e; font-size:1.05rem; border-bottom:1px solid #cbd5e1; padding-bottom:5px;">${d.name} <span style="color:#64748b;font-size:0.85rem;font-weight:normal;">(${d.room || 'Kein Raum'})</span></h3>${detailHtml}</div>`;
+                }
+            });
+        }
         
-        let currentAppFns = [];
-        let currentGrps = [];
-        if(type === 'hardwareIo' && hwRef) {
-            const hd = projectData.details.find(x => x.hardware && x.hardware.some(h => h.instanceId === hwRef.hwId));
-            if(hd) {
-                const tgtHw = hd.hardware.find(h => h.instanceId === hwRef.hwId);
-                if(hwRef.subId) {
-                    const tgtSub = tgtHw.subNodes[hwRef.ioId].find(s => s.id === hwRef.subId);
-                    if(tgtSub) {
-                        currentAppFns = (tgtSub.appFunctions || '').split(',').map(x=>x.trim());
-                        currentGrps = (tgtSub.globalGroup || '').split(',').map(x=>x.trim());
+        let finalHwListHtml = crossLinkHtml + switchSlotsHtml + (hwHtml ? `<h4 style="margin: 15px 0 10px 0; color:#0f766e; font-size:0.95rem;">⚡ Hardware Komponenten</h4>` + hwHtml : '');
+        document.getElementById('assign-hw-list').innerHTML = finalHwListHtml || '<p style="color:#64748b;">Keine Zuweisungsobjekte im Projekt gefunden.</p>';
+
+        const extrasDiv = document.getElementById('assign-extras');
+        if((type === 'switch' && switchRef) || (type === 'hardwareIo' && hwRef)) {
+            let extraHtml = `<div style="display:flex; gap: 20px;">`;
+            
+            let currentAppFns = [];
+            let currentGrps = [];
+            if(type === 'hardwareIo' && hwRef) {
+                const hd = projectData.details.find(x => x.hardware && x.hardware.some(h => h.instanceId === hwRef.hwId));
+                if(hd) {
+                    const tgtHw = hd.hardware.find(h => h.instanceId === hwRef.hwId);
+                    if(hwRef.subId) {
+                        const tgtSub = tgtHw.subNodes[hwRef.ioId].find(s => s.id === hwRef.subId);
+                        if(tgtSub) {
+                            currentAppFns = (tgtSub.appFunctions || '').split(',').map(x=>x.trim());
+                            currentGrps = (tgtSub.globalGroup || '').split(',').map(x=>x.trim());
+                        }
+                    } else {
+                        currentAppFns = (tgtHw.appFunctions?.[hwRef.ioId] || '').split(',').map(x=>x.trim());
+                        currentGrps = (tgtHw.globalGroup?.[hwRef.ioId] || '').split(',').map(x=>x.trim());
                     }
-                } else {
-                    currentAppFns = (tgtHw.appFunctions?.[hwRef.ioId] || '').split(',').map(x=>x.trim());
-                    currentGrps = (tgtHw.globalGroup?.[hwRef.ioId] || '').split(',').map(x=>x.trim());
                 }
             }
+
+            let appHtml = `<div style="flex:1; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:8px;">
+                <h4 style="margin-top:0; color:#166534; margin-bottom:10px;">📱 App-Funktionen</h4>
+                <div style="display:flex; gap:5px; margin-bottom:12px;">
+                    <input type="text" id="quick-new-appfn" placeholder="Neue App-Funktion..." onkeydown="if(event.key==='Enter') quickAddAppFunction()" style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:0.85rem;">
+                    <button class="btn primary" style="padding:6px 10px;" onclick="quickAddAppFunction()">+</button>
+                </div>
+                <div style="max-height: 180px; overflow-y: auto; padding-right: 5px;">`;
+                
+            projectData.appFunctions.forEach(afObj => {
+                const af = typeof afObj === 'object' ? afObj.name : afObj;
+                const afDesc = typeof afObj === 'object' ? afObj.description : '';
+                let isChecked = false;
+
+                if (type === 'switch' && switchRef) {
+                    const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
+                    if(d) {
+                        const f = d.frames.find(x=>x.id===switchRef.fId);
+                        const slot = f.slots[`slot-${switchRef.slotN}`];
+                        if(!slot.ioData) slot.ioData = {};
+                        if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
+                        const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
+                        isChecked = eingabeList.includes(af);
+                    }
+                } else if (type === 'hardwareIo' && hwRef) {
+                    isChecked = currentAppFns.includes(af);
+                }
+
+                const onChangeAction = (type === 'switch') 
+                    ? `toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${af.replace(/'/g, "\\'")}', this.checked)`
+                    : `toggleHwExtraTarget('${hwRef.hwId}', '${hwRef.ioId}', '${hwRef.subId || ''}', 'appFunction', '${af.replace(/'/g, "\\'")}', this.checked)`;
+
+                appHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;">
+                    <input type="checkbox" ${isChecked?'checked':''} onchange="${onChangeAction}" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> 
+                    <div><div style="font-weight:500;">${af}</div>${afDesc ? `<div style="font-size:0.75rem; color:#475569;">${afDesc}</div>` : ''}</div>
+                </label>`;
+            });
+            appHtml += `</div></div>`;
+
+            let grpHtml = `<div style="flex:1; background:#eff6ff; border:1px solid #bfdbfe; padding:15px; border-radius:8px;">
+                <h4 style="margin-top:0; color:#1e40af; margin-bottom:10px;">📂 Globale Gruppen</h4>
+                <div style="display:flex; gap:5px; margin-bottom:12px;">
+                    <input type="text" id="quick-new-grp" placeholder="Neue Gruppe..." onkeydown="if(event.key==='Enter') quickAddGroup()" style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:0.85rem;">
+                    <button class="btn primary" style="padding:6px 10px;" onclick="quickAddGroup()">+</button>
+                </div>
+                <div style="max-height: 180px; overflow-y: auto; padding-right: 5px;">`;
+                
+            projectData.globalGroups.forEach(ggObj => {
+                const gg = typeof ggObj === 'object' ? ggObj.name : ggObj;
+                const ggDesc = typeof ggObj === 'object' ? ggObj.description : '';
+                let isChecked = false;
+
+                if (type === 'switch' && switchRef) {
+                    const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
+                    if(d) {
+                        const f = d.frames.find(x=>x.id===switchRef.fId);
+                        const slot = f.slots[`slot-${switchRef.slotN}`];
+                        if(!slot.ioData) slot.ioData = {};
+                        if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
+                        const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
+                        isChecked = eingabeList.includes(gg);
+                    }
+                } else if (type === 'hardwareIo' && hwRef) {
+                    isChecked = currentGrps.includes(gg);
+                }
+
+                const onChangeAction = (type === 'switch') 
+                    ? `toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${gg.replace(/'/g, "\\'")}', this.checked)`
+                    : `toggleHwExtraTarget('${hwRef.hwId}', '${hwRef.ioId}', '${hwRef.subId || ''}', 'globalGroup', '${gg.replace(/'/g, "\\'")}', this.checked)`;
+
+                grpHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;">
+                    <input type="checkbox" ${isChecked?'checked':''} onchange="${onChangeAction}" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> 
+                    <div><div style="font-weight:500;">${gg}</div>${ggDesc ? `<div style="font-size:0.75rem; color:#475569;">${ggDesc}</div>` : ''}</div>
+                </label>`;
+            });
+            grpHtml += `</div></div>`;
+
+            extraHtml += appHtml + grpHtml + `</div><hr style="border:0; border-top:1px solid #cbd5e1; margin: 20px 0;">`;
+            extrasDiv.innerHTML = extraHtml;
+            extrasDiv.style.display = 'block';
+        } else {
+            extrasDiv.style.display = 'none';
+            extrasDiv.innerHTML = '';
         }
 
-        let appHtml = `<div style="flex:1; background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:8px;">
-            <h4 style="margin-top:0; color:#166534; margin-bottom:10px;">📱 App-Funktionen</h4>
-            <div style="display:flex; gap:5px; margin-bottom:12px;">
-                <input type="text" id="quick-new-appfn" placeholder="Neue App-Funktion..." onkeydown="if(event.key==='Enter') quickAddAppFunction()" style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:0.85rem;">
-                <button class="btn primary" style="padding:6px 10px;" onclick="quickAddAppFunction()">+</button>
-            </div>
-            <div style="max-height: 180px; overflow-y: auto; padding-right: 5px;">`;
-            
-        projectData.appFunctions.forEach(afObj => {
-            const af = typeof afObj === 'object' ? afObj.name : afObj;
-            const afDesc = typeof afObj === 'object' ? afObj.description : '';
-            let isChecked = false;
-
-            if (type === 'switch' && switchRef) {
-                const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
-                if(d) {
-                    const f = d.frames.find(x=>x.id===switchRef.fId);
-                    const slot = f.slots[`slot-${switchRef.slotN}`];
-                    if(!slot.ioData) slot.ioData = {};
-                    if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
-                    const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
-                    isChecked = eingabeList.includes(af);
-                }
-            } else if (type === 'hardwareIo' && hwRef) {
-                isChecked = currentAppFns.includes(af);
-            }
-
-            const onChangeAction = (type === 'switch') 
-                ? `toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${af.replace(/'/g, "\\'")}', this.checked)`
-                : `toggleHwExtraTarget('${hwRef.hwId}', '${hwRef.ioId}', '${hwRef.subId || ''}', 'appFunction', '${af.replace(/'/g, "\\'")}', this.checked)`;
-
-            appHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;">
-                <input type="checkbox" ${isChecked?'checked':''} onchange="${onChangeAction}" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> 
-                <div><div style="font-weight:500;">${af}</div>${afDesc ? `<div style="font-size:0.75rem; color:#475569;">${afDesc}</div>` : ''}</div>
-            </label>`;
-        });
-        appHtml += `</div></div>`;
-
-        let grpHtml = `<div style="flex:1; background:#eff6ff; border:1px solid #bfdbfe; padding:15px; border-radius:8px;">
-            <h4 style="margin-top:0; color:#1e40af; margin-bottom:10px;">📂 Globale Gruppen</h4>
-            <div style="display:flex; gap:5px; margin-bottom:12px;">
-                <input type="text" id="quick-new-grp" placeholder="Neue Gruppe..." onkeydown="if(event.key==='Enter') quickAddGroup()" style="flex:1; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-size:0.85rem;">
-                <button class="btn primary" style="padding:6px 10px;" onclick="quickAddGroup()">+</button>
-            </div>
-            <div style="max-height: 180px; overflow-y: auto; padding-right: 5px;">`;
-            
-        projectData.globalGroups.forEach(ggObj => {
-            const gg = typeof ggObj === 'object' ? ggObj.name : ggObj;
-            const ggDesc = typeof ggObj === 'object' ? ggObj.description : '';
-            let isChecked = false;
-
-            if (type === 'switch' && switchRef) {
-                const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
-                if(d) {
-                    const f = d.frames.find(x=>x.id===switchRef.fId);
-                    const slot = f.slots[`slot-${switchRef.slotN}`];
-                    if(!slot.ioData) slot.ioData = {};
-                    if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
-                    const eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x=>x.trim());
-                    isChecked = eingabeList.includes(gg);
-                }
-            } else if (type === 'hardwareIo' && hwRef) {
-                isChecked = currentGrps.includes(gg);
-            }
-
-            const onChangeAction = (type === 'switch') 
-                ? `toggleSwitchExtraTarget('${switchRef.fId}', ${switchRef.slotN}, '${switchRef.ioId}', '${gg.replace(/'/g, "\\'")}', this.checked)`
-                : `toggleHwExtraTarget('${hwRef.hwId}', '${hwRef.ioId}', '${hwRef.subId || ''}', 'globalGroup', '${gg.replace(/'/g, "\\'")}', this.checked)`;
-
-            grpHtml += `<label style="display:flex; align-items:flex-start; gap:8px; margin:8px 0; cursor:pointer;">
-                <input type="checkbox" ${isChecked?'checked':''} onchange="${onChangeAction}" style="width:16px;height:16px;cursor:pointer;margin-top:3px;"> 
-                <div><div style="font-weight:500;">${gg}</div>${ggDesc ? `<div style="font-size:0.75rem; color:#475569;">${ggDesc}</div>` : ''}</div>
-            </label>`;
-        });
-        grpHtml += `</div></div>`;
-
-        extraHtml += appHtml + grpHtml + `</div><hr style="border:0; border-top:1px solid #cbd5e1; margin: 20px 0;">`;
-        extrasDiv.innerHTML = extraHtml;
-        extrasDiv.style.display = 'block';
-    } else {
-        extrasDiv.style.display = 'none';
-        extrasDiv.innerHTML = '';
-    }
-
-    document.getElementById('assign-modal').style.display = 'flex';
-    filterAssignModal(autoFilterText);
-  };
+        document.getElementById('assign-modal').style.display = 'flex';
+        filterAssignModal(autoFilterText);
+      };
 
     window.toggleHardwareSwitchLink = function(hwId, ioId, subId, dId, fId, slotN, slotIoId, switchIdent, hwNameStr, isChecked) {
         if (subId === 'null' || !subId) subId = null;
@@ -2009,6 +2009,7 @@
         window.print();
         container.style.display = 'none';
     };
+
     window.printAllDetails = function() { window.print(); };
     window.printCurrentDetail = function() { window.print(); };
     
