@@ -41,7 +41,7 @@ const iconConfigList = [
         ] 
     },
     { 
-        file: "Touch-Tree.png", 
+        file: "Touch-Tree-CO2.png", 
         label: "Touch-Tree-CO2",
         fields: ["Bemerkung", "Tree Ast"],
         group: "Schalter & Taster", 
