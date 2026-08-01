@@ -19,7 +19,7 @@
         });
     </script>
     
-    <title>ServiceProDetail Konfigurator V7.8</title>
+    <title>ServiceProDetail Konfigurator V7.9</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1701,9 +1701,12 @@
     let isMultiSelect = false;
 
     if (targetHwInstance) {
+        const hwList = typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : [];
+        const icoList = typeof iconConfigList !== 'undefined' ? iconConfigList : [];
+
         // Universelle Suche in BEIDEN Listen über ID, File oder Label
-        let cfg = hardwareConfigList.find(x => x.id === targetHwInstance.configId || x.file === targetHwInstance.configId || x.label === targetHwInstance.configId) ||
-                  iconConfigList.find(x => x.id === targetHwInstance.configId || x.file === targetHwInstance.configId || x.label === targetHwInstance.configId);
+        let cfg = hwList.find(x => x.id === targetHwInstance.configId || x.file === targetHwInstance.configId || x.label === targetHwInstance.configId) ||
+                  icoList.find(x => x.id === targetHwInstance.configId || x.file === targetHwInstance.configId || x.label === targetHwInstance.configId);
 
         if (cfg) {
             // Prüfen ob das Gerät selbst MultiSelect erlaubt (z.B. Touch-Display)
@@ -1801,14 +1804,17 @@
         projectData.details.forEach(pd => {
             if(pd.hardware) pd.hardware.forEach(hw => {
                 if(hw.instanceId === hwId) {
-                    const hc = hardwareConfigList.find(x => x.id === hw.configId) || iconConfigList.find(x => x.file === hw.configId || x.label === hw.configId);
-                    const baseName = `${pd.name} ${hw.fields['Geräte-Bez.'] || (hc ? hc.name || hc.label : '')}`;
+                    const hwList = typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : [];
+                    const icoList = typeof iconConfigList !== 'undefined' ? iconConfigList : [];
+                    const hc = hwList.find(x => x.id === hw.configId) || icoList.find(x => x.file === hw.configId || x.label === hw.configId);
+                    
+                    const baseName = `${pd.name} ${hw.fields['Geräte-Bez.'] || (hc ? (hc.name || hc.label) : '')}`;
                     if(subId) {
-                        const sub = hw.subNodes[ioId].find(x=>x.id===subId);
+                        const sub = hw.subNodes[ioId].find(x => x.id === subId);
                         hwNameStr = `${baseName} ${sub.name}`;
                     } else {
-                        const activeIo = hc && hc.profiles ? (hc.profiles.find(p=>p.id===hw.activeProfile)?.io || hc.profiles[0].io) : (hc ? hc.io : []);
-                        const ioDef = activeIo ? activeIo.find(x=>x.id===ioId) : null;
+                        const activeIo = hc && hc.profiles ? (hc.profiles.find(p => p.id === hw.activeProfile)?.io || hc.profiles[0].io) : (hc ? hc.io : []);
+                        const ioDef = activeIo ? activeIo.find(x => x.id === ioId) : null;
                         hwNameStr = `${baseName} ${ioDef ? ioDef.label : ioId}`;
                     }
                 }
@@ -1816,8 +1822,25 @@
         });
 
         if(hwNameStr) {
-            const d = projectData.details.add ? null : projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
-            // (bestehende Frame-Logik beibehalten falls vorhanden)
+            const d = projectData.details.find(x => x.frames && x.frames.some(f => f.id === switchRef.fId));
+            if(d) {
+                const f = d.frames.find(x => x.id === switchRef.fId);
+                if(f) {
+                    const slot = f.slots[`slot-${switchRef.slotN}`];
+                    if(slot) {
+                        if(!slot.ioData) slot.ioData = {};
+                        if(!slot.ioData[switchRef.ioId]) slot.ioData[switchRef.ioId] = {bezeichnung:'', eingabegerat:''};
+                        
+                        if(isChecked) {
+                            slot.ioData[switchRef.ioId].eingabegerat = hwNameStr;
+                        } else {
+                            if(slot.ioData[switchRef.ioId].eingabegerat === hwNameStr) {
+                                slot.ioData[switchRef.ioId].eingabegerat = '';
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
