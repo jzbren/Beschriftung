@@ -19,7 +19,7 @@
         });
     </script>
     
-    <title>ServiceProDetail Konfigurator V7.9</title>
+    <title>ServiceProDetail Konfigurator V7.8</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1793,8 +1793,14 @@
     list = [...new Set(list)];
 
     if (isChecked) {
-        if (!list.includes(sourceName)) {
-            list.push(sourceName);
+        if (isMultiSelect) {
+            // Multi-Select: Eintrag hinzufügen, falls noch nicht vorhanden
+            if (!list.includes(sourceName)) {
+                list.push(sourceName);
+            }
+        } else {
+            // Single-Select: Exklusiv nur diesen einen Wert setzen (überschreiben)
+            list = [sourceName];
         }
     } else {
         list = list.filter(x => x !== sourceName);
