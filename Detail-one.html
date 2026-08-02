@@ -19,7 +19,7 @@
         });
     </script>
     
-    <title>ServiceProDetail Konfigurator V7.8</title>
+    <title>ServiceProDetail Konfigurator V7.9</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1686,15 +1686,10 @@
             };
         
             window.toggleHwAssignment = function(type, sourceName, hwId, ioId, subId, isChecked) {
-    // 1. "Platz X" automatisch aus dem Quellnamen entfernen
-    if (sourceName) {
-        sourceName = sourceName.replace(/\s*[\(\|]\s*Platz\s*\d+\s*\)?/gi, '').trim();
-    }
-
     let switchRef = _activeSwitchRef;
     if (subId === 'null' || !subId) subId = null;
 
-    // 2. MultiSelect-Status ermitteln (ob das Ziel-Gerät MultiSelect unterstützt)
+    // 1. MultiSelect-Status ermitteln (ob das Ziel-Gerät MultiSelect unterstützt)
     let targetHwInstance = null;
     projectData.details.forEach(pd => {
         if(pd.hardware) pd.hardware.forEach(hw => {
@@ -1723,12 +1718,36 @@
             }
         }
     }
+    
+    // Prüfen über den aktiven Frame-Slot (switchRef)
+    if (!isMultiSelect && switchRef && switchRef.fId) {
+        projectData.details.forEach(pd => {
+            if (pd.frames) {
+                pd.frames.forEach(f => {
+                    if (f.id === switchRef.fId && f.slots) {
+                        const slot = f.slots[`slot-${switchRef.slotN}`];
+                        if (slot) {
+                            const icoList = typeof iconConfigList !== 'undefined' ? iconConfigList : [];
+                            const hwList = typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : [];
+                            let slotType = slot.icon || slot.type;
+                            let slotCfg = icoList.find(x => x.file === slotType || x.label === slotType || x.id === slotType) ||
+                                            hwList.find(x => x.id === slotType || x.label === slotType);
+                            if (slotCfg && (slotCfg.MultiSelect || slotCfg.multiSelect)) {
+                                isMultiSelect = true;
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }
+
     // Fallback über den Namen (z.B. Touch-Display)
     if (!isMultiSelect && sourceName && sourceName.toLowerCase().includes('touch-display')) {
         isMultiSelect = true;
     }
 
-    // 3. Exklusive Bereinigung bei anderen Hardware-Knoten, WENN kein MultiSelect aktiv ist
+    // 2. Exklusive Bereinigung bei anderen Hardware-Knoten, WENN kein MultiSelect aktiv ist
     if (type === 'switch' && isChecked && !isMultiSelect) {
         projectData.details.forEach(pd => {
             if (pd.hardware) {
@@ -1756,7 +1775,7 @@
         });
     }
 
-    // 4. Ziel-Objekt finden
+    // 3. Ziel-Objekt finden
     let targetObj = null;
     let targetProp = '';
 
@@ -1791,7 +1810,7 @@
 
     const propKey = subId ? targetProp : ioId;
 
-    // 5. Wert eintragen (Mit MultiSelect-Weiche)
+    // 4. Wert eintragen (Mit MultiSelect-Weiche)
     let list = (targetObj[propKey] || '').split(',').map(x => x.trim()).filter(x => x);
     list = [...new Set(list)];
 
@@ -1809,35 +1828,33 @@
     
     targetObj[propKey] = list.join(', ');
 
-    // 6. Optionale Verknüpfung im Frame aktualisieren
+    // 5. Optionale Verknüpfung im Frame aktualisieren
     if (type === 'switch' && switchRef && switchRef.fId) {
         let hwNameStr = '';
         projectData.details.forEach(pd => {
             if(pd.hardware) pd.hardware.forEach(hw => {
                 if(hw.instanceId === hwId) {
-                    const hc = hardwareConfigList.find(x => x.id === hw.configId);
-                    const baseName = `${pd.name} ${hw.fields['Geräte-Bez.'] || hc.name}`;
+                    const hwList = typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : [];
+                    const icoList = typeof iconConfigList !== 'undefined' ? iconConfigList : [];
+                    const hc = hwList.find(x => x.id === hw.configId) || icoList.find(x => x.file === hw.configId || x.label === hw.configId);
+                    
+                    const baseName = `${pd.name} ${hw.fields['Geräte-Bez.'] || (hc ? (hc.name || hc.label) : '')}`;
                     if(subId) {
-                        const sub = hw.subNodes[ioId].find(x=>x.id===subId);
-                        hwNameStr = `${baseName} ${sub.name}`;
+                        const sub = hw.subNodes[ioId].find(x => x.id === subId);
+                        hwNameStr = `${baseName} ${sub ? sub.name : subId}`;
                     } else {
-                        const activeIo = hc.profiles ? (hc.profiles.find(p=>p.id===hw.activeProfile)?.io || hc.profiles[0].io) : hc.io;
-                        const ioDef = activeIo.find(x=>x.id===ioId);
-                        hwNameStr = `${baseName} ${ioDef.label}`;
+                        const activeIo = hc && hc.profiles ? (hc.profiles.find(p => p.id === hw.activeProfile)?.io || hc.profiles[0].io) : (hc ? hc.io : []);
+                        const ioDef = activeIo ? activeIo.find(x => x.id === ioId) : null;
+                        hwNameStr = `${baseName} ${ioDef ? ioDef.label : ioId}`;
                     }
                 }
             });
         });
 
-        // Auch hier "Platz X" restlos entfernen
-        if (hwNameStr) {
-            hwNameStr = hwNameStr.replace(/\s*[\(\|]\s*Platz\s*\d+\s*\)?/gi, '').trim();
-        }
-
         if(hwNameStr) {
-            const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===switchRef.fId));
+            const d = projectData.details.find(x => x.frames && x.frames.some(f => f.id === switchRef.fId));
             if(d) {
-                const f = d.frames.find(x=>x.id===switchRef.fId);
+                const f = d.frames.find(x => x.id === switchRef.fId);
                 if(f) {
                     const slot = f.slots[`slot-${switchRef.slotN}`];
                     if(slot) {
