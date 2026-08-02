@@ -3231,8 +3231,9 @@
                         ic.io.forEach(io => {
                             const dat = s.ioData?.[io.id] || {};
                             if (dat.bezeichnung || dat.funktion || dat.gruppe) {
+                                // ÄNDERUNG: Statt ${io.label} steht hier nun Platz i und die Bezeichnung
                                 slotText += `<div style="margin-bottom: 4px;">
-                                    <b>${io.label}: ${dat.bezeichnung || 'Taster'}</b>
+                                    <b>Platz ${i}${dat.bezeichnung ? ` - ${dat.bezeichnung}` : ''}</b>
                                     ${dat.funktion ? `<div style="color:#475569;">Funktion: ${dat.funktion}</div>` : ''}
                                     ${dat.gruppe ? `<div style="color:#475569;">Gruppe: ${dat.gruppe}</div>` : ''}
                                 </div>`;
@@ -3249,8 +3250,7 @@
 
                         if(dat.bezeichnung || dat.funktion || parsed.targetHw || parsed.uniqueApp || parsed.uniqueGrp) {
                             slotText += `<div style="margin-bottom: 4px;">`;
-                            if(dat.bezeichnung) slotText += `<b>Platz ${i} - ${dat.bezeichnung}</b>`;
-                            else slotText += `<b>Platz ${i} - ${slotLabel}</b>`;
+                            slotText += `<b>Platz ${i}${dat.bezeichnung ? ` - ${dat.bezeichnung}` : ` - ${slotLabel}`}</b>`;
                             
                             if(dat.funktion) slotText += `<div style="color:#475569;">Funktion: ${dat.funktion}</div>`;
                             if(parsed.targetHw) slotText += `<div style="color:#0f766e;">Verknüpfung (Hardware): ${parsed.targetHw}</div>`;
