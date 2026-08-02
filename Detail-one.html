@@ -19,7 +19,7 @@
         });
     </script>
     
-    <title>ServiceProDetail Konfigurator V7.8</title>
+    <title>ServiceProDetail Konfigurator V7.9</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1685,15 +1685,42 @@
                 });
             };
         
-            window.toggleHwAssignment = function(type, sourceName, hwId, ioId, subId, isChecked) {
+   window.toggleHwAssignment = function(type, sourceName, hwId, ioId, subId, isChecked) {
     let switchRef = _activeSwitchRef;
     if (subId === 'null' || !subId) subId = null;
 
-    // 1. MultiSelect absolut zuverlässig an Hand der QUELLE (iconConfigList) ermitteln
-    let isMultiSelect = false;
+    // 1. MultiSelect-Status ermitteln (wichtig für die Quell-Exklusivität von normalen Switches)
+    let targetHwInstance = null;
+    projectData.details.forEach(pd => {
+        if(pd.hardware) pd.hardware.forEach(hw => {
+            if(hw.instanceId === hwId) {
+                targetHwInstance = hw;
+            }
+        });
+    });
 
-    // A) Prüfen über den aktiven Frame-Slot (switchRef)
-    if (switchRef && switchRef.fId) {
+    let isMultiSelect = false;
+    if (targetHwInstance) {
+        const hwList = typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : [];
+        const icoList = typeof iconConfigList !== 'undefined' ? iconConfigList : [];
+        const cfg = hwList.find(x => x.id === targetHwInstance.configId || x.file === targetHwInstance.configId || x.label === targetHwInstance.configId) ||
+                  icoList.find(x => x.id === targetHwInstance.configId || x.file === targetHwInstance.configId || x.label === targetHwInstance.configId);
+        
+        if (cfg) {
+            if (cfg.MultiSelect || cfg.multiSelect) {
+                isMultiSelect = true;
+            } else {
+                const activeIoList = cfg.profiles ? (cfg.profiles.find(p => p.id === targetHwInstance.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
+                const ioDef = activeIoList?.find(x => x.id === ioId);
+                if (ioDef && (ioDef.MultiSelect || ioDef.multiSelect)) {
+                    isMultiSelect = true;
+                }
+            }
+        }
+    }
+    
+    // Prüfen über den aktiven Frame-Slot (switchRef)
+    if (!isMultiSelect && switchRef && switchRef.fId) {
         projectData.details.forEach(pd => {
             if (pd.frames) {
                 pd.frames.forEach(f => {
@@ -1701,8 +1728,10 @@
                         const slot = f.slots[`slot-${switchRef.slotN}`];
                         if (slot) {
                             const icoList = typeof iconConfigList !== 'undefined' ? iconConfigList : [];
+                            const hwList = typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : [];
                             let slotType = slot.icon || slot.type;
-                            let slotCfg = icoList.find(x => x.file === slotType || x.label === slotType || x.id === slotType);
+                            let slotCfg = icoList.find(x => x.file === slotType || x.label === slotType || x.id === slotType) ||
+                                            hwList.find(x => x.id === slotType || x.label === slotType);
                             if (slotCfg && (slotCfg.MultiSelect || slotCfg.multiSelect)) {
                                 isMultiSelect = true;
                             }
@@ -1713,17 +1742,12 @@
         });
     }
 
-    // B) Fallback-Abgleich über den sourceName mit der iconConfigList (erkennt Touch-Display, Touch-Tree-CO2 etc. am Namen)
-    if (!isMultiSelect && sourceName) {
-        const icoList = typeof iconConfigList !== 'undefined' ? iconConfigList : [];
-        icoList.forEach(ico => {
-            if ((ico.MultiSelect || ico.multiSelect) && ico.label && sourceName.toLowerCase().includes(ico.label.toLowerCase())) {
-                isMultiSelect = true;
-            }
-        });
+    // Fallback über den Namen (z.B. Touch-Display)
+    if (!isMultiSelect && sourceName && sourceName.toLowerCase().includes('touch-display')) {
+        isMultiSelect = true;
     }
 
-    // 2. Exklusive Bereinigung bei anderen Hardware-Knoten, WENN KEIN MultiSelect aktiv ist
+    // 2. Exklusive Bereinigung bei anderen Hardware-Knoten, WENN es sich um eine exklusive Einzelquelle handelt
     if (type === 'switch' && isChecked && !isMultiSelect) {
         projectData.details.forEach(pd => {
             if (pd.hardware) {
@@ -1786,20 +1810,16 @@
 
     const propKey = subId ? targetProp : ioId;
 
-    // 4. Wert eintragen (Mit MultiSelect-Weiche)
+    // 4. Wert eintragen: Hardware-Klemmen MÜSSEN immer mehrere Quellen erlauben (Anhngen statt Überschreiben)
     let list = (targetObj[propKey] || '').split(',').map(x => x.trim()).filter(x => x);
     list = [...new Set(list)];
 
     if (isChecked) {
-        if (isMultiSelect) {
-            if (!list.includes(sourceName)) {
-                list.push(sourceName);
-            }
-        } else {
-            list = [sourceName]; // Single Select überschreibt exklusiv
+        if (!list.includes(sourceName)) {
+            list.push(sourceName); // Fügt die neue Quelle hinzu, ohne bestehende (wie Touch-Display) zu löschen
         }
     } else {
-        list = list.filter(x => x !== sourceName);
+        list = list.filter(x => x !== sourceName); // Entfernt die Quelle beim Abwählen
     }
     
     targetObj[propKey] = list.join(', ');
@@ -1861,6 +1881,7 @@
     saveToLocal();
     renderApp();
 };
+
 
     window.toggleSwitchExtraTarget = function(fId, slotN, ioId, targetName, isChecked) {
         const d = projectData.details.find(x=>x.frames && x.frames.some(f=>f.id===fId));
