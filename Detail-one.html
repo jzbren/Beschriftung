@@ -19,7 +19,7 @@
         });
     </script>
     
-    <title>ServiceProDetail Konfigurator V8.1</title>
+    <title>ServiceProDetail Konfigurator V8.2</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1665,34 +1665,13 @@
         }
     };
 
-            window.filterAssignModal = function(term) {
-                const query = term.toLowerCase().trim();
-                const hwListContainer = document.getElementById('assign-hw-list');
-                const detailBlocks = hwListContainer.querySelectorAll('.assign-detail-block');
-                const crosslinkBlock = hwListContainer.querySelector('.assign-crosslink-block');
-                
-                if (crosslinkBlock) {
-                    crosslinkBlock.style.display = (!query || crosslinkBlock.innerText.toLowerCase().includes(query)) ? '' : 'none';
-                }
-        
-                detailBlocks.forEach(block => {
-                    const text = block.innerText.toLowerCase();
-                    if (!query || text.includes(query)) {
-                        block.style.display = '';
-                    } else {
-                        block.style.display = 'none';
-                    }
-                });
-            };
-        
-   window.toggleHwAssignment = function(type, sourceName, hwId, ioId, subId, isChecked) {
+            window.toggleHwAssignment = function(type, sourceName, hwId, ioId, subId, isChecked) {
     let switchRef = _activeSwitchRef;
     if (subId === 'null' || !subId) subId = null;
 
-    // 1. MultiSelect absolut zuverlässig prüfen (inklusive einzelner IO-Definitionen im Quell-Slot)
+    // 1. MultiSelect-Status korrekt ermitteln (prüft Gerät UND den spezifischen IO-Kanal des Quell-Slots)
     let isMultiSelect = false;
 
-    // A) Prüfen über den aktiven Frame-Slot (switchRef) und dessen spezifischen IO (z.B. LUFTFEUCHTIGKEIT)
     if (switchRef && switchRef.fId) {
         projectData.details.forEach(pd => {
             if (pd.frames) {
@@ -1705,10 +1684,14 @@
                             let slotType = slot.icon || slot.type;
                             let slotCfg = icoList.find(x => x.file === slotType || x.label === slotType || x.id === slotType) ||
                                             hwList.find(x => x.id === slotType || x.label === slotType);
+                            
                             if (slotCfg) {
+                                // A) Ist das gesamte Gerät auf MultiSelect gestellt?
                                 if (slotCfg.MultiSelect || slotCfg.multiSelect) {
                                     isMultiSelect = true;
-                                } else if (slotCfg.io && switchRef.ioId) {
+                                } 
+                                // B) Ist genau der spezifische Eingang (z.B. LUFTFEUCHTIGKEIT) mit MultiSelect markiert?
+                                else if (slotCfg.io && switchRef.ioId) {
                                     let ioDef = slotCfg.io.find(x => x.id === switchRef.ioId);
                                     if (ioDef && (ioDef.MultiSelect || ioDef.multiSelect)) {
                                         isMultiSelect = true;
@@ -1722,12 +1705,9 @@
         });
     }
 
-    // B) Fallback über den Namen (z.B. Touch-Display oder aktivierte Sensoren)
-    if (!isMultiSelect && sourceName) {
-        const lowerSrc = sourceName.toLowerCase();
-        if (lowerSrc.includes('touch-display') || lowerSrc.includes('luftfeuchtigkeit') || lowerSrc.includes('co-2') || lowerSrc.includes('co2')) {
-            isMultiSelect = true;
-        }
+    // Fallback über den Namen (z. B. Touch-Display)
+    if (!isMultiSelect && sourceName && sourceName.toLowerCase().includes('touch-display')) {
+        isMultiSelect = true;
     }
 
     // 2. Exklusive Bereinigung bei anderen Hardware-Knoten, WENN KEIN MultiSelect aktiv ist
@@ -1793,17 +1773,13 @@
 
     const propKey = subId ? targetProp : ioId;
 
-    // 4. Wert eintragen (Mit MultiSelect-Weiche)
+    // 4. Wert eintragen (Multi-Select und Hardware-Klemmen erlauben immer mehrere Einträge)
     let list = (targetObj[propKey] || '').split(',').map(x => x.trim()).filter(x => x);
     list = [...new Set(list)];
 
     if (isChecked) {
-        if (isMultiSelect) {
-            if (!list.includes(sourceName)) {
-                list.push(sourceName);
-            }
-        } else {
-            list = [sourceName]; // Single Select überschreibt exklusiv
+        if (!list.includes(sourceName)) {
+            list.push(sourceName);
         }
     } else {
         list = list.filter(x => x !== sourceName);
