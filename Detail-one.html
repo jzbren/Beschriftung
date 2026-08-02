@@ -19,7 +19,7 @@
         });
     </script>
     
-    <title>ServiceProDetail Konfigurator V7.9</title>
+    <title>ServiceProDetail Konfigurator V7.8</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1686,9 +1686,15 @@
             };
         
             window.toggleHwAssignment = function(type, sourceName, hwId, ioId, subId, isChecked) {
+    // 1. "Platz X" (z.B. | Platz 1 oder (Platz 1)) automatisch aus dem Quellnamen entfernen
+    if (sourceName) {
+        sourceName = sourceName.replace(/\s*[\(\|]\s*Platz\s*\d+\s*\)?/gi, '').trim();
+    }
+
     let switchRef = _activeSwitchRef;
     if (subId === 'null' || !subId) subId = null;
 
+    // 2. Ziel-Hardware-Instance ermitteln, um MultiSelect prüfen zu können
     let targetHwInstance = null;
     projectData.details.forEach(pd => {
         if(pd.hardware) pd.hardware.forEach(hw => {
@@ -1698,25 +1704,21 @@
         });
     });
 
-    // 1. MultiSelect absolut zuverlässig ermitteln
+    // 3. MultiSelect-Status robust ermitteln (über Hardware, IO-Definitionen oder das Slot-Icon)
     let isMultiSelect = false;
 
-    // A) Prüfen über Ziel-Hardware / IO-Definition
+    // A) Prüfen über Ziel-Hardware / IO
     if (targetHwInstance) {
         const hwList = typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : [];
         const icoList = typeof iconConfigList !== 'undefined' ? iconConfigList : [];
-
-        let cfg = hwList.find(x => x.id === targetHwInstance.configId || x.file === targetHwInstance.configId || x.label === targetHwInstance.configId) ||
+        const cfg = hwList.find(x => x.id === targetHwInstance.configId || x.file === targetHwInstance.configId || x.label === targetHwInstance.configId) ||
                   icoList.find(x => x.id === targetHwInstance.configId || x.file === targetHwInstance.configId || x.label === targetHwInstance.configId);
-
         if (cfg) {
             if (cfg.MultiSelect || cfg.multiSelect) {
                 isMultiSelect = true;
             } else {
-                let activeIoList = cfg.profiles ? 
-                    (cfg.profiles.find(p => p.id === targetHwInstance.activeProfile)?.io || cfg.profiles[0].io) : 
-                    cfg.io;
-                let ioDef = activeIoList?.find(x => x.id === ioId);
+                const activeIoList = cfg.profiles ? (cfg.profiles.find(p => p.id === targetHwInstance.activeProfile)?.io || cfg.profiles[0].io) : cfg.io;
+                const ioDef = activeIoList?.find(x => x.id === ioId);
                 if (ioDef && (ioDef.MultiSelect || ioDef.multiSelect)) {
                     isMultiSelect = true;
                 }
@@ -1724,7 +1726,7 @@
         }
     }
 
-    // B) Prüfen über den aktiven Frame-Slot (switchRef)
+    // B) Prüfen über den aktiven Frame-Slot (z.B. Touch-Display)
     if (!isMultiSelect && switchRef && switchRef.fId) {
         projectData.details.forEach(pd => {
             if (pd.frames) {
@@ -1734,8 +1736,8 @@
                         if (slot) {
                             const icoList = typeof iconConfigList !== 'undefined' ? iconConfigList : [];
                             const hwList = typeof hardwareConfigList !== 'undefined' ? hardwareConfigList : [];
-                            let slotType = slot.icon || slot.type;
-                            let slotCfg = icoList.find(x => x.file === slotType || x.label === slotType || x.id === slotType) ||
+                            const slotType = slot.icon || slot.type;
+                            const slotCfg = icoList.find(x => x.file === slotType || x.label === slotType || x.id === slotType) ||
                                             hwList.find(x => x.id === slotType || x.label === slotType);
                             if (slotCfg && (slotCfg.MultiSelect || slotCfg.multiSelect)) {
                                 isMultiSelect = true;
@@ -1747,30 +1749,23 @@
         });
     }
 
-    // C) Fallback-Abgleich über den sourceName (erkennt MultiSelect-Geräte wie Touch-Display direkt am Namen)
-    if (!isMultiSelect && sourceName) {
-        const icoList = typeof iconConfigList !== 'undefined' ? iconConfigList : [];
-        icoList.forEach(ico => {
-            if ((ico.MultiSelect || ico.multiSelect) && ico.label && sourceName.includes(ico.label)) {
-                isMultiSelect = true;
-            }
-        });
+    // C) Fallback über den Namen
+    if (!isMultiSelect && sourceName && sourceName.toLowerCase().includes('touch-display')) {
+        isMultiSelect = true;
     }
 
-    // 2. Wenn kein MultiSelect aktiv ist, exklusive Zuordnung bei anderen Hardware-Knoten bereinigen
+    // 4. Exklusive Bereinigung bei normalen Switches (nur wenn KEIN MultiSelect aktiv ist)
     if (type === 'switch' && isChecked && !isMultiSelect) {
         projectData.details.forEach(pd => {
             if (pd.hardware) {
                 pd.hardware.forEach(hw => {
-                    ['mappings', 'mapping'].forEach(prop => {
-                        if (hw[prop] && typeof hw[prop] === 'object') {
-                            for (let k in hw[prop]) {
-                                let list = (hw[prop][k] || '').split(',').map(x => x.trim()).filter(x => x);
-                                list = list.filter(x => x !== sourceName);
-                                hw[prop][k] = list.join(', ');
-                            }
+                    if (hw.mappings) {
+                        for (let k in hw.mappings) {
+                            let list = (hw.mappings[k] || '').split(',').map(x => x.trim()).filter(x => x);
+                            list = list.filter(x => x !== sourceName);
+                            hw.mappings[k] = list.join(', ');
                         }
-                    });
+                    }
                     if (hw.subNodes) {
                         for (let sKey in hw.subNodes) {
                             hw.subNodes[sKey].forEach(sub => {
@@ -1787,7 +1782,7 @@
         });
     }
 
-    // 3. Ziel-Hardware-Objekt für den gewählten IO-Kanal finden/initialisieren
+    // 5. Ziel-Objekt für die Zuweisung finden und initialisieren
     let targetObj = null;
     let targetProp = '';
 
@@ -1811,9 +1806,7 @@
                     }
                     if(type === 'switch') {
                         if(!targetObj.mappings) targetObj.mappings = {};
-                        if(!targetObj.mappings[ioId]) {
-                            targetObj.mappings[ioId] = '';
-                        }
+                        if(!targetObj.mappings[ioId]) targetObj.mappings[ioId] = '';
                         targetObj = targetObj.mappings;
                     }
                 }
@@ -1830,19 +1823,16 @@
 
     if (isChecked) {
         if (isMultiSelect) {
-            if (!list.includes(sourceName)) {
-                list.push(sourceName);
-            }
+            if (!list.includes(sourceName)) list.push(sourceName);
         } else {
-            list = [sourceName];
+            list = [sourceName]; // Single Select überschreibt exklusiv
         }
     } else {
         list = list.filter(x => x !== sourceName);
     }
-    
     targetObj[propKey] = list.join(', ');
 
-    // 4. Optionale Verknüpfung im Frame / Slot aktualisieren
+    // 6. Gegen-Verknüpfung im Frame / Slot aktualisieren
     if (type === 'switch' && switchRef && switchRef.fId) {
         let hwNameStr = '';
         projectData.details.forEach(pd => {
@@ -1855,7 +1845,7 @@
                     const baseName = `${pd.name} ${hw.fields['Geräte-Bez.'] || (hc ? (hc.name || hc.label) : '')}`;
                     if(subId) {
                         const sub = hw.subNodes[ioId].find(x => x.id === subId);
-                        hwNameStr = `${baseName} ${sub.name}`;
+                        hwNameStr = `${baseName} ${sub ? sub.name : subId}`;
                     } else {
                         const activeIo = hc && hc.profiles ? (hc.profiles.find(p => p.id === hw.activeProfile)?.io || hc.profiles[0].io) : (hc ? hc.io : []);
                         const ioDef = activeIo ? activeIo.find(x => x.id === ioId) : null;
@@ -1864,6 +1854,11 @@
                 }
             });
         });
+
+        // Auch im generierten Hardware-Namen den "Platz X"-Baustein restlos entfernen
+        if (hwNameStr) {
+            hwNameStr = hwNameStr.replace(/\s*[\(\|]\s*Platz\s*\d+\s*\)?/gi, '').trim();
+        }
 
         if(hwNameStr) {
             const d = projectData.details.find(x => x.frames && x.frames.some(f => f.id === switchRef.fId));
@@ -1877,7 +1872,7 @@
                         
                         let eingabeList = (slot.ioData[switchRef.ioId].eingabegerat || '').split(',').map(x => x.trim()).filter(x => x);
                         eingabeList = [...new Set(eingabeList)];
-                        
+
                         if (isMultiSelect) {
                             if(isChecked && !eingabeList.includes(hwNameStr)) {
                                 eingabeList.push(hwNameStr);
@@ -1888,7 +1883,7 @@
                         } else {
                             eingabeList = isChecked ? [hwNameStr] : [];
                         }
-                        
+
                         slot.ioData[switchRef.ioId].eingabegerat = eingabeList.join(', ');
                     }
                 }
