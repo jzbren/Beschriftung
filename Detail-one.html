@@ -19,7 +19,7 @@
         });
     </script>
     
-    <title>ServiceProDetail Konfigurator V7.9</title>
+    <title>ServiceProDetail Konfigurator V7.8</title>
     <style>
         :root {
             --feller-white: #f7f9f9; --feller-border: #d1d5db;
@@ -1689,7 +1689,7 @@
     let switchRef = _activeSwitchRef;
     if (subId === 'null' || !subId) subId = null;
 
-    // 1. MultiSelect-Status ermitteln (ob das Ziel-Gerät MultiSelect unterstützt)
+    // 1. MultiSelect-Status ermitteln (wichtig für die Quell-Exklusivität von normalen Switches)
     let targetHwInstance = null;
     projectData.details.forEach(pd => {
         if(pd.hardware) pd.hardware.forEach(hw => {
@@ -1747,7 +1747,7 @@
         isMultiSelect = true;
     }
 
-    // 2. Exklusive Bereinigung bei anderen Hardware-Knoten, WENN kein MultiSelect aktiv ist
+    // 2. Exklusive Bereinigung bei anderen Hardware-Knoten, WENN es sich um eine exklusive Einzelquelle handelt
     if (type === 'switch' && isChecked && !isMultiSelect) {
         projectData.details.forEach(pd => {
             if (pd.hardware) {
@@ -1810,20 +1810,16 @@
 
     const propKey = subId ? targetProp : ioId;
 
-    // 4. Wert eintragen (Mit MultiSelect-Weiche)
+    // 4. Wert eintragen: Hardware-Klemmen MÜSSEN immer mehrere Quellen erlauben (Anhngen statt Überschreiben)
     let list = (targetObj[propKey] || '').split(',').map(x => x.trim()).filter(x => x);
     list = [...new Set(list)];
 
     if (isChecked) {
-        if (isMultiSelect) {
-            if (!list.includes(sourceName)) {
-                list.push(sourceName);
-            }
-        } else {
-            list = [sourceName]; // Single Select überschreibt exklusiv
+        if (!list.includes(sourceName)) {
+            list.push(sourceName); // Fügt die neue Quelle hinzu, ohne bestehende (wie Touch-Display) zu löschen
         }
     } else {
-        list = list.filter(x => x !== sourceName);
+        list = list.filter(x => x !== sourceName); // Entfernt die Quelle beim Abwählen
     }
     
     targetObj[propKey] = list.join(', ');
